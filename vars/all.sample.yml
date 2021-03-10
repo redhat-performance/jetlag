@@ -6,6 +6,8 @@
 # Which scale lab cloud are we deploying on
 scalelab_cloud:
 
+lab_foreman_host:
+
 # Network configuration for master nodes
 lab_dns:
 master_network_interface: ens1f0
