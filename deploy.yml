@@ -13,8 +13,8 @@
         inventory_group: master
         boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
     - wait-hosts-discovered
-    # - install-cluster
-    # - get-kubeconfig
+    - install-cluster
+    - get-kubeconfig
     # - apply-machineconfigs
     # - deploy-autorules
     # - generate-livecd

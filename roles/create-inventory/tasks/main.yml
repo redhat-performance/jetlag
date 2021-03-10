@@ -1,9 +1,9 @@
 ---
-# Create inventory tasks
-
+# create-inventory tasks
+#
 # First machine is bastion
 # Following 3 machines are master nodes
-# remaining are remote worker nodes
+# Remaining are remote worker nodes
 
 - name: Download instackenv.json
   uri:

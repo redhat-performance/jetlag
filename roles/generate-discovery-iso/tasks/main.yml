@@ -1,5 +1,5 @@
 ---
-# Generate the discovery ISO
+# generate-discovery-iso tasks
 
 - name: Set empty static network configuration
   set_fact:

@@ -1,0 +1,22 @@
+---
+# install-cluster tasks
+
+- name: Install cluster
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/actions/install"
+    method: POST
+    status_code: [202]
+    return_content: True
+    body_format: json
+    body: { }
+
+- name: Wait for 60 min until the cluster is installed
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: cluster
+  until: cluster.json.status == 'installed' or cluster.json.status == 'error' or cluster.json.status == 'cancelled'
+  retries: 60
+  delay: 60

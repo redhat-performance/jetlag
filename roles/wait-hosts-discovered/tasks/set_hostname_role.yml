@@ -1,0 +1,39 @@
+---
+# Set hostname and role
+
+- name: Identify the hosts
+  set_fact:
+    host_inventory: "{{ discovered_host.inventory }}"
+    host_id: "{{ discovered_host.id }}"
+
+- name: Identify the host interfaces
+  set_fact:
+    host_interfaces: "{{ host_inventory.interfaces }}"
+
+- name : Identify the host name and role
+  set_fact:
+    host_name: "{{ item.0 }}"
+    host_role: "{{ hostvars[item.0]['role'] }}"
+  when: hostvars[item.0]['lab_mac'] == item.1.mac_address
+  loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
+  no_log: True
+
+- name : Prepare hosts name and role for {{ host_name }}
+  set_fact:
+    host:
+      id: "{{ host_id }}"
+      hostname: "{{ host_name }}"
+      role: "{{ host_role }}"
+  when: host_name is defined or host_role is defined
+
+- name: Set host name and role for {{ host_name }}
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: {
+        "hosts_names": [ "{{ host }}" ],
+        "hosts_roles": [ "{{ host }}" ]
+    }

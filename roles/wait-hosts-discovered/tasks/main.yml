@@ -1,0 +1,48 @@
+---
+# wait-hosts-discovered tasks
+
+- name: Create list of nodes to be discovered
+  set_fact:
+    inventory_nodes: "{{ groups['master'] }}"
+
+- name: Wait for 20 min for master nodes to be discovered
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: cluster
+  until: cluster.json.hosts | length == groups['master'] | length
+  retries: 20
+  delay: 60
+
+- name: Set hostname and role for discovered hosts
+  include_tasks: set_hostname_role.yml
+  with_items:
+    - "{{ cluster.json.hosts }}"
+  loop_control:
+    loop_var: discovered_host
+
+- name: Patch cluster with API Virtual IP
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: PATCH
+    status_code: [201]
+    return_content: True
+    body_format: json
+    body: {
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
+        "ingress_vip": "{{ master_network_ingress }}",
+        "api_vip": "{{ master_network_api }}"
+    }
+
+- name: Wait for cluster to be ready for install
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: True
+  register: cluster
+  until: "cluster.json.status == 'ready'"
+  retries: 20
+  delay: 60

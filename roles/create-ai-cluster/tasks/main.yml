@@ -1,5 +1,5 @@
 ---
-# Create an Assisted Installer cluster
+# create-ai-cluster tasks
 
 - name: Create cluster
   uri:
