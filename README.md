@@ -2,6 +2,12 @@
 
 Creates a baremetal three node master/worker cluster via the Assisted Installer. Subsequent remote workers are added by a livecd install.
 
+## Prerequisites
+
+```console
+ansible-galaxy collection install community.general
+```
+
 ## Usage
 
 Edit vars

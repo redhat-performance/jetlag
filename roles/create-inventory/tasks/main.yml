@@ -11,7 +11,7 @@
     return_content: true
   register: ocpinventory
 
-- name: Set bastion Machine
+- name: Set inventory variables
   set_fact:
     bastion_machine: "{{ ocpinventory.json.nodes[0].pm_addr | replace('mgmt-','') }}"
     master0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
@@ -20,23 +20,46 @@
     master0_network_mac: "{{ ocpinventory.json.nodes[1].mac | first }}"
     master1_network_mac: "{{ ocpinventory.json.nodes[2].mac | first }}"
     master2_network_mac: "{{ ocpinventory.json.nodes[3].mac | first }}"
-    master0_lab_mac: "{{ ocpinventory.json.nodes[1].mac | last }}"
-    master1_lab_mac: "{{ ocpinventory.json.nodes[2].mac | last }}"
-    master2_lab_mac: "{{ ocpinventory.json.nodes[3].mac | last }}"
+    # ocpinventory does not include the lab mac address (yet)
+    # master0_lab_mac: "{{ ocpinventory.json.nodes[1].mac | last }}"
+    # master1_lab_mac: "{{ ocpinventory.json.nodes[2].mac | last }}"
+    # master2_lab_mac: "{{ ocpinventory.json.nodes[3].mac | last }}"
     bmc_user: "{{ ocpinventory.json.nodes[0].pm_user }}"
     bmc_password: "{{ ocpinventory.json.nodes[0].pm_password }}"
+
+- name: Get master0 lab mac address
+  shell: |
+    ping -c 1 {{ master0 | replace('mgmt-','') }} > /dev/null 2>&1
+    arp -a | grep "{{ master0 | replace('mgmt-','') }}" | awk '{print $4}'
+  delegate_to: "{{ bastion_machine }}"
+  remote_user: root
+  register: master0_mac_address_shell
+
+- name: Get master1 lab mac address
+  shell: |
+    ping -c 1 {{ master1 | replace('mgmt-','') }} > /dev/null 2>&1
+    arp -a | grep "{{ master1 | replace('mgmt-','') }}" | awk '{print $4}'
+  delegate_to: "{{ bastion_machine }}"
+  remote_user: root
+  register: master1_mac_address_shell
+
+- name: Get master2 lab mac address
+  shell: |
+    ping -c 1 {{ master2 | replace('mgmt-','') }} > /dev/null 2>&1
+    arp -a | grep "{{ master2 | replace('mgmt-','') }}" | awk '{print $4}'
+  delegate_to: "{{ bastion_machine }}"
+  remote_user: root
+  register: master2_mac_address_shell
+
+- name: Set master node lab mac addresses
+  set_fact:
+    master0_lab_mac: "{{ master0_mac_address_shell.stdout }}"
+    master1_lab_mac: "{{ master1_mac_address_shell.stdout }}"
+    master2_lab_mac: "{{ master2_mac_address_shell.stdout }}"
 
 - name: Set ocpinventory rwn nodes
   set_fact:
     ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:] }}"
-
-- name: Count of rwn nodes
-  set_fact:
-    rwn_count: "{{ ocpinventory_rwn_nodes | length }}"
-
-- name: Count of rwn
-  debug:
-    msg: "{{ rwn_count }}"
 
 - name: Place inventory file named {{ scalelab_cloud }}.local into inventory directory
   template:

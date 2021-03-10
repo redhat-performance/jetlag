@@ -10,6 +10,7 @@
 {{ master2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ master2 }} mac={{ master2_network_mac }} lab_mac={{ master2_lab_mac }} ip={{ master_network | next_nth_usable(7) }}
 
 [master:vars]
+role=master
 vendor=Dell
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
@@ -24,8 +25,10 @@ dns={{ lab_dns }}
 {% endfor %}
 
 [rwn:vars]
+role=rwn
 vendor=Dell
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
+network_prefix={{ rwn_network_prefix }}
 network_mask={{ rwn_network_mask }}
 dns={{ lab_dns }}

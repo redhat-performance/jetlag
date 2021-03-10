@@ -1,0 +1,7 @@
+---
+# Boot an iso tasks
+
+- include_tasks: dell.yml
+  with_items:
+    - "{{ groups[inventory_group] }}"
+  when: hostvars[item]['vendor'] == 'Dell'

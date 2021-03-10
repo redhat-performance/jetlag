@@ -1,0 +1,19 @@
+---
+# Separate tasks to populate static network configuration
+
+- name: Assemble master static network config
+  set_fact:
+    item_network_config: "{{ lookup('template', 'master.nmstate.yml.j2') }}"
+  when:
+    - item in groups['master']
+
+# AI doesn't support vlan configuration just yet
+# - name: Assemble remote workers static network config
+#   set_fact:
+#     item_ips_config: "{{ lookup('template', 'rwn.nmstate.yml.j2') }}"
+#   when:
+#     - item in groups['rwn']
+
+- name: Add {{ item }} ip config
+  set_fact:
+    static_network_config: "{{ static_network_config + [ item_network_config ] }}"

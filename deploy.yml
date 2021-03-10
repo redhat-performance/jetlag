@@ -1,0 +1,25 @@
+---
+# Create and deploy a cluster with the Assisted Installer
+
+- name: Create three node master/worker cluster using assisted installer
+  hosts: bastion
+  vars_files:
+    - vars/all.yml
+  roles:
+    - create-ai-cluster
+    - generate-discovery-iso
+    - role: boot-iso
+      vars:
+        inventory_group: master
+        boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
+    - wait-hosts-discovered
+    # - install-cluster
+    # - get-kubeconfig
+    # - apply-machineconfigs
+    # - deploy-autorules
+    # - generate-livecd
+    # - role: boot-iso
+    #   vars:
+    #     inventory_group: rwn
+    #     boot_iso_url: "{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
+    # - wait-for-rwn-to-join

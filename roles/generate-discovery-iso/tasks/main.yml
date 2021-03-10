@@ -1,0 +1,30 @@
+---
+# Generate the discovery ISO
+
+- name: Set empty static network configuration
+  set_fact:
+    static_network_config: []
+
+- name : Populate static network configuration
+  include_tasks: static_network_config.yml
+  with_items:
+    - "{{ groups['master'] }}"
+    # - "{{ groups['rwn'] }}"
+
+# - debug:
+#     msg: "{{ static_network_config }}"
+
+- name: Generate a discovery ISO
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: { "ssh_public_key": "{{ ssh_public_key }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
+  register: http_reply
+
+- name: Download discovery ISO
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
+    dest: "{{ discovery_iso_path }}{{ discovery_iso_file_name }}"

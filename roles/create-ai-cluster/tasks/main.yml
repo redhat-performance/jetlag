@@ -1,0 +1,29 @@
+---
+# Create an Assisted Installer cluster
+
+- name: Create cluster
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: True
+    body: {
+        "name": "{{ cluster_name }}",
+        "openshift_version": "{{ openshift_version }}",
+        "base_dns_domain": "{{ base_dns_name }}",
+        "cluster_network_cidr": "{{ cluster_network_cidr }}",
+        "cluster_network_host_prefix": 23,
+        "service_network_cidr": "{{ service_network_cidr }}",
+        # "api_vip": "{{ master_network_api }}",
+        "ingress_vip": "{{ master_network_ingress }}",
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "ssh_public_key": "{{ ssh_public_key }}",
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation}}",
+        "additional_ntp_source": "{{ ntp_server }}"
+    }
+  register: create_cluster_return
+
+- name: Set cluster ID
+  set_fact:
+    ai_cluster_id: "{{ create_cluster_return.json.id }}"
