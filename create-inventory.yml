@@ -1,0 +1,15 @@
+---
+# Create Inventory playbook
+#
+# Example Usage:
+#
+# ansible-playbook create-inventory.yml
+#
+
+- name: Create inventory from a scalelab cloud
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars/all.yml
+  roles:
+  - create-inventory

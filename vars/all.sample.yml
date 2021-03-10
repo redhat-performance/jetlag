@@ -1,0 +1,43 @@
+---
+# Sample vars file
+################################################################################
+# Create Inventory playbook vars
+################################################################################
+# Which scale lab cloud are we deploying on
+scalelab_cloud:
+
+# Network configuration for master nodes
+lab_dns:
+master_network_interface: ens1f0
+master_network: 198.18.10.0/24
+master_network_prefix: 24
+master_network_gateway: "{{ master_network | next_nth_usable(1) }}"
+master_network_api: "{{ master_network | next_nth_usable(3) }}"
+master_network_ingress: "{{ master_network | next_nth_usable(4) }}"
+
+# Network for remote worker nodes
+rwn_vlan_start: 100
+rwn_network_start: 198.18.16.0
+rwn_network_mask: 255.255.255.252
+rwn_network_interface: ens1f1
+
+################################################################################
+# Deploy playbook vars
+################################################################################
+
+cluster_name: rwn
+openshift_version: "4.6"
+base_dns_name: example.com
+
+assisted_installer_host: example.com
+assisted_installer_port: 8090
+
+machine_network_cidr: 10.198.6.0/24
+cluster_network_cidr: 10.128.0.0/14
+# cluster_network_host_prefix: 23
+service_network_cidr: 172.30.0.0/16
+
+ntp_server: clock.redhat.com
+
+ssh_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+pull_secret: "{{ lookup('file', './pull_secret.txt') }}"

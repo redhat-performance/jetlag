@@ -1,0 +1,44 @@
+---
+# Create inventory tasks
+
+# First machine is bastion
+# Following 3 machines are master nodes
+# remaining are remote worker nodes
+
+- name: Download instackenv.json
+  uri:
+    url: "http://quads.rdu2.scalelab.redhat.com/cloud/{{ scalelab_cloud }}_ocpinventory.json"
+    return_content: true
+  register: ocpinventory
+
+- name: Set bastion Machine
+  set_fact:
+    bastion_machine: "{{ ocpinventory.json.nodes[0].pm_addr | replace('mgmt-','') }}"
+    master0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
+    master1: "{{ ocpinventory.json.nodes[2].pm_addr }}"
+    master2: "{{ ocpinventory.json.nodes[3].pm_addr }}"
+    master0_network_mac: "{{ ocpinventory.json.nodes[1].mac | first }}"
+    master1_network_mac: "{{ ocpinventory.json.nodes[2].mac | first }}"
+    master2_network_mac: "{{ ocpinventory.json.nodes[3].mac | first }}"
+    master0_lab_mac: "{{ ocpinventory.json.nodes[1].mac | last }}"
+    master1_lab_mac: "{{ ocpinventory.json.nodes[2].mac | last }}"
+    master2_lab_mac: "{{ ocpinventory.json.nodes[3].mac | last }}"
+    bmc_user: "{{ ocpinventory.json.nodes[0].pm_user }}"
+    bmc_password: "{{ ocpinventory.json.nodes[0].pm_password }}"
+
+- name: Set ocpinventory rwn nodes
+  set_fact:
+    ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:] }}"
+
+- name: Count of rwn nodes
+  set_fact:
+    rwn_count: "{{ ocpinventory_rwn_nodes | length }}"
+
+- name: Count of rwn
+  debug:
+    msg: "{{ rwn_count }}"
+
+- name: Place inventory file named {{ scalelab_cloud }}.local into inventory directory
+  template:
+    src: inventory.j2
+    dest: "{{ playbook_dir }}/inventory/{{ scalelab_cloud }}.local"

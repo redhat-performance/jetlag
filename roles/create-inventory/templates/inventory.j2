@@ -1,0 +1,31 @@
+[bastion]
+{{ bastion_machine }} ansible_ssh_user=root
+
+[master]
+# Network mac is the intended mac address of the private network to use for this cluster
+# Lab mac corresponds to the last interface in ocpinventory which should be the lab dhcp network
+# We disable the lab network for this type of cluster
+{{ master0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ master0 }} mac={{ master0_network_mac }} lab_mac={{ master0_lab_mac }} ip={{ master_network | next_nth_usable(5) }}
+{{ master1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ master1 }} mac={{ master1_network_mac }} lab_mac={{ master1_lab_mac }} ip={{ master_network | next_nth_usable(6) }}
+{{ master2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ master2 }} mac={{ master2_network_mac }} lab_mac={{ master2_lab_mac }} ip={{ master_network | next_nth_usable(7) }}
+
+[master:vars]
+vendor=Dell
+bmc_user={{ bmc_user }}
+bmc_password={{ bmc_password }}
+interface={{ master_network_interface }}
+network_prefix={{ master_network_prefix }}
+gateway={{ master_network_gateway }}
+dns={{ lab_dns }}
+
+[rwn]
+{% for rwn in ocpinventory_rwn_nodes %}
+{{ rwn.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ rwn.pm_addr }} mac={{ rwn.mac[1] }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vlan={{ rwn_vlan_start + loop.index - 1 }} interface={{ rwn_network_interface }}.{{ rwn_vlan_start + loop.index - 1 }}
+{% endfor %}
+
+[rwn:vars]
+vendor=Dell
+bmc_user={{ bmc_user }}
+bmc_password={{ bmc_password }}
+network_mask={{ rwn_network_mask }}
+dns={{ lab_dns }}
