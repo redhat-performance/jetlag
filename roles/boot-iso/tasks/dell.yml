@@ -25,7 +25,7 @@
 
 - name: Mount Live ISO, Boot into Live ISO (Dell 13G iDRAC8 and below)
   block:
-    - name: Racadm container to mount and boot to discovery ISO
+    - name: Racadm container to mount and boot to Live ISO
       containers.podman.podman_container:
         name: "{{ hostvars[item]['bmc_address'] }}-rac-image"
         network: host

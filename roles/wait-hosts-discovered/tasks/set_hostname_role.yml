@@ -10,7 +10,7 @@
   set_fact:
     host_interfaces: "{{ host_inventory.interfaces }}"
 
-- name : Identify the host name and role
+- name : Identify the hostname and role
   set_fact:
     host_name: "{{ item.0 }}"
     host_role: "{{ hostvars[item.0]['role'] }}"
@@ -18,7 +18,7 @@
   loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
   no_log: True
 
-- name : Prepare hosts name and role for {{ host_name }}
+- name : Prepare hostname and role for {{ host_name }}
   set_fact:
     host:
       id: "{{ host_id }}"
@@ -26,7 +26,7 @@
       role: "{{ host_role }}"
   when: host_name is defined or host_role is defined
 
-- name: Set host name and role for {{ host_name }}
+- name: Set hostname and role for {{ host_name }}
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
     method: PATCH

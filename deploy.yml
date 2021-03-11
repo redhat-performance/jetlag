@@ -1,12 +1,13 @@
 ---
-# Create and deploy a cluster with the Assisted Installer
+# Create and deploy a cluster with the Assisted Installer and join remote worker
+# nodes using a LiveCD and ignition configuration
 #
 # Example Usage:
 #
 # ansible-playbook -i inventory/cloud42.local deploy.yml
 #
 
-- name: Create three node master/worker cluster using assisted installer
+- name: Create 3 node cluster with assisted installer and join remote worker nodes
   hosts: bastion
   vars_files:
     - vars/all.yml

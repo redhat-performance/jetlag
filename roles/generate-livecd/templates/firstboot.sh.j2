@@ -1,15 +1,16 @@
 #!/bin/bash
 firstboot_args='console=tty0 rd.neednet=1'
-current_mac_address=`cat /sys/class/net/{{ rwn_network_interface }}/address`
 
+current_mac_address=`cat /sys/class/net/{{ rwn_network_interface }}/address`
 data=`grep "${current_mac_address}" /root/networks.csv`
-# f19-h17-000-r640,ens1f1.104,ens1f1,40:a6:b7:2b:a2:91,198.18.16.18,198.18.16.17,255.255.255.252
+
 hostname=`echo "$data" | awk -F ',' '{print $1}'`
 interface_vlan=`echo "$data" | awk -F ',' '{print $2}'`
 interface=`echo "$data" | awk -F ',' '{print $3}'`
 ip=`echo "$data" | awk -F ',' '{print $5}'`
 gateway=`echo "$data" | awk -F ',' '{print $6}'`
 mask=`echo "$data" | awk -F ',' '{print $7}'`
+
 echo "Configure network:"
 echo "Hostname: ${hostname}"
 echo "Interface w/ vlan: ${interface_vlan}"

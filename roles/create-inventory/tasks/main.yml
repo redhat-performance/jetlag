@@ -5,9 +5,9 @@
 # Following 3 machines are master nodes
 # Remaining are remote worker nodes
 
-- name: Download instackenv.json
+- name: Download ocpinventory.json
   uri:
-    url: "http://quads.rdu2.scalelab.redhat.com/cloud/{{ scalelab_cloud }}_ocpinventory.json"
+    url: "http://{{ lab_quads_host }}/cloud/{{ scalelab_cloud }}_ocpinventory.json"
     return_content: true
   register: ocpinventory
 
@@ -20,10 +20,6 @@
     master0_network_mac: "{{ ocpinventory.json.nodes[1].mac | first }}"
     master1_network_mac: "{{ ocpinventory.json.nodes[2].mac | first }}"
     master2_network_mac: "{{ ocpinventory.json.nodes[3].mac | first }}"
-    # ocpinventory does not include the lab mac address (yet)
-    # master0_lab_mac: "{{ ocpinventory.json.nodes[1].mac | last }}"
-    # master1_lab_mac: "{{ ocpinventory.json.nodes[2].mac | last }}"
-    # master2_lab_mac: "{{ ocpinventory.json.nodes[3].mac | last }}"
     bmc_user: "{{ ocpinventory.json.nodes[0].pm_user }}"
     bmc_password: "{{ ocpinventory.json.nodes[0].pm_password }}"
 

@@ -6,6 +6,7 @@
 # Which scale lab cloud are we deploying on
 scalelab_cloud:
 
+lab_quads_host:
 lab_foreman_host:
 
 # Network configuration for master nodes

@@ -1,6 +1,6 @@
 # rwn-ai-deploy
 
-Creates a baremetal three node master/worker cluster via the Assisted Installer. Subsequent remote workers are added by a livecd install.
+Creates a bare metal three node master/worker cluster via the Assisted Installer. Subsequent remote worker nodes are added by a livecd install.
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ Creates a baremetal three node master/worker cluster via the Assisted Installer.
 * Assisted Installer running on bastion machine
 * HTTP server running on bastion machine
 
-To run playbook:
+Prereqs for the playbooks:
 
 ```console
 $ ansible-galaxy collection install containers.podman
@@ -26,13 +26,13 @@ $ cp vars/all.sample.yml vars/all.yml
 $ vi vars/all.yml
 ```
 
-Create inventory file via playbook
+Run create-inventory playbook
 
 ```console
 ansible-playbook create-inventory.yml
 ```
 
-Run deploy playbook
+Run deploy playbook with inventory created by create-inventory playbook
 
 ```console
 ansible-playbook -i inventory/cloud42.local deploy.yml

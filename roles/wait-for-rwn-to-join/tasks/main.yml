@@ -23,10 +23,10 @@
     - "New Nodes: {{ new_rwn_count }}"
     - "Total Nodes: {{ expected_count }}"
 
-- name: Wait 20 minutes until number of nodes equals expected count
+- name: Wait 30 minutes until number of nodes equals expected count
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get no --no-headers | wc -l
-  retries: 120
+  retries: 180
   delay: 10
   register: result
   until: result.stdout|int == expected_count|int
