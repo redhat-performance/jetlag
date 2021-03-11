@@ -72,3 +72,9 @@
 - name: Remove internal Image registry
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec":{"managementState":"Removed"}}'
+
+# Ideally we could check the status for the MCO to see that the latest machineconfigs
+# have been rendered into the "rendered" config
+- name: Pause for 30s to allow MCO to render latest MachineConfig
+  pause:
+    seconds: 30

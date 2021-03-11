@@ -10,20 +10,20 @@
 - name: Create 3 node cluster with assisted installer and join remote worker nodes
   hosts: bastion
   vars_files:
-    - vars/all.yml
+  - vars/all.yml
   roles:
-    - create-ai-cluster
-    - generate-discovery-iso
-    - role: boot-iso
-      vars:
-        inventory_group: master
-        boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
-    - wait-hosts-discovered
-    - install-cluster
-    - post-cluster-install
-    - generate-livecd
-    - role: boot-iso
-      vars:
-        inventory_group: rwn
-        boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ cluster_name }}-worker.iso"
-    - wait-for-rwn-to-join
+  - create-ai-cluster
+  - generate-discovery-iso
+  - role: boot-iso
+    vars:
+      inventory_group: master
+      boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
+  - wait-hosts-discovered
+  - install-cluster
+  - post-cluster-install
+  - generate-livecd
+  - role: boot-iso
+    vars:
+      inventory_group: rwn
+      boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ cluster_name }}-worker.iso"
+  - wait-for-rwn-to-join
