@@ -1,0 +1,32 @@
+---
+# wait-for-rwn-to-join tasks
+
+- name: Count current nodes
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get no --no-headers | wc -l
+  register: current_count_stdout
+
+- name: Count number of new remote worker nodes
+  set_fact:
+    new_rwn_count: "{{groups['rwn']|length|int}}"
+    current_count: "{{ current_count_stdout.stdout|int }}"
+
+- name: Set expected node count
+  set_fact:
+    expected_count: "{{ current_count|int + new_rwn_count|int}}"
+
+- name: Dump current/new/expected node counts
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - "Current Nodes: {{ current_count }}"
+    - "New Nodes: {{ new_rwn_count }}"
+    - "Total Nodes: {{ expected_count }}"
+
+- name: Wait 20 minutes until number of nodes equals expected count
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get no --no-headers | wc -l
+  retries: 120
+  delay: 10
+  register: result
+  until: result.stdout|int == expected_count|int

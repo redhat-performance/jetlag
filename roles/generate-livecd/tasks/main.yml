@@ -1,8 +1,6 @@
 ---
 # generate-livecd tasks
 
-# Maybe fix the spacing
-
 - name: Add 1st master directly to inventory via proxy
   add_host:
     name: "master0"

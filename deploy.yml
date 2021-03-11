@@ -1,5 +1,10 @@
 ---
 # Create and deploy a cluster with the Assisted Installer
+#
+# Example Usage:
+#
+# ansible-playbook -i inventory/cloud42.local deploy.yml
+#
 
 - name: Create three node master/worker cluster using assisted installer
   hosts: bastion
@@ -20,4 +25,4 @@
       vars:
         inventory_group: rwn
         boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ cluster_name }}-worker.iso"
-    # - wait-for-rwn-to-join
+    - wait-for-rwn-to-join
