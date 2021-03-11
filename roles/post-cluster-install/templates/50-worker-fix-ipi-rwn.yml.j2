@@ -1,0 +1,57 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 50-worker-fix-ipi-rwn
+  labels:
+    machineconfiguration.openshift.io/role: worker
+spec:
+  config:
+    ignition:
+      version: 3.1.0
+    systemd:
+      units:
+      - name: nodeip-configuration.service
+        enabled: true
+        contents: |
+          [Unit]
+          Description=Writes IP address configuration so that kubelet and crio services select a valid node IP
+          Wants=network-online.target
+          After=network-online.target ignition-firstboot-complete.service
+          Before=kubelet.service crio.service
+          [Service]
+          Type=oneshot
+          ExecStart=/bin/bash -c "exit 0 "
+          [Install]
+          WantedBy=multi-user.target
+    storage:
+      files:
+        - contents:
+            source: data:,
+            verification: {}
+          overwrite: true
+          mode: 420
+          path: /etc/kubernetes/manifests/keepalived.yaml
+        - contents:
+            source: data:,
+            verification: {}
+          overwrite: true
+          mode: 420
+          path: /etc/kubernetes/manifests/mdns-publisher.yaml
+        - contents:
+            source: data:,
+            verification: {}
+          overwrite: true
+          mode: 420
+          path: /etc/kubernetes/manifests/coredns.yaml
+        - contents:
+            source: data:text/plain;charset=utf-8;base64,{{ lookup('file', './rwn-coredns.yaml.j2') | b64encode }}
+            verification: {}
+          overwrite: true
+          mode: 420
+          path: /etc/kubernetes/manifests/rwn-coredns.yaml
+        - contents:
+            source: data:text/plain;charset=utf-8;base64,{{ lookup('template', './rwn-Corefile.j2') | b64encode }}
+            verification: {}
+          overwrite: true
+          mode: 420
+          path: /etc/coredns/rwn-Corefile

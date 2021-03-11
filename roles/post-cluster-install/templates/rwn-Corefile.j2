@@ -1,0 +1,34 @@
+. {
+    errors
+    health :18080
+    forward . {{ lab_dns }}
+    cache 30
+    reload
+    template IN A {{ cluster_name }}.{{ base_dns_name }} {
+        match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+        answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ master_network_ingress }}"
+        fallthrough
+    }
+    template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+        match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+        fallthrough
+    }
+    template IN A {{ cluster_name }}.{{ base_dns_name }} {
+        match api.{{ cluster_name }}.{{ base_dns_name }}
+        answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ master_network_api }}"
+        fallthrough
+    }
+    template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+        match api.{{ cluster_name }}.{{ base_dns_name }}
+        fallthrough
+    }
+    template IN A {{ cluster_name }}.{{ base_dns_name }} {
+        match api-int.{{ cluster_name }}.{{ base_dns_name }}
+        answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ master_network_api }}"
+        fallthrough
+    }
+    template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+        match api-int.{{ cluster_name }}.{{ base_dns_name }}
+        fallthrough
+    }
+}

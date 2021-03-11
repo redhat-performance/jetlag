@@ -23,6 +23,7 @@ rwn_network_start: 198.18.16.0
 rwn_network_prefix: 30
 rwn_network_mask: 255.255.255.252
 rwn_network_interface: ens1f1
+rwn_lab_interface: eno1np0
 
 ################################################################################
 # Deploy playbook vars
@@ -51,3 +52,11 @@ pull_secret: "{{ lookup('file', './pull_secret.txt') }}"
 # Path to http_store to provide discovery iso via http
 discovery_iso_path: /opt/http_store/data/
 discovery_iso_file_name: ai-discovery.iso
+
+# Location for kubeconfig and RWN post install configuration
+bastion_cluster_config_dir: /root/rwn
+
+autorules_rule:
+  name: .*worker.*
+  labels:
+  - node-role.kubernetes.io/worker

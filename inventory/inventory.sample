@@ -25,7 +25,7 @@ rwn-0 bmc_address=mgmt-rwn-0.example.com mac=40:a6:b7:2a:75:f1 ip=198.18.16.2 ga
 rwn-1 bmc_address=mgmt-rwn-1.example.com mac=40:a6:b7:2b:bc:01 ip=198.18.16.6 gateway=198.18.16.5 vlan=101 interface=ens1f1.101
 
 [rwn:vars]
-role=rwn
+role=worker
 vendor=Dell
 bmc_user=quads
 bmc_password=password

@@ -1,0 +1,67 @@
+---
+# post-cluster-install tasks
+
+- name: Create directies for rwn cluster configuration items
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ bastion_cluster_config_dir }}"
+    - "{{ bastion_cluster_config_dir }}/machineconfig"
+    - "{{ bastion_cluster_config_dir }}/machineconfig/source"
+    - "{{ bastion_cluster_config_dir }}/autorules"
+
+- name: Get kubeconfig from installed cluster
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/kubeconfig"
+    dest: "{{ bastion_cluster_config_dir }}/kubeconfig"
+
+- name: Place templated configuration items
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: autorules.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/autorules/autorules.yml"
+    - src: rwn-coredns.yaml.j2
+      dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/rwn-coredns.yaml"
+    - src: rwn-Corefile.j2
+      dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/rwn-Corefile"
+    - src: 50-worker-fix-ipi-rwn.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/machineconfig/50-worker-fix-ipi-rwn.yml"
+    - src: 99-unmanaged-devices.conf.j2
+      dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/99-unmanaged-devices.conf"
+    - src: 50-worker-disable-lab-dhcp-interface.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml"
+
+- name: Deploy autorules
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/autorules/autorules.yml
+
+- name: Deploy RWN fix coredns MachineConfig
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-fix-ipi-rwn.yml
+
+- name: Deploy RWN disable lab dhcp interface MachineConfig
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml
+
+- name: Ensure masters are schedulable
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch scheduler cluster --type merge -p='{"spec":{"mastersSchedulable":true}}'
+
+- name: Move ingress controllers to control plane nodes and scale up to have 1 per master node
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch -n openshift-ingress-operator ingresscontroller/default --patch '{"spec":{"nodePlacement":{"nodeSelector":{"matchLabels":{"node-role.kubernetes.io/master": ""}}},"replicas":3}}' --type=merge
+
+- name: Disable default OperatorHub sources
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+
+- name: Move internal image registry to control plane
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec":{"nodeSelector":{"node-role.kubernetes.io/master":""}}}'
+
+- name: Remove internal Image registry
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec":{"managementState":"Removed"}}'

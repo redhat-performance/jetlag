@@ -12,7 +12,7 @@
     status_code: [200, 201]
     return_content: True
   register: cluster
-  until: cluster.json.hosts | length == groups['master'] | length
+  until: cluster.json.hosts | length == inventory_nodes | length
   retries: 20
   delay: 60
 
@@ -23,7 +23,7 @@
   loop_control:
     loop_var: discovered_host
 
-- name: Patch cluster with API Virtual IP
+- name: Provide API Virtual IP to cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
     method: PATCH
