@@ -21,8 +21,8 @@ echo "Mask: ${mask}"
 KERNEL_ARGS="vlan=${interface_vlan}:${interface}  ip=${ip}::${gateway}:${mask}:${hostname}:${interface_vlan}:none:${ip}:{{lab_dns}}"
 
 # Remove any existing VGs and PVs
-#for vg in $(vgs -o name --noheadings) ; do vgremove -y $vg ; done
-#for pv in $(pvs -o name --noheadings) ; do pvremove -y $pv ; done
+for vg in $(vgs -o name --noheadings) ; do vgremove -y $vg ; done
+for pv in $(pvs -o name --noheadings) ; do pvremove -y $pv ; done
 
 # if [ -b /dev/vda ] && [ "$(lsblk /dev/vda)" != "" ] ; then
 #   install_device='/dev/vda'

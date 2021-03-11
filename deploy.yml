@@ -5,8 +5,6 @@
   hosts: bastion
   vars_files:
     - vars/all.yml
-  # vars:
-  #   ai_cluster_id: c9179a0e-d0b8-42ff-9c77-a2fed36447f1
   roles:
     - create-ai-cluster
     - generate-discovery-iso

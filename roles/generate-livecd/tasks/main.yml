@@ -1,7 +1,6 @@
 ---
 # generate-livecd tasks
 
-# Copy/download livecd?
 # Maybe fix the spacing
 
 - name: Add 1st master directly to inventory via proxy
@@ -30,6 +29,11 @@
     dest: "{{ bastion_cluster_config_dir }}/livecd/worker.ign"
     content: "{{ worker_ignition.content }}"
 
+- name: Download the rhcos image
+  get_url:
+    url: "{{ rhcos_image }}"
+    dest: "{{ bastion_cluster_config_dir }}/livecd//{{ rhcos_image | basename }}"
+
 - name: Place templated configuration items
   template:
     src: "{{ item.src }}"
@@ -45,7 +49,7 @@
 - name: Create LiveCD
   shell: |
     rm -rf {{ bastion_cluster_config_dir }}/livecd/{{ cluster_name }}-worker.iso
-    podman run --privileged --rm --env-host -v /dev:/dev -v /run/udev:/run/udev -v {{ bastion_cluster_config_dir }}/livecd:/data -w /data quay.io/coreos/coreos-installer:release iso ignition embed -fi iso.ign -o /data/{{ cluster_name }}-worker.iso rhcos-live.x86_64.iso
+    podman run --privileged --rm --env-host -v /dev:/dev -v /run/udev:/run/udev -v {{ bastion_cluster_config_dir }}/livecd:/data -w /data quay.io/coreos/coreos-installer:release iso ignition embed -fi iso.ign -o /data/{{ cluster_name }}-worker.iso {{ rhcos_image | basename }}
 
 - name: Copy live iso file to http_store
   copy:
