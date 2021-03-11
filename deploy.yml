@@ -17,9 +17,9 @@
     - wait-hosts-discovered
     - install-cluster
     - post-cluster-install
-    # - generate-livecd
-    # - role: boot-iso
-    #   vars:
-    #     inventory_group: rwn
-    #     boot_iso_url: "{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
+    - generate-livecd
+    - role: boot-iso
+      vars:
+        inventory_group: rwn
+        boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ cluster_name }}-worker.iso"
     # - wait-for-rwn-to-join

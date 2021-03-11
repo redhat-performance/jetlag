@@ -46,7 +46,8 @@ machine_network_cidr: 10.198.6.0/24
 vip_dhcp_allocation: false
 ntp_server: clock.redhat.com
 
-ssh_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+ssh_private_key_file: ~/.ssh/id_rsa
+ssh_public_key_file: ~/.ssh/id_rsa.pub
 pull_secret: "{{ lookup('file', './pull_secret.txt') }}"
 
 # Path to http_store to provide discovery iso via http
@@ -60,3 +61,5 @@ autorules_rule:
   name: .*worker.*
   labels:
   - node-role.kubernetes.io/worker
+
+rwn_install_device: /dev/sda

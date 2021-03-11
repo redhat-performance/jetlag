@@ -7,6 +7,7 @@
     state: directory
   with_items:
     - "{{ bastion_cluster_config_dir }}"
+    - "{{ bastion_cluster_config_dir }}/livecd"
     - "{{ bastion_cluster_config_dir }}/machineconfig"
     - "{{ bastion_cluster_config_dir }}/machineconfig/source"
     - "{{ bastion_cluster_config_dir }}/autorules"
@@ -36,15 +37,15 @@
 
 - name: Deploy autorules
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/autorules/autorules.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/autorules/autorules.yml
 
 - name: Deploy RWN fix coredns MachineConfig
   shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-fix-ipi-rwn.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-fix-ipi-rwn.yml
 
 - name: Deploy RWN disable lab dhcp interface MachineConfig
   shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml
 
 - name: Ensure masters are schedulable
   shell: |

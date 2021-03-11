@@ -4,8 +4,17 @@ Creates a baremetal three node master/worker cluster via the Assisted Installer.
 
 ## Prerequisites
 
+* Network layout for RWN testing
+* FRR routing on bastion machine
+* VLAN interfaces on bastion machine
+* Assisted Installer running on bastion machine
+* HTTP server running on bastion machine
+
+To run playbook:
+
 ```console
-ansible-galaxy collection install community.general
+$ ansible-galaxy collection install containers.podman
+$ ansible-galaxy collection install community.general
 ```
 
 ## Usage

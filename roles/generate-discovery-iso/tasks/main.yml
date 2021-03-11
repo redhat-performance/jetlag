@@ -21,10 +21,10 @@
     body_format: json
     status_code: [201]
     return_content: True
-    body: { "ssh_public_key": "{{ ssh_public_key }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
+    body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
   register: http_reply
 
 - name: Download discovery ISO
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
-    dest: "{{ discovery_iso_path }}{{ discovery_iso_file_name }}"
+    dest: "{{ discovery_iso_path }}/{{ discovery_iso_file_name }}"

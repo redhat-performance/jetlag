@@ -1,0 +1,4 @@
+hostname,interface.vlan,interface,mac,ip,gateway,mask
+{% for rwn in groups['rwn'] %}
+{{ rwn }},{{ hostvars[rwn].interface }}.{{ hostvars[rwn].vlan }},{{ hostvars[rwn].interface }},{{ hostvars[rwn].mac }},{{ hostvars[rwn].ip }},{{ hostvars[rwn].gateway }},{{ hostvars[rwn].network_mask }}
+{% endfor %}

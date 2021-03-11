@@ -21,7 +21,7 @@ dns={{ lab_dns }}
 
 [rwn]
 {% for rwn in ocpinventory_rwn_nodes %}
-{{ rwn.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ rwn.pm_addr }} mac={{ rwn.mac[1] }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vlan={{ rwn_vlan_start + loop.index - 1 }} interface={{ rwn_network_interface }}.{{ rwn_vlan_start + loop.index - 1 }}
+{{ rwn.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ rwn.pm_addr }} mac={{ rwn.mac[1] }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vlan={{ rwn_vlan_start + loop.index - 1 }} interface={{ rwn_network_interface }}
 {% endfor %}
 
 [rwn:vars]
