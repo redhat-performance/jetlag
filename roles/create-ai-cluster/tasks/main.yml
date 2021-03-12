@@ -26,3 +26,19 @@
 - name: Set cluster ID
   set_fact:
     ai_cluster_id: "{{ create_cluster_return.json.id }}"
+
+- name: Add entries in /etc/hosts
+  blockinfile:
+    path: "/etc/hosts"
+    backup: true
+    block: |
+        {{ master_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} oauth-openshift.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} console-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} downloads-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} grafana-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ master_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+    insertafter: "EOF"
+    marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
