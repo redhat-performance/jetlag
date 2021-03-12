@@ -30,3 +30,8 @@
   delay: 10
   register: result
   until: result.stdout|int == expected_count|int
+
+- name: Label the remote worker nodes
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no {{ item }} rwn=true
+  with_items: "{{ groups['rwn'] }}"
