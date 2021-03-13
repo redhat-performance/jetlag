@@ -7,7 +7,7 @@
     method: POST
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: {
         "name": "{{ cluster_name }}",
         "openshift_version": "{{ openshift_version }}",
@@ -18,7 +18,7 @@
         "ingress_vip": "{{ master_network_ingress }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-        "vip_dhcp_allocation": "{{ vip_dhcp_allocation}}",
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
         "additional_ntp_source": "{{ ntp_server }}"
     }
   register: create_cluster_return

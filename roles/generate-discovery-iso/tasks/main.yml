@@ -20,7 +20,7 @@
     method: POST
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
   register: http_reply
 

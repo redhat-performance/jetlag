@@ -44,9 +44,13 @@
     - src: iso.ign.template.j2
       dest: "{{ bastion_cluster_config_dir }}/livecd/iso.ign"
 
+- name: Remove old LiveCD
+  file:
+    path: "{{ bastion_cluster_config_dir }}/livecd/{{ cluster_name }}-worker.iso"
+    state: absent
+
 - name: Create LiveCD
   shell: |
-    rm -rf {{ bastion_cluster_config_dir }}/livecd/{{ cluster_name }}-worker.iso
     podman run --privileged --rm --env-host -v /dev:/dev -v /run/udev:/run/udev -v {{ bastion_cluster_config_dir }}/livecd:/data -w /data quay.io/coreos/coreos-installer:release iso ignition embed -fi iso.ign -o /data/{{ cluster_name }}-worker.iso {{ rhcos_image | basename }}
 
 - name: Copy live iso file to http_store

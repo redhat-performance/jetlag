@@ -55,11 +55,11 @@
 
 - name: Ensure masters are schedulable
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch scheduler cluster --type merge -p='{"spec":{"mastersSchedulable":true}}'
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch scheduler cluster --type merge -p='{"spec": {"mastersSchedulable": true }}'
 
 - name: Move ingress controllers to control plane nodes and scale up to have 1 per master node
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch -n openshift-ingress-operator ingresscontroller/default --patch '{"spec":{"nodePlacement":{"nodeSelector":{"matchLabels":{"node-role.kubernetes.io/master": ""}}},"replicas":3}}' --type=merge
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch -n openshift-ingress-operator ingresscontroller/default --patch '{"spec": {"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/master": "" }}}, "replicas": 3 }}' --type=merge
 
 - name: Disable default OperatorHub sources
   shell: |
@@ -67,11 +67,11 @@
 
 - name: Move internal image registry to control plane
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec":{"nodeSelector":{"node-role.kubernetes.io/master":""}}}'
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec": {"nodeSelector": {"node-role.kubernetes.io/master": "" }}}'
 
 - name: Remove internal Image registry
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec":{"managementState":"Removed"}}'
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec": {"managementState": "Removed" }}'
 
 # Ideally we could check the status for the MCO to see that the latest machineconfigs
 # have been rendered into the "rendered" config

@@ -34,9 +34,9 @@
 
 - name: Set master0 lab mac addresses
   set_fact:
-    master0_lab_mac: "{{item.mac}}"
+    master0_lab_mac: "{{ item.mac }}"
   with_items: "{{ master0_foreman_data.json.interfaces }}"
-  when: "{{ item.primary|bool }}"
+  when: item.primary|bool
 
 - name: Get master1 lab mac address
   uri:
@@ -49,9 +49,9 @@
 
 - name: Set master1 lab mac addresses
   set_fact:
-    master1_lab_mac: "{{item.mac}}"
+    master1_lab_mac: "{{ item.mac }}"
   with_items: "{{ master1_foreman_data.json.interfaces }}"
-  when: "{{ item.primary|bool }}"
+  when: item.primary|bool
 
 - name: Get master2 lab mac address
   uri:
@@ -64,9 +64,9 @@
 
 - name: Set master2 lab mac addresses
   set_fact:
-    master2_lab_mac: "{{item.mac}}"
+    master2_lab_mac: "{{ item.mac }}"
   with_items: "{{ master2_foreman_data.json.interfaces }}"
-  when: "{{ item.primary|bool }}"
+  when: item.primary|bool
 
 - name: Set ocpinventory rwn nodes
   set_fact:

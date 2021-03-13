@@ -8,12 +8,12 @@
 
 - name: Count number of new remote worker nodes
   set_fact:
-    new_rwn_count: "{{groups['rwn']|length|int}}"
+    new_rwn_count: "{{ groups['rwn']|length|int }}"
     current_count: "{{ current_count_stdout.stdout|int }}"
 
 - name: Set expected node count
   set_fact:
-    expected_count: "{{ current_count|int + new_rwn_count|int}}"
+    expected_count: "{{ current_count|int + new_rwn_count|int }}"
 
 - name: Dump current/new/expected node counts
   debug:

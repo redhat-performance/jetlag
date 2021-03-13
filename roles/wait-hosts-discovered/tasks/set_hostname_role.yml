@@ -16,7 +16,7 @@
     host_role: "{{ hostvars[item.0]['role'] }}"
   when: hostvars[item.0]['lab_mac'] == item.1.mac_address
   loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
-  no_log: True
+  no_log: true
 
 - name : Prepare hostname and role for {{ host_name }}
   set_fact:
@@ -32,7 +32,7 @@
     method: PATCH
     body_format: json
     status_code: [201]
-    return_content: True
+    return_content: true
     body: {
         "hosts_names": [ "{{ host }}" ],
         "hosts_roles": [ "{{ host }}" ]
