@@ -44,5 +44,5 @@
     return_content: true
   register: cluster
   until: "cluster.json.status == 'ready'"
-  retries: 20
-  delay: 60
+  retries: 240
+  delay: 5

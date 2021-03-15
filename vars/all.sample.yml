@@ -43,6 +43,9 @@ networktype: OpenShiftSDN
 rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/latest/rhcos-live.x86_64.iso
 base_dns_name: example.com
 
+master_etcd_on_nvme: true
+master_nvme_device: /dev/nvme0n1
+
 cluster_network_cidr: 10.128.0.0/14
 service_network_cidr: 172.30.0.0/16
 machine_network_cidr: 10.198.6.0/24

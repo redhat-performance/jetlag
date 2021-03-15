@@ -1,0 +1,53 @@
+{
+  "ignition": {
+    "version": "3.1.0"
+  },
+  "storage": {
+    "disks": [
+      {
+        "device": "{{ master_nvme_device }}",
+        "wipeTable": true,
+        "partitions": [
+          {
+            "label": "ETCD",
+            "sizeMiB": 51200
+          },
+          {
+            "label": "CTNR",
+            "sizeMiB": 0
+          }
+        ]
+      }
+    ],
+    "filesystems": [
+      {
+        "path": "/var/lib/etcd",
+        "device": "/dev/disk/by-partlabel/ETCD",
+        "format": "xfs",
+        "wipeFilesystem": true,
+        "label": "ETCD"
+      },
+      {
+        "path": "/var/lib/containers",
+        "device": "/dev/disk/by-partlabel/CTNR",
+        "format": "xfs",
+        "wipeFilesystem": true,
+        "label": "CTNR"
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "name": "var-lib-etcd.mount",
+        "enabled": true,
+        "contents": "[Mount]\nWhat=/dev/disk/by-partlabel/ETCD\nType=xfs\nOptions=defaults\n[Install]\nWantedBy=local-fs.target"
+      },
+      {
+        "name": "var-lib-containers.mount",
+        "enabled": true,
+        "contents": "[Mount]\nWhat=/dev/disk/by-partlabel/CTNR\nType=xfs\nOptions=defaults\n[Install]\nWantedBy=local-fs.target"
+      }
+    ]
+  }
+}

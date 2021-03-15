@@ -11,6 +11,28 @@
     body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype }}\\\" }}\""
   register: get_install_config
 
+- name: Configure master nodes to place etcd on nvme storage
+  when: master_etcd_on_nvme
+  block:
+  - name: Get master host ids
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts"
+      method: GET
+      body_format: json
+      status_code: [200]
+      return_content: true
+    register: get_hosts
+
+  - name: Apply master host ignition config overrides
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}/ignition"
+      method: PATCH
+      body_format: json
+      status_code: [201]
+      return_content: true
+      body: { "config": "{{ lookup('template', 'master-nvme-etcd.ign.j2') | to_json }}" }
+    with_items: "{{ get_hosts.json }}"
+
 - name: Install cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/actions/install"
