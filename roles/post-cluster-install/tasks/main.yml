@@ -11,11 +11,15 @@
     - "{{ bastion_cluster_config_dir }}/machineconfig"
     - "{{ bastion_cluster_config_dir }}/machineconfig/source"
     - "{{ bastion_cluster_config_dir }}/autorules"
+    - "{{ bastion_cluster_config_dir }}/localstorage"
+    - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
 - name: Get kubeconfig from installed cluster
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/kubeconfig"
     dest: "{{ bastion_cluster_config_dir }}/kubeconfig"
+  # Temporarily adding ignore_errors
+  ignore_errors: true
 
 - name: Place templated configuration items
   template:
@@ -34,6 +38,12 @@
       dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/99-unmanaged-devices.conf"
     - src: 50-worker-disable-lab-dhcp-interface.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml"
+    - src: localstorage.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
+    - src: localvolume.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
+    - src: cluster-monitoring-config.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
 
 # Witnessed at least once where the cluster did not seem to be ready for commands
 # thus adding retries to this first command
@@ -61,9 +71,10 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch -n openshift-ingress-operator ingresscontroller/default --patch '{"spec": {"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/master": "" }}}, "replicas": 3 }}' --type=merge
 
-- name: Disable default OperatorHub sources
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+# This prevents localstorage from being deployed thus I have commented it out
+# - name: Disable default OperatorHub sources
+#   shell: |
+#     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
 
 - name: Move internal image registry to control plane
   shell: |
@@ -72,6 +83,31 @@
 - name: Remove internal Image registry
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec": {"managementState": "Removed" }}'
+
+- name: Setup master nodes localstorage
+  when: master_localstorage_configuration
+  block:
+  - name: Label the master nodes
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true prometheus=true
+    with_items: "{{ groups['master'] }}"
+
+  - name: Install local-storage operator
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
+
+  # The localvolume resource will not be instantly available, thus retry for around 2 minutes
+  - name: Create localvolume resource
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
+    register: lv_result
+    until: lv_result.failed == false
+    retries: 60
+    delay: 2
+
+  - name: Configure OpenShift-Monitoring Prometheus to use localstorage
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
 
 # Ideally we could check the status for the MCO to see that the latest machineconfigs
 # have been rendered into the "rendered" config

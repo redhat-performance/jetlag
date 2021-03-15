@@ -11,8 +11,8 @@
     body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype }}\\\" }}\""
   register: get_install_config
 
-- name: Configure master nodes to place etcd on nvme storage
-  when: master_etcd_on_nvme
+- name: Configure master nodes storage via ignition
+  when: master_etcd_on_nvme or master_localstorage_configuration
   block:
   - name: Get master host ids
     uri:
@@ -52,3 +52,5 @@
   until: cluster.json.status == 'installed' or cluster.json.status == 'error' or cluster.json.status == 'cancelled'
   retries: 60
   delay: 60
+  # Temporarily adding ignore_errors
+  ignore_errors: true

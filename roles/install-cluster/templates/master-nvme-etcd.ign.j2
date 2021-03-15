@@ -4,6 +4,7 @@
   },
   "storage": {
     "disks": [
+{% if master_etcd_on_nvme %}
       {
         "device": "{{ master_nvme_device }}",
         "wipeTable": true,
@@ -17,9 +18,27 @@
             "sizeMiB": 0
           }
         ]
+{% if master_localstorage_configuration %}
+      },
+{% else %}
       }
+{% endif %}
+{% endif %}
+{% if master_localstorage_configuration %}
+      {
+        "device": "{{ master_localstorage_device }}",
+        "wipeTable": true,
+        "partitions": [
+          {
+            "label": "LS",
+            "sizeMiB": 0
+          }
+        ]
+      }
+{% endif %}
     ],
     "filesystems": [
+{% if master_etcd_on_nvme %}
       {
         "path": "/var/lib/etcd",
         "device": "/dev/disk/by-partlabel/ETCD",
@@ -34,10 +53,24 @@
         "wipeFilesystem": true,
         "label": "CTNR"
       }
+{% endif %}
+    ],
+    "files": [
+{% if master_localstorage_configuration %}
+      {
+        "contents": {
+          "source": "data:text/plain;base64,{{ lookup('template', './setup-lvm.sh.j2') | b64encode }}"
+        },
+        "mode": 493,
+        "overwrite": true,
+        "path": "/usr/local/bin/setup-lvm.sh"
+      }
+{% endif %}
     ]
   },
   "systemd": {
     "units": [
+{% if master_etcd_on_nvme %}
       {
         "name": "var-lib-etcd.mount",
         "enabled": true,
@@ -47,7 +80,19 @@
         "name": "var-lib-containers.mount",
         "enabled": true,
         "contents": "[Mount]\nWhat=/dev/disk/by-partlabel/CTNR\nType=xfs\nOptions=defaults\n[Install]\nWantedBy=local-fs.target"
+{% if master_localstorage_configuration %}
+      },
+{% else %}
       }
+{% endif %}
+{% endif %}
+{% if master_localstorage_configuration %}
+      {
+        "name": "setup-localstorage.service",
+        "enabled": true,
+        "contents": "[Unit]\nConditionPathExists=!/var/lib/lvm-setup-complete\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/setup-lvm.sh\nExecStartPost=/usr/bin/touch /var/lib/lvm-setup-complete\n[Install]\nWantedBy=multi-user.target"
+      }
+{% endif %}
     ]
   }
 }
