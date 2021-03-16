@@ -1,0 +1,49 @@
+---
+global:
+  writeToFile: true
+  metricsDirectory: collected-metrics
+  measurements:
+    - name: podLatency
+      esIndex: kube-burner
+
+  indexerConfig:
+    enabled: false
+    esServers: [https://user:password@es-instance.example.org:9200]
+    insecureSkipVerify: true
+    defaultIndex: kube-burner
+    type: elastic
+
+jobs:
+  - name: ran
+    jobType: create
+    #jobIterations: 2
+    jobIterations: 690
+    qps: 20
+    burst: 40
+    namespacedIterations: true
+    cleanup: true
+    namespace: ran-ns
+    podWait: false
+    waitWhenFinished: true
+    waitFor: ["Deployment"]
+    verifyObjects: true
+    errorOnVerify: false
+    jobIterationDelay: 0s
+    jobPause: 60s
+    objects:
+      #- objectTemplate: objectTemplates/svc.yml
+      #  replicas: 1
+      - objectTemplate: objectTemplates/ran-deployment.yml
+        replicas: 2
+        inputVars:
+          image: gcr.io/google_containers/pause-amd64:3.0
+          containerPort: 8081
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+      #- objectTemplate: objectTemplates/route.yml
+      #  replicas: 1

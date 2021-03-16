@@ -22,8 +22,7 @@ jobs:
         #   playbook_1.yml
         #   playbook_2.yml
         targets: |
-          create-inventory.yml
-          deploy.yml
+          ansible/*
         # [optional]
         # Arguments to override a package and its version to be set explicitly.
         # Must follow the example syntax.

@@ -22,18 +22,20 @@ $ ansible-galaxy collection install community.general
 Edit vars
 
 ```console
-$ cp vars/all.sample.yml vars/all.yml
-$ vi vars/all.yml
+$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
+$ vi ansible/vars/all.yml
 ```
+
+Copy your pull-secret into `pull_secret.txt` in repo base directory.
 
 Run create-inventory playbook
 
 ```console
-ansible-playbook create-inventory.yml
+ansible-playbook ansible/create-inventory.yml
 ```
 
 Run deploy playbook with inventory created by create-inventory playbook
 
 ```console
-ansible-playbook -i inventory/cloud42.local deploy.yml
+ansible-playbook -i ansible/inventory/cloud42.local ansible/deploy.yml
 ```

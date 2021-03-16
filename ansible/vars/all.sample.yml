@@ -40,7 +40,7 @@ cluster_name: rwn
 openshift_version: "4.6"
 # Either OpenShiftSDN or OVNKubernetes
 networktype: OpenShiftSDN
-rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/latest/rhcos-live.x86_64.iso
+rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso
 base_dns_name: example.com
 
 master_etcd_on_nvme: false
@@ -60,7 +60,7 @@ ntp_server: clock.redhat.com
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
-pull_secret: "{{ lookup('file', './pull_secret.txt') }}"
+pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 # Path to http_store to provide discovery iso via http
 discovery_iso_path: /opt/http_store/data/
