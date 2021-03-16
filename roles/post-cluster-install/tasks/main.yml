@@ -101,7 +101,7 @@
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
     register: lv_result
-    until: lv_result.failed == false
+    until: not lv_result.failed
     retries: 60
     delay: 2
 
