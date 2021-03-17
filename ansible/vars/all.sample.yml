@@ -11,6 +11,7 @@ lab_foreman_host:
 
 # Network configuration for control-plane nodes
 lab_dns:
+controlplane_lab_interface: eno1np0
 controlplane_network_interface: ens1f0
 controlplane_network: 198.18.10.0/24
 controlplane_network_prefix: 24

@@ -42,3 +42,15 @@
         {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
+
+- name: Add manifest to disable lab interface on control-plane nodes
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
+    method: POST
+    body_format: json
+    status_code: [201]
+    body: {
+        "folder": "manifests",
+        "file_name": "50-controlplane-disable-lab-dhcp-interface.yaml",
+        "content": "{{ lookup('template', './50-controlplane-disable-lab-dhcp-interface.yml.j2') | b64encode }}"
+    }

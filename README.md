@@ -1,6 +1,6 @@
 # jetlag
 
-Tooling to install and test remote worker node OpenShift clusters. Create a bare metal three node control-plane cluster via the [Assisted Installer](https://github.com/openshift/assisted-installer). Subsequent remote worker nodes are added by a livecd install.
+Tooling to install and test Remote Worker Node (RWN) OpenShift clusters. Playbooks to create a bare metal three node control-plane cluster via the [Assisted Installer](https://github.com/openshift/assisted-installer) and join remote worker nodes by livecd install.
 
 ## Prerequisites
 
