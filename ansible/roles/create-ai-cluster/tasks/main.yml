@@ -15,7 +15,7 @@
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
         "cluster_network_host_prefix": 23,
         "service_network_cidr": "{{ service_network_cidr }}",
-        "ingress_vip": "{{ master_network_ingress }}",
+        "ingress_vip": "{{ controlplane_network_ingress }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
@@ -32,13 +32,13 @@
     path: "/etc/hosts"
     backup: true
     block: |
-        {{ master_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} oauth-openshift.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} console-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} downloads-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} grafana-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ master_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} oauth-openshift.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} console-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} downloads-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} grafana-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"

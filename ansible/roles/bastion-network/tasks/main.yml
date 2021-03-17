@@ -14,7 +14,19 @@
   shell: |
     iptables -t nat -A POSTROUTING -o {{ bastion_lab_interface }} -j MASQUERADE
 
-# Set firewall
-# Stop/disable iptables
-# Setup control-plane node network
+- name: Start/Enable frr routing
+  systemd:
+    state: started
+    enabled: true
+    name: frr
+
+- name: Setup control-plane node network
+  nmcli:
+    type: ethernet
+    conn_name: "{{ bastion_control_plane_interface }}"
+    ifname: "{{ bastion_control_plane_interface }}"
+    ip4: 198.18.10.1/24
+    state: present
+
+# Stop/disable iptables / firewalld
 # Setup remote worker node vlaned networks

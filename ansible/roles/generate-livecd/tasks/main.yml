@@ -1,11 +1,11 @@
 ---
 # generate-livecd tasks
 
-- name: Add 1st master directly to inventory via proxy
+- name: Add 1st controlplane node directly to inventory via proxy
   add_host:
-    name: "master0"
-    group: master_ssh
-    ansible_host: "{{ hostvars[groups['master'][0]].ip }}"
+    name: "controlplane0"
+    group: controlplane_ssh
+    ansible_host: "{{ hostvars[groups['controlplane'][0]].ip }}"
     ansible_ssh_private_key_file: "{{ ssh_private_key_file }}"
     ansible_user: "core"
     ansible_ssh_common_args: |-
@@ -19,7 +19,7 @@
       Accept: application/vnd.coreos.ignition+json; version=3.2.0
     return_content: true
     validate_certs: false
-  delegate_to: "{{ groups['master_ssh'][0] }}"
+  delegate_to: "{{ groups['controlplane_ssh'][0] }}"
   register: worker_ignition
 
 - name: Dump worker ignition config to bastion cluster config directory

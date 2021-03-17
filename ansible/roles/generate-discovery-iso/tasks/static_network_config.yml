@@ -1,11 +1,11 @@
 ---
 # Separate tasks to populate static network configuration
 
-- name: Assemble master static network config
+- name: Assemble controlplane static network config
   set_fact:
-    item_network_config: "{{ lookup('template', 'master.nmstate.yml.j2') }}"
+    item_network_config: "{{ lookup('template', 'controlplane.nmstate.yml.j2') }}"
   when:
-    - item in groups['master']
+    - item in groups['controlplane']
 
 # AI doesn't support vlan configuration just yet
 # - name: Assemble remote workers static network config

@@ -9,14 +9,14 @@ scalelab_cloud:
 lab_quads_host:
 lab_foreman_host:
 
-# Network configuration for master nodes
+# Network configuration for control-plane nodes
 lab_dns:
-master_network_interface: ens1f0
-master_network: 198.18.10.0/24
-master_network_prefix: 24
-master_network_gateway: "{{ master_network | next_nth_usable(1) }}"
-master_network_api: "{{ master_network | next_nth_usable(3) }}"
-master_network_ingress: "{{ master_network | next_nth_usable(4) }}"
+controlplane_network_interface: ens1f0
+controlplane_network: 198.18.10.0/24
+controlplane_network_prefix: 24
+controlplane_network_gateway: "{{ controlplane_network | next_nth_usable(1) }}"
+controlplane_network_api: "{{ controlplane_network | next_nth_usable(3) }}"
+controlplane_network_ingress: "{{ controlplane_network | next_nth_usable(4) }}"
 
 # Network for remote worker nodes
 rwn_vlan_start: 100
@@ -29,10 +29,13 @@ rwn_lab_interface: eno1np0
 ################################################################################
 # Setup Bastion playbook vars
 ################################################################################
+bastion_cluster_config_dir: /root/rwn
+
 openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/
 kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v0.9/kube-burner-0.9-Linux-x86_64.tar.gz
 
 bastion_lab_interface: eno1np0
+bastion_control_plane_interface: ens1f0
 
 http_store_path: /opt/http_store/data/
 
@@ -46,7 +49,6 @@ rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.
 ################################################################################
 # Deploy playbook vars
 ################################################################################
-
 assisted_installer_host: example.com
 assisted_installer_port: 8090
 
@@ -59,13 +61,13 @@ openshift_version: "4.6"
 networktype: OpenShiftSDN
 base_dns_name: example.com
 
-master_etcd_on_nvme: false
-master_nvme_device: /dev/nvme0n1
-master_localstorage_configuration: false
-master_localstorage_device: /dev/sdb
-master_localstorage_lv_count: 10
-master_localstorage_lv_size: 100G
-master_prometheus_retention_period: 15d
+controlplane_etcd_on_nvme: false
+controlplane_nvme_device: /dev/nvme0n1
+controlplane_localstorage_configuration: false
+controlplane_localstorage_device: /dev/sdb
+controlplane_localstorage_lv_count: 10
+controlplane_localstorage_lv_size: 100G
+controlplane_prometheus_retention_period: 15d
 
 cluster_network_cidr: 10.128.0.0/14
 service_network_cidr: 172.30.0.0/16
@@ -79,9 +81,6 @@ ssh_public_key_file: ~/.ssh/id_rsa.pub
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 discovery_iso_file_name: ai-discovery.iso
-
-# Location for kubeconfig and RWN post install configuration
-bastion_cluster_config_dir: /root/rwn
 
 autorules_rule:
   name: .*worker.*

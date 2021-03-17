@@ -2,6 +2,6 @@
 echo "Setting up LVM for local-storage"
 vgcreate vg_ls /dev/disk/by-partlabel/LS
 lvcreate -l 99%VG -T vg_ls/lv_tp_ls
-{% for i in range(master_localstorage_lv_count) %}
-lvcreate -V {{ master_localstorage_lv_size }} -T vg_ls/lv_tp_ls -n lv_tv{{ '%02d' % i }}
+{% for i in range(controlplane_localstorage_lv_count) %}
+lvcreate -V {{ controlplane_localstorage_lv_size }} -T vg_ls/lv_tp_ls -n lv_tv{{ '%02d' % i }}
 {% endfor %}

@@ -1,14 +1,11 @@
 # rwn-ai-deploy
 
-Creates a bare metal three node master/worker cluster via the Assisted Installer. Subsequent remote worker nodes are added by a livecd install.
+Creates a bare metal three node control-plane cluster via the [Assisted Installer](https://github.com/openshift/assisted-installer). Subsequent remote worker nodes are added by a livecd install.
 
 ## Prerequisites
 
 * Network layout for RWN testing
-* FRR routing on bastion machine
 * VLAN interfaces on bastion machine
-* Assisted Installer running on bastion machine
-* HTTP server running on bastion machine
 
 Prereqs for the playbooks:
 

@@ -11,10 +11,10 @@
     body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype }}\\\" }}\""
   register: get_install_config
 
-- name: Configure master nodes storage via ignition
-  when: master_etcd_on_nvme or master_localstorage_configuration
+- name: Configure controlplane nodes storage via ignition
+  when: controlplane_etcd_on_nvme or controlplane_localstorage_configuration
   block:
-  - name: Get master host ids
+  - name: Get controlplane host ids
     uri:
       url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts"
       method: GET
@@ -23,14 +23,14 @@
       return_content: true
     register: get_hosts
 
-  - name: Apply master host ignition config overrides
+  - name: Apply controlplane host ignition config overrides
     uri:
       url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}/ignition"
       method: PATCH
       body_format: json
       status_code: [201]
       return_content: true
-      body: { "config": "{{ lookup('template', 'master-nvme-etcd.ign.j2') | to_json }}" }
+      body: { "config": "{{ lookup('template', 'controlplane-nvme-etcd.ign.j2') | to_json }}" }
     with_items: "{{ get_hosts.json }}"
 
 - name: Install cluster
@@ -42,7 +42,7 @@
     body_format: json
     body: { }
 
-- name: Wait for 120 min until the cluster is installed
+- name: Wait for 90 min until the cluster is installed
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
     method: GET
@@ -50,7 +50,5 @@
     return_content: true
   register: cluster
   until: cluster.json.status == 'installed' or cluster.json.status == 'error' or cluster.json.status == 'cancelled'
-  retries: 720
+  retries: 540
   delay: 10
-  # Temporarily adding ignore_errors
-  ignore_errors: true

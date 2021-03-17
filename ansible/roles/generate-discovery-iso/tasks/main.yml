@@ -8,7 +8,7 @@
 - name : Populate static network configuration
   include_tasks: static_network_config.yml
   with_items:
-    - "{{ groups['master'] }}"
+    - "{{ groups['controlplane'] }}"
     # - "{{ groups['rwn'] }}"
 
 # - debug:

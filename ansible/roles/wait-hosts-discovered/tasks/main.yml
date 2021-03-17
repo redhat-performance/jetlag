@@ -3,9 +3,9 @@
 
 - name: Create list of nodes to be discovered
   set_fact:
-    inventory_nodes: "{{ groups['master'] }}"
+    inventory_nodes: "{{ groups['controlplane'] }}"
 
-- name: Wait for 20 min for master nodes to be discovered
+- name: Wait for 20 min for control-plane nodes to be discovered
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
     method: GET
@@ -32,8 +32,8 @@
     body_format: json
     body: {
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "ingress_vip": "{{ master_network_ingress }}",
-        "api_vip": "{{ master_network_api }}"
+        "ingress_vip": "{{ controlplane_network_ingress }}",
+        "api_vip": "{{ controlplane_network_api }}"
     }
 
 - name: Wait for cluster to be ready for install

@@ -8,7 +8,7 @@ data:
     prometheusK8s:
       nodeSelector:
         prometheus: "true"
-      retention: {{ master_prometheus_retention_period }}
+      retention: {{ controlplane_prometheus_retention_period }}
       volumeClaimTemplate:
         metadata:
           name: localpvc

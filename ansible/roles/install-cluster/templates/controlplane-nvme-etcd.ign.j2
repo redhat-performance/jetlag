@@ -4,9 +4,9 @@
   },
   "storage": {
     "disks": [
-{% if master_etcd_on_nvme %}
+{% if controlplane_etcd_on_nvme %}
       {
-        "device": "{{ master_nvme_device }}",
+        "device": "{{ controlplane_nvme_device }}",
         "wipeTable": true,
         "partitions": [
           {
@@ -18,15 +18,15 @@
             "sizeMiB": 0
           }
         ]
-{% if master_localstorage_configuration %}
+{% if controlplane_localstorage_configuration %}
       },
 {% else %}
       }
 {% endif %}
 {% endif %}
-{% if master_localstorage_configuration %}
+{% if controlplane_localstorage_configuration %}
       {
-        "device": "{{ master_localstorage_device }}",
+        "device": "{{ controlplane_localstorage_device }}",
         "wipeTable": true,
         "partitions": [
           {
@@ -38,7 +38,7 @@
 {% endif %}
     ],
     "filesystems": [
-{% if master_etcd_on_nvme %}
+{% if controlplane_etcd_on_nvme %}
       {
         "path": "/var/lib/etcd",
         "device": "/dev/disk/by-partlabel/ETCD",
@@ -56,7 +56,7 @@
 {% endif %}
     ],
     "files": [
-{% if master_localstorage_configuration %}
+{% if controlplane_localstorage_configuration %}
       {
         "contents": {
           "source": "data:text/plain;base64,{{ lookup('template', './setup-lvm.sh.j2') | b64encode }}"
@@ -70,7 +70,7 @@
   },
   "systemd": {
     "units": [
-{% if master_etcd_on_nvme %}
+{% if controlplane_etcd_on_nvme %}
       {
         "name": "var-lib-etcd.mount",
         "enabled": true,
@@ -80,13 +80,13 @@
         "name": "var-lib-containers.mount",
         "enabled": true,
         "contents": "[Mount]\nWhat=/dev/disk/by-partlabel/CTNR\nType=xfs\nOptions=defaults\n[Install]\nWantedBy=local-fs.target"
-{% if master_localstorage_configuration %}
+{% if controlplane_localstorage_configuration %}
       },
 {% else %}
       }
 {% endif %}
 {% endif %}
-{% if master_localstorage_configuration %}
+{% if controlplane_localstorage_configuration %}
       {
         "name": "setup-localstorage.service",
         "enabled": true,

@@ -16,7 +16,7 @@
   - generate-discovery-iso
   - role: boot-iso
     vars:
-      inventory_group: master
+      inventory_group: controlplane
       boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
   - wait-hosts-discovered
   - install-cluster

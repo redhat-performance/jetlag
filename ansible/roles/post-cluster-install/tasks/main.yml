@@ -21,8 +21,6 @@
   with_items:
     - kubeadmin-password
     - kubeconfig
-  # Temporarily adding ignore_errors
-  ignore_errors: true
 
 - name: Place templated configuration items
   template:
@@ -66,11 +64,11 @@
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml
 
-- name: Ensure masters are schedulable
+- name: Ensure control-plane nodes are schedulable
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch scheduler cluster --type merge -p='{"spec": {"mastersSchedulable": true }}'
 
-- name: Move ingress controllers to control plane nodes and scale up to have 1 per master node
+- name: Move ingress controllers to control plane nodes and scale up to have 1 per control-plane node
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch -n openshift-ingress-operator ingresscontroller/default --patch '{"spec": {"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/master": "" }}}, "replicas": 3 }}' --type=merge
 
@@ -87,13 +85,13 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec": {"managementState": "Removed" }}'
 
-- name: Setup master nodes localstorage
-  when: master_localstorage_configuration
+- name: Setup control-plane nodes localstorage
+  when: controlplane_localstorage_configuration
   block:
-  - name: Label the master nodes
+  - name: Label the control-plane nodes
     shell: |
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true prometheus=true
-    with_items: "{{ groups['master'] }}"
+    with_items: "{{ groups['controlplane'] }}"
 
   - name: Install local-storage operator
     shell:
