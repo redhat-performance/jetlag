@@ -1,0 +1,23 @@
+---
+# bastion-http tasks
+
+- name: Create directory for bastion http server
+  file:
+    path: "{{ http_store_path }}"
+    state: directory
+
+- name: Create http pod
+  containers.podman.podman_pod:
+    name: http-store
+    state: started
+    ports:
+    - 8080:8080
+
+- name: Create http container in http pod
+  containers.podman.podman_container:
+    pod: http-store
+    volume:
+    - "{{ http_store_path }}:/var/www/html"
+    name: httpd
+    image: registry.centos.org/centos/httpd-24-centos7:latest
+    state: started

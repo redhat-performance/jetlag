@@ -1,0 +1,20 @@
+---
+# bastion-network tasks
+
+- name: Set ip_forward sysctl
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/ipv4.forward.conf
+    state: present
+    reload: true
+
+- name: Allow natted traffic through bastion lab interface
+  shell: |
+    iptables -t nat -A POSTROUTING -o {{ bastion_lab_interface }} -j MASQUERADE
+
+# Set firewall
+# Stop/disable iptables
+# Setup control-plane node network
+# Setup remote worker node vlaned networks

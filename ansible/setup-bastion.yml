@@ -1,0 +1,17 @@
+---
+# Setup bastion machine for Remote Worker Node testing
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
+#
+
+- name: Setup bastion machine for remote worker node testing
+  hosts: bastion
+  vars_files:
+  - vars/all.yml
+  roles:
+  - bastion-install
+  - bastion-network
+  - bastion-http
+  - bastion-assisted-installer

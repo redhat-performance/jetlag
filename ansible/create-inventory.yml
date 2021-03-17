@@ -3,7 +3,7 @@
 #
 # Example Usage:
 #
-# ansible-playbook create-inventory.yml
+# ansible-playbook ansible/create-inventory.yml
 #
 
 - name: Create inventory from a scalelab cloud

@@ -4,7 +4,7 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i inventory/cloud42.local deploy.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/deploy.yml
 #
 
 - name: Create 3 node cluster with assisted installer and join remote worker nodes

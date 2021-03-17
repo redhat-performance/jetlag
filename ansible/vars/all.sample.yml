@@ -27,6 +27,23 @@ rwn_network_interface: ens1f1
 rwn_lab_interface: eno1np0
 
 ################################################################################
+# Setup Bastion playbook vars
+################################################################################
+openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/
+kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v0.9/kube-burner-0.9-Linux-x86_64.tar.gz
+
+bastion_lab_interface: eno1np0
+
+http_store_path: /opt/http_store/data/
+
+assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.17.3
+assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.17.3
+assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.17.3
+assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
+
+rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso
+
+################################################################################
 # Deploy playbook vars
 ################################################################################
 
@@ -40,7 +57,6 @@ cluster_name: rwn
 openshift_version: "4.6"
 # Either OpenShiftSDN or OVNKubernetes
 networktype: OpenShiftSDN
-rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso
 base_dns_name: example.com
 
 master_etcd_on_nvme: false
@@ -62,8 +78,6 @@ ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
-# Path to http_store to provide discovery iso via http
-discovery_iso_path: /opt/http_store/data/
 discovery_iso_file_name: ai-discovery.iso
 
 # Location for kubeconfig and RWN post install configuration

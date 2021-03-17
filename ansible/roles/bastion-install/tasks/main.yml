@@ -1,0 +1,87 @@
+---
+# bastion-install tasks
+
+- name: Create directory for bastion config
+  file:
+    path: /root/rwn
+    state: directory
+
+- name: Install packages
+  yum:
+    name:
+    - ansible
+    - podman
+    - skopeo
+    - frr
+    - git
+    - jq
+    - tmux
+    - net-tools
+    - tcpdump
+    - iproute-tc
+    state: present
+    update_cache: true
+    disable_gpg_check: yes
+
+- name: Install kernel modules
+  yum:
+    name:
+    - kernel-modules-extra
+    - kernel-debug-modules-extra
+    state: present
+    update_cache: true
+    disable_gpg_check: yes
+  register: kernel_modules_installed
+
+- name: Reboot if kernel modules installed
+  when: kernel_modules_installed.changed
+  block:
+  - name: Reboot bastion
+    shell: "sleep 5; reboot now"
+    async: 1
+    poll: 0
+    ignore_errors: true
+
+  - name: Wait for machine rebooting
+    wait_for:
+      port: 22
+      delay: 2
+      state: stopped
+      host: "{{ inventory_hostname }}"
+    delegate_to: localhost
+
+  - name: Wait for machine to be ready after reboot
+    wait_for_connection:
+      delay: 120
+      timeout: 1200
+
+- name: Get OpenShift client and kube-burner
+  get_url:
+    validate_certs: no
+    force: true
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+  with_items:
+  - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
+    dest: /root/openshift-client-linux.tar.gz
+  - url: "{{ kubeburner_url }}"
+    dest: /root/kube-burner-linux.tar.gz
+
+- name: Untar clients
+  unarchive:
+    src: "{{ item }}"
+    dest: /root
+    remote_src: yes
+    mode: 0700
+  with_items:
+  - /root/openshift-client-linux.tar.gz
+  - /root/kube-burner-linux.tar.gz
+
+- name: Copy clients to /usr/local/bin
+  shell: |
+    mv /root/oc /usr/local/bin/oc
+    mv /root/kubectl /usr/local/bin/kubectl
+    mv /root/kube-burner /usr/local/bin/kube-burner
+    chmod a+x /usr/local/bin/oc
+    chmod a+x /usr/local/bin/kubectl
+    chmod a+x /usr/local/bin/kube-burner

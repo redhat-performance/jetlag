@@ -30,7 +30,7 @@
 - name: Download the rhcos image
   get_url:
     url: "{{ rhcos_image }}"
-    dest: "{{ bastion_cluster_config_dir }}/livecd//{{ rhcos_image | basename }}"
+    dest: "{{ bastion_cluster_config_dir }}/livecd/{{ rhcos_image | basename }}"
 
 - name: Place templated configuration items
   template:
@@ -56,5 +56,5 @@
 - name: Copy live iso file to http_store
   copy:
     src: "{{ bastion_cluster_config_dir }}/livecd/{{ cluster_name }}-worker.iso"
-    dest: "{{ discovery_iso_path }}/{{ cluster_name }}-worker.iso"
+    dest: "{{ http_store_path }}/{{ cluster_name }}-worker.iso"
     remote_src: true

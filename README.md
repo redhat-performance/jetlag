@@ -13,6 +13,7 @@ Creates a bare metal three node master/worker cluster via the Assisted Installer
 Prereqs for the playbooks:
 
 ```console
+$ ansible-galaxy collection install ansible.posix
 $ ansible-galaxy collection install containers.podman
 $ ansible-galaxy collection install community.general
 ```
@@ -32,6 +33,12 @@ Run create-inventory playbook
 
 ```console
 ansible-playbook ansible/create-inventory.yml
+```
+
+Run setup-bastion playbook
+
+```console
+ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
 ```
 
 Run deploy playbook with inventory created by create-inventory playbook
