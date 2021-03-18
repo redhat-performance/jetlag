@@ -17,7 +17,7 @@ jobs:
   - name: ran
     jobType: create
     #jobIterations: 2
-    jobIterations: 690
+    jobIterations: 1400
     qps: 20
     burst: 40
     namespacedIterations: true
@@ -34,16 +34,16 @@ jobs:
       #- objectTemplate: objectTemplates/svc.yml
       #  replicas: 1
       - objectTemplate: objectTemplates/ran-deployment.yml
-        replicas: 2
+        replicas: 1
         inputVars:
           image: gcr.io/google_containers/pause-amd64:3.0
           containerPort: 8081
           resources:
             requests:
-              cpu: 250m
-              memory: 512Mi
+              cpu: 300m
+              memory: 1.5Gi
             limits:
-              cpu: 250m
-              memory: 512Mi
+              cpu: 300m
+              memory: 1.5Gi
       #- objectTemplate: objectTemplates/route.yml
       #  replicas: 1

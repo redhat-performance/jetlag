@@ -16,9 +16,7 @@ spec:
         app: ran-{{ .Iteration }}-{{ .Replica }}
     spec:
       containers:
-      - args:
-        - sleep
-        - infinity
+      - name: pause-pod
         image: {{ .image }}
         resources:
           requests:
@@ -30,6 +28,5 @@ spec:
         ports:
          - containerPort: {{ .containerPort }}
            protocol: TCP
-        name: pause-pod
       nodeSelector:
         rwn: "true"

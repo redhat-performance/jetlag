@@ -22,9 +22,9 @@ jobs:
     objects:
 
     - kind: Deployment
-      labelSelector: {kube-burner-job: kube-burner-job}
+      labelSelector: {kube-burner-job: ran}
       apiVersion: apps/v1
 
     - kind: Namespace
-      labelSelector: {kube-burner-job: kube-burner-job}
+      labelSelector: {kube-burner-job: ran}
       apiVersion: v1
