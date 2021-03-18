@@ -14,7 +14,7 @@
   shell: |
     iptables -t nat -A POSTROUTING -o {{ bastion_lab_interface }} -j MASQUERADE
 
-- name: Start/Enable frr routing
+- name: Start and enable frr routing
   systemd:
     state: started
     enabled: true
@@ -25,7 +25,7 @@
     type: ethernet
     conn_name: "{{ bastion_control_plane_interface }}"
     ifname: "{{ bastion_control_plane_interface }}"
-    ip4: 198.18.10.1/24
+    ip4: "{{ controlplane_network | next_nth_usable(1) }}/{{ controlplane_network_prefix }}"
     state: present
 
 # Stop/disable iptables / firewalld

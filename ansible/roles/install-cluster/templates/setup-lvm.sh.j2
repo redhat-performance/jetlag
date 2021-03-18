@@ -1,4 +1,6 @@
 #!/bin/bash
+for vg in $(vgs -o name --noheadings | grep "vg_ls") ; do vgremove -y $vg ; done
+for pv in $(pvs -o name --noheadings | grep "{{ controlplane_localstorage_device }}") ; do pvremove -y $pv ; done
 echo "Setting up LVM for local-storage"
 vgcreate vg_ls /dev/disk/by-partlabel/LS
 lvcreate -l 99%VG -T vg_ls/lv_tp_ls
