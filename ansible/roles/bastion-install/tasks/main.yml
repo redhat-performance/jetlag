@@ -74,18 +74,9 @@
 - name: Untar clients
   unarchive:
     src: "{{ item }}"
-    dest: /root
+    dest: /usr/local/bin
     remote_src: yes
     mode: 0700
   with_items:
   - "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
-
-- name: Copy clients to /usr/local/bin
-  shell: |
-    mv {{ bastion_cluster_config_dir }}/oc /usr/local/bin/oc
-    mv {{ bastion_cluster_config_dir }}/kubectl /usr/local/bin/kubectl
-    mv {{ bastion_cluster_config_dir }}/kube-burner /usr/local/bin/kube-burner
-    chmod a+x /usr/local/bin/oc
-    chmod a+x /usr/local/bin/kubectl
-    chmod a+x /usr/local/bin/kube-burner
