@@ -43,7 +43,7 @@
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
-- name: Add manifest to disable lab interface on control-plane nodes
+- name: Add manifests for cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
     method: POST
@@ -51,6 +51,13 @@
     status_code: [201]
     body: {
         "folder": "manifests",
-        "file_name": "50-controlplane-disable-lab-dhcp-interface.yaml",
-        "content": "{{ lookup('template', './50-controlplane-disable-lab-dhcp-interface.yml.j2') | b64encode }}"
+        "file_name": "{{ item.file_name }}",
+        "content": "{{ item.content | b64encode }}"
     }
+  with_items:
+  - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
+    content: "{{ lookup('template', './50-controlplane-disable-lab-dhcp-interface.yml.j2') }}"
+  - file_name: 50-worker-disable-lab-dhcp-interface.yaml
+    content: "{{ lookup('template', './50-worker-disable-lab-dhcp-interface.yml.j2') }}"
+  - file_name: 50-worker-fix-ipi-rwn.yaml
+    content: "{{ lookup('template', './50-worker-fix-ipi-rwn.yml.j2') }}"

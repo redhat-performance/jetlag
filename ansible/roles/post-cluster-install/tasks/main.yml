@@ -8,8 +8,6 @@
   with_items:
     - "{{ bastion_cluster_config_dir }}"
     - "{{ bastion_cluster_config_dir }}/livecd"
-    - "{{ bastion_cluster_config_dir }}/machineconfig"
-    - "{{ bastion_cluster_config_dir }}/machineconfig/source"
     - "{{ bastion_cluster_config_dir }}/autorules"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
@@ -29,16 +27,6 @@
   with_items:
     - src: autorules.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/autorules/autorules.yml"
-    - src: rwn-coredns.yaml.j2
-      dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/rwn-coredns.yaml"
-    - src: rwn-Corefile.j2
-      dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/rwn-Corefile"
-    - src: 50-worker-fix-ipi-rwn.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/machineconfig/50-worker-fix-ipi-rwn.yml"
-    - src: 99-unmanaged-devices.conf.j2
-      dest: "{{ bastion_cluster_config_dir }}/machineconfig/source/99-unmanaged-devices.conf"
-    - src: 50-worker-disable-lab-dhcp-interface.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml"
     - src: localstorage.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
     - src: localvolume.yml.j2
@@ -55,14 +43,6 @@
   until: oc_result.rc != 1
   retries: 60
   delay: 2
-
-- name: Deploy RWN fix coredns MachineConfig
-  shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-fix-ipi-rwn.yml
-
-- name: Deploy RWN disable lab dhcp interface MachineConfig
-  shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/machineconfig/50-worker-disable-lab-dhcp-interface.yml
 
 - name: Ensure control-plane nodes are schedulable
   shell: |

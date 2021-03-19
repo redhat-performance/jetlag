@@ -44,7 +44,7 @@ spec:
           mode: 420
           path: /etc/kubernetes/manifests/coredns.yaml
         - contents:
-            source: data:text/plain;charset=utf-8;base64,{{ lookup('file', './rwn-coredns.yaml.j2') | b64encode }}
+            source: data:text/plain;charset=utf-8;base64,{{ lookup('template', './rwn-coredns.yaml.j2') | b64encode }}
             verification: {}
           overwrite: true
           mode: 420
