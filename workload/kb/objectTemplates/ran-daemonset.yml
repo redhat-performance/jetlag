@@ -1,19 +1,18 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: ran-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
+  name: ran-ds-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      app: ran-{{ .Iteration }}-{{ .Replica }}
+      app: ran-ds-{{ .Iteration }}-{{ .Replica }}
   strategy:
     resources: {}
   template:
     metadata:
       labels:
-        app: ran-{{ .Iteration }}-{{ .Replica }}
+        app: ran-ds-{{ .Iteration }}-{{ .Replica }}
     spec:
       containers:
       - name: pause-pod

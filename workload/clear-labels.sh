@@ -14,8 +14,12 @@ fi
 selector=$1
 label_count=$2
 
+# Clears both kinds of labels rwn (shared, unique)
+prefix1="rwns"
+prefix2="rwnu"
+
 for i in `seq 1 ${label_count}`; do
-  echo "$(date -u +"%y%m%d-%H%M%S") :: Clearing labels rwns-${i} rwn-${i}"
-  echo "oc label no -l ${selector} rwns-${i}- rwn-${i}-"
-  oc label no -l ${selector} rwns-${i}- rwn-${i}-
+  echo "$(date -u +"%y%m%d-%H%M%S") :: Clearing labels ${prefix1}-${i} ${prefix2}-${i}"
+  echo "oc label no -l ${selector} ${prefix1}-${i}- ${prefix2}-${i}-"
+  oc label no -l ${selector} ${prefix1}-${i}- ${prefix2}-${i}-
 done
