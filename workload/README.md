@@ -14,10 +14,10 @@ Create 100 shared labels across the cluster
 ./create-shared-labels.sh rwn=true 100
 ```
 
-Create 100 unique labels per node (6 nodes in the cluster)
+Create 100 unique labels per node per RAN workload pod (2 pods * 6 nodes * 100 labels)
 
 ```console
-./create-unique-labels.sh rwn=true 600
+./create-unique-labels.sh rwn=true 1200
 ```
 
 Clear all of the above created labels

@@ -3,8 +3,8 @@ global:
   writeToFile: true
   metricsDirectory: collected-metrics
   measurements:
-    - name: podLatency
-      esIndex: kube-burner
+  - name: podLatency
+    esIndex: kube-burner
 
   indexerConfig:
     enabled: false
@@ -16,29 +16,30 @@ global:
 jobs:
   - name: ran
     jobType: create
-    #jobIterations: 2
-    jobIterations: 1400
+    jobIterations: 12
     qps: 20
     burst: 40
     namespacedIterations: true
     cleanup: true
-    namespace: ran-ns
+    namespace: ran
     podWait: false
     waitWhenFinished: true
-    waitFor: ["Deployment"]
     verifyObjects: true
     errorOnVerify: false
     jobIterationDelay: 0s
-    jobPause: 60s
+    jobPause: 0s
     objects:
-      - objectTemplate: objectTemplates/ran-deployment.yml
-        replicas: 1
-        inputVars:
-          image: gcr.io/google_containers/pause-amd64:3.0
-          resources:
-            requests:
-              cpu: 300m
-              memory: 1.5Gi
-            limits:
-              cpu: 300m
-              memory: 1.5Gi
+    - objectTemplate: objectTemplates/ran-deployment-selector.yml
+      replicas: 1
+      inputVars:
+        image: gcr.io/google_containers/pause-amd64:3.0
+        resources:
+          requests:
+            cpu: 29
+            memory: 120Gi
+          limits:
+            cpu: 29
+            memory: 120Gi
+        shared_selectors: 100
+        unique_selectors: 100
+        unique_selector_offset: 6

@@ -26,4 +26,11 @@ spec:
             cpu: {{ .resources.limits.cpu }}
             memory: {{ .resources.limits.memory }}
       nodeSelector:
-        rwnu-{{ .Iteration }}: "true"
+        {{ range $index, $element := sequence 1 .shared_selectors }}
+        rwns-{{ $element }}: "true"
+        {{ end }}
+        {{ $data := . }}
+        {{ range $index, $element := sequence 1 $data.unique_selectors }}
+        {{ $first := multiply $data.unique_selector_offset $index }}
+        rwnu-{{ add $first $data.Iteration }}: "true"
+        {{ end }}

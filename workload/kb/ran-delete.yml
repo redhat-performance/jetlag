@@ -25,10 +25,6 @@ jobs:
       labelSelector: {kube-burner-job: ran}
       apiVersion: apps/v1
 
-    - kind: DaemonSet
-      labelSelector: {kube-burner-job: ran}
-      apiVersion: apps/v1
-
     - kind: Namespace
       labelSelector: {kube-burner-job: ran}
       apiVersion: v1
