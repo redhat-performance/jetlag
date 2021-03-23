@@ -22,7 +22,10 @@ AUTH_TYPE=none
 
 SKIP_CERT_VERIFICATION=true
 
+SELF_VERSION={{ assisted_service_image }}
+INSTALLER_IMAGE={{ assisted_installer_image }}
 CONTROLLER_IMAGE={{ assisted_installer_controller_image }}
+AGENT_DOCKER_IMAGE={{ assisted_installer_agent_image }}
 
 #####################################################################################
 ##  Experimental: Single Node deployment
