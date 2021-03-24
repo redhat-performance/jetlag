@@ -7,7 +7,7 @@ Tooling to install and test Remote Worker Node (RWN) OpenShift clusters. Playboo
 * Network layout for RWN testing
 * VLAN interfaces on bastion machine
 
-Prereqs for the playbooks:
+Pre-reqs for the playbooks:
 
 ```console
 $ ansible-galaxy collection install ansible.posix
@@ -15,7 +15,7 @@ $ ansible-galaxy collection install containers.podman
 $ ansible-galaxy collection install community.general
 ```
 
-## Usage
+## Cluster Deployment Usage
 
 Edit vars
 
@@ -43,3 +43,7 @@ Run deploy playbook with inventory created by create-inventory playbook
 ```console
 ansible-playbook -i ansible/inventory/cloud42.local ansible/deploy.yml
 ```
+
+## RAN Workload Usage
+
+Review README.md in [workload](workload) directory.
