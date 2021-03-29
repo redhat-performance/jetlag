@@ -5,6 +5,7 @@
   set_fact:
     inventory_nodes: "{{ groups['controlplane'] }}"
 
+# Need to add check here for all nodes to be in state (pending-for-input vs discovering and not just length of hosts to be discovered)
 - name: Wait for 20 min for control-plane nodes to be discovered
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
