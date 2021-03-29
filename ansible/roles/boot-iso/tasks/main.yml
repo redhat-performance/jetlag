@@ -6,3 +6,9 @@
   with_items:
     - "{{ groups[inventory_group] }}"
   when: hostvars[item]['vendor'] == 'Dell'
+
+- name: Boot iso on supermicro hardware
+  include_tasks: supermicro.yml
+  with_items:
+    - "{{ groups[inventory_group] }}"
+  when: hostvars[item]['vendor'] == 'SuperMicro'
