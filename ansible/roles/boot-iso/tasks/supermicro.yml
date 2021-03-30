@@ -5,15 +5,15 @@
   community.general.redfish_command:
     category: Systems
     command: PowerOn
-    baseuri: "{{ hostvars[inventory_hostname]['bmc_address'] }}"
-    username: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
 
 - name: SuperMicro - Unmount ISO
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.UnMount"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.UnMount"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
     method: POST
     headers:
       content-type: application/json
@@ -26,14 +26,14 @@
 
 - name: SuperMicro - Patching Host and Path for Mounting ISO
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
     method: PATCH
     headers:
       content-type: application/json
       Accept: application/json
-    body: "{\"Host\": \"{{ http_store_host }}\", \"Path\": \"{{ iso_name }}\"}"
+    body: "{\"Host\": \"http://{{ http_store_host }}:{{ http_store_port }}\", \"Path\": \"\\\\\\\\{{ iso_name }}\"}"
     body_format: json
     force_basic_auth: yes
     validate_certs: no
@@ -41,9 +41,9 @@
 
 - name: SuperMicro - Mount ISO
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.Mount"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.Mount"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
     method: POST
     headers:
       content-type: application/json
@@ -56,14 +56,14 @@
 
 - name: SuperMicro - Set Boot
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
     method: PATCH
     headers:
       content-type: application/json
       Accept: application/json
-    body: '{"Boot":{"BootSourceOverrideEnabled":"Once","BootSourceOverrideTarget":"UsbCd"}}'
+    body: '{"Boot":{"BootSourceOverrideEnabled":"Once","BootSourceOverrideTarget":"Usb"}}'
     body_format: json
     force_basic_auth: yes
     validate_certs: no
@@ -71,9 +71,9 @@
 
 - name: SuperMicro - Restart
   uri:
-    url: "https://{{ hostvars[inventory_hostname]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
-    user: "{{ hostvars[inventory_hostname]['bmc_user'] }}"
-    password: "{{ hostvars[inventory_hostname]['bmc_password'] }}"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
     method: POST
     headers:
       content-type: application/json
