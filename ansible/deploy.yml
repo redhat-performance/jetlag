@@ -18,6 +18,7 @@
     vars:
       inventory_group: controlplane
       boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ discovery_iso_file_name }}"
+      iso_name: "{{ discovery_iso_file_name }}"
   - wait-hosts-discovered
   - install-cluster
   - post-cluster-install
@@ -26,4 +27,5 @@
     vars:
       inventory_group: rwn
       boot_iso_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ cluster_name }}-worker.iso"
+      iso_name: "{{ cluster_name }}-worker.iso"
   - wait-for-rwn-to-join

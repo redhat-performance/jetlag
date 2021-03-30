@@ -1,7 +1,7 @@
 ---
 # Dell tasks for booting an iso
 
-- name: Discover iDRAC versions for Dell hardware
+- name: Dell - Discover iDRAC version
   containers.podman.podman_container:
     name: "{{ hostvars[item]['bmc_address'] }}-rac-version"
     network: host
@@ -23,9 +23,9 @@
       ]
   register: drac_version
 
-- name: Mount Live ISO, Boot into Live ISO (Dell 13G iDRAC8 and below)
+- name: Dell - Mount Live ISO, Boot into Live ISO (Dell 13G iDRAC8 and below)
   block:
-    - name: Racadm container to mount and boot to Live ISO
+    - name: Dell - Racadm container to mount and boot to Live ISO
       containers.podman.podman_container:
         name: "{{ hostvars[item]['bmc_address'] }}-rac-image"
         network: host
@@ -45,9 +45,9 @@
           ]
   when: drac_version.stdout_lines | int <= 13
 
-- name: Mount Live ISO, Boot into Live ISO (Dell iDRAC9+ only)
+- name: Dell - Mount Live ISO, Boot into Live ISO (Dell iDRAC9+ only)
   block:
-    - name: DELL Power ON
+    - name: DELL - Power ON
       community.general.redfish_command:
         category: Systems
         command: PowerOn
@@ -55,7 +55,7 @@
         username: "{{ hostvars[item]['bmc_user'] }}"
         password: "{{ hostvars[item]['bmc_password'] }}"
 
-    - name: Set Dell OneTimeBoot VirtualCD
+    - name: Dell - Set OneTimeBoot VirtualCD
       uri:
         url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration"
         user: "{{ hostvars[item]['bmc_user'] }}"
@@ -70,7 +70,7 @@
         status_code: 202
         return_content: yes
 
-    - name: DELL Eject Virtual Media (if any)
+    - name: DELL - Eject Virtual Media (if any)
       community.general.redfish_command:
         category: Manager
         command: VirtualMediaEject
@@ -82,7 +82,7 @@
         resource_id: iDRAC.Embedded.1
       ignore_errors: yes
 
-    - name: DELL Insert Virtual Media
+    - name: DELL - Insert Virtual Media
       community.general.redfish_command:
         category: Manager
         command: VirtualMediaInsert
@@ -96,7 +96,7 @@
           - DVD
         resource_id: iDRAC.Embedded.1
 
-    - name: DELL Restart system power gracefully
+    - name: DELL - Restart system power gracefully
       community.general.redfish_command:
         category: Systems
         command: PowerGracefulRestart
