@@ -5,6 +5,16 @@
   shell: |
     /root/clean-interfaces.sh --nuke
 
+- name: Check if ssh keys exists
+  stat:
+    path: /root/.ssh/id_rsa
+  register: ssh_key_result
+
+- name: Create ssh key pair
+  shell: |
+    ssh-keygen -q -t rsa -f /root/.ssh/id_rsa -C "" -N ""
+  when: not ssh_key_result.stat.exists
+
 - name: Create directory for bastion config
   file:
     path: "{{ bastion_cluster_config_dir }}"

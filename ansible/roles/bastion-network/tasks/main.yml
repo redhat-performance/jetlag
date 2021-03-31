@@ -14,6 +14,21 @@
   shell: |
     iptables -t nat -A POSTROUTING -o {{ bastion_lab_interface }} -j MASQUERADE
 
+- name: Configure frr routing daemons
+  lineinfile:
+    path: /etc/frr/daemons
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+  - regexp: ^zebra=
+    line: zebra=yes
+  - regexp: ^bgpd=
+    line: bgpd=yes
+  - regexp: ^pbrd=
+    line: pbrd=yes
+  - regexp: ^staticd=
+    line: staticd=yes
+
 - name: Start and enable frr routing
   systemd:
     state: started
