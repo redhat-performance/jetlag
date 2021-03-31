@@ -257,24 +257,40 @@ def remove_latency_packet_loss(
       sys.exit(1)
 
 
-def flap_links_down(interface, start_vlan, end_vlan, dry_run):
+def flap_links_down(interface, start_vlan, end_vlan, dry_run, iptables, network):
   logger.info("Flapping links down")
   for vlan in range(start_vlan, end_vlan + 1):
-    ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "down"]
-    rc, _ = command(ip_command, dry_run)
-    if rc != 0:
-      logger.error("RAN workload, ip link set {} down rc: {}".format("{}.{}".format(interface, vlan), rc))
-      sys.exit(1)
+    if iptables:
+      iptables_command = [
+          "iptables", "-A", "FORWARD", "-j", "DROP", "-i", "{}.{}".format(interface, vlan), "-d", network]
+      rc, _ = command(iptables_command, dry_run)
+      if rc != 0:
+        logger.error("RAN workload, iptables rc: {}".format(rc))
+        sys.exit(1)
+    else:
+      ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "down"]
+      rc, _ = command(ip_command, dry_run)
+      if rc != 0:
+        logger.error("RAN workload, ip link set {} down rc: {}".format("{}.{}".format(interface, vlan), rc))
+        sys.exit(1)
 
 
-def flap_links_up(interface, start_vlan, end_vlan, dry_run, ignore_errors=False):
+def flap_links_up(interface, start_vlan, end_vlan, dry_run, iptables, network, ignore_errors=False):
   logger.info("Flapping links up")
   for vlan in range(start_vlan, end_vlan + 1):
-    ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "up"]
-    rc, _ = command(ip_command, dry_run)
-    if rc != 0 and not ignore_errors:
-      logger.error("RAN workload, ip link set {} up rc: {}".format("{}.{}".format(interface, vlan), rc))
-      sys.exit(1)
+    if iptables:
+      iptables_command = [
+          "iptables", "-D", "FORWARD", "-j", "DROP", "-i", "{}.{}".format(interface, vlan), "-d", network]
+      rc, _ = command(iptables_command, dry_run)
+      if rc != 0 and not ignore_errors:
+        logger.error("RAN workload, iptables rc: {}".format(rc))
+        sys.exit(1)
+    else:
+      ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "up"]
+      rc, _ = command(ip_command, dry_run)
+      if rc != 0 and not ignore_errors:
+        logger.error("RAN workload, ip link set {} up rc: {}".format("{}.{}".format(interface, vlan), rc))
+        sys.exit(1)
 
 
 def phase_break():
@@ -315,6 +331,10 @@ def main():
       "-P", "--packet-loss", type=int, default=0, help="Percentage of packet loss to add to all VLANed interfaces")
   parser.add_argument("-F", "--link-flap-down", type=int, default=0, help="Time period to flap link down (Seconds)")
   parser.add_argument("-U", "--link-flap-up", type=int, default=0, help="Time period to flap link up (Seconds)")
+  parser.add_argument("-T", "--link-flap-firewall", action="store_true", default=False,
+                      help="Flaps links via iptables instead of ip link set")
+  parser.add_argument("-N", "--link-flap-network", type=str, default="198.18.10.0/24",
+                      help="Network to block for iptables link flapping")
 
   # Indexing arguements
   parser.add_argument(
@@ -341,7 +361,8 @@ def main():
 
   if cliargs.reset:
     logger.info("Resetting all network impairments")
-    flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run, ignore_errors=True)
+    flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run, cliargs.link_flap_firewall,
+                  cliargs.link_flap_network, ignore_errors=True)
     remove_latency_packet_loss(
         cliargs.interface,
         cliargs.start_vlan,
@@ -364,13 +385,17 @@ def main():
       logger.error("Both link flap args (--link-flap-down, --link-flap-up) are required for link flapping. Exiting...")
       sys.exit(1)
     elif cliargs.link_flap_down > 0 and cliargs.link_flap_up > 0:
-      if cliargs.latency > 0 or cliargs.packet_loss > 0:
-        logger.warning(
-            "Latency/Packet Loss impairments are mutually exclusive to link flapping impairment. "
-            "Disabling link flapping.")
-      else:
-        logger.debug("Link flapping enabled")
+      if cliargs.link_flap_firewall:
+        logger.info("Link flapping enabled via iptables")
         flap_links = True
+      else:
+        if cliargs.latency > 0 or cliargs.packet_loss > 0:
+          logger.warning(
+              "Latency/Packet Loss impairments are mutually exclusive to link flapping impairment via ip link. "
+              "Use -T flag to combine impairments by using iptables instead of ip link. Disabling link flapping.")
+        else:
+          logger.info("Link flapping enabled via ip link")
+          flap_links = True
     else:
       logger.debug("Link flapping impairment disabled")
 
@@ -429,14 +454,17 @@ def main():
     if cliargs.latency > 0 or cliargs.packet_loss > 0:
       logger.info("  * Link Latency: {}ms".format(cliargs.latency))
       logger.info("  * Packet Loss: {}%".format(cliargs.packet_loss))
-    elif flap_links:
+    if flap_links:
+      flapping = "ip link"
+      if cliargs.link_flap_firewall:
+        flapping = "iptables"
       logger.info("  * Links {}.{} - {}.{}".format(
           cliargs.interface,
           cliargs.start_vlan,
           cliargs.interface,
           cliargs.end_vlan))
-      logger.info("  * Flap {}s down, {}s up".format(cliargs.link_flap_down, cliargs.link_flap_up))
-    else:
+      logger.info("  * Flap {}s down, {}s up by {}".format(cliargs.link_flap_down, cliargs.link_flap_up, flapping))
+    if cliargs.latency == 0 and cliargs.packet_loss == 0 and not flap_links:
       logger.info("  * No impairments")
   if not cliargs.no_cleanup_phase:
     if index_measurement_data:
@@ -511,7 +539,8 @@ def main():
 
     if flap_links:
       link_flap_count = 1
-      flap_links_down(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run)
+      flap_links_down(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run,
+                      cliargs.link_flap_firewall, cliargs.link_flap_network)
       next_flap_time = time.time() + cliargs.link_flap_down
       links_down = True
 
@@ -522,12 +551,14 @@ def main():
         if current_time >= next_flap_time:
           if links_down:
             links_down = False
-            flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run)
+            flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run,
+                          cliargs.link_flap_firewall, cliargs.link_flap_network)
             next_flap_time = time.time() + cliargs.link_flap_up
           else:
             links_down = True
             link_flap_count += 1
-            flap_links_down(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run)
+            flap_links_down(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run,
+                            cliargs.link_flap_firewall, cliargs.link_flap_network)
             next_flap_time = time.time() + cliargs.link_flap_down
 
       time.sleep(.1)
@@ -538,7 +569,8 @@ def main():
       current_time = time.time()
 
     if flap_links:
-      flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run)
+      flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run,
+                    cliargs.link_flap_firewall, cliargs.link_flap_network, True)
 
     if cliargs.latency > 0 or cliargs.packet_loss > 0:
       remove_latency_packet_loss(
