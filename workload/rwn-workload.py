@@ -24,7 +24,7 @@ import tempfile
 import time
 import uuid
 
-ran_create = """---
+rwn_create = """---
 global:
   writeToFile: false
   measurements:
@@ -39,14 +39,14 @@ global:
     type: elastic
 
 jobs:
-  - name: ran
+  - name: rwn
     jobType: create
     jobIterations: {{ iterations }}
     qps: 20
     burst: 40
     namespacedIterations: true
     cleanup: true
-    namespace: ran
+    namespace: rwn
     podWait: false
     waitWhenFinished: true
     verifyObjects: true
@@ -54,7 +54,7 @@ jobs:
     jobIterationDelay: 0s
     jobPause: 0s
     objects:
-    - objectTemplate: ran-deployment-selector.yml
+    - objectTemplate: rwn-deployment-selector.yml
       replicas: 1
       inputVars:
         image: gcr.io/google_containers/pause-amd64:3.0
@@ -71,7 +71,7 @@ jobs:
         tolerations: {{ tolerations }}
 """
 
-ran_delete = """---
+rwn_delete = """---
 global:
   writeToFile: false
   measurements:
@@ -86,7 +86,7 @@ global:
     type: elastic
 
 jobs:
-- name: cleanup-ran
+- name: cleanup-rwn
   jobType: delete
   waitForDeletion: true
   qps: 10
@@ -94,15 +94,15 @@ jobs:
   objects:
 
   - kind: Deployment
-    labelSelector: {kube-burner-job: ran}
+    labelSelector: {kube-burner-job: rwn}
     apiVersion: apps/v1
 
   - kind: Namespace
-    labelSelector: {kube-burner-job: ran}
+    labelSelector: {kube-burner-job: rwn}
     apiVersion: v1
 """
 
-ran_index = """---
+rwn_index = """---
 global:
   writeToFile: false
   measurements:
@@ -117,22 +117,22 @@ global:
     type: elastic
 """
 
-ran_deployment = """---
+rwn_deployment = """---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ran-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
+  name: rwn-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ran-{{ .Iteration }}-{{ .Replica }}
+      app: rwn-{{ .Iteration }}-{{ .Replica }}
   strategy:
     resources: {}
   template:
     metadata:
       labels:
-        app: ran-{{ .Iteration }}-{{ .Replica }}
+        app: rwn-{{ .Iteration }}-{{ .Replica }}
     spec:
       containers:
       - name: pause-pod
@@ -173,7 +173,7 @@ spec:
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s : %(levelname)s : %(message)s')
-logger = logging.getLogger('RAN-Workload')
+logger = logging.getLogger('RWN-Workload')
 logging.Formatter.converter = time.gmtime
 
 
@@ -242,7 +242,7 @@ def apply_latency_packet_loss(interface, start_vlan, end_vlan, latency, packet_l
     tc_command.extend(tc_latency)
     rc, _ = command(tc_command, dry_run)
     if rc != 0:
-      logger.error("RAN workload applying latency and packet loss failed, tc rc: {}".format(rc))
+      logger.error("RWN workload applying latency and packet loss failed, tc rc: {}".format(rc))
       sys.exit(1)
 
 
@@ -253,7 +253,7 @@ def remove_latency_packet_loss(
     tc_command = ["tc", "qdisc", "del", "dev", "{}.{}".format(interface, vlan), "root", "netem"]
     rc, _ = command(tc_command, dry_run)
     if rc != 0 and not ignore_errors:
-      logger.error("RAN workload removing latency and packet loss failed, tc rc: {}".format(rc))
+      logger.error("RWN workload removing latency and packet loss failed, tc rc: {}".format(rc))
       sys.exit(1)
 
 
@@ -265,13 +265,13 @@ def flap_links_down(interface, start_vlan, end_vlan, dry_run, iptables, network)
           "iptables", "-A", "FORWARD", "-j", "DROP", "-i", "{}.{}".format(interface, vlan), "-d", network]
       rc, _ = command(iptables_command, dry_run)
       if rc != 0:
-        logger.error("RAN workload, iptables rc: {}".format(rc))
+        logger.error("RWN workload, iptables rc: {}".format(rc))
         sys.exit(1)
     else:
       ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "down"]
       rc, _ = command(ip_command, dry_run)
       if rc != 0:
-        logger.error("RAN workload, ip link set {} down rc: {}".format("{}.{}".format(interface, vlan), rc))
+        logger.error("RWN workload, ip link set {} down rc: {}".format("{}.{}".format(interface, vlan), rc))
         sys.exit(1)
 
 
@@ -283,13 +283,13 @@ def flap_links_up(interface, start_vlan, end_vlan, dry_run, iptables, network, i
           "iptables", "-D", "FORWARD", "-j", "DROP", "-i", "{}.{}".format(interface, vlan), "-d", network]
       rc, _ = command(iptables_command, dry_run)
       if rc != 0 and not ignore_errors:
-        logger.error("RAN workload, iptables rc: {}".format(rc))
+        logger.error("RWN workload, iptables rc: {}".format(rc))
         sys.exit(1)
     else:
       ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "up"]
       rc, _ = command(ip_command, dry_run)
       if rc != 0 and not ignore_errors:
-        logger.error("RAN workload, ip link set {} up rc: {}".format("{}.{}".format(interface, vlan), rc))
+        logger.error("RWN workload, ip link set {} up rc: {}".format("{}.{}".format(interface, vlan), rc))
         sys.exit(1)
 
 
@@ -300,8 +300,8 @@ def phase_break():
 def main():
   start_time = time.time()
   parser = argparse.ArgumentParser(
-      description="Run the ran workload with or without network impairments",
-      prog="ran-workload.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+      description="Run the rwn workload with or without network impairments",
+      prog="rwn-workload.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   # Disable a phase arguements
   parser.add_argument("--no-workload-phase", action="store_true", default=False, help="Disables workload phase")
@@ -310,7 +310,7 @@ def main():
   parser.add_argument("--no-index-phase", action="store_true", default=False, help="Disables index phase")
 
   # Workload arguements
-  parser.add_argument("-i", "--iterations", type=int, default=12, help="Number of RAN namespaces to create")
+  parser.add_argument("-i", "--iterations", type=int, default=12, help="Number of RWN namespaces to create")
   parser.add_argument(
       "-c", "--cpu", type=str, default=29, help="Guaranteed CPU requests/limits per pod (Cores or millicores)")
   parser.add_argument("-m", "--mem", type=int, default=120, help="Guaranteed Memory requests/limits per pod (GiB)")
@@ -339,8 +339,8 @@ def main():
   # Indexing arguements
   parser.add_argument(
       "--index-server", type=str, default="", help="ElasticSearch server (Ex https://user:password@example.org:9200)")
-  parser.add_argument("--default-index", type=str, default="ran-default-test", help="Default index")
-  parser.add_argument("--measurements-index", type=str, default="ran-measurements-test", help="Measurements index")
+  parser.add_argument("--default-index", type=str, default="rwn-default-test", help="Default index")
+  parser.add_argument("--measurements-index", type=str, default="rwn-measurements-test", help="Measurements index")
   parser.add_argument("--prometheus-url", type=str, default="", help="Cluster prometheus URL")
   parser.add_argument("--prometheus-token", type=str, default="", help="Token to access prometheus")
 
@@ -355,7 +355,7 @@ def main():
     logger.setLevel(logging.DEBUG)
 
   phase_break()
-  logger.info("RAN Workload")
+  logger.info("RWN Workload")
   phase_break()
   logger.debug("CLI Args: {}".format(cliargs))
 
@@ -484,8 +484,8 @@ def main():
     phase_break()
     workload_start_time = time.time()
 
-    t = Template(ran_create)
-    ran_create_rendered = t.render(
+    t = Template(rwn_create)
+    rwn_create_rendered = t.render(
         measurements_index=cliargs.measurements_index,
         indexing=index_measurement_data,
         index_server=cliargs.index_server,
@@ -500,17 +500,17 @@ def main():
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
-    with open("{}/ran-create.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(ran_create_rendered)
-    logger.info("Created {}/ran-create.yml".format(tmp_directory))
-    with open("{}/ran-deployment-selector.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(ran_deployment)
-    logger.info("Created {}/ran-deployment-selector.yml".format(tmp_directory))
+    with open("{}/rwn-create.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(rwn_create_rendered)
+    logger.info("Created {}/rwn-create.yml".format(tmp_directory))
+    with open("{}/rwn-deployment-selector.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(rwn_deployment)
+    logger.info("Created {}/rwn-deployment-selector.yml".format(tmp_directory))
 
-    kb_cmd = ["kube-burner", "init", "-c", "ran-create.yml", "--uuid", workload_UUID]
+    kb_cmd = ["kube-burner", "init", "-c", "rwn-create.yml", "--uuid", workload_UUID]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory)
     if rc != 0:
-      logger.error("RAN workload (ran-create.yml) failed, kube-burner rc: {}".format(rc))
+      logger.error("RWN workload (rwn-create.yml) failed, kube-burner rc: {}".format(rc))
       sys.exit(1)
     workload_end_time = time.time()
     logger.info("Workload phase complete")
@@ -590,8 +590,8 @@ def main():
     phase_break()
     cleanup_start_time = time.time()
 
-    t = Template(ran_delete)
-    ran_delete_rendered = t.render(
+    t = Template(rwn_delete)
+    rwn_delete_rendered = t.render(
         measurements_index=cliargs.measurements_index,
         indexing=index_measurement_data,
         index_server=cliargs.index_server,
@@ -599,14 +599,14 @@ def main():
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
-    with open("{}/ran-delete.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(ran_delete_rendered)
-    logger.info("Created {}/ran-delete.yml".format(tmp_directory))
+    with open("{}/rwn-delete.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(rwn_delete_rendered)
+    logger.info("Created {}/rwn-delete.yml".format(tmp_directory))
 
-    kb_cmd = ["kube-burner", "init", "-c", "ran-delete.yml", "--uuid", workload_UUID]
+    kb_cmd = ["kube-burner", "init", "-c", "rwn-delete.yml", "--uuid", workload_UUID]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory)
     if rc != 0:
-      logger.error("RAN workload (ran-delete.yml) failed, kube-burner rc: {}".format(rc))
+      logger.error("RWN workload (rwn-delete.yml) failed, kube-burner rc: {}".format(rc))
       sys.exit(1)
     cleanup_end_time = time.time()
     logger.info("Cleanup phase complete")
@@ -618,17 +618,17 @@ def main():
     phase_break()
     index_start_time = time.time()
 
-    t = Template(ran_index)
-    ran_index_rendered = t.render(
+    t = Template(rwn_index)
+    rwn_index_rendered = t.render(
         index_server=cliargs.index_server,
         default_index=cliargs.default_index,
         measurements_index=cliargs.measurements_index)
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
-    with open("{}/ran-index.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(ran_index_rendered)
-    logger.info("Created {}/ran-index.yml".format(tmp_directory))
+    with open("{}/rwn-index.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(rwn_index_rendered)
+    logger.info("Created {}/rwn-index.yml".format(tmp_directory))
 
     # Copy metrics.yml to tmp directory
     base_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -651,7 +651,7 @@ def main():
       end_time = workload_end_time
 
     kb_cmd = [
-        "kube-burner", "index", "-c", "ran-index.yml", "--start", str(int(start_time)),
+        "kube-burner", "index", "-c", "rwn-index.yml", "--start", str(int(start_time)),
         "--end", str(int(end_time)), "--uuid", workload_UUID, "-u", index_prometheus_server,
         "-m", "{}/metrics-aggregated.yaml".format(tmp_directory), "-t", index_prometheus_token]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory, mask_arg=16)
@@ -661,7 +661,7 @@ def main():
 
   # Dump timings on the test/workload
   phase_break()
-  logger.info("RAN Workload Stats")
+  logger.info("RWN Workload Stats")
   if flap_links:
     logger.info("Links flapped down {} times".format(link_flap_count))
   if not cliargs.no_workload_phase:

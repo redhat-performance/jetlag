@@ -44,6 +44,6 @@ Run deploy playbook with inventory created by create-inventory playbook
 ansible-playbook -i ansible/inventory/cloud42.local ansible/deploy.yml
 ```
 
-## RAN Workload Usage
+## RWN Workload Usage
 
 Review README.md in [workload](workload) directory.
