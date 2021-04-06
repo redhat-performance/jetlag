@@ -6,24 +6,24 @@
 
 ## Labels for RWN Workload
 
-Prior to running any RWN workloads with selectors, you must create a number of labels beforehand. Scripts have been provided to make this easy.
+Prior to running any RWN workloads with selectors, you must create a number of labels beforehand. 
 
-Create 100 shared labels across the cluster
+Create 100 shared labels across the remote worker nodes:
 
 ```console
-./create-shared-labels.sh rwn=true 100
+./rwn-labeler.py -c 100 -s
 ```
 
-Create 100 unique labels per node per RWN workload pod (2 pods * 6 nodes * 100 labels)
+Create 100 unique labels per node per RWN workload pod:
 
 ```console
-./create-unique-labels.sh rwn=true 1200
+./rwn-labeler.py -c 100 -u
 ```
 
-Clear all of the above created labels
+Clear all 100 shared and unique labels off the remote worker nodes:
 
 ```console
-./clear-labels.sh rwn=true 600
+./rwn-labeler.py -c 100 -su --clear
 ```
 
 ## Running RWN workload
