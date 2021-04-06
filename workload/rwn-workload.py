@@ -159,15 +159,12 @@ spec:
       - key: "node.kubernetes.io/unreachable"
         operator: "Exists"
         effect: "NoExecute"
-        tolerationSeconds: 0
       - key: "node.kubernetes.io/not-ready"
         operator: "Exists"
         effect: "NoExecute"
-        tolerationSeconds: 0
       - key: "node.kubernetes.io/unschedulable"
         operator: "Exists"
         effect: "NoExecute"
-        tolerationSeconds: 0
       {{ end }}
 """
 
