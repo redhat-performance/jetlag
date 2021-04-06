@@ -66,9 +66,9 @@ def shared_labels(create, label_count, label_prefix, label_selector, dry_run):
   label_command = ["oc", "label", "no", "-l", label_selector]
   for i in range(1, label_count + 1):
     if create:
-      label_command.append("{}{}=true".format(label_prefix, i))
+      label_command.append("{}-{}=true".format(label_prefix, i))
     else:
-      label_command.append("{}{}-".format(label_prefix, i))
+      label_command.append("{}-{}-".format(label_prefix, i))
   logger.info("{}".format(label_command))
   rc, _ = command(label_command, dry_run)
   if rc != 0:
@@ -84,9 +84,9 @@ def unique_labels(create, label_count, label_prefix, label_selector, dry_run):
     label_command = ["oc", "label", nodes[node_index]]
     for i in range(node_index + 1, range_end, offset):
       if create:
-        label_command.append("{}{}=true".format(label_prefix, i))
+        label_command.append("{}-{}=true".format(label_prefix, i))
       else:
-        label_command.append("{}{}-".format(label_prefix, i))
+        label_command.append("{}-{}-".format(label_prefix, i))
     logger.info("{}".format(label_command))
     rc, _ = command(label_command, dry_run)
     if rc != 0:
