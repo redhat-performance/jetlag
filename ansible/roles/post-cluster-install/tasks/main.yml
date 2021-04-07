@@ -9,6 +9,7 @@
     - "{{ bastion_cluster_config_dir }}"
     - "{{ bastion_cluster_config_dir }}/livecd"
     - "{{ bastion_cluster_config_dir }}/autorules"
+    - "{{ bastion_cluster_config_dir }}/mcp"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
@@ -34,15 +35,26 @@
     - src: cluster-monitoring-config.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
 
+- name: Create MachineConfigPool manifest per Remote Worker Node
+  template:
+    src: mcp.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/mcp/mcp-rwn-{{ hostvars[item].vlan }}.yml"
+  with_items:
+    - "{{ groups['rwn'] }}"
+
 # Witnessed at least once where the cluster did not seem to be ready for commands
 # thus adding retries to this first command
-- name: Deploy autorules
+- name: Apply MachineConfigPool manifests
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/autorules/autorules.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/mcp/
   register: oc_result
   until: oc_result.rc != 1
   retries: 60
   delay: 2
+
+- name: Deploy autorules
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/autorules/autorules.yml
 
 - name: Ensure control-plane nodes are schedulable
   shell: |

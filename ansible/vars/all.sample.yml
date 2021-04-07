@@ -90,6 +90,7 @@ discovery_iso_file_name: ai-discovery.iso
 
 autorules_rule:
   name: .*worker.*
+  runonce: true
   labels:
   - node-role.kubernetes.io/worker
 

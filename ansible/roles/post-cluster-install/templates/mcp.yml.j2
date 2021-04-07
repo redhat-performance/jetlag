@@ -1,0 +1,19 @@
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name:  rwn-{{ hostvars[item].vlan }}
+  labels:
+    machineconfiguration.openshift.io/role: rwn-{{ hostvars[item].vlan }}
+spec:
+  machineConfigSelector:
+    matchExpressions:
+      - {
+          key: machineconfiguration.openshift.io/role,
+          operator: In,
+          values: [worker, rwn-{{ hostvars[item].vlan }}]
+        }
+  paused: false
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/rwn-{{ hostvars[item].vlan }}: ""
