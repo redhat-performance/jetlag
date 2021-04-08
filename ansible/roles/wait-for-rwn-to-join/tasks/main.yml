@@ -38,5 +38,5 @@
 
 - name: Label all nodes with topology.kubernetes.io/region=scalelab
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig c label no --all topology.kubernetes.io/region=scalelab
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --all topology.kubernetes.io/region=scalelab
   with_items: "{{ groups['rwn'] }}"
