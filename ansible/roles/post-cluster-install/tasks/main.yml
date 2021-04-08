@@ -77,6 +77,16 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch configs.imageregistry.operator.openshift.io/cluster --type merge  -p='{"spec": {"managementState": "Removed" }}'
 
+- name: Add kube-burner sa
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create sa kubeburner
+  when: setup_kube_burner_sa
+
+- name: Add cluster-admin role to kube-burner sa
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
+  when: setup_kube_burner_sa
+
 - name: Setup control-plane nodes localstorage
   when: controlplane_localstorage_configuration
   block:

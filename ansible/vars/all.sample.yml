@@ -94,4 +94,6 @@ autorules_rule:
   labels:
   - node-role.kubernetes.io/worker
 
+setup_kube_burner_sa: true
+
 rwn_install_device: /dev/sda
