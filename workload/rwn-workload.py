@@ -15,8 +15,10 @@
 
 import argparse
 from jinja2 import Template
+import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -174,7 +176,7 @@ logger = logging.getLogger('RWN-Workload')
 logging.Formatter.converter = time.gmtime
 
 
-def command(cmd, dry_run, cmd_directory="", mask_output=False, mask_arg=0):
+def command(cmd, dry_run, cmd_directory="", mask_output=False, mask_arg=0, no_log=False):
   if cmd_directory != "":
     logger.debug("Command Directory: {}".format(cmd_directory))
     working_directory = os.getcwd()
@@ -191,23 +193,24 @@ def command(cmd, dry_run, cmd_directory="", mask_output=False, mask_arg=0):
   while True:
     output_line = process.stdout.readline()
     if output_line.strip() != "":
-      if not mask_output:
-        logger.info("Output : {}".format(output_line.strip()))
-      else:
-        logger.info("Output : **(Masked)**")
+      if not no_log:
+        if not mask_output:
+          logger.info("Output : {}".format(output_line.strip()))
+        else:
+          logger.info("Output : **(Masked)**")
       if output == "":
         output = output_line.strip()
       else:
         output = "{}\n{}".format(output, output_line.strip())
-    time.sleep(.1)
     return_code = process.poll()
     if return_code is not None:
       for output_line in process.stdout.readlines():
         if output_line.strip() != "":
-          if not mask_output:
-            logger.info("Output : {}".format(output_line.strip()))
-          else:
-            logger.info("Output : **(Masked)**")
+          if not no_log:
+            if not mask_output:
+              logger.info("Output : {}".format(output_line.strip()))
+            else:
+              logger.info("Output : **(Masked)**")
           if output == "":
             output = output_line
           else:
@@ -580,6 +583,35 @@ def main():
     impairment_end_time = time.time()
     logger.info("Impairment phase complete")
 
+    # Check for pods evicted before cleanup
+    phase_break()
+    logger.info("Post impairment pod eviction check")
+    phase_break()
+    ns_pattern = re.compile("rwn-[0-9]+")
+    eviction_pattern = re.compile("Marking for deletion Pod")
+    killed_pod = 0
+    marked_evictions = 0
+    oc_cmd = ["oc", "get", "ev", "-A", "--field-selector", "reason=TaintManagerEviction", "-o", "json"]
+    rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
+    if rc != 0:
+      logger.error("RWN workload, oc get ev rc: {}".format(rc))
+      sys.exit(1)
+    json_data = json.loads(output)
+    for item in json_data['items']:
+      if ns_pattern.search(item['involvedObject']['namespace']) and eviction_pattern.search(item['message']):
+        marked_evictions += 1
+    oc_cmd = ["oc", "get", "ev", "-A", "--field-selector", "reason=Killing", "-o", "json"]
+    rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
+    if rc != 0:
+      logger.error("RWN workload, oc get ev rc: {}".format(rc))
+      sys.exit(1)
+    json_data = json.loads(output)
+    for item in json_data['items']:
+      if ns_pattern.search(item['involvedObject']['namespace']):
+        killed_pod += 1
+    logger.info("rwn-* pods marked for deletion by Taint Manager: {}".format(marked_evictions))
+    logger.info("rwn-* pods killed: {}".format(killed_pod))
+
   # Cleanup Phase
   if not cliargs.no_cleanup_phase:
     phase_break()
@@ -652,6 +684,9 @@ def main():
         "--end", str(int(end_time)), "--uuid", workload_UUID, "-u", index_prometheus_server,
         "-m", "{}/metrics-aggregated.yaml".format(tmp_directory), "-t", index_prometheus_token]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory, mask_arg=16)
+    if rc != 0:
+      logger.error("RWN workload (rwn-index.yml) failed, kube-burner rc: {}".format(rc))
+      sys.exit(1)
 
     index_end_time = time.time()
     logger.info("Index phase complete")
@@ -660,7 +695,10 @@ def main():
   phase_break()
   logger.info("RWN Workload Stats")
   if flap_links:
-    logger.info("Links flapped down {} times".format(link_flap_count))
+    logger.info("* Number of times links flapped down: {}".format(link_flap_count))
+  if not cliargs.no_impairment_phase:
+    logger.info("* Number of rwn pods marked for deletion (TaintManagerEviction): {}".format(marked_evictions))
+    logger.info("* Number of rwn pods killed: {}".format(killed_pod))
   if not cliargs.no_workload_phase:
     logger.info("Workload phase duration: {}".format(round(workload_end_time - workload_start_time, 1)))
   if not cliargs.no_impairment_phase:
@@ -669,7 +707,8 @@ def main():
     logger.info("Cleanup phase duration: {}".format(round(cleanup_end_time - cleanup_start_time, 1)))
   if not cliargs.no_index_phase:
     logger.info("Index phase duration: {}".format(round(index_end_time - index_start_time, 1)))
-  logger.info("Total duration: {}".format(round(time.time() - start_time, 1)))
+  total_time = time.time() - start_time
+  logger.info("Total duration: {}".format(round(total_time, 1)))
   if not cliargs.no_index_phase:
     logger.info("Workload UUID: {}".format(workload_UUID))
 
