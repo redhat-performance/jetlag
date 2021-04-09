@@ -60,6 +60,7 @@ jobs:
       replicas: 1
       inputVars:
         image: gcr.io/google_containers/pause-amd64:3.0
+        guaranteed_qos: {{ guaranteed_qos }}
         resources:
           requests:
             cpu: {{ cpu }}
@@ -139,6 +140,7 @@ spec:
       containers:
       - name: pause-pod
         image: {{ .image }}
+        {{ if .guaranteed_qos }}
         resources:
           requests:
             cpu: {{ .resources.requests.cpu }}
@@ -146,6 +148,7 @@ spec:
           limits:
             cpu: {{ .resources.limits.cpu }}
             memory: {{ .resources.limits.memory }}
+        {{ end }}
       nodeSelector:
         rwn: "true"
         {{ range $index, $element := sequence 1 .shared_selectors }}
@@ -484,6 +487,13 @@ def main():
     phase_break()
     workload_start_time = time.time()
 
+    if (cliargs.cpu.isdigit() and int(cliargs.cpu) == 0) or cliargs.mem == 0:
+      logger.info("Using BestEffort QOS Pods")
+      guaranteed_qos = False
+    else:
+      logger.info("Using Guaranteed QOS Pods")
+      guaranteed_qos = True
+
     t = Template(rwn_create)
     rwn_create_rendered = t.render(
         measurements_index=cliargs.measurements_index,
@@ -491,6 +501,7 @@ def main():
         index_server=cliargs.index_server,
         default_index=cliargs.default_index,
         iterations=cliargs.iterations,
+        guaranteed_qos=guaranteed_qos,
         cpu=cliargs.cpu,
         mem=cliargs.mem,
         shared_selectors=cliargs.shared_selectors,
