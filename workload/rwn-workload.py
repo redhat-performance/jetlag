@@ -315,7 +315,7 @@ def main():
   # Workload arguements
   parser.add_argument("-i", "--iterations", type=int, default=12, help="Number of RWN namespaces to create")
   parser.add_argument(
-      "-c", "--cpu", type=str, default=29, help="Guaranteed CPU requests/limits per pod (Cores or millicores)")
+      "-c", "--cpu", type=str, default="29", help="Guaranteed CPU requests/limits per pod (Cores or millicores)")
   parser.add_argument("-m", "--mem", type=int, default=120, help="Guaranteed Memory requests/limits per pod (GiB)")
   parser.add_argument("-s", "--shared-selectors", type=int, default=100, help="How many shared node-selectors to use")
   parser.add_argument("-u", "--unique-selectors", type=int, default=100, help="How many unique node-selectors to use")
@@ -452,6 +452,19 @@ def main():
       logger.info("* Workload Phase - Measurement indexing")
     else:
       logger.info("* Workload Phase - No measurement indexing")
+    logger.info("  * {} Namespaces/Deployments/Pods".format(cliargs.iterations))
+    if (cliargs.cpu.isdigit() and int(cliargs.cpu) == 0) or cliargs.mem == 0:
+      logger.info("  * BestEffort QOS Pods")
+      guaranteed_qos = False
+    else:
+      logger.info("  * Guaranteed QOS Pods w/ {} cores and {} memory".format(cliargs.cpu, cliargs.mem))
+      guaranteed_qos = True
+    logger.info("  * {} Shared Node-Selectors".format(cliargs.shared_selectors))
+    logger.info("  * {} Unique Node-Selectors".format(cliargs.unique_selectors))
+    if cliargs.no_tolerations:
+      logger.info("  * No tolerations")
+    else:
+      logger.info("  * RWN tolerations")
   if not cliargs.no_impairment_phase:
     logger.info("* Impairment Phase - {}s Duration".format(cliargs.duration))
     if cliargs.latency > 0 or cliargs.packet_loss > 0:
@@ -486,13 +499,6 @@ def main():
     logger.info("Workload phase starting")
     phase_break()
     workload_start_time = time.time()
-
-    if (cliargs.cpu.isdigit() and int(cliargs.cpu) == 0) or cliargs.mem == 0:
-      logger.info("Using BestEffort QOS Pods")
-      guaranteed_qos = False
-    else:
-      logger.info("Using Guaranteed QOS Pods")
-      guaranteed_qos = True
 
     t = Template(rwn_create)
     rwn_create_rendered = t.render(
