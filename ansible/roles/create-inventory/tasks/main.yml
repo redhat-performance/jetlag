@@ -1,78 +1,99 @@
 ---
 # create-inventory tasks
 #
-# First machine is bastion
-# Following 3 machines are controlplane nodes
-# Remaining are remote worker nodes
+# For Remote Worker Node clusters:
+# * First machine is bastion
+# * Following 3 machines are controlplane nodes
+# * Remaining are remote worker nodes
+#
+# For Single Node OpenShift clusters:
+# * First machine is bastion
+# * Remaining machines are SNO clusters
+#
 
 - name: Download ocpinventory.json
   uri:
-    url: "http://{{ lab_quads_host }}/cloud/{{ scalelab_cloud }}_ocpinventory.json"
+    url: "http://{{ lab_quads_host }}/cloud/{{ lab_cloud }}_ocpinventory.json"
     return_content: true
   register: ocpinventory
 
-- name: Set inventory variables
+- name: Set RWN/SNO inventory variables
   set_fact:
     bastion_machine: "{{ ocpinventory.json.nodes[0].pm_addr | replace('mgmt-','') }}"
-    controlplane0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
-    controlplane1: "{{ ocpinventory.json.nodes[2].pm_addr }}"
-    controlplane2: "{{ ocpinventory.json.nodes[3].pm_addr }}"
-    controlplane0_network_mac: "{{ ocpinventory.json.nodes[1].mac | first }}"
-    controlplane1_network_mac: "{{ ocpinventory.json.nodes[2].mac | first }}"
-    controlplane2_network_mac: "{{ ocpinventory.json.nodes[3].mac | first }}"
     bmc_user: "{{ ocpinventory.json.nodes[0].pm_user }}"
     bmc_password: "{{ ocpinventory.json.nodes[0].pm_password }}"
+    ocpinventory_rwn_nodes: []
+    ocpinventory_sno_nodes: []
 
-- name: Get controlplane0 lab mac address
-  uri:
-    url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane0 | replace('mgmt-','') }}"
-    force_basic_auth: yes
-    user: "{{ scalelab_cloud }}"
-    password: "{{ bmc_password }}"
-    validate_certs: false
-  register: controlplane0_foreman_data
+- name: Remote Worker Node cluster type tasks
+  when: cluster_type == "rwn"
+  block:
+  - name: RWN - Set inventory variables
+    set_fact:
+      controlplane0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
+      controlplane1: "{{ ocpinventory.json.nodes[2].pm_addr }}"
+      controlplane2: "{{ ocpinventory.json.nodes[3].pm_addr }}"
+      controlplane0_network_mac: "{{ ocpinventory.json.nodes[1].mac | first }}"
+      controlplane1_network_mac: "{{ ocpinventory.json.nodes[2].mac | first }}"
+      controlplane2_network_mac: "{{ ocpinventory.json.nodes[3].mac | first }}"
 
-- name: Set controlplane0 lab mac addresses
-  set_fact:
-    controlplane0_lab_mac: "{{ item.mac }}"
-  with_items: "{{ controlplane0_foreman_data.json.interfaces }}"
-  when: item.primary|bool
+  - name: RWN - Get controlplane0 lab mac address
+    uri:
+      url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane0 | replace('mgmt-','') }}"
+      force_basic_auth: yes
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    register: controlplane0_foreman_data
 
-- name: Get controlplane1 lab mac address
-  uri:
-    url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane1 | replace('mgmt-','') }}"
-    force_basic_auth: yes
-    user: "{{ scalelab_cloud }}"
-    password: "{{ bmc_password }}"
-    validate_certs: false
-  register: controlplane1_foreman_data
+  - name: RWN - Set controlplane0 lab mac addresses
+    set_fact:
+      controlplane0_lab_mac: "{{ item.mac }}"
+    with_items: "{{ controlplane0_foreman_data.json.interfaces }}"
+    when: item.primary|bool
 
-- name: Set controlplane1 lab mac addresses
-  set_fact:
-    controlplane1_lab_mac: "{{ item.mac }}"
-  with_items: "{{ controlplane1_foreman_data.json.interfaces }}"
-  when: item.primary|bool
+  - name: RWN - Get controlplane1 lab mac address
+    uri:
+      url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane1 | replace('mgmt-','') }}"
+      force_basic_auth: yes
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    register: controlplane1_foreman_data
 
-- name: Get controlplane2 lab mac address
-  uri:
-    url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane2 | replace('mgmt-','') }}"
-    force_basic_auth: yes
-    user: "{{ scalelab_cloud }}"
-    password: "{{ bmc_password }}"
-    validate_certs: false
-  register: controlplane2_foreman_data
+  - name: RWN - Set controlplane1 lab mac addresses
+    set_fact:
+      controlplane1_lab_mac: "{{ item.mac }}"
+    with_items: "{{ controlplane1_foreman_data.json.interfaces }}"
+    when: item.primary|bool
 
-- name: Set controlplane2 lab mac addresses
-  set_fact:
-    controlplane2_lab_mac: "{{ item.mac }}"
-  with_items: "{{ controlplane2_foreman_data.json.interfaces }}"
-  when: item.primary|bool
+  - name: RWN - Get controlplane2 lab mac address
+    uri:
+      url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane2 | replace('mgmt-','') }}"
+      force_basic_auth: yes
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    register: controlplane2_foreman_data
 
-- name: Set ocpinventory rwn nodes
-  set_fact:
-    ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:] }}"
+  - name: RWN - Set controlplane2 lab mac addresses
+    set_fact:
+      controlplane2_lab_mac: "{{ item.mac }}"
+    with_items: "{{ controlplane2_foreman_data.json.interfaces }}"
+    when: item.primary|bool
 
-- name: Place inventory file named {{ scalelab_cloud }}.local into inventory directory
+  - name: RWN - Set ocpinventory rwn nodes
+    set_fact:
+      ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:] }}"
+
+- name: Single Node OpenShift cluster type tasks
+  when: cluster_type == "sno"
+  block:
+  - name: SNO - Set ocpinventory sno nodes
+    set_fact:
+      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
+
+- name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
-    src: inventory.j2
-    dest: "{{ playbook_dir }}/inventory/{{ scalelab_cloud }}.local"
+    src: "inventory-{{ cluster_type }}.j2"
+    dest: "{{ playbook_dir }}/inventory/{{ lab_cloud }}.local"

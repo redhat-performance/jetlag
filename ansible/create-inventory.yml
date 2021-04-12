@@ -12,4 +12,5 @@
   vars_files:
   - vars/all.yml
   roles:
+  - validate-vars
   - create-inventory

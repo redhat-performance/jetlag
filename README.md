@@ -1,11 +1,9 @@
 # jetlag
 
-Tooling to install and test Remote Worker Node (RWN) OpenShift clusters. Playbooks to create a bare metal three node control-plane cluster via the [Assisted Installer](https://github.com/openshift/assisted-installer) and join remote worker nodes by livecd install.
+Tooling to install RWN and SNO clusters for testing via the [Assisted Installer](https://github.com/openshift/assisted-installer).
 
-## Prerequisites
 
-* Network layout for RWN testing
-* VLAN interfaces on bastion machine
+## RWN/SNO Prerequisites
 
 Pre-reqs for the playbooks:
 
@@ -14,6 +12,11 @@ $ ansible-galaxy collection install ansible.posix
 $ ansible-galaxy collection install containers.podman
 $ ansible-galaxy collection install community.general
 ```
+
+## RWN Network Prerequisites
+
+* Network layout for RWN testing
+* VLAN interfaces on bastion machine
 
 ## Cluster Deployment Usage
 
@@ -38,12 +41,20 @@ Run setup-bastion playbook
 ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
 ```
 
-Run deploy playbook with inventory created by create-inventory playbook
+Run deploy for either rwn/sno playbook with inventory created by create-inventory playbook
+
+Remote Worker Node Cluster:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/deploy.yml
+ansible-playbook -i ansible/inventory/cloud42.local ansible/rwn-deploy.yml
 ```
 
-## RWN Workload Usage
+Single Node OpenShift:
+
+```console
+ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
+```
+
+## Workload Usage
 
 Review README.md in [workload](workload) directory.

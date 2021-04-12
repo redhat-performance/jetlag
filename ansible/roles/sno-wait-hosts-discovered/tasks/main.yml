@@ -1,0 +1,26 @@
+---
+# sno-wait-hosts-discovered tasks
+
+- name: Wait for each cluster's node to be discovered
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: true
+  register: cluster
+  until: cluster.json.hosts | length == 1
+  retries: 20
+  delay: 60
+  with_items: "{{ ai_cluster_ids }}"
+
+- name: Wait for cluster(s) to be ready for install
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: true
+  register: cluster
+  until: "cluster.json.status == 'ready'"
+  retries: 240
+  delay: 5
+  with_items: "{{ ai_cluster_ids }}"

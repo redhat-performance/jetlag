@@ -1,5 +1,5 @@
 ---
-# wait-hosts-discovered tasks
+# rwn-wait-hosts-discovered tasks
 
 - name: Create list of nodes to be discovered
   set_fact:

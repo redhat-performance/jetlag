@@ -12,6 +12,7 @@ control-plane-2 bmc_address=mgmt-control-plane-2.example.com mac=40:a6:b7:2a:6b:
 [controlplane:vars]
 role=master
 vendor=Dell
+boot_iso=rwn-cp-discovery.iso
 bmc_user=quads
 bmc_password=password
 interface=ens1f0
@@ -29,8 +30,15 @@ rwn-1 bmc_address=mgmt-rwn-1.example.com mac=40:a6:b7:2b:bc:01 ip=198.18.16.6 ga
 [rwn:vars]
 role=worker
 vendor=Dell
+boot_iso=rwn-worker.iso
 bmc_user=quads
 bmc_password=password
 network_prefix=30
 network_mask=255.255.255.252
 dns=8.8.8.8
+
+[sno]
+# Unused
+
+[sno:vars]
+# Unused

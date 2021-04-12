@@ -1,0 +1,25 @@
+---
+# sno-post-cluster-install tasks
+
+- name: Create directory for sno cluster configuration items
+  file:
+    path: "{{ bastion_cluster_config_dir }}"
+    state: directory
+
+- name: Create directory per sno cluster
+  file:
+    path: "{{ bastion_cluster_config_dir }}/{{ item }}"
+    state: directory
+  with_items: "{{ ai_cluster_ids }}"
+
+- name: Get credentials (kubeconfig) from installed cluster(s)
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/files?file_name=kubeconfig"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item }}/kubeconfig"
+  with_items: "{{ ai_cluster_ids }}"
+
+- name: Get credentials (kubeadmin-password) from installed cluster(s)
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/files?file_name=kubeadmin-password"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item }}/kubeadmin-password"
+  with_items: "{{ ai_cluster_ids }}"

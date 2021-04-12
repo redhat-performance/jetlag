@@ -33,7 +33,7 @@
     headers:
       content-type: application/json
       Accept: application/json
-    body: "{\"Host\": \"http://{{ http_store_host }}:{{ http_store_port }}\", \"Path\": \"\\\\\\\\{{ iso_name }}\"}"
+    body: "{\"Host\": \"http://{{ http_store_host }}:{{ http_store_port }}\", \"Path\": \"\\\\\\\\{{ hostvars[item]['boot_iso'] }}\"}"
     body_format: json
     force_basic_auth: yes
     validate_certs: no

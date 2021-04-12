@@ -1,5 +1,5 @@
 ---
-# install-cluster tasks
+# rwn-install-cluster tasks
 
 - name: Set networkType via install-config override
   uri:

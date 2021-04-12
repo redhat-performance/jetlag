@@ -11,6 +11,7 @@
 [controlplane:vars]
 role=master
 vendor=Dell
+boot_iso=rwn-cp-discovery.iso
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 interface={{ controlplane_network_interface }}
@@ -29,8 +30,15 @@ dns={{ lab_dns }}
 [rwn:vars]
 role=worker
 vendor=Dell
+boot_iso=rwn-worker.iso
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 network_prefix={{ rwn_network_prefix }}
 network_mask={{ rwn_network_mask }}
 dns={{ lab_dns }}
+
+[sno]
+# Unused
+
+[sno:vars]
+# Unused

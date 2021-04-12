@@ -1,7 +1,7 @@
 ---
 # post-cluster-install tasks
 
-- name: Create directies for rwn cluster configuration items
+- name: Create directories for rwn cluster configuration items
   file:
     path: "{{ item }}"
     state: directory

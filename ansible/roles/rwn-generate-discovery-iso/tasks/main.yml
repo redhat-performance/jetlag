@@ -1,5 +1,5 @@
 ---
-# generate-discovery-iso tasks
+# rwn-generate-discovery-iso tasks
 
 - name: Set empty static network configuration
   set_fact:
@@ -27,4 +27,4 @@
 - name: Download discovery ISO
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
-    dest: "{{ http_store_path }}/{{ discovery_iso_file_name }}"
+    dest: "{{ http_store_path }}/rwn-cp-discovery.iso"

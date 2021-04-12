@@ -1,0 +1,7 @@
+---
+# validate-vars tasks
+
+- name: Validate cluster_type
+  fail:
+    msg: "Invalid cluster_type selected - {{ cluster_type }}"
+  when: cluster_type not in cluster_types

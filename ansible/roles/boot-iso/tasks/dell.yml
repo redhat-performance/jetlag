@@ -19,7 +19,7 @@
         "-p",
         "{{ hostvars[item]['bmc_password'] }}",
         "-i",
-        "{{ boot_iso_url }}",
+        "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}",
       ]
   register: drac_version
 
@@ -41,7 +41,7 @@
             "-p",
             "{{ hostvars[item]['bmc_password'] }}",
             "-i",
-            "{{ boot_iso_url }}"
+            "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
           ]
   when: drac_version.stdout_lines | int <= 13
 
@@ -78,7 +78,7 @@
         username: "{{ hostvars[item]['bmc_user'] }}"
         password: "{{ hostvars[item]['bmc_password'] }}"
         virtual_media:
-          image_url: "{{ boot_iso_url }}"
+          image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
         resource_id: iDRAC.Embedded.1
       ignore_errors: yes
 
@@ -90,7 +90,7 @@
         username: "{{ hostvars[item]['bmc_user'] }}"
         password: "{{ hostvars[item]['bmc_password'] }}"
         virtual_media:
-          image_url: "{{ boot_iso_url }}"
+          image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
           media_types:
           - CD
           - DVD

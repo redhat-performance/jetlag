@@ -1,7 +1,7 @@
 ---
-# create-ai-cluster tasks
+# rwn-create-ai-cluster tasks
 
-- name: Create cluster
+- name: Create RWN cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
     method: POST

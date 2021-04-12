@@ -46,15 +46,15 @@
 
 - name: Remove old LiveCD
   file:
-    path: "{{ bastion_cluster_config_dir }}/livecd/{{ cluster_name }}-worker.iso"
+    path: "{{ bastion_cluster_config_dir }}/livecd/rwn-worker.iso"
     state: absent
 
 - name: Create LiveCD
   shell: |
-    podman run --privileged --rm --env-host -v /dev:/dev -v /run/udev:/run/udev -v {{ bastion_cluster_config_dir }}/livecd:/data -w /data quay.io/coreos/coreos-installer:release iso ignition embed -fi iso.ign -o /data/{{ cluster_name }}-worker.iso {{ rhcos_image | basename }}
+    podman run --privileged --rm --env-host -v /dev:/dev -v /run/udev:/run/udev -v {{ bastion_cluster_config_dir }}/livecd:/data -w /data quay.io/coreos/coreos-installer:release iso ignition embed -fi iso.ign -o /data/rwn-worker.iso {{ rhcos_image | basename }}
 
 - name: Copy live iso file to http_store
   copy:
-    src: "{{ bastion_cluster_config_dir }}/livecd/{{ cluster_name }}-worker.iso"
-    dest: "{{ http_store_path }}/{{ cluster_name }}-worker.iso"
+    src: "{{ bastion_cluster_config_dir }}/livecd/rwn-worker.iso"
+    dest: "{{ http_store_path }}/rwn-worker.iso"
     remote_src: true

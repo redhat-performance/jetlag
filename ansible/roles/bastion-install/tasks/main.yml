@@ -1,7 +1,7 @@
 ---
 # bastion-install tasks
 
-- name: Clean scalelab interfaces
+- name: Clean lab interfaces
   shell: |
     /root/clean-interfaces.sh --nuke
 

@@ -6,12 +6,14 @@
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
 #
 
-- name: Setup bastion machine for remote worker node testing
+- name: Setup bastion machine for rwn/sno clusters
   hosts: bastion
   vars_files:
   - vars/all.yml
   roles:
+  - validate-vars
   - bastion-install
-  - bastion-network
+  - role: bastion-network
+    when: cluster_type == "rwn"
   - bastion-http
   - bastion-assisted-installer

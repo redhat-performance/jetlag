@@ -3,11 +3,14 @@
 ################################################################################
 # Create Inventory playbook vars
 ################################################################################
-# Which scale lab cloud are we deploying on
-scalelab_cloud:
+# Which cloud in the lab environment (Ex cloud42)
+lab_cloud:
 
 lab_quads_host:
 lab_foreman_host:
+
+# Either rwn or sno
+cluster_type:
 
 # Network configuration for control-plane nodes
 lab_dns:
@@ -30,7 +33,7 @@ rwn_lab_interface: eno1np0
 ################################################################################
 # Setup Bastion playbook vars
 ################################################################################
-bastion_cluster_config_dir: /root/rwn
+bastion_cluster_config_dir: /root/{{ cluster_type }}
 
 openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/
 kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v0.9.1/kube-burner-0.9.1-Linux-x86_64.tar.gz
@@ -85,8 +88,6 @@ ntp_server: clock.redhat.com
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
-
-discovery_iso_file_name: ai-discovery.iso
 
 autorules_rule:
   name: .*worker.*
