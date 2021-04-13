@@ -40,6 +40,7 @@ kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download
 
 bastion_lab_interface: eno1np0
 bastion_control_plane_interface: ens1f0
+bastion_vlaned_interface: ens1f1
 
 http_store_path: /opt/http_store/data/
 
