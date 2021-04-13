@@ -70,6 +70,7 @@ openshift_version: "4.6"
 networktype: OpenShiftSDN
 base_dns_name: example.com
 
+sno_install_disk: /dev/sda
 controlplane_etcd_on_nvme: false
 controlplane_nvme_device: /dev/nvme0n1
 controlplane_localstorage_configuration: false
