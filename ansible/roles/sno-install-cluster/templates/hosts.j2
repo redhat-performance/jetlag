@@ -1,0 +1,12 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+{{ hostvars[item.item.key].ip_address }} api.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} api-int.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} oauth-openshift.apps.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} console-openshift-console.apps.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} downloads-openshift-console.apps.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} alertmanager-main-openshift-monitoring.apps.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} grafana-openshift-monitoring.apps.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} prometheus-k8s-openshift-monitoring.apps.{{ item.item.key }}.{{ base_dns_name }}
+{{ hostvars[item.item.key].ip_address }} thanos-querier-openshift-monitoring.apps.{{ item.item.key }}.{{ base_dns_name }}

@@ -93,6 +93,16 @@
     set_fact:
       ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
 
+  - name: SNO - Get lab data for each sno
+    uri:
+      url: "https://{{ lab_foreman_host }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
+      force_basic_auth: yes
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    register: sno_foreman_data
+    loop: "{{ ocpinventory_sno_nodes }}"
+
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
     src: "inventory-{{ cluster_type }}.j2"

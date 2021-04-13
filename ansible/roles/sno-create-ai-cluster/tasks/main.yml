@@ -16,10 +16,8 @@
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
         "cluster_network_host_prefix": 23,
         "service_network_cidr": "{{ service_network_cidr }}",
-        # "ingress_vip": "{{ controlplane_network_ingress }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-        # "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
         "additional_ntp_source": "{{ ntp_server }}"
     }
   loop: "{{ groups['sno'] }}"
@@ -30,3 +28,20 @@
   set_fact:
     ai_cluster_ids: "{{ ai_cluster_ids|default({}) | combine( {item.item: {'cluster_name': item.item, 'cluster_id': item.json.id} } ) }}"
   loop: "{{ create_cluster_return.results }}"
+
+- name: Add entries in /etc/hosts
+  blockinfile:
+    path: "/etc/hosts"
+    backup: true
+    block: |
+      {{ hostvars[item].ip_address }} api.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} oauth-openshift.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} console-openshift-console.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} downloads-openshift-console.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} alertmanager-main-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} grafana-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} prometheus-k8s-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip_address }} thanos-querier-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+    insertafter: "EOF"
+    marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
+  loop: "{{ groups['sno'] }}"
