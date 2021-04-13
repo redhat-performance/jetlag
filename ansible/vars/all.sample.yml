@@ -12,7 +12,7 @@ lab_foreman_host:
 # Either rwn or sno
 cluster_type:
 
-# Network configuration for control-plane nodes
+# Network configuration for rwn control-plane nodes
 lab_dns:
 controlplane_lab_interface: eno1np0
 controlplane_network_interface: ens1f0
@@ -65,13 +65,13 @@ assisted_installer_port: 8090
 http_store_host: example.com
 http_store_port: 8080
 
-cluster_name: rwn
 openshift_version: "4.6"
 # Either OpenShiftSDN or OVNKubernetes
 networktype: OpenShiftSDN
+# SNO clusters use base host name as the cluster name
+rwn_cluster_name: rwn
 base_dns_name: example.com
 
-sno_install_disk: /dev/sda
 controlplane_etcd_on_nvme: false
 controlplane_nvme_device: /dev/nvme0n1
 controlplane_localstorage_configuration: false
@@ -99,4 +99,5 @@ autorules_rule:
 
 setup_kube_burner_sa: true
 
-rwn_install_device: /dev/sda
+sno_install_disk: /dev/sda
+rwn_install_disk: /dev/sda

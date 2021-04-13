@@ -9,7 +9,7 @@
     status_code: [201]
     return_content: true
     body: {
-        "name": "{{ cluster_name }}",
+        "name": "{{ rwn_cluster_name }}",
         "openshift_version": "{{ openshift_version }}",
         "base_dns_domain": "{{ base_dns_name }}",
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
@@ -32,16 +32,16 @@
     path: "/etc/hosts"
     backup: true
     block: |
-        {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} oauth-openshift.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} console-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} downloads-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} grafana-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_api }} api.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} oauth-openshift.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} console-openshift-console.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} downloads-openshift-console.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} grafana-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
     insertafter: "EOF"
-    marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
+    marker: "# {mark} {{ rwn_cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
 - name: Add manifests for cluster
   uri:
