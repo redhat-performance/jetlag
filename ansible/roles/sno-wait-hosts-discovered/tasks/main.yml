@@ -13,6 +13,13 @@
   delay: 60
   with_items: "{{ ai_cluster_ids }}"
 
+- name: Set install disk per SNO cluster
+  include_tasks: set_install_disk.yml
+  with_items:
+    - "{{ cluster.results }}"
+  loop_control:
+    loop_var: sno_cluster
+
 - name: Wait for cluster(s) to be ready for install
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"

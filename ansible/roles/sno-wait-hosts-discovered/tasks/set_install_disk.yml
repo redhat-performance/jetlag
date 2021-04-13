@@ -1,0 +1,40 @@
+---
+# Set install disk per sno cluster
+
+- name: Set SNO host id and current install disk
+  set_fact:
+    sno_host_id: "{{ sno_cluster.json.hosts[0].id }}"
+    current_install_disk: "{{ sno_cluster.json.hosts[0].installation_disk_path }}"
+
+# - debug:
+#     msg: "{{ item }}"
+#   loop:
+#     - "Host ID: {{ sno_host_id }}"
+#     - "Current Install Disk: {{ current_install_disk }}"
+#     - "Future Install Disk: {{ sno_install_disk }}"
+
+- name: Adjust selected install disk
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ sno_cluster.json.id }}"
+    method: PATCH
+    status_code: [201]
+    return_content: true
+    body_format: json
+    body: {
+        "disks_selected_config": [
+          {
+            "id": "{{ sno_host_id }}",
+            "disks_config": [
+              {
+                "id": "{{ sno_install_disk }}",
+                "role": "install"
+              },
+              {
+                "id": "{{ current_install_disk }}",
+                "role": "none"
+              }
+            ]
+          }
+        ]
+    }
+  when: current_install_disk != sno_install_disk
