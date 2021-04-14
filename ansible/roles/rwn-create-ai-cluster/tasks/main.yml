@@ -43,6 +43,30 @@
     insertafter: "EOF"
     marker: "# {mark} {{ rwn_cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
+- name: Get OpenShift versions to obtain coredns image
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/openshift_versions"
+    method: GET
+    status_code: [200, 201]
+    return_content: true
+  register: versions
+
+- name: Obtain coredns image for this specific OpenShift version
+  shell: |
+    oc adm release info {{ versions.json[openshift_version]['release_image'] }} --image-for=coredns
+  register: coredns_version_output
+  when: '"registry.ci.openshift.org" not in versions.json[openshift_version]["release_image"]'
+
+- name: Set coredns image for released version
+  set_fact:
+    coredns_image: "{{ coredns_version_output.stdout }}"
+  when: '"registry.ci.openshift.org" not in versions.json[openshift_version]["release_image"]'
+
+- name: Set coredns image (registry.ci.openshift.org)
+  set_fact:
+    coredns_image: "quay.io/openshift/origin-coredns:{{ openshift_version }}"
+  when: '"registry.ci.openshift.org" in versions.json[openshift_version]["release_image"]'
+
 - name: Add manifests for cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"

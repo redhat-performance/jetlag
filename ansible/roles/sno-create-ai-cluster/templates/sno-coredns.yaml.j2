@@ -16,7 +16,7 @@ spec:
   - name: coredns
     securityContext:
       privileged: true
-    image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:4d6d9e55b48edaeba59091abbcee46162b9153d44b9aac30c98ac94c6bd085cf
+    image: {{ coredns_image }}
     args:
     - "--conf"
     - "/etc/coredns/sno-Corefile"
