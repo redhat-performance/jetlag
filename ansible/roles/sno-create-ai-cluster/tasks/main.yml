@@ -45,3 +45,16 @@
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'] }}"
+
+- name: Add SNO lab dns workaround manifest
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/manifests"
+    method: POST
+    body_format: json
+    status_code: [201]
+    body: {
+        "folder": "manifests",
+        "file_name": "50-controlplane-dns.yml",
+        "content": "{{ lookup('template', './50-controlplane-dns.yml.j2') | b64encode }}"
+    }
+  loop: "{{ ai_cluster_ids | dict2items  }}"

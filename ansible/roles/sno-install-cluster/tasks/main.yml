@@ -18,7 +18,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: { "config": "{{ lookup('template', 'sno-hosts.ign.j2') | to_json }}" }
+    body: { "config": "{{ lookup('template', 'sno-dns.ign.j2') | to_json }}" }
   loop: "{{ get_hosts.results }}"
 
 - name: Install cluster(s)

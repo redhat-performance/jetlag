@@ -1,0 +1,4 @@
+# Deployed by Jetlag automation
+search {{ base_dns_name }}
+nameserver {{ hostvars[item.item.key].ip_address }}
+nameserver {{ hostvars[item.item.key].dns }}

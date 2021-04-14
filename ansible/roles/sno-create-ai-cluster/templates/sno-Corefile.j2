@@ -1,0 +1,34 @@
+. {
+    errors
+    health :18080
+    forward . {{ lab_dns }}
+    cache 30
+    reload
+    template IN A {{ item.value.cluster_name }}.{{ base_dns_name }} {
+        match .*.apps.{{ item.value.cluster_name }}.{{ base_dns_name }}
+        answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[item.value.cluster_name].ip_address }}"
+        fallthrough
+    }
+    template IN AAAA {{ item.value.cluster_name }}.{{ base_dns_name }} {
+        match .*.apps.{{ item.value.cluster_name }}.{{ base_dns_name }}
+        fallthrough
+    }
+    template IN A {{ item.value.cluster_name }}.{{ base_dns_name }} {
+        match api.{{ item.value.cluster_name }}.{{ base_dns_name }}
+        answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[item.value.cluster_name].ip_address }}"
+        fallthrough
+    }
+    template IN AAAA {{ item.value.cluster_name }}.{{ base_dns_name }} {
+        match api.{{ item.value.cluster_name }}.{{ base_dns_name }}
+        fallthrough
+    }
+    template IN A {{ item.value.cluster_name }}.{{ base_dns_name }} {
+        match api-int.{{ item.value.cluster_name }}.{{ base_dns_name }}
+        answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[item.value.cluster_name].ip_address }}"
+        fallthrough
+    }
+    template IN AAAA {{ item.value.cluster_name }}.{{ base_dns_name }} {
+        match api-int.{{ item.value.cluster_name }}.{{ base_dns_name }}
+        fallthrough
+    }
+}

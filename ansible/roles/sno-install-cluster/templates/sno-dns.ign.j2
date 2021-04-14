@@ -1,0 +1,25 @@
+{
+  "ignition": {
+    "version": "3.2.0"
+  },
+  "storage": {
+    "files": [
+      {
+        "contents": {
+          "source": "data:text/plain;base64,{{ lookup('template', './resolv.conf.j2') | b64encode }}"
+        },
+        "mode": 493,
+        "overwrite": true,
+        "path": "/etc/resolv.conf"
+      },
+      {
+        "contents": {
+          "source": "data:text/plain;base64,{{ lookup('template', './99-sno.conf.j2') | b64encode }}"
+        },
+        "mode": 493,
+        "overwrite": true,
+        "path": "/etc/NetworkManager/conf.d/99-sno.conf"
+      }
+    ]
+  }
+}
