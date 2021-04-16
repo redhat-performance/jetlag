@@ -8,7 +8,7 @@
 
 - name: Count number of new remote worker nodes
   set_fact:
-    new_rwn_count: "{{ groups['rwn']|length|int }}"
+    new_rwn_count: "{{ groups['remoteworker']|length|int }}"
     current_count: "{{ current_count_stdout.stdout|int }}"
 
 - name: Set expected node count
@@ -34,7 +34,7 @@
 - name: Label the remote worker nodes
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} rwn=true node-role.kubernetes.io/rwn-{{ hostvars[item].vlan }}= topology.kubernetes.io/zone=rwn-{{ hostvars[item].vlan }} node-role.kubernetes.io/worker-
-  with_items: "{{ groups['rwn'] }}"
+  with_items: "{{ groups['remoteworker'] }}"
 
 - name: Label all nodes with topology.kubernetes.io/region=scalelab
   shell: |

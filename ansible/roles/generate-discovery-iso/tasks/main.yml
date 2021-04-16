@@ -1,5 +1,5 @@
 ---
-# rwn-generate-discovery-iso tasks
+# generate-discovery-iso tasks
 
 - name: Set empty static network configuration
   set_fact:
@@ -9,7 +9,12 @@
   include_tasks: static_network_config.yml
   with_items:
     - "{{ groups['controlplane'] }}"
-    # - "{{ groups['rwn'] }}"
+
+- name : BM Nodes Populate static network configuration
+  include_tasks: static_network_config.yml
+  when: cluster_type == "bm"
+  with_items:
+    - "{{ groups['worker'] }}"
 
 # - debug:
 #     msg: "{{ static_network_config }}"
@@ -27,4 +32,4 @@
 - name: Download discovery ISO
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
-    dest: "{{ http_store_path }}/rwn-cp-discovery.iso"
+    dest: "{{ http_store_path }}/discovery.iso"

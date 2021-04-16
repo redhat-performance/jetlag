@@ -1,12 +1,18 @@
 ---
-# rwn-wait-hosts-discovered tasks
+# wait-hosts-discovered tasks
 
-- name: Create list of nodes to be discovered
+- name: RWN - Create list of nodes to be discovered
   set_fact:
     inventory_nodes: "{{ groups['controlplane'] }}"
+  when: cluster_type == "rwn"
+
+- name: BM - Create list of nodes to be discovered
+  set_fact:
+    inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
+  when: cluster_type == "bm"
 
 # Need to add check here for all nodes to be in state (pending-for-input vs discovering and not just length of hosts to be discovered)
-- name: Wait for 20 min for control-plane nodes to be discovered
+- name: Wait for 40 min for nodes to be discovered
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
     method: GET
@@ -14,7 +20,7 @@
     return_content: true
   register: cluster
   until: cluster.json.hosts | length == inventory_nodes | length
-  retries: 20
+  retries: 40
   delay: 60
 
 - name: Set hostname and role for discovered hosts

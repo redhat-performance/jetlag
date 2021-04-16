@@ -59,7 +59,7 @@
 {% if controlplane_localstorage_configuration %}
       {
         "contents": {
-          "source": "data:text/plain;base64,{{ lookup('template', './setup-lvm.sh.j2') | b64encode }}"
+          "source": "data:text/plain;base64,{{ lookup('template', './controlplane-setup-lvm.sh.j2') | b64encode }}"
         },
         "mode": 493,
         "overwrite": true,

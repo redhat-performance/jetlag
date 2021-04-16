@@ -1,0 +1,25 @@
+---
+# Create and deploy a cluster with the Assisted Installer
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
+#
+
+- name: Creates a bare metal cluster with the assisted-installer
+  hosts: bastion
+  vars_files:
+  - vars/all.yml
+  roles:
+  - validate-vars
+  - create-ai-cluster
+  - generate-discovery-iso
+  - role: boot-iso
+    vars:
+      inventory_group: controlplane
+  - role: boot-iso
+    vars:
+      inventory_group: worker
+  - wait-hosts-discovered
+  - install-cluster
+  - bm-post-cluster-install

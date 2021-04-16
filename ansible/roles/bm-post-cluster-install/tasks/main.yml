@@ -1,0 +1,66 @@
+---
+# bm-post-cluster-install tasks
+
+- name: Create directories for bm cluster configuration items
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ bastion_cluster_config_dir }}"
+    - "{{ bastion_cluster_config_dir }}/localstorage"
+    - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
+
+- name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{ item }}"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item }}"
+  with_items:
+    - kubeadmin-password
+    - kubeconfig
+
+- name: Place templated configuration items
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: localstorage.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
+    - src: localvolume.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
+    - src: cluster-monitoring-config.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
+
+- name: Add kube-burner sa
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create sa kubeburner
+  when: setup_kube_burner_sa
+
+- name: Add cluster-admin role to kube-burner sa
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
+  when: setup_kube_burner_sa
+
+- name: Setup worker nodes localstorage
+  when: worker_localstorage_configuration
+  block:
+  - name: Label the worker nodes
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true prometheus=true
+    with_items: "{{ groups['worker'] }}"
+
+  - name: Install local-storage operator
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
+
+  # The localvolume resource will not be instantly available, thus retry for around 2 minutes
+  - name: Create localvolume resource
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
+    register: lv_result
+    until: not lv_result.failed
+    retries: 60
+    delay: 2
+
+  - name: Configure OpenShift-Monitoring Prometheus to use localstorage
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml

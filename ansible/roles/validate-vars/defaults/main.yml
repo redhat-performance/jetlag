@@ -1,5 +1,9 @@
 ---
+# bm = baremetal
+# rwn = remote worker node
+# sno = single node openshift
 
 cluster_types:
+- bm
 - rwn
 - sno

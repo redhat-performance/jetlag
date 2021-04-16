@@ -13,16 +13,16 @@
   - vars/all.yml
   roles:
   - validate-vars
-  - rwn-create-ai-cluster
-  - rwn-generate-discovery-iso
+  - create-ai-cluster
+  - generate-discovery-iso
   - role: boot-iso
     vars:
       inventory_group: controlplane
-  - rwn-wait-hosts-discovered
-  - rwn-install-cluster
+  - wait-hosts-discovered
+  - install-cluster
   - rwn-post-cluster-install
   - generate-livecd
   - role: boot-iso
     vars:
-      inventory_group: rwn
+      inventory_group: remoteworker
   - wait-for-rwn-to-join

@@ -8,10 +8,16 @@ example.com ansible_ssh_user=root
 [controlplane:vars]
 # Unused
 
-[rwn]
+[worker]
 # Unused
 
-[rwn:vars]
+[worker:vars]
+# Unused
+
+[remoteworker]
+# Unused
+
+[remoteworker:vars]
 # Unused
 
 [sno]

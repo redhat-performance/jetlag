@@ -1,5 +1,5 @@
 ---
-# post-cluster-install tasks
+# rwn-post-cluster-install tasks
 
 - name: Create directories for rwn cluster configuration items
   file:
@@ -40,7 +40,7 @@
     src: mcp.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/mcp/mcp-rwn-{{ hostvars[item].vlan }}.yml"
   with_items:
-    - "{{ groups['rwn'] }}"
+    - "{{ groups['remoteworker'] }}"
 
 # Witnessed at least once where the cluster did not seem to be ready for commands
 # thus adding retries to this first command

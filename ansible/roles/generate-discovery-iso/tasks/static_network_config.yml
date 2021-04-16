@@ -7,12 +7,18 @@
   when:
     - item in groups['controlplane']
 
+- name: Assemble bm static network config
+  set_fact:
+    item_network_config: "{{ lookup('template', 'worker.nmstate.yml.j2') }}"
+  when:
+    - item in groups['worker']
+
 # AI doesn't support vlan configuration just yet
 # - name: Assemble remote workers static network config
 #   set_fact:
-#     item_ips_config: "{{ lookup('template', 'rwn.nmstate.yml.j2') }}"
+#     item_ips_config: "{{ lookup('template', 'remoteworker.nmstate.yml.j2') }}"
 #   when:
-#     - item in groups['rwn']
+#     - item in groups['remoteworker']
 
 - name: Add {{ item }} ip config
   set_fact:

@@ -38,8 +38,8 @@
 - name: Setup rwn control-plane network
   nmcli:
     type: ethernet
-    conn_name: "{{ bastion_control_plane_interface }}"
-    ifname: "{{ bastion_control_plane_interface }}"
+    conn_name: "{{ bastion_controlplane_interface }}"
+    ifname: "{{ bastion_controlplane_interface }}"
     ip4: "{{ controlplane_network | next_nth_usable(1) }}/{{ controlplane_network_prefix }}"
     state: present
 
@@ -51,4 +51,4 @@
     conn_name: "{{ bastion_vlaned_interface }}.{{ hostvars[item].vlan }}"
     ip4: "{{ hostvars[item].gateway }}/{{ hostvars[item].network_prefix }}"
     state: present
-  loop: "{{ groups['rwn'] }}"
+  loop: "{{ groups['remoteworker'] }}"

@@ -1,7 +1,8 @@
 ---
-# rwn-create-ai-cluster tasks
+# create-ai-cluster tasks
+# Applies to BM and RWN clusters
 
-- name: Create RWN cluster
+- name: Create cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
     method: POST
@@ -9,7 +10,7 @@
     status_code: [201]
     return_content: true
     body: {
-        "name": "{{ rwn_cluster_name }}",
+        "name": "{{ cluster_name }}",
         "openshift_version": "{{ openshift_version }}",
         "base_dns_domain": "{{ base_dns_name }}",
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
@@ -32,16 +33,16 @@
     path: "/etc/hosts"
     backup: true
     block: |
-        {{ controlplane_network_api }} api.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} oauth-openshift.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} console-openshift-console.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} downloads-openshift-console.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} grafana-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ rwn_cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} oauth-openshift.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} console-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} downloads-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} grafana-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
     insertafter: "EOF"
-    marker: "# {mark} {{ rwn_cluster_name }} OCP CLUSTER MANAGED BLOCK"
+    marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
 - name: Get OpenShift versions to obtain coredns image
   uri:
@@ -67,7 +68,7 @@
     coredns_image: "quay.io/openshift/origin-coredns:{{ openshift_version }}"
   when: '"registry.ci.openshift.org" in versions.json[openshift_version]["release_image"]'
 
-- name: Add manifests for cluster
+- name: Add manifests to disable lab public dhcp interface for control-plane and worker nodes
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
     method: POST
@@ -83,5 +84,16 @@
     content: "{{ lookup('template', './50-controlplane-disable-lab-dhcp-interface.yml.j2') }}"
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
     content: "{{ lookup('template', './50-worker-disable-lab-dhcp-interface.yml.j2') }}"
-  - file_name: 50-worker-fix-ipi-rwn.yaml
-    content: "{{ lookup('template', './50-worker-fix-ipi-rwn.yml.j2') }}"
+
+- name: RWN - Add additional manifest for remote worker node cluster
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
+    method: POST
+    body_format: json
+    status_code: [201]
+    body: {
+        "folder": "manifests",
+        "file_name": "50-worker-fix-ipi-rwn.yaml",
+        "content": "{{ lookup('template', './50-worker-fix-ipi-rwn.yml.j2') | b64encode }}"
+    }
+  when: cluster_type == "rwn"

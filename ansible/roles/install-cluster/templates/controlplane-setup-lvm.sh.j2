@@ -1,4 +1,5 @@
 #!/bin/bash
+# Jetlag controlplane-setup-lvm.sh
 for vg in $(vgs -o name --noheadings | grep "vg_ls") ; do vgremove -y $vg ; done
 for pv in $(pvs -o name --noheadings | grep "{{ controlplane_localstorage_device }}") ; do pvremove -y $pv ; done
 echo "Setting up LVM for local-storage"
