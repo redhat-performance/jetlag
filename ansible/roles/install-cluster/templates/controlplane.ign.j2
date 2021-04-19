@@ -1,6 +1,10 @@
 {
   "ignition": {
+{% if openshift_version == "4.8" %}
+    "version": "3.2.0"
+{% else %}
     "version": "3.1.0"
+{% endif %}
   },
   "storage": {
     "disks": [

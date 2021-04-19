@@ -21,7 +21,11 @@ metadata:
   name: local-storage-operator
   namespace: openshift-local-storage
 spec:
+{% if openshift_version == "4.8" %}
+  channel: "4.7"
+{% else %}
   channel: "{{ openshift_version }}"
+{% endif %}
   installPlanApproval: Automatic
   name: local-storage-operator
   source: redhat-operators
