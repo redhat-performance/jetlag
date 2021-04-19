@@ -43,7 +43,7 @@
             "-i",
             "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
           ]
-  when: drac_version.stdout_lines | int <= 13
+  when: drac_version.stdout_lines[0] | int <= 13
 
 - name: Dell - Mount Live ISO, Boot into Live ISO (Dell iDRAC9+ only)
   block:
@@ -103,4 +103,4 @@
         baseuri: "{{ hostvars[item]['bmc_address'] }}"
         username: "{{ hostvars[item]['bmc_user'] }}"
         password: "{{ hostvars[item]['bmc_password'] }}"
-  when: drac_version.stdout_lines | int > 13
+  when: drac_version.stdout_lines[0] | int > 13
