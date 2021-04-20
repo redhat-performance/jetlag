@@ -94,7 +94,7 @@ controlplane_localstorage_lv_count: 10
 controlplane_localstorage_lv_size: 100G
 
 worker_localstorage_configuration: false
-worker_localstorage_device: /dev/sdb
+worker_localstorage_device: /dev/nvme0n1
 worker_localstorage_lv_count: 10
 worker_localstorage_lv_size: 100G
 
