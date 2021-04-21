@@ -53,11 +53,11 @@ http_store_path: /opt/http_store/data/
 
 coreos_installer_image: quay.io/coreos/coreos-installer:v0.7.0
 
-assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.17.3
-assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.17.3
-assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.17.3
-assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.17.3
-assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.17.3
+assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.18.3
+assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.18.3
+assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.18.3
+assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.18.3
+assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.18.3
 assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
 
 assisted_service_openshift_version: '{"4.6":{"display_name":"4.6.16","release_image":"quay.io/openshift-release-dev/ocp-release:4.6.16-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso","rhcos_version":"46.82.202012051820-0","support_level":"production"},"4.7":{"display_name":"4.7.7","release_image":"quay.io/openshift-release-dev/ocp-release:4.7.7-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.0/rhcos-4.7.0-x86_64-live.x86_64.iso","rhcos_version":"47.83.202102090044-0","support_level":"production","default":true},"4.8":{"display_name":"4.8.0-fc.0","release_image":"quay.io/openshift-release-dev/ocp-release:4.8.0-fc.0-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.0/rhcos-4.7.0-x86_64-live.x86_64.iso","rhcos_version":"47.83.202102090044-0","support_level":"beta"}}'

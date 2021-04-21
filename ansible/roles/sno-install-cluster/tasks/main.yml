@@ -1,26 +1,6 @@
 ---
 # sno-install-cluster tasks
 
-- name: Get sno cluster(s) host
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/hosts"
-    method: GET
-    body_format: json
-    status_code: [200]
-    return_content: true
-  register: get_hosts
-  loop: "{{ ai_cluster_ids | dict2items  }}"
-
-- name: Apply dns host ignition config override
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.item.value.cluster_id }}/hosts/{{ item.json[0].id }}/ignition"
-    method: PATCH
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: { "config": "{{ lookup('template', 'sno-dns.ign.j2') | to_json }}" }
-  loop: "{{ get_hosts.results }}"
-
 - name: Install cluster(s)
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/actions/install"

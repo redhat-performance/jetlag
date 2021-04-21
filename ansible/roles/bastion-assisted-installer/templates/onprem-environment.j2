@@ -12,9 +12,10 @@ STORAGE=filesystem
 DUMMY_IGNITION=false
 
 OPENSHIFT_VERSIONS={{ assisted_service_openshift_version }}
+ENABLE_SINGLE_NODE_DNSMASQ=true
 PUBLIC_CONTAINER_REGISTRIES=quay.io
 NTP_DEFAULT_SERVER=
-IPV6_SUPPORT=false
+IPV6_SUPPORT=true
 AUTH_TYPE=none
 
 SKIP_CERT_VERIFICATION=true
@@ -23,10 +24,3 @@ SELF_VERSION={{ assisted_service_image }}
 INSTALLER_IMAGE={{ assisted_installer_image }}
 CONTROLLER_IMAGE={{ assisted_installer_controller_image }}
 AGENT_DOCKER_IMAGE={{ assisted_installer_agent_image }}
-
-#####################################################################################
-##  Experimental: Single Node deployment
-# Need to be uncommented for single node cluster
-#INSTALLER_IMAGE=quay.io/eranco74/assisted-installer:single_node_onprem
-#CONTROLLER_IMAGE=quay.io/eranco74/assisted-installer-controller:single_node_onprem
-#####################################################################################
