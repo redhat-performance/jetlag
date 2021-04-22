@@ -1,4 +1,4 @@
 hostname,interface.vlan,interface,mac,ip,gateway,mask
 {% for remoteworker in groups['remoteworker'] %}
-{{ remoteworker }},{{ hostvars[remoteworker].interface }}.{{ hostvars[remoteworker].vlan }},{{ hostvars[remoteworker].interface }},{{ hostvars[remoteworker].mac }},{{ hostvars[remoteworker].ip }},{{ hostvars[remoteworker].gateway }},{{ hostvars[remoteworker].network_mask }}
+{{ remoteworker }},{{ hostvars[remoteworker].network_interface }}.{{ hostvars[remoteworker].vlan }},{{ hostvars[remoteworker].network_interface }},{{ hostvars[remoteworker].network_mac }},{{ hostvars[remoteworker].ip }},{{ hostvars[remoteworker].gateway }},{{ hostvars[remoteworker].network_mask }}
 {% endfor %}

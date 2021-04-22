@@ -5,12 +5,12 @@
   set_fact:
     static_network_config: []
 
-- name : Populate static network configuration
+- name : Populate static network configuration with controlplane nodes
   include_tasks: static_network_config.yml
   with_items:
     - "{{ groups['controlplane'] }}"
 
-- name : BM Nodes Populate static network configuration
+- name : BM - Populate static network configuration with worker nodes
   include_tasks: static_network_config.yml
   when: cluster_type == "bm"
   with_items:

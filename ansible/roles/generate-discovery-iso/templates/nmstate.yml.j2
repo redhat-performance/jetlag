@@ -1,5 +1,5 @@
 interfaces:
-- name: {{ hostvars[item]['mac'] | replace(':','') }}
+- name: {{ hostvars[item]['network_interface'] }}
   type: ethernet
   state: up
   ipv4:
@@ -8,7 +8,7 @@ interfaces:
       prefix-length: {{ hostvars[item]['network_prefix'] }}
     auto-dns: false
     enabled: true
-- name: {{ hostvars[item]['lab_mac'] | replace(':','') }}
+- name: {{ hostvars[item]['lab_interface']}}
   type: ethernet
   state: up
   ipv4:
@@ -22,4 +22,4 @@ routes:
   config:
   - destination: 0.0.0.0/0
     next-hop-address: {{ hostvars[item]['gateway'] }}
-    next-hop-interface: {{ hostvars[item]['mac'] | replace(':','') }}
+    next-hop-interface: {{ hostvars[item]['network_interface'] }}

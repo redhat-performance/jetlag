@@ -4,9 +4,9 @@
 [controlplane]
 # Network mac is the intended mac address of the private network to use for this cluster
 # Lab mac corresponds to the lab dhcp network, we disable the lab network for this type of cluster
-{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} mac={{ controlplane0_network_mac }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | next_nth_usable(5) }}
-{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} mac={{ controlplane1_network_mac }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | next_nth_usable(6) }}
-{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} mac={{ controlplane2_network_mac }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | next_nth_usable(7) }}
+{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} network_mac={{ controlplane0_network_mac }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | next_nth_usable(5) }}
+{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} network_mac={{ controlplane1_network_mac }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | next_nth_usable(6) }}
+{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} network_mac={{ controlplane2_network_mac }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | next_nth_usable(7) }}
 
 [controlplane:vars]
 role=master
@@ -14,7 +14,8 @@ vendor=Dell
 boot_iso=discovery.iso
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
-interface={{ controlplane_network_interface }}
+lab_interface={{ controlplane_lab_interface }}
+network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
 dns={{ lab_dns }}
@@ -30,7 +31,7 @@ dns={{ lab_dns }}
 # rwn node.  In the lab case, we use vlans to separate each rwn node and allow the bastion machine
 # to route traffic between the control-plane nodes and the remote worker nodes
 {% for remoteworker in ocpinventory_rwn_nodes %}
-{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} mac={{ remoteworker.mac[rwn_network_interface_idx] }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vlan={{ rwn_vlan_start + loop.index - 1 }} interface={{ rwn_network_interface }}
+{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }}
 {% endfor %}
 
 [remoteworker:vars]

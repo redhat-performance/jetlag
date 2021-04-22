@@ -1,0 +1,10 @@
+[
+    {
+        "mac_address": "{{ hostvars[item]['network_mac'] }}",
+        "logical_nic_name": "{{ hostvars[item]['network_interface'] }}"
+    },
+    {
+        "mac_address": "{{ hostvars[item]['lab_mac'] }}",
+        "logical_nic_name": "{{ hostvars[item]['lab_interface'] }}"
+    }
+]

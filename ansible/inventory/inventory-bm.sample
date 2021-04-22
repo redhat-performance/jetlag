@@ -3,9 +3,9 @@
 example.com ansible_ssh_user=root
 
 [controlplane]
-control-plane-0 bmc_address=mgmt-control-plane-0.example.com mac=40:a6:b7:2a:74:40 lab_mac=bc:97:e1:7a:d4:40 ip=198.18.10.5
-control-plane-1 bmc_address=mgmt-control-plane-1.example.com mac=40:a6:b7:2a:98:90 lab_mac=bc:97:e1:78:c7:f0 ip=198.18.10.6
-control-plane-2 bmc_address=mgmt-control-plane-2.example.com mac=40:a6:b7:2a:6b:f0 lab_mac=bc:97:e1:7a:ce:70 ip=198.18.10.7
+control-plane-0 bmc_address=mgmt-control-plane-0.example.com network_mac=40:a6:b7:2a:74:40 lab_mac=bc:97:e1:7a:d4:40 ip=198.18.10.5
+control-plane-1 bmc_address=mgmt-control-plane-1.example.com network_mac=40:a6:b7:2a:98:90 lab_mac=bc:97:e1:78:c7:f0 ip=198.18.10.6
+control-plane-2 bmc_address=mgmt-control-plane-2.example.com network_mac=40:a6:b7:2a:6b:f0 lab_mac=bc:97:e1:7a:ce:70 ip=198.18.10.7
 
 [controlplane:vars]
 role=master
@@ -13,14 +13,15 @@ vendor=Dell
 boot_iso=discovery.iso
 bmc_user=quads
 bmc_password=password
-interface=eno2np1
+lab_interface=eno1np0
+network_interface=eno2np1
 network_prefix=24
 gateway=198.18.10.1
 dns=8.8.8.8
 
 [worker]
-worker-0 bmc_address=mgmt-worker-0.example.com mac=40:a6:b7:2a:75:f1 lab_mac=bc:97:e1:7a:ce:71 ip=198.18.10.8
-worker-1 bmc_address=mgmt-worker-1.example.com mac=40:a6:b7:2b:bc:01 lab_mac=bc:97:e1:7a:ce:72 ip=198.18.10.9
+worker-0 bmc_address=mgmt-worker-0.example.com network_mac=40:a6:b7:2a:75:f1 lab_mac=bc:97:e1:7a:ce:71 ip=198.18.10.8
+worker-1 bmc_address=mgmt-worker-1.example.com network_mac=40:a6:b7:2b:bc:01 lab_mac=bc:97:e1:7a:ce:72 ip=198.18.10.9
 
 [worker:vars]
 role=worker
@@ -28,7 +29,8 @@ vendor=Dell
 boot_iso=discovery.iso
 bmc_user=quads
 bmc_password=password
-interface=eno2np1
+lab_interface=eno1np0
+network_interface=eno2np1
 network_prefix=30
 gateway=10.1.63.126
 dns=8.8.8.8
