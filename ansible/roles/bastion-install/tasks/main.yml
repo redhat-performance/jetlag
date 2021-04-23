@@ -24,15 +24,16 @@
   yum:
     name:
     - ansible
-    - podman
-    - skopeo
+    - dnsmasq
     - frr
     - git
-    - jq
-    - tmux
-    - net-tools
-    - tcpdump
     - iproute-tc
+    - jq
+    - net-tools
+    - podman
+    - skopeo
+    - tcpdump
+    - tmux
     state: present
     update_cache: true
     disable_gpg_check: yes

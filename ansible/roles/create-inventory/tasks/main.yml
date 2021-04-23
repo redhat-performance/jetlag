@@ -18,7 +18,7 @@
 
 - name: Download ocpinventory.json
   uri:
-    url: "http://{{ lab_quads_host }}/cloud/{{ lab_cloud }}_ocpinventory.json"
+    url: "http://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
     return_content: true
   register: ocpinventory
 
@@ -45,7 +45,7 @@
 
   - name: BM/RWN - Get controlplane0 lab mac address
     uri:
-      url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane0 | replace('mgmt-','') }}"
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane0 | replace('mgmt-','') }}"
       force_basic_auth: yes
       user: "{{ lab_cloud }}"
       password: "{{ bmc_password }}"
@@ -60,7 +60,7 @@
 
   - name: BM/RWN - Get controlplane1 lab mac address
     uri:
-      url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane1 | replace('mgmt-','') }}"
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane1 | replace('mgmt-','') }}"
       force_basic_auth: yes
       user: "{{ lab_cloud }}"
       password: "{{ bmc_password }}"
@@ -75,7 +75,7 @@
 
   - name: BM/RWN - Get controlplane2 lab mac address
     uri:
-      url: "https://{{ lab_foreman_host }}/api/hosts/{{ controlplane2 | replace('mgmt-','') }}"
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane2 | replace('mgmt-','') }}"
       force_basic_auth: yes
       user: "{{ lab_cloud }}"
       password: "{{ bmc_password }}"
@@ -108,7 +108,7 @@
 
 - name: BM - Get lab mac address
   uri:
-    url: "https://{{ lab_foreman_host }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
+    url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
     force_basic_auth: yes
     user: "{{ lab_cloud }}"
     password: "{{ bmc_password }}"
@@ -127,7 +127,7 @@
 
   - name: SNO - Get lab data for each sno
     uri:
-      url: "https://{{ lab_foreman_host }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
       force_basic_auth: yes
       user: "{{ lab_cloud }}"
       password: "{{ bmc_password }}"

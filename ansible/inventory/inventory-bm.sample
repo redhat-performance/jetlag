@@ -17,7 +17,8 @@ lab_interface=eno1np0
 network_interface=eno2np1
 network_prefix=24
 gateway=198.18.10.1
-dns=8.8.8.8
+dns1=198.18.10.1
+dns2=10.1.36.1
 
 [worker]
 worker-0 bmc_address=mgmt-worker-0.example.com network_mac=40:a6:b7:2a:75:f1 lab_mac=bc:97:e1:7a:ce:71 ip=198.18.10.8
@@ -32,8 +33,9 @@ bmc_password=password
 lab_interface=eno1np0
 network_interface=eno2np1
 network_prefix=30
-gateway=10.1.63.126
-dns=8.8.8.8
+gateway=198.18.10.1
+dns1=198.18.10.1
+dns2=10.1.36.1
 
 [remoteworker]
 # Unused

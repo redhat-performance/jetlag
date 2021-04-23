@@ -1,7 +1,7 @@
 . {
     errors
     health :18080
-    forward . {{ lab_dns }}
+    forward . {{ labs[lab]['dns'][0] }}
     cache 30
     reload
     template IN A {{ cluster_name }}.{{ base_dns_name }} {

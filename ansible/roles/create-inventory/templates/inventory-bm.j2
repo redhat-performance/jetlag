@@ -16,7 +16,13 @@ lab_interface={{ controlplane_lab_interface }}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
-dns={{ lab_dns }}
+{% if controlplane_bastion_as_dns %}
+dns1={{ bastion_controlplane_ip }}
+dns2={{ labs[lab]['dns'][0] }}
+{% else %}
+dns1={{ labs[lab]['dns'][0] }}
+dns2={{ labs[lab]['dns'][1] | default('') }}
+{% endif %}
 
 [worker]
 {% for worker in ocpinventory_worker_nodes %}
@@ -33,7 +39,13 @@ lab_interface={{ controlplane_lab_interface }}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
-dns={{ lab_dns }}
+{% if controlplane_bastion_as_dns %}
+dns1={{ bastion_controlplane_ip }}
+dns2={{ labs[lab]['dns'][0] }}
+{% else %}
+dns1={{ labs[lab]['dns'][0] }}
+dns2={{ labs[lab]['dns'][1] | default('') }}
+{% endif %}
 
 [remoteworker]
 # Unused

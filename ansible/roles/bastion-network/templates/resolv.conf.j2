@@ -1,0 +1,6 @@
+# Deployed by Jetlag automation
+search {{ base_dns_name }}
+nameserver {{ bastion_controlplane_ip }}
+{% for dns in labs[lab]['dns'] %}
+nameserver {{ dns }}
+{% endfor %}

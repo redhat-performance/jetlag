@@ -33,11 +33,13 @@ Set your pull-secret in `pull_secret.txt` in repo base directory.
 
 Make sure to set/review the following vars:
 
-* `lab_cloud`, `lab_quads_host`, `lab_foreman_host`, `lab_dns` - for lab related details
+* `lab` - either `alias` or `scalelab`
+* `lab_cloud` - the cloud within the lab environment (Example: `cloud42`)
 * `cluster_type` - either `bm`, `rwn`, or `sno` for the respective cluster layout
 * `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 * `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to
 * `controlplane_network` and `controlplane_network_*` - applies to bm and rwn cluster types, for bm it will be the network that each node, api, and ingress addresses are assigned from, for rwn it is only the 3 control-plane nodes, api and ingress addresses
+* `controlplane_bastion_as_dns` - sets using the bastion as the primary dns server (Only applies to bm cluster type)
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
 * `rwn_vlan_start` - desired starting vlan for remote worker nodes
 * `rwn_network_*` - network configuration to be used for each remote worker node, each remote worker will be on its own network

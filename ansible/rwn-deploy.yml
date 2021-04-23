@@ -11,6 +11,7 @@
   hosts: bastion
   vars_files:
   - vars/all.yml
+  - vars/lab.yml
   roles:
   - validate-vars
   - create-ai-cluster

@@ -18,7 +18,8 @@ lab_interface={{ controlplane_lab_interface }}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
-dns={{ lab_dns }}
+dns1={{ labs[lab]['dns'][0] }}
+dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [worker]
 # Unused
@@ -42,7 +43,8 @@ bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 network_prefix={{ rwn_network_prefix }}
 network_mask={{ rwn_network_mask }}
-dns={{ lab_dns }}
+dns1={{ labs[lab]['dns'][0] }}
+dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [sno]
 # Unused

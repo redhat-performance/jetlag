@@ -29,4 +29,5 @@
 vendor=Dell
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
-dns={{ lab_dns }}
+dns1={{ labs[lab]['dns'][0] }}
+dns2={{ labs[lab]['dns'][1] | default('') }}

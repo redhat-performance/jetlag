@@ -17,7 +17,8 @@ interfaces:
 dns-resolver:
   config:
     server:
-    - {{ hostvars[item]['dns'] }}
+    - {{ hostvars[item]['dns1'] }}
+    - {{ hostvars[item]['dns2'] }}
 routes:
   config:
   - destination: 0.0.0.0/0

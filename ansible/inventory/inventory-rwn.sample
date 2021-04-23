@@ -19,7 +19,8 @@ lab_interface=eno1np0
 network_interface=ens1f0
 network_prefix=24
 gateway=198.18.10.1
-dns=8.8.8.8
+dns1=8.8.8.8
+dns2=8.8.4.4
 
 [worker]
 # Unused
@@ -42,7 +43,8 @@ bmc_user=quads
 bmc_password=password
 network_prefix=30
 network_mask=255.255.255.252
-dns=8.8.8.8
+dns1=8.8.8.8
+dns2=8.8.4.4
 
 [sno]
 # Unused

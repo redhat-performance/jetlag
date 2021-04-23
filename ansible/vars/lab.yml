@@ -1,0 +1,17 @@
+---
+# Lab data (You should not have to edit this file)
+
+labs:
+  alias:
+    dns:
+    - 10.19.96.1
+    foreman: navi.alias.bos.scalelab.redhat.com
+    ntp_server: clock2.bos.redhat.com
+    quads: quads11.alias.bos.scalelab.redhat.com
+  scalelab:
+    dns:
+    - 10.1.36.1
+    - 10.1.36.2
+    foreman: foreman.rdu2.scalelab.redhat.com
+    ntp_server: clock1.rdu2.redhat.com
+    quads: quads.rdu2.scalelab.redhat.com

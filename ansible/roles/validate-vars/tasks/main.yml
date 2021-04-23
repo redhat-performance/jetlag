@@ -1,6 +1,11 @@
 ---
 # validate-vars tasks
 
+- name: Validate lab
+  fail:
+    msg: "Invalid lab selected('{{ lab }}') Select from {{ labs | list }} "
+  when: lab not in labs
+
 - name: Validate cluster_type
   fail:
     msg: "Invalid cluster_type selected - {{ cluster_type }}"

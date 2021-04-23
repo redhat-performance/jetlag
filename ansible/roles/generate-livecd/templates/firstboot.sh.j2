@@ -19,7 +19,7 @@ echo "IP: ${ip}"
 echo "Gateway: ${gateway}"
 echo "Mask: ${mask}"
 
-KERNEL_ARGS="vlan=${interface_vlan}:${interface}  ip=${ip}::${gateway}:${mask}:${hostname}:${interface_vlan}:none:${ip}:{{lab_dns}}"
+KERNEL_ARGS="vlan=${interface_vlan}:${interface} ip=${ip}::${gateway}:${mask}:${hostname}:${interface_vlan}:none:${ip}:{{ labs[lab]['dns'][0] }}"
 
 # Remove any existing VGs and PVs
 for vg in $(vgs -o name --noheadings) ; do vgremove -y $vg ; done

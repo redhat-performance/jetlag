@@ -29,4 +29,5 @@ sno-1 bmc_address=mgmt-sno-1.example.com boot_iso=sno-1.iso ip_address=10.0.0.2
 vendor=Dell
 bmc_user=quads
 bmc_password=password
-dns=8.8.8.8
+dns1=8.8.8.8
+dns2=8.8.4.4

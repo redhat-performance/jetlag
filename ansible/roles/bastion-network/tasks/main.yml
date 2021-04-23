@@ -35,12 +35,12 @@
     enabled: true
     name: frr
 
-- name: Setup rwn control-plane network
+- name: Setup bastion on control-plane network
   nmcli:
     type: ethernet
     conn_name: "{{ bastion_controlplane_interface }}"
     ifname: "{{ bastion_controlplane_interface }}"
-    ip4: "{{ controlplane_network | next_nth_usable(1) }}/{{ controlplane_network_prefix }}"
+    ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
     state: present
 
 - name: Setup rwn vlaned interfaces
@@ -51,4 +51,28 @@
     conn_name: "{{ bastion_vlaned_interface }}.{{ hostvars[item].vlan }}"
     ip4: "{{ hostvars[item].gateway }}/{{ hostvars[item].network_prefix }}"
     state: present
+  when: cluster_type == "rwn"
   loop: "{{ groups['remoteworker'] }}"
+
+- name: Configure Dnsmasq / NetworkManager
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: jetlag.conf.j2
+    dest: /etc/dnsmasq.d/jetlag.conf
+  - src: 99-jetlag-dns.conf
+    dest: /etc/NetworkManager/conf.d/99-jetlag-dns.conf
+  - src: resolv.conf.j2
+    dest: /etc/resolv.conf
+
+- name: Restart NetworkManager
+  systemd:
+    state: restarted
+    name: NetworkManager
+
+- name: Start and enable dnsmasq
+  systemd:
+    state: restarted
+    enabled: true
+    name: dnsmasq

@@ -18,7 +18,7 @@
         "service_network_cidr": "{{ service_network_cidr }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-        "additional_ntp_source": "{{ ntp_server }}"
+        "additional_ntp_source": "{{ labs[lab]['ntp_server'] }}"
     }
   loop: "{{ groups['sno'] }}"
   register: create_cluster_return
