@@ -119,3 +119,4 @@ rwn_autorules_rule:
 
 # workload related vars
 setup_kube_burner_sa: true
+rhacm_add_acm_d_icsp_manifest: false

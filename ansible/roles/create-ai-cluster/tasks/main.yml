@@ -54,11 +54,15 @@
         "file_name": "{{ item.file_name }}",
         "content": "{{ item.content | b64encode }}"
     }
+  when: item.enabled | default(true) | bool
   with_items:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
     content: "{{ lookup('template', './50-controlplane-disable-lab-dhcp-interface.yml.j2') }}"
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
     content: "{{ lookup('template', './50-worker-disable-lab-dhcp-interface.yml.j2') }}"
+  - file_name: rhacm-iscp.yml
+    content: "{{ lookup('template', './rhacm-icsp.yml') }}"
+    enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
 
 - name: RWN - Get OpenShift versions to obtain coredns image
   uri:
