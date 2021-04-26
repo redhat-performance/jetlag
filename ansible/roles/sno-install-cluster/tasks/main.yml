@@ -1,6 +1,16 @@
 ---
 # sno-install-cluster tasks
 
+- name: Set networkType via install-config override
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/install-config"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype }}\\\" }}\""
+  with_items: "{{ ai_cluster_ids }}"
+
 - name: Install cluster(s)
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/actions/install"
