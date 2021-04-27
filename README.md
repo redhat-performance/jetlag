@@ -10,6 +10,22 @@ Three separate layouts of clusters can be deployed:
 
 Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for remote worker node clusters. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fufilling the bastion machine requirement.
 
+## Tested Labs/Hardware
+
+Alias Lab
+
+| Hardware | BM  | RWN | SNO |
+| -------- | --- | --- | --- |
+| 740xd    | No  | No  | Yes |
+
+Scale Lab
+
+| Hardware         | BM  | RWN | SNO |
+| ---------------- | --- | --- | --- |
+| Dell r640        | Yes | Yes | Yes |
+| Dell fc640       | No  | No  | Yes |
+| Supermicro 1029p | Yes | Yes | No  |
+
 ## Ansible Prerequisites
 
 Pre-reqs for the playbooks:
