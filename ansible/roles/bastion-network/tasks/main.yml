@@ -41,6 +41,19 @@
     enabled: true
     name: frr
 
+# Connections can end up named "Wired Connection X" and prevent the bastion controlplane interface from being configured
+- name: Get NetworkManager connection name for bastion control-plane interface
+  shell: |
+    nmcli d show {{ bastion_controlplane_interface }} | grep "GENERAL.CONNECTION:" | sed 's/GENERAL.CONNECTION://g' | xargs
+  register: cp_int_nmcli
+
+- name: Disable original bastion control-plane connection
+  nmcli:
+    type: ethernet
+    conn_name: "{{ cp_int_nmcli.stdout }}"
+    state: absent
+  when: cp_int_nmcli.stdout != bastion_controlplane_interface
+
 - name: Setup bastion on control-plane network
   nmcli:
     type: ethernet

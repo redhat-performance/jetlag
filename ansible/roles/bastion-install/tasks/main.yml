@@ -5,6 +5,11 @@
   shell: |
     /root/clean-interfaces.sh --nuke
 
+- name: Restart NetworkManager to remove lab interface
+  systemd:
+    state: restarted
+    name: NetworkManager
+
 - name: Check if ssh keys exists
   stat:
     path: /root/.ssh/id_rsa
