@@ -23,6 +23,11 @@
   retries: 40
   delay: 60
 
+  # Until the above race condition is fixed, allow some time for discovery to complete
+- name: Sleep to allow full discovery
+  pause:
+    minutes: 2
+
 - name: Set hostname and role for discovered hosts
   include_tasks: set_hostname_role.yml
   with_items:

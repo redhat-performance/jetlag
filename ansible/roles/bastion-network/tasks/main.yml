@@ -1,6 +1,12 @@
 ---
 # bastion-network tasks
 
+- name: Stop and disable iptables
+  systemd:
+    state: stopped
+    enabled: false
+    name: iptables
+
 - name: Set ip_forward sysctl
   sysctl:
     name: net.ipv4.ip_forward
