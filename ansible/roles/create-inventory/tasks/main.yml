@@ -42,6 +42,9 @@
       controlplane0_network_mac: "{{ ocpinventory.json.nodes[1].mac[controlplane_network_interface_idx] }}"
       controlplane1_network_mac: "{{ ocpinventory.json.nodes[2].mac[controlplane_network_interface_idx] }}"
       controlplane2_network_mac: "{{ ocpinventory.json.nodes[3].mac[controlplane_network_interface_idx] }}"
+      controlplane0_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[1].pm_addr.split('.')[0]).split('-')[-1]] }}"
+      controlplane1_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[2].pm_addr.split('.')[0]).split('-')[-1]] }}"
+      controlplane2_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[3].pm_addr.split('.')[0]).split('-')[-1]] }}"
 
   - name: BM/RWN - Get controlplane0 lab mac address
     uri:

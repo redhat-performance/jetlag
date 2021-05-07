@@ -15,3 +15,23 @@ labs:
     foreman: foreman.rdu2.scalelab.redhat.com
     ntp_server: clock1.rdu2.redhat.com
     quads: quads.rdu2.scalelab.redhat.com
+
+hw_vendor:
+  r620: Dell
+  r630: Dell
+  r640: Dell
+  r730xd: Dell
+  r930: Dell
+  fc640: Dell
+  740xd: Dell
+  7425: Dell
+  7525: Dell
+  6018r: Supermicro
+  6048r: Supermicro
+  1029u: Supermicro
+  1029p: Supermicro
+  5039ms: Supermicro
+  6049p: Supermicro
+  6048p: Supermicro
+  6029r: Supermicro
+  dl360: Hp
