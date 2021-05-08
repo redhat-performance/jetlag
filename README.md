@@ -38,14 +38,18 @@ $ ansible-galaxy collection install community.general
 
 ## Cluster Deployment Usage
 
-Edit vars
+There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:
+
+* `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
+* `pull_secret.txt` - Your OCP pull secret
+* `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
+
+Start by editing the vars
 
 ```console
 $ cp ansible/vars/all.sample.yml ansible/vars/all.yml
 $ vi ansible/vars/all.yml
 ```
-
-Set your pull-secret in `pull_secret.txt` in repo base directory.
 
 Make sure to set/review the following vars:
 
@@ -59,6 +63,8 @@ Make sure to set/review the following vars:
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
 * `rwn_vlan_start` - desired starting vlan for remote worker nodes
 * `rwn_network_*` - network configuration to be used for each remote worker node, each remote worker will be on its own network
+
+Set your pull-secret in `pull_secret.txt` in repo base directory.
 
 Run create-inventory playbook
 

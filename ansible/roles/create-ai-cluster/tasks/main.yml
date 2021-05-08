@@ -32,14 +32,10 @@
     path: "/etc/hosts"
     backup: true
     block: |
-        {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} oauth-openshift.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} console-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} downloads-openshift-console.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} alertmanager-main-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} grafana-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} prometheus-k8s-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_ingress }} thanos-querier-openshift-monitoring.apps.{{ cluster_name }}.{{ base_dns_name }}
+      {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+      {% for route in etc_hosts_ingress_routes %}
+      {{ controlplane_network_ingress }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+      {% endfor %}
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 

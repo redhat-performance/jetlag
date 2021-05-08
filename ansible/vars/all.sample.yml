@@ -124,6 +124,19 @@ rwn_autorules_rule:
   labels:
   - node-role.kubernetes.io/worker
 
+# Appends each entry to /etc/hosts of bastion machine during cluster install to
+# allow sshuttle easy resolution when proxying into cluster
+etc_hosts_ingress_routes:
+- oauth-openshift
+- console-openshift-console
+- downloads-openshift-console
+- alertmanager-main-openshift-monitoring
+- grafana-openshift-monitoring
+- prometheus-k8s-openshift-monitoring
+- thanos-querier-openshift-monitoring
+- assisted-service-assisted-installer
+- multicloud-console
+
 # workload related vars
 setup_kube_burner_sa: true
 rhacm_add_acm_d_icsp_manifest: false

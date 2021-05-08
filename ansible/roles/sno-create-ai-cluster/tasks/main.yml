@@ -35,13 +35,9 @@
     backup: true
     block: |
       {{ hostvars[item].ip_address }} api.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} oauth-openshift.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} console-openshift-console.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} downloads-openshift-console.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} alertmanager-main-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} grafana-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} prometheus-k8s-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} thanos-querier-openshift-monitoring.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {% for route in etc_hosts_ingress_routes %}
+      {{ hostvars[item].ip_address }} {{ route }}.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {% endfor %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'] }}"
