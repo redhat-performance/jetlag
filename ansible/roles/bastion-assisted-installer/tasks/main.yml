@@ -16,24 +16,6 @@
     owner: "26"
     recurse: true
 
-- name: Download the rhcos image
-  get_url:
-    url: "{{ rhcos_image }}"
-    dest: "/opt/assisted-service/{{ rhcos_image | basename }}"
-
-- name: Get coreos-installer via podman
-  containers.podman.podman_container:
-    name: coreos-installer
-    rm: true
-    detach: false
-    volume:
-    - /opt/assisted-service:/data
-    workdir: /data
-    entrypoint: /bin/bash
-    image: "{{ coreos_installer_image }}"
-    command: ["-c", "cp /usr/sbin/coreos-installer /data/coreos-installer"]
-    state: started
-
 - name: Template out assisted-installer files
   template:
     src: "{{ item.src }}"
@@ -77,9 +59,6 @@
   containers.podman.podman_container:
     pod: assisted-service
     env_file: /opt/assisted-service/onprem-environment
-    volume:
-    - "/opt/assisted-service/{{ rhcos_image | basename }}:/data/livecd.iso"
-    - "/opt/assisted-service/coreos-installer:/data/coreos-installer"
     name: installer
     image: "{{ assisted_service_image }}"
     env:

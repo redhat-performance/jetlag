@@ -10,3 +10,8 @@
   fail:
     msg: "Invalid cluster_type selected - {{ cluster_type }}"
   when: cluster_type not in cluster_types
+
+- name: Check pull secret var is set
+  fail:
+    msg: "Pull secret appears unset"
+  when: pull_secret is not defined

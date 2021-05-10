@@ -11,4 +11,4 @@
   include_tasks: supermicro.yml
   with_items:
     - "{{ groups[inventory_group] }}"
-  when: hostvars[item]['vendor'] == 'SuperMicro'
+  when: hostvars[item]['vendor'] == 'Supermicro'
