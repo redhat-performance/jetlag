@@ -63,15 +63,15 @@ bastion_dnsmasq_cd_network_count: 0
 
 http_store_path: /opt/http_store/data/
 
-assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.19.3
-assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.19.3
-assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.19.3
-assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.19.3
-assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.19.3
+assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.20.3
+assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.20.3
+assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.20.3
+assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.20.3
+assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.20.3
 assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
 
-assisted_service_openshift_version: '{"4.6":{"display_name":"4.6.16","release_version":"4.6.16","release_image":"quay.io/openshift-release-dev/ocp-release:4.6.16-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso","rhcos_version":"46.82.202012051820-0","support_level":"production"},"4.7":{"display_name":"4.7.8","release_version":"4.7.8","release_image":"quay.io/openshift-release-dev/ocp-release:4.7.8-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-4.7.7-x86_64-live.x86_64.iso","rhcos_version":"47.83.202103251640-0","support_level":"production","default":true},"4.8":{"display_name":"4.8.0-fc.3","release_version":"4.8.0-fc.3","release_image":"quay.io/openshift-release-dev/ocp-release:4.8.0-fc.3-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-4.7.7-x86_64-live.x86_64.iso","rhcos_version":"47.83.202103251640-0","support_level":"beta"}}'
-rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-4.7.7-x86_64-live.x86_64.iso
+assisted_service_openshift_version: '{"4.6":{"display_name":"4.6.16","release_version":"4.6.16","release_image":"quay.io/openshift-release-dev/ocp-release:4.6.16-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso","rhcos_rootfs":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-live-rootfs.x86_64.img","rhcos_version":"46.82.202012051820-0","support_level":"production"},"4.7":{"display_name":"4.7.9","release_version":"4.7.9","release_image":"quay.io/openshift-release-dev/ocp-release:4.7.9-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-4.7.7-x86_64-live.x86_64.iso","rhcos_rootfs":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-live-rootfs.x86_64.img","rhcos_version":"47.83.202103251640-0","support_level":"production","default":true},"4.8":{"display_name":"4.8.0-fc.3","release_version":"4.8.0-fc.3","release_image":"quay.io/openshift-release-dev/ocp-release:4.8.0-fc.3-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-4.8.0-fc.3-x86_64-live.x86_64.iso","rhcos_rootfs":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-live-rootfs.x86_64.img","rhcos_version":"48.84.202105062123-0","support_level":"beta"}}'
+rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-4.8.0-fc.3-x86_64-live.x86_64.iso
 
 ################################################################################
 # Deploy playbook vars
