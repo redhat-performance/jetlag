@@ -345,7 +345,7 @@ def main():
   parser.add_argument(
       "-P", "--packet-loss", type=int, default=0, help="Percentage of packet loss to add to all VLANed interfaces")
   parser.add_argument(
-      "-B", "--max-bandwidth", type=int, default=0, help="Bandwidth limit to apply to all VLANed interfaces (kilobits). 0 for no limit.")
+      "-B", "--bandwidth-limit", type=int, default=0, help="Bandwidth limit to apply to all VLANed interfaces (kilobits). 0 for no limit.")
   parser.add_argument("-F", "--link-flap-down", type=int, default=0, help="Time period to flap link down (Seconds)")
   parser.add_argument("-U", "--link-flap-up", type=int, default=0, help="Time period to flap link up (Seconds)")
   parser.add_argument("-T", "--link-flap-firewall", action="store_true", default=False,
