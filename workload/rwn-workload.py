@@ -224,34 +224,39 @@ def command(cmd, dry_run, cmd_directory="", mask_output=False, mask_arg=0, no_lo
     os.chdir(working_directory)
   return return_code, output
 
+def parse_tc_netem_args(cliargs):
+  args = {}
 
-def apply_latency_packet_loss(interface, start_vlan, end_vlan, latency, packet_loss, dry_run=False):
-  tc_latency = []
-  tc_loss = []
-  if latency > 0 and packet_loss > 0:
-    logger.info("Applying latency and packet loss impairment")
-  elif latency > 0 and packet_loss <= 0:
-    logger.info("Applying only latency impairment")
-  elif latency <= 0 and packet_loss > 0:
-    logger.info("Applying only packet loss impairment")
+  if cliargs.latency > 0:
+    args["latency"] = ["delay", "{}ms".format(cliargs.latency)]
+  if cliargs.packet_loss > 0:
+    args["packet loss"] = ["loss", "{}%".format(cliargs.packet_loss)]
+  if cliargs.bandwidth_limit > 0:
+    args["bandwidth limit"] = ["rate", "{}kbit".format(cliargs.bandwidth_limit)]
 
-  if latency > 0:
-    tc_latency = ["delay", "{}ms".format(latency)]
-  if packet_loss > 0:
-    tc_loss = ["loss", "{}%".format(packet_loss)]
+  return args
+
+def apply_tc_netem(interface, start_vlan, end_vlan, impairments, dry_run=False):
+  if len(impairments) > 1:
+    logger.info("Applying {} impairments".format(", ".join(impairments.keys())))
+  elif len(impairments) == 1:
+    logger.info("Applying only {} impairment".format(list(impairments.keys())[0]))
+  else:
+    logger.warn("Invalid state. Applying no impairments.")
+
   for vlan in range(start_vlan, end_vlan + 1):
     tc_command = ["tc", "qdisc", "add", "dev", "{}.{}".format(interface, vlan), "root", "netem"]
-    tc_command.extend(tc_loss)
-    tc_command.extend(tc_latency)
+    for impairment in impairments.values():
+      tc_command.extend(impairment)
     rc, _ = command(tc_command, dry_run)
     if rc != 0:
       logger.error("RWN workload applying latency and packet loss failed, tc rc: {}".format(rc))
       sys.exit(1)
 
 
-def remove_latency_packet_loss(
-      interface, start_vlan, end_vlan, latency, packet_loss, dry_run=False, ignore_errors=False):
-  logger.info("Removing latency and packet loss impairments")
+def remove_tc_netem(
+      interface, start_vlan, end_vlan, dry_run=False, ignore_errors=False):
+  logger.info("Removing bandwidth, latency, and packet loss impairments")
   for vlan in range(start_vlan, end_vlan + 1):
     tc_command = ["tc", "qdisc", "del", "dev", "{}.{}".format(interface, vlan), "root", "netem"]
     rc, _ = command(tc_command, dry_run)
@@ -332,6 +337,8 @@ def main():
       "-L", "--latency", type=int, default=0, help="Amount of latency to add to all VLANed interfaces (milliseconds)")
   parser.add_argument(
       "-P", "--packet-loss", type=int, default=0, help="Percentage of packet loss to add to all VLANed interfaces")
+  parser.add_argument(
+      "-B", "--bandwidth-limit", type=int, default=0, help="Bandwidth limit to apply to all VLANed interfaces (kilobits). 0 for no limit.")
   parser.add_argument("-F", "--link-flap-down", type=int, default=0, help="Time period to flap link down (Seconds)")
   parser.add_argument("-U", "--link-flap-up", type=int, default=0, help="Time period to flap link up (Seconds)")
   parser.add_argument("-T", "--link-flap-firewall", action="store_true", default=False,
@@ -357,6 +364,8 @@ def main():
   if cliargs.debug:
     logger.setLevel(logging.DEBUG)
 
+  netem_impairments = parse_tc_netem_args(cliargs)
+
   phase_break()
   logger.info("RWN Workload")
   phase_break()
@@ -366,12 +375,10 @@ def main():
     logger.info("Resetting all network impairments")
     flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run, cliargs.link_flap_firewall,
                   cliargs.link_flap_network, ignore_errors=True)
-    remove_latency_packet_loss(
+    remove_tc_netem(
         cliargs.interface,
         cliargs.start_vlan,
         cliargs.end_vlan,
-        cliargs.latency,
-        cliargs.packet_loss,
         cliargs.dry_run,
         ignore_errors=True)
     sys.exit(0)
@@ -392,9 +399,9 @@ def main():
         logger.info("Link flapping enabled via iptables")
         flap_links = True
       else:
-        if cliargs.latency > 0 or cliargs.packet_loss > 0:
+        if len(netem_impairments) > 0:
           logger.warning(
-              "Latency/Packet Loss impairments are mutually exclusive to link flapping impairment via ip link. "
+              "Netem (Latency/Bandwidth Limit/Packet Loss) impairments are mutually exclusive to link flapping impairment via ip link. "
               "Use -T flag to combine impairments by using iptables instead of ip link. Disabling link flapping.")
         else:
           logger.info("Link flapping enabled via ip link")
@@ -467,9 +474,10 @@ def main():
       logger.info("  * RWN tolerations")
   if not cliargs.no_impairment_phase:
     logger.info("* Impairment Phase - {}s Duration".format(cliargs.duration))
-    if cliargs.latency > 0 or cliargs.packet_loss > 0:
+    if len(netem_impairments) > 0:
       logger.info("  * Link Latency: {}ms".format(cliargs.latency))
       logger.info("  * Packet Loss: {}%".format(cliargs.packet_loss))
+      logger.info("  * Bandwidth Limit: {}kbits".format(cliargs.bandwidth_limit))
     if flap_links:
       flapping = "ip link"
       if cliargs.link_flap_firewall:
@@ -480,7 +488,7 @@ def main():
           cliargs.interface,
           cliargs.end_vlan))
       logger.info("  * Flap {}s down, {}s up by {}".format(cliargs.link_flap_down, cliargs.link_flap_up, flapping))
-    if cliargs.latency == 0 and cliargs.packet_loss == 0 and not flap_links:
+    if len(netem_impairments) == 0 and not flap_links:
       logger.info("  * No impairments")
   if not cliargs.no_cleanup_phase:
     if index_measurement_data:
@@ -545,13 +553,12 @@ def main():
         round(impairment_expected_end_time, 1),
         cliargs.duration))
 
-    if cliargs.latency > 0 or cliargs.packet_loss > 0:
-      apply_latency_packet_loss(
+    if len(netem_impairments):
+      apply_tc_netem(
           cliargs.interface,
           cliargs.start_vlan,
           cliargs.end_vlan,
-          cliargs.latency,
-          cliargs.packet_loss,
+          netem_impairments,
           cliargs.dry_run)
 
     if flap_links:
@@ -589,13 +596,11 @@ def main():
       flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run,
                     cliargs.link_flap_firewall, cliargs.link_flap_network, True)
 
-    if cliargs.latency > 0 or cliargs.packet_loss > 0:
-      remove_latency_packet_loss(
+    if len(netem_impairments):
+      remove_tc_netem(
           cliargs.interface,
           cliargs.start_vlan,
           cliargs.end_vlan,
-          cliargs.latency,
-          cliargs.packet_loss,
           cliargs.dry_run)
     impairment_end_time = time.time()
     logger.info("Impairment phase complete")
