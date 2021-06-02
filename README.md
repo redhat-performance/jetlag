@@ -36,6 +36,10 @@ $ ansible-galaxy collection install containers.podman
 $ ansible-galaxy collection install community.general
 ```
 
+```console
+pip3 install netaddr
+```
+
 ## Cluster Deployment Usage
 
 There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:
