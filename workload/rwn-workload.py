@@ -225,7 +225,7 @@ def command(cmd, dry_run, cmd_directory="", mask_output=False, mask_arg=0, no_lo
   return return_code, output
 
 
-def apply_latency_packet_loss(interface, start_vlan, end_vlan, latency, packet_loss, bandwidth_limit, dry_run=False):
+def apply_tc_netem(interface, start_vlan, end_vlan, latency, packet_loss, bandwidth_limit, dry_run=False):
   tc_latency = []
   tc_loss = []
   tc_bandwidth = []
@@ -261,8 +261,8 @@ def apply_latency_packet_loss(interface, start_vlan, end_vlan, latency, packet_l
       sys.exit(1)
 
 
-def remove_latency_packet_loss(
-      interface, start_vlan, end_vlan, latency, packet_loss, bandwidth_limit, dry_run=False, ignore_errors=False):
+def remove_tc_netem(
+      interface, start_vlan, end_vlan, dry_run=False, ignore_errors=False):
   logger.info("Removing bandwidth, latency, and packet loss impairments")
   for vlan in range(start_vlan, end_vlan + 1):
     tc_command = ["tc", "qdisc", "del", "dev", "{}.{}".format(interface, vlan), "root", "netem"]
@@ -380,13 +380,10 @@ def main():
     logger.info("Resetting all network impairments")
     flap_links_up(cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.dry_run, cliargs.link_flap_firewall,
                   cliargs.link_flap_network, ignore_errors=True)
-    remove_latency_packet_loss(
+    remove_tc_netem(
         cliargs.interface,
         cliargs.start_vlan,
         cliargs.end_vlan,
-        cliargs.latency,
-        cliargs.packet_loss,
-        cliargs.bandwidth_limit,
         cliargs.dry_run,
         ignore_errors=True)
     sys.exit(0)
@@ -562,7 +559,7 @@ def main():
         cliargs.duration))
 
     if cliargs.latency > 0 or cliargs.packet_loss > 0 or cliargs.bandwidth_limit > 0:
-      apply_latency_packet_loss(
+      apply_tc_netem(
           cliargs.interface,
           cliargs.start_vlan,
           cliargs.end_vlan,
@@ -607,13 +604,10 @@ def main():
                     cliargs.link_flap_firewall, cliargs.link_flap_network, True)
 
     if cliargs.latency > 0 or cliargs.packet_loss > 0 or cliargs.bandwidth_limit > 0:
-      remove_latency_packet_loss(
+      remove_tc_netem(
           cliargs.interface,
           cliargs.start_vlan,
           cliargs.end_vlan,
-          cliargs.latency,
-          cliargs.packet_loss,
-          cliargs.bandwidth_limit,
           cliargs.dry_run)
     impairment_end_time = time.time()
     logger.info("Impairment phase complete")
