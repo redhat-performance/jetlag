@@ -4,6 +4,7 @@ address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ing
 
 # Jetlag provided DNS for clusterdeployments
 {% for cd_index in range(bastion_dnsmasq_cd_network_count) %}
+address=/{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
 address=/apps.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
 address=/api.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
 {% endfor %}
