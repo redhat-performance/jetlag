@@ -29,6 +29,29 @@
     ai_cluster_ids: "{{ ai_cluster_ids|default({}) | combine( {item.item: {'cluster_name': item.item, 'cluster_id': item.json.id} } ) }}"
   loop: "{{ create_cluster_return.results }}"
 
+- block:
+    - name: Set machine network
+      set_fact:
+        machine_network: "{{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }}"
+
+    - name: Set machine network CIDR
+      set_fact:
+        machine_network_cidr: "{{ machine_network | ipaddr('network/prefix') }}"
+  when:
+    - ( machine_network_cidr is not defined ) or ( not machine_network_cidr )
+
+- name: Update machine CIDR
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "machine_network_cidr": "{{ machine_network_cidr }}"
+    }
+  with_items: "{{ ai_cluster_ids }}"
+
 - name: Add entries in /etc/hosts
   blockinfile:
     path: "/etc/hosts"
