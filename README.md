@@ -63,7 +63,7 @@ Make sure to set/review the following vars:
 * `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 * `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
-* More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as exta vars, check default files for variable name. 
+* More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name. 
 
 Set your pull-secret in `pull_secret.txt` in repo base directory.
 
