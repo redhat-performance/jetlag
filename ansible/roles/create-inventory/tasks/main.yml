@@ -30,6 +30,7 @@
     ocpinventory_worker_nodes: []
     ocpinventory_rwn_nodes: []
     ocpinventory_sno_nodes: []
+    ocpinventory_hv_nodes: []
 
 - name: Bare metal cluster and remote worker node cluster type tasks
   when: cluster_type == "bm" or cluster_type == "rwn"
@@ -108,6 +109,10 @@
   - name: RWN - Set ocpinventory rwn nodes
     set_fact:
       ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:max_nodes|int] }}"
+
+  - name: BM/RWN - Set ocpinventory hv nodes
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[max_nodes|int:] }}"
 
 - name: BM - Get lab mac address
   uri:

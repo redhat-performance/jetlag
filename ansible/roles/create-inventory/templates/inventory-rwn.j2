@@ -49,3 +49,14 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [sno:vars]
 # Unused
+
+[hv]
+{% for hv in ocpinventory_hv_nodes %}
+{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }}
+{% endfor %}
+
+[hv:vars]
+ansible_user=root
+ansible_ssh_pass={{ hv_ssh_pass }}
+bmc_user={{ bmc_user }}
+bmc_password={{ bmc_password }}

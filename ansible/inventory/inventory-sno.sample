@@ -30,3 +30,9 @@ bmc_user=quads
 bmc_password=password
 dns1=8.8.8.8
 dns2=8.8.4.4
+
+[hv]
+# Unused
+
+[hv:vars]
+# Unused
