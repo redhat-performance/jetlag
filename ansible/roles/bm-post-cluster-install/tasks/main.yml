@@ -33,12 +33,12 @@
 - name: Add kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create sa kubeburner
-  when: setup_kube_burner_sa
+  when: setup_kube_burner_sa | default(true) | bool
 
 - name: Add cluster-admin role to kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
-  when: setup_kube_burner_sa
+  when: setup_kube_burner_sa | default(true) | bool
 
 - name: Setup worker nodes localstorage
   when: worker_localstorage_configuration

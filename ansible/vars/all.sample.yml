@@ -1,7 +1,7 @@
 ---
 # Sample vars file
 ################################################################################
-# Create Inventory playbook vars
+# Lab & cluster infrastructure vars
 ################################################################################
 # Which lab to be deployed into (Ex scalelab)
 lab:
@@ -14,68 +14,30 @@ cluster_type:
 # Applies to both bm/rwn clusters
 worker_node_count:
 
-# Network configuration for bm cluster and rwn control-plane nodes
-controlplane_lab_interface: eno1np0
-controlplane_network_interface: ens1f0
-controlplane_network_interface_idx: 0
-controlplane_network: 198.18.10.0/24
-controlplane_network_prefix: 24
-controlplane_network_gateway: "{{ controlplane_network | next_nth_usable(1) }}"
-controlplane_network_api: "{{ controlplane_network | next_nth_usable(3) }}"
-controlplane_network_ingress: "{{ controlplane_network | next_nth_usable(4) }}"
-# Sets "bastion_controlplane_ip" as primary dns
-controlplane_bastion_as_dns: true
-# Remaining addresses in controlplane_network will be assigned to nodes in inventory file
+# Versions are also controlled by what versions the assisted installer provides see
+# "assisted_service_openshift_version" variable in default section of 
+# bastion-assisted-installer role for which versions are currently available.
+# Also for RWN deployment check ISO image version "rhcos_image" variable in default 
+# section of generate-livecd role.
+openshift_version: "4.8"
+# Either OpenShiftSDN or OVNKubernetes
+networktype: OpenShiftSDN
 
-# Network only for remote worker nodes
-rwn_lab_interface: eno1np0
-rwn_vlan_start: 100
-rwn_network_interface: ens1f1
-rwn_network_interface_idx: 1
-rwn_network_start: 198.18.16.0
-rwn_network_prefix: 30
-rwn_network_mask: 255.255.255.252
+ssh_private_key_file: ~/.ssh/id_rsa
+ssh_public_key_file: ~/.ssh/id_rsa.pub
+pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
-# Setup Bastion playbook vars
+# Bastion node vars
 ################################################################################
 bastion_cluster_config_dir: /root/{{ cluster_type }}
 
-openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/
-kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v0.9.1/kube-burner-0.9.1-Linux-x86_64.tar.gz
-
 bastion_lab_interface: eno1np0
 bastion_controlplane_interface: ens1f0
-bastion_controlplane_ip: "{{ controlplane_network | next_nth_usable(1) }}"
+
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
-# cluster_name applies only to bm/rwn clusters, sno clusters use base host name as the cluster name
-cluster_name: bm
-base_dns_name: example.com
-
-# bastion dnsmasq clusterdeployment entries (Enables hub cluster to provision spoke clusters via clusterdeployments)
-# the default count of 0 ignores setting this up
-bastion_dnsmasq_cd_prefix: sno
-bastion_dnsmasq_cd_network: "{{ controlplane_network }}"
-bastion_dnsmasq_cd_network_offset: 14
-bastion_dnsmasq_cd_network_count: 0
-
-http_store_path: /opt/http_store/data/
-
-assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.20.3
-assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.20.3
-assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.20.3
-assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.20.3
-assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.20.3
-assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
-
-assisted_service_openshift_version: '{"4.6":{"display_name":"4.6.16","release_version":"4.6.16","release_image":"quay.io/openshift-release-dev/ocp-release:4.6.16-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-4.6.8-x86_64-live.x86_64.iso","rhcos_rootfs":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.6/4.6.8/rhcos-live-rootfs.x86_64.img","rhcos_version":"46.82.202012051820-0","support_level":"production"},"4.7":{"display_name":"4.7.9","release_version":"4.7.9","release_image":"quay.io/openshift-release-dev/ocp-release:4.7.9-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-4.7.7-x86_64-live.x86_64.iso","rhcos_rootfs":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.7/4.7.7/rhcos-live-rootfs.x86_64.img","rhcos_version":"47.83.202103251640-0","support_level":"production","default":true},"4.8":{"display_name":"4.8.0-fc.3","release_version":"4.8.0-fc.3","release_image":"quay.io/openshift-release-dev/ocp-release:4.8.0-fc.3-x86_64","rhcos_image":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-4.8.0-fc.3-x86_64-live.x86_64.iso","rhcos_rootfs":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-live-rootfs.x86_64.img","rhcos_version":"48.84.202105062123-0","support_level":"beta"}}'
-rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-4.8.0-fc.3-x86_64-live.x86_64.iso
-
-################################################################################
-# Deploy playbook vars
-################################################################################
 # Generally this will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: example.com
 assisted_installer_port: 8090
@@ -84,58 +46,16 @@ assisted_installer_port: 8090
 http_store_host: example.com
 http_store_port: 8080
 
-# Versions are also controlled by what versions the assisted installer provides see
-# "assisted_service_openshift_version" for which versions are currently available
-openshift_version: "4.8"
-# Either OpenShiftSDN or OVNKubernetes
-networktype: OpenShiftSDN
+http_store_path: /opt/http_store/data/
 
-rwn_install_disk: /dev/sda
-sno_install_disk: /dev/sda
+################################################################################
+# OCP node vars
+################################################################################
+# Network configuration for bm cluster and rwn control-plane nodes
+controlplane_lab_interface: eno1np0
+controlplane_network_interface: ens1f0
 
-controlplane_etcd_on_nvme: false
-controlplane_nvme_device: /dev/nvme0n1
-controlplane_localstorage_configuration: false
-controlplane_localstorage_device: /dev/sdb
-controlplane_localstorage_lv_count: 10
-controlplane_localstorage_lv_size: 100G
+# Network only for remote worker nodes
+rwn_lab_interface: eno1np0
+rwn_network_interface: ens1f1
 
-worker_localstorage_configuration: false
-worker_localstorage_device: /dev/nvme0n1
-worker_localstorage_lv_count: 10
-worker_localstorage_lv_size: 100G
-
-prometheus_retention_period: 15d
-
-cluster_network_cidr: 10.128.0.0/14
-service_network_cidr: 172.30.0.0/16
-machine_network_cidr: 10.198.6.0/24
-
-vip_dhcp_allocation: false
-
-ssh_private_key_file: ~/.ssh/id_rsa
-ssh_public_key_file: ~/.ssh/id_rsa.pub
-pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
-
-rwn_autorules_rule:
-  name: .*worker.*
-  runonce: true
-  labels:
-  - node-role.kubernetes.io/worker
-
-# Appends each entry to /etc/hosts of bastion machine during cluster install to
-# allow sshuttle easy resolution when proxying into cluster
-etc_hosts_ingress_routes:
-- oauth-openshift
-- console-openshift-console
-- downloads-openshift-console
-- alertmanager-main-openshift-monitoring
-- grafana-openshift-monitoring
-- prometheus-k8s-openshift-monitoring
-- thanos-querier-openshift-monitoring
-- assisted-service-assisted-installer
-- multicloud-console
-
-# workload related vars
-setup_kube_burner_sa: true
-rhacm_add_acm_d_icsp_manifest: false
