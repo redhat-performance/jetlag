@@ -1,7 +1,7 @@
 ---
 # Sample vars file
 ################################################################################
-# Lab & cluster infrastrucutre vars
+# Lab & cluster infrastructure vars
 ################################################################################
 # Which lab to be deployed into (Ex scalelab)
 lab:
