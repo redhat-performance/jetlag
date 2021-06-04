@@ -1,0 +1,24 @@
+---
+# Network configuration for bm cluster and rwn control-plane nodes
+controlplane_network_interface_idx: 0
+controlplane_network: 198.18.10.0/24
+controlplane_network_prefix: 24
+controlplane_network_gateway: "{{ controlplane_network | next_nth_usable(1) }}"
+controlplane_network_api: "{{ controlplane_network | next_nth_usable(3) }}"
+controlplane_network_ingress: "{{ controlplane_network | next_nth_usable(4) }}"
+# Sets "bastion_controlplane_ip" as primary dns
+controlplane_bastion_as_dns: true
+bastion_controlplane_ip: "{{ controlplane_network | next_nth_usable(1) }}"
+
+# Network only for remote worker nodes
+rwn_vlan_start: 100
+rwn_network_interface_idx: 1
+rwn_network_start: 198.18.16.0
+rwn_network_prefix: 30
+rwn_network_mask: 255.255.255.252
+
+# OCP networks
+cluster_network_cidr: 10.128.0.0/14
+service_network_cidr: 172.30.0.0/16
+
+vip_dhcp_allocation: false

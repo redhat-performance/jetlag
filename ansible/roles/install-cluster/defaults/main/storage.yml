@@ -1,0 +1,14 @@
+---
+controlplane_etcd_on_nvme: false
+controlplane_nvme_device: /dev/nvme0n1
+controlplane_localstorage_configuration: false
+controlplane_localstorage_device: /dev/sdb
+controlplane_localstorage_lv_count: 10
+controlplane_localstorage_lv_size: 100G
+
+worker_localstorage_configuration: false
+worker_localstorage_device: /dev/nvme0n1
+worker_localstorage_lv_count: 10
+worker_localstorage_lv_size: 100G
+
+prometheus_retention_period: 15d
