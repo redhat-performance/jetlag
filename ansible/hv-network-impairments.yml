@@ -1,0 +1,82 @@
+---
+# Apply/remove network impairments on the hypervisors
+#
+# Example Usage:
+#
+# Apply impairments
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-network-impairments.yml
+#
+# Remove impairments
+# ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml -e 'apply_egress_impairments=false apply_ingress_impairments=false'
+#
+
+
+- name: Apply/remove network impairments on hypervisors
+  hosts: hv
+  gather_facts: false
+  vars:
+    egress_impairments: ""
+    ingress_impairments: ""
+  vars_files:
+  - vars/network-impairments.yml
+  roles:
+  - name: install-tc
+    when: install_tc
+  post_tasks:
+  - name: Remove any existing egress impairments
+    shell: |
+      tc qdisc del dev {{ impaired_nic }} root netem
+    ignore_errors: true
+
+  - name: Remove any existing ingress impairments
+    shell: |
+      tc qdisc del dev ifb0 root netem
+      tc qdisc del dev {{ impaired_nic }} ingress
+      ip link set dev ifb0 down
+      modprobe -r ifb
+    ignore_errors: true
+
+  - name: Set egress delay
+    set_fact:
+      egress_impairments: "delay {{ egress_delay }}ms"
+    when: egress_delay > 0
+
+  - name: Set egress loss
+    set_fact:
+      egress_impairments: "{{ egress_impairments }} loss {{ egress_packet_loss }}%"
+    when: egress_packet_loss > 0
+
+  - name: Set egress bandwidth
+    set_fact:
+      egress_impairments: "{{ egress_impairments }} rate {{ egress_bandwidth }}kbit"
+    when: egress_bandwidth > 0
+
+  - name: Apply egress impairments
+    shell: |
+      tc qdisc add dev {{ impaired_nic }} root netem {{ egress_impairments }}
+    when: apply_egress_impairments|bool
+
+  - name: Set ingress delay
+    set_fact:
+      ingress_impairments: "delay {{ ingress_delay }}ms"
+    when: ingress_delay > 0
+
+  - name: Set ingress loss
+    set_fact:
+      ingress_impairments: "{{ ingress_impairments }} loss {{ ingress_packet_loss }}%"
+    when: ingress_packet_loss > 0
+
+  - name: Set ingress bandwidth
+    set_fact:
+      ingress_impairments: "{{ ingress_impairments }} rate {{ ingress_bandwidth }}kbit"
+    when: ingress_bandwidth > 0
+
+  - name: Apply ingress impairments
+    shell: |
+      modprobe ifb
+      ip link set dev ifb0 up
+      tc qdisc add dev {{ impaired_nic }} ingress
+      tc filter add dev {{ impaired_nic }} parent ffff: protocol ip u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
+      tc qdisc add dev ifb0 root netem {{ ingress_impairments }}
+    when:
+    - apply_ingress_impairments|bool

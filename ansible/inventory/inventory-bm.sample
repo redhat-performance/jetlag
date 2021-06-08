@@ -46,3 +46,13 @@ dns2=10.1.36.1
 
 [sno:vars]
 # Unused
+
+[hv]
+f16-h21-000-1029p.example.com bmc_address=mgmt-f16-h21-000-1029p.example.com vendor=Supermicro
+f16-h22-000-1029p.example.com bmc_address=mgmt-f16-h22-000-1029p.example.com vendor=Supermicro
+
+[hv:vars]
+ansible_user=root
+ansible_ssh_pass=password
+bmc_user=quads
+bmc_password=password

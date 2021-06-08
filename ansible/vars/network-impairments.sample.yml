@@ -1,0 +1,21 @@
+---
+# Sample network impairments vars file
+
+# Control vars:
+install_tc: true
+apply_egress_impairments: true
+apply_ingress_impairments: true
+
+# Nic to apply impairments to
+impaired_nic: ens2f0
+
+# delay in milliseconds
+egress_delay: 75
+ingress_delay: 75
+# packet loss in %
+egress_packet_loss: 0.02
+ingress_packet_loss: 0.02
+# bandwidth in kilobits
+# Ex: 100000kbps = 100Mbps
+egress_bandwidth: 100000
+ingress_bandwidth: 100000
