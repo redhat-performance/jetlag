@@ -1,8 +1,9 @@
 ---
+# validate-vars default vars
+
 # bm = baremetal
 # rwn = remote worker node
 # sno = single node openshift
-
 cluster_types:
 - bm
 - rwn

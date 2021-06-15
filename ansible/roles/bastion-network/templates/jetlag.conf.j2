@@ -1,4 +1,7 @@
 # Jetlag provided DNS
+# Bastion / assisted-installer / http-server / registry / router / dns
+address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
+
 address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
 address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
 

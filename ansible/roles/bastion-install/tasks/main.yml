@@ -32,10 +32,13 @@
     - dnsmasq
     - frr
     - git
+    - httpd
+    - httpd-tools
     - iproute-tc
     - jq
     - net-tools
     - podman
+    - python3
     - skopeo
     - tcpdump
     - tmux
@@ -77,7 +80,7 @@
 
 - name: Get OpenShift client and kube-burner
   get_url:
-    validate_certs: no
+    validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
@@ -87,12 +90,33 @@
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
 
-- name: Untar clients
+# We rename these clients as oc.latest and kubectl.latest since they are likely
+# not the actual version of the intended cluster, those specific clients are
+# obtained during the bastion-ocp-version role in which we use oc.latest to
+# extract the correct oc/kubectl clients for that version. Unfortunately we need
+# an oc client in order to do that so we just use the latest public oc client
+- name: Untar oc/kubectl clients
   unarchive:
-    src: "{{ item }}"
+    src: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}"
+    remote_src: yes
+    mode: 0700
+
+- name: Copy oc/kubectl clients into a pathed directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: 0700
+  loop:
+  - src: "{{ bastion_cluster_config_dir }}/oc"
+    dest: /usr/local/bin/oc.latest
+  - src: "{{ bastion_cluster_config_dir }}/kubectl"
+    dest: /usr/local/bin/kubectl.latest
+
+- name: Untar kube-burner client
+  unarchive:
+    src: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
     dest: /usr/local/bin
     remote_src: yes
     mode: 0700
-  with_items:
-  - "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
-  - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"

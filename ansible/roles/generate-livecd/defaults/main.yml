@@ -1,4 +1,7 @@
 ---
+# generate-livecd default vars
+
+# (TODO/Fix) We should be able to use the image downloaded during setup-bastion instead
 rhcos_image: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/pre-release/4.8.0-fc.3/rhcos-4.8.0-fc.3-x86_64-live.x86_64.iso
 
 rwn_install_disk: /dev/sda

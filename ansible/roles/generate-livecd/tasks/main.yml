@@ -56,5 +56,5 @@
 - name: Copy live iso file to http_store
   copy:
     src: "{{ bastion_cluster_config_dir }}/livecd/rwn-worker.iso"
-    dest: "{{ http_store_path }}/rwn-worker.iso"
+    dest: "{{ http_store_path }}/data/rwn-worker.iso"
     remote_src: true

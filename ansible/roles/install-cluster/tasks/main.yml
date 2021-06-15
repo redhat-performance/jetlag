@@ -1,14 +1,23 @@
 ---
 # install-cluster tasks
 
-- name: Set networkType via install-config override
+- name: Get disconnected registry certificate
+  slurp:
+    src: "{{ registry_path }}/certs/domain.crt"
+  register: mirror_cert
+  when: use_disconnected_registry
+
+# The extra "| to_json(ensure_ascii=False) | string" adds an additional "layer"
+# of escaping.  I am unsure of why I actually need this additional layer other
+# than the api expects a string (and not actual json)
+- name: Apply install-config overrides
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/install-config"
     method: PATCH
     body_format: json
     status_code: [201]
     return_content: true
-    body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype }}\\\" }}\""
+    body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
   register: get_install_config
 
 - name: Get host ids

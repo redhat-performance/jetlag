@@ -1,0 +1,81 @@
+---
+# bastion-ocp-version tasks
+#
+# Sets  all of the version string data up and downloads images as needed
+#
+
+- name: Create directory for bastion ocp-version data
+  file:
+    path: "{{ ocp_version_path }}"
+    state: directory
+
+- name: Extract/Download the openshift-install binary for the specific release
+  shell: |
+    cd {{ ocp_version_path }}
+    oc.latest adm release extract --tools {{ ocp_release_image }}
+    tar -xvf openshift-install-linux-*.tar.gz openshift-install
+    tar -xvf openshift-client-linux-*.tar.gz oc kubectl
+
+- name: Copy correctly versioned oc/kubectl clients into a pathed directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: 0700
+  loop:
+  - src: "{{ ocp_version_path }}/oc"
+    dest: /usr/local/bin/oc
+  - src: "{{ ocp_version_path }}/kubectl"
+    dest: /usr/local/bin/kubectl
+
+- name: Get display/release name/version
+  shell: |
+    {{ ocp_version_path }}/oc version -o json | jq -r .releaseClientVersion
+  register: ocp_version_display_name
+
+- name: Get rhcos version
+  shell: |
+    {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.release
+  register: ocp_version_rhcos_version
+
+- name: Get iso disk image location
+  shell: |
+    {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.iso.disk.location
+  register: ocp_version_disk_location
+
+- name: Get rootfs image location
+  shell: |
+    {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location
+  register: ocp_version_rootfs_location
+
+- name: Get rootfs image location
+  shell: |
+    {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location
+  register: ocp_version_rootfs_location
+
+- name: Make directory for image and rootfs for bastion http server
+  file:
+    path: "{{ http_store_path }}/data/{{ ocp_version_display_name.stdout }}"
+    state: directory
+
+- name: Download OpenShift RHCOS Image
+  get_url:
+    url: "{{ ocp_version_disk_location.stdout }}"
+    dest: "{{ http_store_path }}/data/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}"
+
+- name: Download OpenShift rootfs
+  get_url:
+    url: "{{ ocp_version_rootfs_location.stdout }}"
+    dest: "{{ http_store_path }}/data/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}"
+
+- name: Dump version json (non-disconnected)
+  copy:
+    content: |
+      {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ ocp_release_image }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
+    dest: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
+
+- name: Dump version json (disconnected)
+  copy:
+    content: |
+      {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
+    dest: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"

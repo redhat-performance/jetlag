@@ -16,4 +16,7 @@
   - bastion-install
   - bastion-network
   - bastion-http
+  - bastion-ocp-version
+  - role: bastion-disconnected-registry
+    when: use_disconnected_registry
   - bastion-assisted-installer

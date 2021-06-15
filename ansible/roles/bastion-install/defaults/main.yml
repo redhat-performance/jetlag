@@ -1,3 +1,5 @@
 ---
+# bastion-install default vars
+
 openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/
 kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v0.9.1/kube-burner-0.9.1-Linux-x86_64.tar.gz

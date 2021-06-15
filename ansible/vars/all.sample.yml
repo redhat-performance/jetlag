@@ -15,17 +15,19 @@ cluster_type:
 worker_node_count:
 
 # Lab Network type, applies to sno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable 
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your 
-# scalelab cloud 
+# Set this variable if you want to host your SNO cluster on lab public routable
+# VLAN network, set this ONLY if you have public routable VLAN enabled in your
+# scalelab cloud
 public_vlan: false
 
-# Versions are also controlled by what versions the assisted installer provides see
-# "assisted_service_openshift_version" variable in default section of 
-# bastion-assisted-installer role for which versions are currently available.
-# Also for RWN deployment check ISO image version "rhcos_image" variable in default 
-# section of generate-livecd role.
+# Versions are controlled by this release image. If you want to change images
+# you must rerun the setup-bastion step in order to setup your bastion's
+# assisted-installer to the version you desire
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.8.0-rc.0-x86_64
+
+# This should just match the above release image version (Ex: 4.8)
 openshift_version: "4.8"
+
 # Either OpenShiftSDN or OVNKubernetes
 networktype: OpenShiftSDN
 
@@ -44,15 +46,8 @@ bastion_controlplane_interface: ens1f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
-# Generally this will be your bastion machine (if you run setup-bastion playbook)
-assisted_installer_host: example.com
-assisted_installer_port: 8090
-
-# Generally this will be your bastion machine (if you run setup-bastion playbook)
-http_store_host: example.com
-http_store_port: 8080
-
-http_store_path: /opt/http_store/data/
+# Use in conjunction with ipv6 based clusters
+use_disconnected_registry: false
 
 ################################################################################
 # OCP node vars
@@ -63,11 +58,10 @@ controlplane_lab_interface: eno1np0
 controlplane_network_interface: ens1f0
 
 # Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr: 10.1.60.0/25	
+controlplane_pub_network_cidr: 10.1.60.0/25
 controlplane_pub_network_gateway: 10.1.60.126
 jumbo_mtu: false
 
 # Network only for remote worker nodes
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
-

@@ -1,0 +1,90 @@
+---
+# bastion-disconnected-registry tasks
+
+- name: Create directories for bastion registry server
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - "{{ registry_path }}/auth"
+  - "{{ registry_path }}/certs"
+  - "{{ registry_path }}/data"
+
+- name: Template out generate-cert.sh
+  template:
+    src: generate-cert.sh
+    dest: "{{ registry_path }}/generate-cert.sh"
+    mode: u+x
+
+- name: Check if certificate has been generated
+  stat:
+    path: "{{ registry_path }}/certs/domain.crt"
+  register: stat_cert
+
+- name: Create registry server certificate
+  shell: |
+    {{ registry_path }}/generate-cert.sh
+    cp {{ registry_path }}/certs/domain.crt /etc/pki/ca-trust/source/anchors/
+    update-ca-trust extract
+  when: not stat_cert.stat.exists
+
+- name: Create auth for registry container
+  shell: |
+    htpasswd -bBc {{ registry_path }}/auth/htpasswd {{ registry_user }} {{ registry_password }}
+
+- name: Create registry pod
+  containers.podman.podman_pod:
+    name: ocpdiscon-registry
+    network: host
+    state: started
+
+- name: Create registry container
+  containers.podman.podman_container:
+    pod: ocpdiscon-registry
+    network: host
+    name: registry
+    image: "{{ registry_container_image }}"
+    env:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry
+      REGISTRY_HTTP_SECRET: ALongRandomSecretForRegistry
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+      REGISTRY_COMPATIBILITY_SCHEMA1_ENABLED: true
+    volume:
+    - "{{ registry_path }}/data:/var/lib/registry"
+    - "{{ registry_path }}/auth:/auth"
+    - "{{ registry_path }}/certs:/certs"
+    state: started
+
+- name: Template out pull-secret
+  copy:
+    content: "{{ pull_secret }}"
+    dest: "{{ registry_path }}/pull-secret.txt"
+
+- name: Add disconnected registry to pull-secret
+  shell: |
+    b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
+    AUTHSTRING="{\"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
+    jq -c ".auths += $AUTHSTRING" < {{ registry_path }}/pull-secret.txt > {{ registry_path }}/pull-secret-disconnected.txt
+
+- name: Mirror the repository
+  shell: |
+    oc adm release mirror \
+      -a {{ registry_path }}/pull-secret-disconnected.txt \
+      --from={{ ocp_release_image }} \
+      --to-release-image={{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }} \
+      --to={{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}
+  register: mirror_output
+
+- name: Mirror ocpmetal images
+  shell: |
+    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt {{ item }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocpmetal/{{ item.split("/")[-1] }}
+  with_items:
+  - "{{ assisted_service_image }}"
+  - "{{ assisted_installer_image }}"
+  - "{{ assisted_installer_agent_image }}"
+  - "{{ assisted_installer_controller_image }}"
+  - "{{ assisted_service_gui_image }}"
+  - "{{ assisted_postgres_image }}"

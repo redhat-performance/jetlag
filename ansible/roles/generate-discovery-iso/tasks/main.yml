@@ -1,6 +1,22 @@
 ---
 # generate-discovery-iso tasks
 
+- name: Get disconnected registry certificate
+  slurp:
+    src: "{{ registry_path }}/certs/domain.crt"
+  register: mirror_cert
+  when: use_disconnected_registry
+
+- name: Apply disconnected discovery ignition config override
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/discovery-ignition"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: { "config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}" }
+  when: use_disconnected_registry
+
 - name: Set empty static network configuration
   set_fact:
     static_network_config: []
@@ -32,4 +48,4 @@
 - name: Download discovery ISO
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
-    dest: "{{ http_store_path }}/discovery.iso"
+    dest: "{{ http_store_path }}/data/discovery.iso"
