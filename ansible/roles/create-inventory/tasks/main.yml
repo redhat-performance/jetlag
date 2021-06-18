@@ -144,7 +144,7 @@
     loop: "{{ ocpinventory_sno_nodes }}"
 
   - name: set json query fact
-    set_fact: 
+    set_fact:
       mac_query: "json.interfaces[?type=='interface'].mac"
 
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory

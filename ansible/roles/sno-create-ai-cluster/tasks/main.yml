@@ -29,7 +29,7 @@
     ai_cluster_ids: "{{ ai_cluster_ids|default({}) | combine( {item.item: {'cluster_name': item.item, 'cluster_id': item.json.id} } ) }}"
   loop: "{{ create_cluster_return.results }}"
 
-- name: set machine network cidr for public vlan 
+- name: set machine network cidr for public vlan
   set_fact:
     machine_network_cidr: "{{ controlplane_pub_network_cidr }}"
   when:
@@ -69,7 +69,7 @@
       {% endfor %}
       {% if public_vlan %}
       {{ hostvars[item].ip_address }} {{ hostvars[item].inventory_hostname }} # SNO node
-      {%- endif %}      
+      {%- endif %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'] }}"
