@@ -13,6 +13,33 @@
   delay: 60
   with_items: "{{ ai_cluster_ids }}"
 
+- block:
+    # Until the above race condition is fixed, allow some time for discovery to complete
+    - name: Sleep to allow full discovery
+      pause:
+        minutes: 2
+
+    - name: Set hostname
+      uri:
+        url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item.item].cluster_id }}"
+        method: PATCH
+        body_format: json
+        status_code: [201]
+        return_content: true
+        body: {
+            "hosts_names": [
+              {
+                id: "{{ item.json.hosts[0].id  }}",
+                hostname: "{{ item.item }}",
+                role: "master"
+              }
+            ]
+        }
+      with_items: "{{ cluster.results }}"
+      no_log: true
+  when:
+    - public_vlan | bool
+
 - name: Wait for cluster(s) to be ready
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"

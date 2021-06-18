@@ -39,25 +39,15 @@
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
-- name: Add manifests to disable lab public dhcp interface for control-plane and worker nodes
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
-    method: POST
-    body_format: json
-    status_code: [201]
-    body: {
-        "folder": "manifests",
-        "file_name": "{{ item.file_name }}",
-        "content": "{{ item.content | b64encode }}"
-    }
-  when: item.enabled | default(true) | bool
+- name: Include custom manifest
+  include_tasks: 01_manifest_update.yml
   with_items:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
-    content: "{{ lookup('template', './50-controlplane-disable-lab-dhcp-interface.yml.j2') }}"
+    template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
-    content: "{{ lookup('template', './50-worker-disable-lab-dhcp-interface.yml.j2') }}"
+    template_name: "50-worker-disable-lab-dhcp-interface.yml.j2"
   - file_name: rhacm-iscp.yml
-    content: "{{ lookup('template', './rhacm-icsp.yml') }}"
+    template_name: "rhacm-icsp.yml"
     enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
 
 - name: RWN - Get OpenShift versions to obtain coredns image

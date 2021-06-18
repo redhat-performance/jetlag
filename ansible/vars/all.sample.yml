@@ -14,6 +14,12 @@ cluster_type:
 # Applies to both bm/rwn clusters
 worker_node_count:
 
+# Lab Network type, applies to sno cluster_type only
+# Set this variable if you want to host your SNO cluster on lab public routable 
+# VLAN network, set this ONLY if you have public routable VLAN enabled in your 
+# scalelab cloud 
+public_vlan: false
+
 # Versions are also controlled by what versions the assisted installer provides see
 # "assisted_service_openshift_version" variable in default section of 
 # bastion-assisted-installer role for which versions are currently available.
@@ -51,9 +57,15 @@ http_store_path: /opt/http_store/data/
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for bm cluster and rwn control-plane nodes
+# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for public VLAN based sno cluster_type deployment
 controlplane_lab_interface: eno1np0
 controlplane_network_interface: ens1f0
+
+# Network configuration for public VLAN based sno cluster_type deployment
+controlplane_pub_network_cidr: 10.1.60.0/25	
+controlplane_pub_network_gateway: 10.1.60.126
+jumbo_mtu: false
 
 # Network only for remote worker nodes
 rwn_lab_interface: eno1np0

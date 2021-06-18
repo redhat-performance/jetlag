@@ -1,0 +1,8 @@
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  with_items:
+  - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
+    template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
+  vars:
+    ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"

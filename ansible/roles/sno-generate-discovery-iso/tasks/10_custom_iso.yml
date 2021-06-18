@@ -1,0 +1,28 @@
+- name: Set empty static network configuration
+  set_fact:
+    static_network_config: []
+
+- name: Assemble controlplane static network config
+  set_fact:
+    item_network_config:
+      network_yaml: "{{ lookup('template', 'nmstate.yml.j2') }}"
+      mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
+
+- name: Add {{ item }} ip config
+  set_fact:
+    static_network_config: "{{ static_network_config + [ item_network_config ] }}"
+
+- name: Generate a discovery ISO
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
+  register: http_reply
+
+- name: Download discovery ISO
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
+    dest: "{{ http_store_path }}/{{ item }}.iso"
