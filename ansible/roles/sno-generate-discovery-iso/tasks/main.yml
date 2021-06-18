@@ -1,19 +1,28 @@
 ---
 # sno-generate-discovery-iso tasks
 
-- name: Generate a discovery ISO
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
-    method: POST
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "image_type": "full-iso" }
-  register: http_reply
-  with_items: "{{ ai_cluster_ids }}"
+- block:
+    - name: Generate a discovery ISO
+      uri:
+        url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
+        method: POST
+        body_format: json
+        status_code: [201]
+        return_content: true
+        body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "image_type": "full-iso" }
+      register: http_reply
+      with_items: "{{ ai_cluster_ids }}"
 
-- name: Download discovery ISO
-  get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
-    dest: "{{ http_store_path }}/{{ item }}.iso"
-  with_items: "{{ ai_cluster_ids }}"
+    - name: Download discovery ISO
+      get_url:
+        url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
+        dest: "{{ http_store_path }}/{{ item }}.iso"
+      with_items: "{{ ai_cluster_ids }}"
+  when:
+    - not public_vlan | bool
+
+- name: Include custom static network config
+  include_tasks: 10_custom_iso.yml
+  when:
+    - public_vlan | bool
+  loop: "{{ groups['sno'] }}"

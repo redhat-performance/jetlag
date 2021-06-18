@@ -1,0 +1,27 @@
+interfaces:
+- name: {{ hostvars[item]['network_interface'] }}
+  type: ethernet
+  state: up
+  mtu: {{ 9000 if jumbo_mtu is defined and jumbo_mtu else 1500 }}
+  ipv4:
+    address:
+    - ip: {{ hostvars[item]['ip_address'] }}
+      prefix-length: {{ hostvars[item]['network_prefix'] }}
+    auto-dns: false
+    enabled: true
+- name: {{ hostvars[item]['lab_interface']}}
+  type: ethernet
+  state: up
+  ipv4:
+    auto-dns: false
+    enabled: false
+dns-resolver:
+  config:
+    server:
+    - {{ hostvars[item]['dns1'] }}
+    - {{ hostvars[item]['dns2'] }}
+routes:
+  config:
+  - destination: 0.0.0.0/0
+    next-hop-address: {{ hostvars[item]['gateway'] }}
+    next-hop-interface: {{ hostvars[item]['network_interface'] }}
