@@ -15,3 +15,10 @@
   fail:
     msg: "Pull secret appears unset"
   when: pull_secret is not defined
+
+- name: Check for RHEL 8.4 when using ipv6 (Bastion Validation)
+  fail:
+    msg: "Upgrade to RHEL 8.4 for podman ipv6 support"
+  when:
+  - ansible_distribution is defined
+  - (ansible_distribution != "RedHat" or ansible_distribution_version|float < 8.4) and (controlplane_network | ansible.netcommon.ipv6)

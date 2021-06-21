@@ -1,3 +1,0 @@
----
-# Enable or disable mirroring of image registry 
-rhacm_add_acm_d_icsp_manifest: false

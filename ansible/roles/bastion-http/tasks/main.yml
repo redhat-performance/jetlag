@@ -1,23 +1,35 @@
 ---
 # bastion-http tasks
 
-- name: Create directory for bastion http server
+- name: Create directories for bastion http server
   file:
-    path: "{{ http_store_path }}"
+    path: "{{ item }}"
     state: directory
+    owner: "1001"
+  loop:
+  - "{{ http_store_path }}/data"
+  - "{{ http_store_path }}/conf"
+
+- name: Configure httpd
+  template:
+    src: httpd.conf
+    dest: "{{ http_store_path }}/conf/httpd.conf"
+    owner: "1001"
+  when:  bastion_controlplane_ip | ansible.netcommon.ipv6
 
 - name: Create http pod
   containers.podman.podman_pod:
     name: http-store
+    network: host
     state: started
-    ports:
-    - 8080:8080
 
 - name: Create http container in http pod
   containers.podman.podman_container:
     pod: http-store
+    network: host
     volume:
-    - "{{ http_store_path }}:/var/www/html"
+    - "{{ http_store_path }}/data:/var/www/html"
+    - "{{ http_store_path }}/conf:/etc/httpd/conf"
     name: httpd
     image: registry.centos.org/centos/httpd-24-centos7:latest
     state: started

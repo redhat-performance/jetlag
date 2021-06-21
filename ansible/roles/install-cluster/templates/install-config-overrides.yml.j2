@@ -1,0 +1,16 @@
+networking:
+  networkType: {{ networktype }}
+{% if use_disconnected_registry %}
+imageContentSources:
+- mirrors:
+  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+- mirrors:
+  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocpmetal
+  source: quay.io/ocpmetal
+additionalTrustBundle: |
+  {{ mirror_cert.content | b64decode | indent(width=2, indentfirst=false) }}
+{% endif %}

@@ -8,7 +8,7 @@ Three separate layouts of clusters can be deployed:
 * RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
 * SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
-Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for remote worker node clusters. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fufilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. This allows quicker interaction with these extra nodes in a lab allocation.
+Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fufilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. This allows quicker interaction with these extra nodes in a lab allocation.
 
 ## Tested Labs/Hardware
 
@@ -31,14 +31,19 @@ Scale Lab
 Pre-reqs for the playbooks:
 
 ```console
-$ ansible-galaxy collection install ansible.posix
-$ ansible-galaxy collection install containers.podman
-$ ansible-galaxy collection install community.general
+ansible-galaxy collection install ansible.posix
+ansible-galaxy collection install containers.podman
+ansible-galaxy collection install community.general
 ```
 
 ```console
 pip3 install netaddr
 ```
+
+Pre-reqs for ipv6:
+
+* RHEL 8.4
+* podman 3
 
 ## Cluster Deployment Usage
 
@@ -51,8 +56,8 @@ There are three main files to configure and one is generated but might have to b
 Start by editing the vars
 
 ```console
-$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
-$ vi ansible/vars/all.yml
+cp ansible/vars/all.sample.yml ansible/vars/all.yml
+vi ansible/vars/all.yml
 ```
 
 Make sure to set/review the following vars:
@@ -109,8 +114,8 @@ BM/RWN cluster types will allocate remaining hardware that was not put in the in
 In order to do so, first copy the network-impairments sample vars file
 
 ```console
-$ cp ansible/vars/network-impairments.sample.yml ansible/vars/network-impairments.yml
-$ vi ansible/vars/network-impairments.yml
+cp ansible/vars/network-impairments.sample.yml ansible/vars/network-impairments.yml
+vi ansible/vars/network-impairments.yml
 ```
 
 Make sure to set/review the following vars:

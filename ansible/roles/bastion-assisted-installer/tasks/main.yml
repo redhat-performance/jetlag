@@ -1,6 +1,30 @@
 ---
 # bastion-assisted-installer tasks
 
+# Read the version json off the bastion machine
+- name: Obtain version data for assisted-installer without disconnected registry
+  slurp:
+    src: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
+  register: slurped_ai_ocp_version
+  when: not use_disconnected_registry
+
+- name: Obtain version data for assisted-installer with disconnected registry
+  slurp:
+    src: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
+  register: slurped_ai_ocp_version_disconnected
+  when: use_disconnected_registry
+
+- name: Ensure bastion machine is logged in to inspect image digest
+  shell: |
+    skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}
+  when: use_disconnected_registry
+
+- name: Determine digest for assisted-installer-controller image
+  shell: |
+    skopeo inspect docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}{{ assisted_installer_controller_image | replace('quay.io','') }} | jq -r .Digest
+  register: assisted_installer_controller_image_digest
+  when: use_disconnected_registry
+
 - name: Create directories for bastion assisted-installer
   file:
     path: "{{ item }}"
@@ -29,11 +53,8 @@
 - name: Create assisted-service pod
   containers.podman.podman_pod:
     name: assisted-service
+    network: host
     state: started
-    ports:
-    - 8000:8000
-    - 8090:8090
-    - 8888:8080
 
 - name: Create database container in assisted-service pod
   containers.podman.podman_container:
@@ -48,6 +69,7 @@
 - name: Create assisted installer GUI container in assisted-service pod
   containers.podman.podman_container:
     pod: assisted-service
+    network: host
     env_file: /opt/assisted-service/onprem-environment
     volume:
     - /opt/assisted-service/nginx-ui.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf
@@ -58,9 +80,12 @@
 - name: Create assisted installer service container in assisted-service pod
   containers.podman.podman_container:
     pod: assisted-service
+    network: host
     env_file: /opt/assisted-service/onprem-environment
     name: installer
     image: "{{ assisted_service_image }}"
     env:
       DUMMY_IGNITION: False
+    volume:
+    - /etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem
     state: started

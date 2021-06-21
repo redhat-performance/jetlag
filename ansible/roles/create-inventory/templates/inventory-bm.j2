@@ -17,7 +17,6 @@ network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
 {% if controlplane_bastion_as_dns %}
 dns1={{ bastion_controlplane_ip }}
-dns2={{ labs[lab]['dns'][0] }}
 {% else %}
 dns1={{ labs[lab]['dns'][0] }}
 dns2={{ labs[lab]['dns'][1] | default('') }}
@@ -25,7 +24,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [worker]
 {% for worker in ocpinventory_worker_nodes %}
-{{ worker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ worker.pm_addr }} network_mac={{ worker.mac[controlplane_network_interface_idx] }} lab_mac={{ ( (bm_foreman_data.results| selectattr('json.name', 'eq', worker.pm_addr | replace('mgmt-',''))|first).json.interfaces | selectattr('primary', 'eq', True)|first).mac }} ip={{ controlplane_network | next_nth_usable(loop.index + 7) }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }}
+{{ worker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ worker.pm_addr }} network_mac={{ worker.mac[controlplane_network_interface_idx] }} lab_mac={{ ( (bm_foreman_data.results| selectattr('json.name', 'eq', worker.pm_addr | replace('mgmt-',''))|first).json.interfaces | selectattr('primary', 'eq', True)|first).mac }} ip={{ controlplane_network | next_nth_usable(loop.index + bm_worker_node_offset) }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }}
 {% endfor %}
 
 [worker:vars]
@@ -39,7 +38,6 @@ network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
 {% if controlplane_bastion_as_dns %}
 dns1={{ bastion_controlplane_ip }}
-dns2={{ labs[lab]['dns'][0] }}
 {% else %}
 dns1={{ labs[lab]['dns'][0] }}
 dns2={{ labs[lab]['dns'][1] | default('') }}
@@ -59,7 +57,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [hv]
 {% for hv in ocpinventory_hv_nodes %}
-{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }}
+{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} ip={{ controlplane_network | next_nth_usable(loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }}
 {% endfor %}
 
 [hv:vars]

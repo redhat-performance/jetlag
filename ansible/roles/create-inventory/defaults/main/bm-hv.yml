@@ -1,5 +1,0 @@
----
-# Var(s) for bare-metal hypervisors
-
-# ssh password for hypervisors
-hv_ssh_pass:

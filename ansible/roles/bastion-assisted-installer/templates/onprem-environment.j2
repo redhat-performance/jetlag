@@ -11,7 +11,11 @@ DEPLOY_TARGET=onprem
 STORAGE=filesystem
 DUMMY_IGNITION=false
 
-OPENSHIFT_VERSIONS={{ assisted_service_openshift_version }}
+{% if use_disconnected_registry %}
+OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version_disconnected.content | b64decode }}
+{% else %}
+OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version.content | b64decode }}
+{% endif %}
 ENABLE_SINGLE_NODE_DNSMASQ=true
 PUBLIC_CONTAINER_REGISTRIES=quay.io
 NTP_DEFAULT_SERVER=
@@ -22,5 +26,9 @@ SKIP_CERT_VERIFICATION=true
 
 SELF_VERSION={{ assisted_service_image }}
 INSTALLER_IMAGE={{ assisted_installer_image }}
+{% if use_disconnected_registry %}
+CONTROLLER_IMAGE={{ assisted_installer_controller_image.split(":")[0] }}@{{ assisted_installer_controller_image_digest.stdout }}
+{% else %}
 CONTROLLER_IMAGE={{ assisted_installer_controller_image }}
+{% endif %}
 AGENT_DOCKER_IMAGE={{ assisted_installer_agent_image }}
