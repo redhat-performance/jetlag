@@ -40,6 +40,21 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
   when: setup_kube_burner_sa | default(true) | bool
 
+- name: Disable default OperatorHub sources on disconnected clusters
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+  when: use_disconnected_registry
+
+- name: Apply olm-mirror catalogSource on disconnected clusters
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/catalogSource.yaml
+  when: use_disconnected_registry
+
+- name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/imageContentSourcePolicy.yaml
+  when: use_disconnected_registry
+
 - name: Setup worker nodes localstorage
   when: worker_localstorage_configuration
   block:

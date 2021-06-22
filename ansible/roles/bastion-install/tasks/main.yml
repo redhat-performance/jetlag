@@ -78,7 +78,7 @@
       delay: 120
       timeout: 1200
 
-- name: Get OpenShift client and kube-burner
+- name: Get OpenShift clients, opm, kube-burner, and grpcurl
   get_url:
     validate_certs: false
     force: true
@@ -87,12 +87,16 @@
   with_items:
   - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
+  - url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+  - url: "{{ grpcurl_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 
-# We rename these clients as oc.latest and kubectl.latest since they are likely
-# not the actual version of the intended cluster, those specific clients are
-# obtained during the bastion-ocp-version role in which we use oc.latest to
+# We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
+# likely not the actual version of the intended cluster, those specific clients
+# are obtained during the bastion-ocp-version role in which we use oc.latest to
 # extract the correct oc/kubectl clients for that version. Unfortunately we need
 # an oc client in order to do that so we just use the latest public oc client
 - name: Untar oc/kubectl clients
@@ -114,9 +118,13 @@
   - src: "{{ bastion_cluster_config_dir }}/kubectl"
     dest: /usr/local/bin/kubectl.latest
 
-- name: Untar kube-burner client
+- name: Untar opm, kube-burner and grpcurl client
   unarchive:
-    src: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+    src: "{{ item }}"
     dest: /usr/local/bin
     remote_src: yes
     mode: 0700
+  loop:
+  - "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+  - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
