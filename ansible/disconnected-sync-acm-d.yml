@@ -1,0 +1,16 @@
+---
+# Sync ACM downstream container images into disconnected registry to allow an ACM
+# downstream build to be installed on a disconnected ipv6 cluster
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud03.local ansible/disconnected-sync-acm-d.yml
+#
+
+- name: Sync ACM downstream container images into disconnected registry
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/disconnected-sync-acm-d.yml
+  roles:
+  - disconnected-sync-acm-d

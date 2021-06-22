@@ -1,0 +1,10 @@
+---
+# Sample disconnected-sync-acm-d vars file
+
+# Example: mapping-2021-06-22-06-59-47-2.3.0.txt (pipeline file) maps to build 2.3.0-DOWNSTREAM-2021-06-22-06-59-47
+acm_pipeline_branch: 2.3-integration
+acm_pipeline_mapping_file: mapping-2021-06-22-06-59-47-2.3.0.txt
+acm_build: 2.3.0-DOWNSTREAM-2021-06-22-06-59-47
+
+# The pipeline repo is private and requires your personal access token in order to clone it
+github_personal_access_token:

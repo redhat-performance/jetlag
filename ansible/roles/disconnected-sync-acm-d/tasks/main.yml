@@ -1,0 +1,34 @@
+---
+# disconnected-sync-acm-d tasks
+
+- name: Create directory for syncing acm-d
+  file:
+    path: "{{ disconnected_sync_path }}"
+    state: directory
+
+- name:  Clone pipeline repo
+  git:
+    repo: https://{{ github_personal_access_token }}:x-oauth-basic@github.com/open-cluster-management/pipeline.git
+    dest: "{{ disconnected_sync_path }}/pipeline"
+    version: "{{ acm_pipeline_branch }}"
+    force: true
+
+- name: Copy the mapping file for easy of syncing
+  copy:
+    src: "{{ disconnected_sync_path }}/pipeline/snapshots/{{ acm_pipeline_mapping_file }}"
+    dest: "{{ disconnected_sync_path }}/"
+    remote_src: true
+
+- name: Replace destination org in mapping file
+  replace:
+    path: "{{ disconnected_sync_path }}/{{ acm_pipeline_mapping_file }}"
+    regexp: "__DESTINATION_ORG__"
+    replace: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d"
+
+- name: Mirror the images onto the disconnected registry
+  shell: |
+    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt -f {{ disconnected_sync_path }}/{{ acm_pipeline_mapping_file }}
+
+- name: Mirror acm-custom-registry image onto the disconnected registry
+  shell: |
+    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt  quay.io/acm-d/acm-custom-registry:{{ acm_build }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/acm-custom-registry:{{ acm_build }}
