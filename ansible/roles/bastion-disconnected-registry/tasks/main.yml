@@ -88,3 +88,15 @@
   - "{{ assisted_installer_controller_image }}"
   - "{{ assisted_service_gui_image }}"
   - "{{ assisted_postgres_image }}"
+
+- name: Create pruned redhat-operator-index image with local-storage-operator
+  shell: |
+    opm index prune -f {{ operator_index_container_image }} -p local-storage-operator -t {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
+
+- name: Push pruned redhat-operator-index image to disconnected registry
+  shell: |
+    podman push {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
+
+- name: Mirror redhat-operator-index images
+  shell: |
+    oc adm catalog mirror {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror -a {{ registry_path }}/pull-secret-disconnected.txt
