@@ -45,15 +45,36 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
   when: use_disconnected_registry
 
+- name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/imageContentSourcePolicy.yaml
+  when: use_disconnected_registry
+
 - name: Apply olm-mirror catalogSource on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/catalogSource.yaml
   when: use_disconnected_registry
 
-- name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/imageContentSourcePolicy.yaml
-  when: use_disconnected_registry
+- name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store
+  when: fix_metal3_provisioningosdownloadurl
+  block:
+  - name: Determine metal3 provisioning URL
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get provisionings provisioning-configuration -o json
+    register: metal3_osdownloadurl
+
+  - name: Set download url
+    set_fact:
+      metal3_download_url: "{{ (metal3_osdownloadurl.stdout |from_json).spec.provisioningOSDownloadURL }}"
+
+  - name: Download image into http_store
+    get_url:
+      url: "{{ metal3_download_url }}"
+      dest: "{{ http_store_path }}/data/"
+
+  - name: Patch provisioning-configuration
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch provisionings provisioning-configuration -p '{"spec":{"provisioningOSDownloadURL":"http://{{ http_store_host }}:{{ http_store_port }}/{{ metal3_download_url | basename }}" }}' --type=merge
 
 - name: Setup worker nodes localstorage
   when: worker_localstorage_configuration
@@ -67,13 +88,13 @@
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
 
-  # The localvolume resource will not be instantly available, thus retry for around 2 minutes
+  # The localvolume resource will not be instantly available, thus retry for around 15 minutes
   - name: Create localvolume resource
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
     register: lv_result
     until: not lv_result.failed
-    retries: 60
+    retries: 450
     delay: 2
 
   - name: Configure OpenShift-Monitoring Prometheus to use localstorage
