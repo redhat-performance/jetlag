@@ -1,0 +1,50 @@
+---
+# disconnected-sync-acm-d tasks
+
+- name: Create directory for syncing acm-d
+  file:
+    path: "{{ disconnected_sync_path }}"
+    state: directory
+
+- name: Template out pull-secret
+  copy:
+    content: "{{ acm_d_pull_secret }}"
+    dest: "{{ disconnected_sync_path }}/pull-secret.acm_d.txt"
+
+- name: Add disconnected registry to pull-secret
+  shell: |
+    b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
+    AUTHSTRING="{\"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
+    jq -c ".auths += $AUTHSTRING" < {{ disconnected_sync_path }}/pull-secret.acm_d.txt > {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt
+
+- name: Copy acm-custom-registry to disconnected registry
+  shell: |
+    skopeo copy --authfile {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt --all docker://quay.io:443/acm-d/acm-custom-registry:{{ acm_snapshot }} docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/acm-custom-registry:{{ acm_snapshot }}
+
+- name: Copy acm-operator-bundle to disconnected registry
+  shell: |
+    skopeo copy --authfile {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt --all docker://quay.io:443/acm-d/acm-operator-bundle:{{ acm_operator_bundle }} docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/acm-operator-bundle:{{ acm_operator_bundle }}
+
+- name: Generate container image mapping.txt
+  shell: |
+    oc adm catalog mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt quay.io:443/acm-d/acm-custom-registry:{{ acm_snapshot }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }} --manifests-only --to-manifests={{ disconnected_sync_path }}/
+
+- name: Replacements in mapping file
+  replace:
+    path: "{{ disconnected_sync_path }}/mapping.txt"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+    backup: true
+  loop:
+  - regexp: registry.redhat.io/rhacm2/
+    replace: quay.io:443/acm-d/
+  - regexp: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/rhel8/postgresql-12"
+    replace: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/postgresql-12"
+  - regexp: rhacm2
+    replace: acm-d
+
+# ignore_errors because there are always images that are not available with this mirroring procedure
+- name: Mirror the images onto the disconnected registry
+  shell: |
+    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt -f {{ disconnected_sync_path }}/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true
+  ignore_errors: true
