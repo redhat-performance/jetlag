@@ -1,5 +1,8 @@
 # Deployed by Jetlag automation
 search {{ base_dns_name }}
+{% if public_vlan %}
+nameserver {{ ansible_default_ipv4.address }}
+{% endif %}
 nameserver {{ bastion_controlplane_ip }}
 {% for dns in labs[lab]['dns'] %}
 nameserver {{ dns }}
