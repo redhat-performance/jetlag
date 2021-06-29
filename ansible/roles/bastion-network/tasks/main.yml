@@ -16,6 +16,21 @@
     state: present
     reload: true
 
+- name: Set ipv6 sysctl
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/ipv6.conf
+    state: present
+    reload: true
+  loop:
+  - name: net.ipv6.conf.all.forwarding
+    value: "1"
+  - name: net.ipv6.conf.all.disable_ipv6
+    value: "0"
+  when:  bastion_controlplane_ip | ansible.netcommon.ipv6
+
 - name: Allow natted traffic through bastion lab interface
   shell: |
     iptables -t nat -A POSTROUTING -o {{ bastion_lab_interface }} -j MASQUERADE

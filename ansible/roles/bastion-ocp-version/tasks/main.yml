@@ -49,11 +49,6 @@
     {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location
   register: ocp_version_rootfs_location
 
-- name: Get rootfs image location
-  shell: |
-    {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location
-  register: ocp_version_rootfs_location
-
 - name: Make directory for image and rootfs for bastion http server
   file:
     path: "{{ http_store_path }}/data/{{ ocp_version_display_name.stdout }}"
