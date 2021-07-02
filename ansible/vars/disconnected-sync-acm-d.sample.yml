@@ -2,6 +2,10 @@
 # Sample disconnected-sync-acm-d vars file
 
 acm_snapshot: 2.3.0-DOWNSTREAM-2021-06-22-06-59-47
+
+# Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
 acm_operator_bundle: v2.3.0-132
 
 acm_d_pull_secret: "{{ lookup('file', '../pull_secret.acm_d.txt') }}"
+
+download_mapping_file_from_deploy_repo: true
