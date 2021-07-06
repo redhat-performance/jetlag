@@ -28,6 +28,7 @@
     dest: /usr/local/bin/oc
   - src: "{{ ocp_version_path }}/kubectl"
     dest: /usr/local/bin/kubectl
+  when: setup_bastion | default(true)
 
 - name: Get display/release name/version
   shell: |
@@ -69,9 +70,11 @@
     content: |
       {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ ocp_release_image }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
     dest: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
+  when: setup_bastion | default(true)
 
 - name: Dump version json (disconnected)
   copy:
     content: |
       {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
     dest: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
+  when: setup_bastion | default(true)
