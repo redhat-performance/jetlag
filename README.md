@@ -8,7 +8,7 @@ Three separate layouts of clusters can be deployed:
 * RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
 * SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
-Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fufilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. This allows quicker interaction with these extra nodes in a lab allocation.
+Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. This allows quicker interaction with these extra nodes in a lab allocation.
 
 ## Tested Labs/Hardware
 
@@ -27,6 +27,10 @@ Scale Lab
 | Supermicro 1029p | Yes | Yes | No  |
 
 ## Ansible Prerequisites
+
+Versions:
+
+* Ansible 2.10 (on machine running jetlag playbooks)
 
 Pre-reqs for the playbooks:
 
@@ -107,39 +111,13 @@ Single Node OpenShift:
 ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 ```
 
+## Troubleshooting
+
+See [troubleshooting.md](docs/troubleshooting.md) in [docs](docs) directory.
+
 ## Hypervisor Network-Impairments
 
-BM/RWN cluster types will allocate remaining hardware that was not put in the inventory for the cluster as Hypervisor nodes. For testing where network impairments is required, we can apply latency/packet-loss/bandwidth impairments on the hypervisor nodes.
-
-In order to do so, first copy the network-impairments sample vars file
-
-```console
-cp ansible/vars/network-impairments.sample.yml ansible/vars/network-impairments.yml
-vi ansible/vars/network-impairments.yml
-```
-
-Make sure to set/review the following vars:
-
-* `install_tc` - toggles installing traffic control
-* `apply_egress_impairments` and `apply_ingress_impairments` - toggles out-going or incoming traffic impairments
-* `impaired_nic` - nic for traffic impairments
-* `egress_delay` and `ingress_delay` - latency for egress/ingress in milliseconds
-* `egress_packet_loss` and `ingress_packet_loss` - packet loss in percent (Example `0.01` for 0.01%)
-* `egress_bandwidth` and `ingress_bandwidth` - bandwidth in kilobits (Example `100000` which is 100000kbps or 100Mbps)
-
-Apply impairments:
-
-```console
-ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml
-```
-
-Remove impairments:
-
-```console
-ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml -e 'apply_egress_impairments=false apply_ingress_impairments=false'
-```
-
-Note, egress impairments are applied directly to the impaired nic. Ingress impairments are applied to an ifb interface that handles ingress traffic for the impaired nic.
+See [hypervisor-network-impairments.md](docs/hypervisor-network-impairments.md) in [docs](docs) directory.
 
 ## Workload Usage
 
