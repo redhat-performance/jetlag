@@ -55,6 +55,7 @@
     return_content: yes
 
 - name: SuperMicro - Set Boot
+  ignore_errors: yes
   uri:
     url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1"
     user: "{{ hostvars[item]['bmc_user'] }}"
