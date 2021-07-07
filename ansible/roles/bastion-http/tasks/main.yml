@@ -15,7 +15,6 @@
     src: httpd.conf
     dest: "{{ http_store_path }}/conf/httpd.conf"
     owner: "1001"
-  when:  bastion_controlplane_ip | ansible.netcommon.ipv6
 
 - name: Create http pod
   containers.podman.podman_pod:
