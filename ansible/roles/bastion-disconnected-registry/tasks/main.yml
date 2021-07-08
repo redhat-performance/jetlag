@@ -69,6 +69,10 @@
     AUTHSTRING="{\"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
     jq -c ".auths += $AUTHSTRING" < {{ registry_path }}/pull-secret.txt > {{ registry_path }}/pull-secret-disconnected.txt
 
+- name: Log in to the disconnected registry to allow pushing images
+  shell: |
+    skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}
+
 - name: Mirror ocpmetal images
   shell: |
     oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt {{ item }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocpmetal/{{ item.split("/")[-1] }}
