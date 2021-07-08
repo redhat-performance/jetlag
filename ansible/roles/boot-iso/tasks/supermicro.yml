@@ -55,6 +55,10 @@
     return_content: yes
 
 - name: SuperMicro - Set Boot
+  # Error ignored as a workaround for old firmware.
+  # If this errors, you will need to manually configure the boot order to put CD boot entries on top,
+  # then unmount the ISO when it is done with it, which will be the first restart after a long delay.
+  ignore_errors: yes
   uri:
     url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1"
     user: "{{ hostvars[item]['bmc_user'] }}"

@@ -71,3 +71,28 @@ Run dnf update to upgrade to RHEL 8.4
 ```
 
 Reboot afterwards and start from the `create-inventory.yml` playbook.
+
+## Resolving redfish connection error
+
+```
+Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The read operation timed out'"
+```
+
+In that case, if it normally works, it can be helpful to reset the baseboard management controller with:
+```
+ipmitool -I lanplus -H mgmt-computer.example.com -U user -P password mc reset cold
+```
+
+If that fails, verify that the server supports the redfish API.
+
+## Failure of TASK [boot-iso : SuperMicro - Set Boot] when using Supermicro servers.
+
+```
+The property Boot is not in the list of valid properties for the resource.
+```
+
+This is caused by having an older BIOS version. The older BIOS version simply does not support the command.
+
+When set to ignore the error, JetLag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
+
+

@@ -4,6 +4,16 @@
 # Sets  all of the version string data up and downloads images as needed
 #
 
+- name: Create directory for pull secret
+  file:
+    path: /root/.docker
+    state: directory
+
+- name: Copy pull secret to bastion
+  ansible.builtin.copy:
+    content: "{{ pull_secret }}"
+    dest: "/root/.docker/config.json"
+
 - name: Create directory for bastion ocp-version data
   file:
     path: "{{ ocp_version_path }}"
