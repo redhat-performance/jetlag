@@ -5,7 +5,9 @@
 #
 
 - name: Create directory for pull secret
-  file: path=/root/.docker state=directory
+  file:
+    path: /root/.docker
+    state: directory
 
 - name: Copy pull secret to bastion
   ansible.builtin.copy:
