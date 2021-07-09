@@ -54,7 +54,7 @@ podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{pr
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
 
-## Upgrade RHEL to 8.4 in Scalelab to run ipv6/disconnected
+## Upgrade RHEL to 8.4 in Scalelab
 
 On the bastion machine:
 
@@ -72,18 +72,28 @@ Run dnf update to upgrade to RHEL 8.4
 
 Reboot afterwards and start from the `create-inventory.yml` playbook.
 
-## Resolving redfish connection error
+## Resetting SuperMicro BMC / Resolving redfish connection error
 
 ```
 Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The read operation timed out'"
 ```
 
 In that case, if it normally works, it can be helpful to reset the baseboard management controller with:
-```
+```console
 ipmitool -I lanplus -H mgmt-computer.example.com -U user -P password mc reset cold
 ```
 
 If that fails, verify that the server supports the redfish API.
+
+## Resetting Dell iDrac
+
+In some cases the dell idrac might need to be reset per host. This can be done with the following command:
+
+```console
+sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example.com "racadm racreset"
+```
+
+Substitute the user/password/hostname to perform the reset on a desired host. Note it will take a few minutes before the BMC will become available again.
 
 ## Failure of TASK [boot-iso : SuperMicro - Set Boot] when using Supermicro servers.
 
@@ -95,4 +105,19 @@ This is caused by having an older BIOS version. The older BIOS version simply do
 
 When set to ignore the error, JetLag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
 
+## Fix boot order of machines in Scale Lab
 
+If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
+
+```console
+[user@fedora badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
+- INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
+- INFO     - PATCH command passed to update boot order.
+- INFO     - POST command passed to create target config job.
+- INFO     - Command passed to ForceOff server, code return is 204.
+- INFO     - Polling for host state: Not Down
+- POLLING: [------------------->] 100% - Host state: On  
+- INFO     - Command passed to On server, code return is 204.
+```
+
+Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
