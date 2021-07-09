@@ -45,6 +45,12 @@ ansible-galaxy collection install community.general
 ```console
 pip3 install netaddr
 ```
+Passwordless sudo on the host you are running this playbook from (to install podman if required to reprovision the bastion node)
+
+```console
+echo "username ALL=(root) NOPASSWD:ALL" | tee -a /etc/sudoers.d/username
+chmod 0440 /etc/sudoers.d/username
+```
 
 ## Cluster Deployment Usage
 
@@ -72,9 +78,14 @@ Make sure to set/review the following vars:
 * `controlplane_network_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the cluster(controlplane apis) needs to be hosted on and also required for public routable vlan based sno deployment
 * `controlplane_pub_network_cidr` and `controlplane_pub_network_gateway` - only required for public routable vlan based sno deployment to input lab public routable vlan network and gateway
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
+* `rebuild_bastion` - perform a foreman rebuild of the bastion host
 * More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name.
 
 Set your pull-secret in `pull_secret.txt` in repo base directory.
+
+### Running the Playbooks
+
+The expectation is to run this playbook from a host outside of your lab allocation (NOT you bastion host, you could run it from your laptop for example) because there are some tasks that reprovision/reboot the bastion.
 
 Run create-inventory playbook
 

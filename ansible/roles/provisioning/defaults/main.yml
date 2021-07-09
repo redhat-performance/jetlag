@@ -1,0 +1,3 @@
+badfish_pod_image: "quay.io/quads/badfish"
+badfish_cmd_container: "podman run -it --rm --dns {{ labs[lab]['dns'][0] }} {{ badfish_pod_image }} -u {{ hostvars[bastion_machine]['bmc_user'] }} -p {{ hostvars[bastion_machine]['bmc_password']  }} -i config/idrac_interfaces.yml -H mgmt-"
+badfish_cmd: "/root/badfish/src/badfish/badfish.py -u {{ lab_ipmi_user }} -p {{ lab_ipmi_password }} -i /root/badfish/config/idrac_interfaces.yml -H mgmt-"

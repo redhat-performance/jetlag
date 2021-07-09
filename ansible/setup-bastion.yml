@@ -6,13 +6,59 @@
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
 #
 
+- name: Check for connectivity
+  hosts: localhost
+  vars_files:
+  - vars/all.yml
+  - vars/lab.yml
+  pre_tasks:
+  - name: Set fact for bastion_machine
+    set_fact:
+      bastion_machine: "{{ groups['bastion'][0] }}"
+
+  - name: Ensure bastion is powered on
+    community.general.redfish_command:
+      category: Systems
+      command: PowerOn
+      baseuri: "{{ hostvars[bastion_machine]['bmc_address'] }}"
+      username: "{{ hostvars[bastion_machine]['bmc_user'] }}"
+      password: "{{ hostvars[bastion_machine]['bmc_password'] }}"
+    register: bastion_power
+
+  - name: Wait if bastion has just been powered on
+    wait_for:
+      timeout: 300
+    when: bastion_power.changed
+
+  - name: copy keys
+    include_tasks: tasks/copy-keys.yml
+
+  - name: Gather facts for bastion
+    setup:
+    delegate_to: "{{ bastion_machine }}"
+    delegate_facts: true
+
+  # Can change this RHEL 8.4 if ipv6 when RHEL 8.4 is available in foreman
+  - name: set os_install
+    set_fact:
+      os_install: "{{ (rebuild_bastion or hostvars[groups['bastion'][0]]['ansible_distribution_version'] is version('8.2', '<')) | ternary('RHEL 8.2', false) }}"
+  roles:
+  - { role: provisioning, when: os_install is defined and os_install }
+
+
 - name: Setup bastion machine
   hosts: bastion
   vars_files:
   - vars/all.yml
   - vars/lab.yml
+  pre_tasks:
+  - name: Check for RHEL 8.4 (Bastion Validation)
+    fail:
+      msg: "Upgrade to RHEL 8.4 for podman ipv6 support"
+    when:
+    - ansible_distribution is defined
+    - (ansible_distribution != "RedHat" or ansible_distribution_version|float < 8.4)
   roles:
-  - validate-vars
   - bastion-install
   - bastion-network
   - bastion-http

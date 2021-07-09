@@ -25,6 +25,7 @@
 - name: Set inventory variables
   set_fact:
     bastion_machine: "{{ ocpinventory.json.nodes[0].pm_addr | replace('mgmt-','') }}"
+    bastion_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[0].pm_addr.split('.')[0]).split('-')[-1]] }}"
     bmc_user: "{{ ocpinventory.json.nodes[0].pm_user }}"
     bmc_password: "{{ ocpinventory.json.nodes[0].pm_password }}"
     ocpinventory_worker_nodes: []
