@@ -7,8 +7,9 @@ Several services are run on the bastion in order to automate the tasks that jetl
 * On-prem assisted-installer GUI - 8080
 * On-prem assisted-installer API - 8090
 * HTTP server - 8081
-* Disconnected Registry (When set) - 5000
-* 53 - Dnsmasq
+* Container Registry (When disconnected) - 5000
+* HAProxy (When disconnected) - 6443, 443, 80
+* Dnsmasq - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
 ```

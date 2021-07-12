@@ -22,3 +22,5 @@
   - role: disconnected-sync-ocp-release
     when: use_disconnected_registry
   - bastion-assisted-installer
+  - role: bastion-disconnected-haproxy
+    when: use_disconnected_registry

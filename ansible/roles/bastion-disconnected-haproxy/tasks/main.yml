@@ -1,0 +1,30 @@
+---
+# bastion-disconnected-haproxy tasks
+
+- name: Configure haproxy
+  template:
+    src: haproxy.cfg.j2
+    dest: "/etc/haproxy/haproxy.cfg"
+
+- name: Install haproxy
+  yum:
+    name: haproxy
+    state: present
+    update_cache: true
+    disable_gpg_check: yes
+
+- name: Start and enable haproxy
+  systemd:
+    enabled: true
+    state: started
+    name: haproxy
+
+# Dump the /etc/hosts configuration you should use in your laptops /etc/hosts
+- name: Drop /etc/hosts file to be used with haproxy to access api/routes
+  copy:
+    content: |
+      {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} api.{{ cluster_name }}.{{ base_dns_name }}
+      {% for route in etc_hosts_ingress_routes %}
+      {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+      {% endfor %}
+    dest: "{{ bastion_cluster_config_dir }}/hosts"
