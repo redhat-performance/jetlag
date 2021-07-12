@@ -12,6 +12,6 @@ address=/apps.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ ba
 address=/api.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
 {% endfor %}
 
-{% for item in groups['sno'] %}
+{% for item in groups['sno'][:sno_node_count|int] %}
 address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip_address }}
 {% endfor %}

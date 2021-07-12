@@ -129,9 +129,20 @@
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"
   block:
+
+  - name: SNO - Set max number of nodes
+    set_fact:
+      max_nodes: "{{ ocpinventory.json.nodes|length }}"
+    when: sno_node_count == None
+
+  - name: SNO - Set max number of SNO nodes (sno_node_count is set)
+    set_fact:
+      max_nodes: "{{ sno_node_count|int + 1 }}"
+    when: sno_node_count != None
+
   - name: SNO - Set ocpinventory sno nodes
     set_fact:
-      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
+      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:max_nodes|int] }}"
 
   - name: SNO - Get lab data for each sno
     uri:

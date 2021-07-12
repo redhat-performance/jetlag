@@ -4,11 +4,11 @@
 - name: Boot iso on dell hardware
   include_tasks: dell.yml
   with_items:
-    - "{{ groups[inventory_group] }}"
+    - "{{ groups[inventory_group][:index|int] }}"
   when: hostvars[item]['vendor'] == 'Dell'
 
 - name: Boot iso on supermicro hardware
   include_tasks: supermicro.yml
   with_items:
-    - "{{ groups[inventory_group] }}"
+    - "{{ groups[inventory_group][:index|int] }}"
   when: hostvars[item]['vendor'] == 'Supermicro'

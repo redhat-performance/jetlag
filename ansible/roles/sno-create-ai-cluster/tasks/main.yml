@@ -20,7 +20,7 @@
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "additional_ntp_source": "{{ labs[lab]['ntp_server'] }}"
     }
-  loop: "{{ groups['sno'] }}"
+  loop: "{{ groups['sno'][:sno_node_count|int] }}"
   register: create_cluster_return
 
 - name: Populate cluster ids
@@ -72,7 +72,7 @@
       {%- endif %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
-  loop: "{{ groups['sno'] }}"
+  loop: "{{ groups['sno'][:sno_node_count|int] }}"
 
 - name: Include custom manifest
   include_tasks: 01_manifest_task.yml

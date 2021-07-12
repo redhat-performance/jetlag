@@ -1,3 +1,6 @@
+[all:vars]
+allocation_node_count={{ ocpinventory.json.nodes | length }}
+
 [bastion]
 {{ bastion_machine }} ansible_ssh_user=root
 

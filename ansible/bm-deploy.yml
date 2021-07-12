@@ -21,6 +21,7 @@
   - role: boot-iso
     vars:
       inventory_group: worker
+      index: "{{ worker_node_count }}"
   - wait-hosts-discovered
   - install-cluster
   - bm-post-cluster-install

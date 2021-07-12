@@ -1,4 +1,7 @@
 # Create inventory playbook will generate this for you much easier
+[all:vars]
+allocation_node_count={{ ocpinventory.json.nodes | length }}
+
 [bastion]
 example.com ansible_ssh_user=root
 
