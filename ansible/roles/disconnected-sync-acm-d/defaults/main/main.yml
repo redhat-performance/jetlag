@@ -6,3 +6,7 @@ disconnected_registry_host: "{{ groups['bastion'][0] }}"
 disconnected_registry_port: 5000
 
 disconnected_sync_path: /opt/registry/sync-acm-d
+
+# Number of concurrent requests to a registry while mirroring content (oc defaults to 6)
+# When this is set too high (>2?), You will see "429 Too Many Requests" from quay
+max_per_registry: 2
