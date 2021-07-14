@@ -22,6 +22,13 @@
     network: host
     state: started
 
+# On a reboot "started" state does not start an exited pod (why..idk)
+- name: Ensure http pod is up
+  containers.podman.podman_pod:
+    name: http-store
+    network: host
+    state: restarted
+
 - name: Create http container in http pod
   containers.podman.podman_container:
     pod: http-store

@@ -56,6 +56,13 @@
     network: host
     state: started
 
+# On a reboot "started" state does not start an exited pod (why..idk)
+- name: Ensure assisted-service pod is up
+  containers.podman.podman_pod:
+    name: assisted-service
+    network: host
+    state: restarted
+
 - name: Create database container in assisted-service pod
   containers.podman.podman_container:
     pod: assisted-service
