@@ -7,7 +7,7 @@
     enabled: false
     name: iptables
 
-- name: Set ip_forward sysctl
+- name: Set ipv4 sysctl
   sysctl:
     name: net.ipv4.ip_forward
     value: "1"
@@ -15,6 +15,13 @@
     sysctl_file: /etc/sysctl.d/ipv4.forward.conf
     state: present
     reload: true
+
+- name: Comment out scale lab injected ipv6 disabling
+  replace:
+    path: /etc/sysctl.conf
+    regexp: "net.ipv6.conf.all.disable_ipv6 = 1"
+    replace: "# net.ipv6.conf.all.disable_ipv6 = 1"
+    backup: true
 
 - name: Set ipv6 sysctl
   sysctl:
@@ -30,6 +37,28 @@
   - name: net.ipv6.conf.all.disable_ipv6
     value: "0"
   when:  bastion_controlplane_ip | ansible.netcommon.ipv6
+
+- name: Increase the size of the arp-cache for dnsmasq
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/arp.conf
+    state: present
+    reload: true
+  loop:
+  - name: net.ipv4.neigh.default.gc_thresh1
+    value: "8192"
+  - name: net.ipv4.neigh.default.gc_thresh2
+    value: "32768"
+  - name: net.ipv4.neigh.default.gc_thresh3
+    value: "65536"
+  - name: net.ipv6.neigh.default.gc_thresh1
+    value: "8192"
+  - name: net.ipv6.neigh.default.gc_thresh2
+    value: "32768"
+  - name: net.ipv6.neigh.default.gc_thresh3
+    value: "65536"
 
 - name: Allow natted traffic through bastion lab interface
   shell: |
