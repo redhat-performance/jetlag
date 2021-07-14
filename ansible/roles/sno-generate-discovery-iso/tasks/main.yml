@@ -25,4 +25,4 @@
   include_tasks: 10_custom_iso.yml
   when:
     - public_vlan | bool
-  loop: "{{ groups['sno'] }}"
+  loop: "{{ groups['sno'][:sno_node_count|int] }}"

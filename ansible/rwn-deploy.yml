@@ -26,4 +26,5 @@
   - role: boot-iso
     vars:
       inventory_group: remoteworker
+      index: "{{ worker_node_count }}"
   - wait-for-rwn-to-join

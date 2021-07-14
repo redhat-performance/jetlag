@@ -18,6 +18,7 @@
   - role: boot-iso
     vars:
       inventory_group: sno
+      index: "{{ sno_node_count }}"
   - sno-wait-hosts-discovered
   - sno-install-cluster
   - sno-post-cluster-install

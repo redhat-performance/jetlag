@@ -22,3 +22,27 @@
   when:
   - ansible_distribution is defined
   - (ansible_distribution != "RedHat" or ansible_distribution_version|float < 8.4)
+
+- name: Set worker_node_count if undefined or empty (bm/rwn)
+  set_fact:
+    worker_node_count: "{{ allocation_node_count - 4 }}"
+  when: (cluster_type == "bm" or cluster_type == "rwn") and
+        (worker_node_count is undefined or not worker_node_count | int)
+
+- name: Set sno_node_count if undefined or empty
+  set_fact:
+    sno_node_count: "{{ (allocation_node_count - 1) | int   }}"
+  when: (cluster_type == "sno")  and
+        (sno_node_count is undefined or not sno_node_count | int)
+
+- name: Check if the required number of nodes exist for bm/rwn
+  fail:
+    msg: "Insufficient number of nodes in your allocation for bm/rwn"
+  when: (allocation_node_count is defined and (cluster_type == "bm" or cluster_type == "rwn")) and (worker_node_count | int  > allocation_node_count - 4)
+
+- name: Check if the required number of nodes exist for sno
+  fail:
+    msg: "Insufficient number of nodes in your allocation for bm/rwn"
+  when: (allocation_node_count is defined and cluster_type == "sno") and (sno_node_count | int   > allocation_node_count | int  - 1)
+
+

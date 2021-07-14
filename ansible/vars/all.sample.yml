@@ -14,6 +14,9 @@ cluster_type:
 # Applies to both bm/rwn clusters
 worker_node_count:
 
+# Applies to sno clusters
+sno_node_count:
+
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
