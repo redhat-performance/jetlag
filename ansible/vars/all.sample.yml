@@ -31,8 +31,10 @@ ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.8.0-x86_64
 # This should just match the above release image version (Ex: 4.8)
 openshift_version: "4.8"
 
-# Either OpenShiftSDN or OVNKubernetes
-networktype: OpenShiftSDN
+# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
+networktype: 
+  - OpenShiftSDN
+  - OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub

@@ -27,13 +27,15 @@
   set_fact:
     worker_node_count: "{{ allocation_node_count - 4 }}"
   when: (cluster_type == "bm" or cluster_type == "rwn") and
-        (worker_node_count is undefined or not worker_node_count | int)
+        (worker_node_count is undefined or not worker_node_count | int) and
+        ansible_play_name != "Create inventory from a lab cloud"
 
 - name: Set sno_node_count if undefined or empty
   set_fact:
     sno_node_count: "{{ (allocation_node_count - 1) | int   }}"
   when: (cluster_type == "sno")  and
-        (sno_node_count is undefined or not sno_node_count | int)
+        (sno_node_count is undefined or not sno_node_count | int) and
+        ansible_play_name != "Create inventory from a lab cloud"
 
 - name: Check if the required number of nodes exist for bm/rwn
   fail:
@@ -44,5 +46,10 @@
   fail:
     msg: "Insufficient number of nodes in your allocation for bm/rwn"
   when: (allocation_node_count is defined and cluster_type == "sno") and (sno_node_count | int   > allocation_node_count | int  - 1)
+
+- name: Check if networktype is of list type and has only one value for BM/RWN
+  fail:
+    msg: "networktype is of list type but can have only one value for Bm/RWN clusters"
+  when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype is not iterable or networktype is string or networktype is mapping or networktype|length > 1)
 
 

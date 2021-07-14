@@ -1,5 +1,5 @@
 networking:
-  networkType: {{ networktype }}
+  networkType: {{ networktype[0] }}
 {% if use_disconnected_registry %}
 imageContentSources:
 - mirrors:
