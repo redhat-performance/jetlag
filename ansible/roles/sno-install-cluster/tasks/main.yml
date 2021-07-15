@@ -3,13 +3,17 @@
 
 - name: Set networkType via install-config override
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/install-config"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/install-config"
     method: PATCH
     body_format: json
     status_code: [201]
     return_content: true
-    body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype }}\\\" }}\""
-  with_items: "{{ ai_cluster_ids }}"
+    body: "\"{\\\"networking\\\": {\\\"networkType\\\": \\\"{{ networktype[cni_index|int] }}\\\" }}\""
+  vars:
+    cni_index: "{{ ai_indx % networktype|length }}"
+  loop: "{{ ai_cluster_ids | dict2items  }}"
+  loop_control:
+    index_var: ai_indx
 
 - name: Install cluster(s)
   uri:
