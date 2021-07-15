@@ -1,9 +1,13 @@
 # Create inventory playbook will generate this for you much easier
 [all:vars]
-allocation_node_count={{ ocpinventory.json.nodes | length }}
+allocation_node_count=10
 
 [bastion]
-example.com ansible_ssh_user=root
+example.com ansible_ssh_user=root bmc_address=mgmt-example.com
+
+[bastion:vars]
+bmc_user=quads
+bmc_password=password
 
 [controlplane]
 # Network mac is the intended mac address of the private network to use for this cluster
