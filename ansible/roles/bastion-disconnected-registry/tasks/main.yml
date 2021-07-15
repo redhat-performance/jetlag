@@ -91,9 +91,9 @@
   - "{{ assisted_service_gui_image }}"
   - "{{ assisted_postgres_image }}"
 
-- name: Create pruned redhat-operator-index image with local-storage-operator
+- name: Create pruned redhat-operator-index image with {{ operators_to_sync }}
   shell: |
-    opm index prune -f {{ operator_index_container_image }} -p local-storage-operator -t {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
+    opm index prune -f {{ operator_index_container_image }} -p {{ operators_to_sync }} -t {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
 
 - name: Push pruned redhat-operator-index image to disconnected registry
   shell: |
