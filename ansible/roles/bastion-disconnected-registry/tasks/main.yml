@@ -38,6 +38,13 @@
     network: host
     state: started
 
+# On a reboot "started" state does not start an exited pod (why..idk)
+- name: Ensure registry pod is up
+  containers.podman.podman_pod:
+    name: ocpdiscon-registry
+    network: host
+    state: restarted
+
 - name: Create registry container
   containers.podman.podman_container:
     pod: ocpdiscon-registry
