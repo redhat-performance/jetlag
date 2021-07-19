@@ -11,6 +11,13 @@ lab_cloud:
 # Either bm or rwn or sno
 cluster_type:
 
+# Bastion Access related Vars
+# Default root password of your bastion in the lab allocation so that keys can be added automatically for ansible to run
+ansible_ssh_pass: password
+# Location of the private key of the user running the ansible playbook, leave default
+ansible_ssh_key: "{{ ansible_user_dir }}/.ssh/id_rsa"
+rebuild_bastion: false
+
 # Applies to both bm/rwn clusters
 worker_node_count:
 
@@ -36,8 +43,10 @@ networktype:
   - OpenShiftSDN
   - OVNKubernetes
 
+# Location of ssh-keys on bastion node
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
+
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################

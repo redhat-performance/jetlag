@@ -1,0 +1,112 @@
+- name: Set foreman to build using hammercli container
+  block:
+  - name: Install Podman
+    yum:
+      name: podman
+      state: present
+    become: true
+
+  - name: Build the hammercli image
+    shell: podman build --build-arg foreman_url=https://{{ labs[lab]['foreman'] }} -t hammercli .
+    args:
+      chdir: "{{ role_path }}/files/"
+
+  - name: update host to install new os (scale lab) in container
+    shell: podman run hammercli hammer -u {{ lab_cloud }} -p {{ hostvars[bastion_machine]['bmc_password'] }}  host update --name {{ bastion_machine }} --build 1 --operatingsystem '{{ os_install }}' --overwrite 1
+    when: lab == "scalelab"
+
+  - name: update host to install new os (alias lab) in container
+    shell: podman run hammercli hammer -u {{ lab_cloud }} -p {{ hostvars[bastion_machine]['bmc_password'] }}  host update --name {{ bastion_machine }} --build 1 --operatingsystem '{{ os_install }}' --medium 'rhel_local' --partition-table 'ALIAS-Partition' --overwrite 1
+    when: lab == "alias"
+
+- name: Dell rebuild
+  block:
+  - name: Get Badfish pod image
+    podman_image:
+      name: "{{ badfish_pod_image }}"
+      pull: yes
+      force: yes
+
+  - name: Check power state of provisioner (Dell and in container)
+    shell: |
+      {{ badfish_cmd_container }}{{ bastion_machine }} --power-state
+    register: power_state
+
+  - name: Power on Provisioner if powered off (Dell and in container)
+    shell: |
+      {{ badfish_cmd_container }}{{ bastion_machine }} --power-on
+    when: not 'On' in power_state.stdout
+
+  - name: Wait for node to be powered on (Dell and in container)
+    wait_for:
+      timeout: 20
+    when: "'On' in power_state.stdout"
+
+  - name: Set provisioner host to foreman boot order (Dell and in a container)
+    block:
+    - name: Try badfish to set Foreman style interface order
+      shell: |
+        {{ badfish_cmd_container }}{{ bastion_machine }} -t foreman
+
+    rescue:
+    # RACRESET is required if Badfish failed due to Redfish internal error
+    - name: Rescue - Reset iDRAC
+      shell: |
+        sshpass -p "{{ hostvars[bastion_machine]['bmc_password'] }}" ssh -o StrictHostKeyChecking=no {{ hostvars[bastion_machine]['bmc_user'] }}@mgmt-{{ bastion_machine }} "racadm racreset soft -f"
+
+    - name: Wait for iDrac to be responsive (check via --check-boot)
+      shell: |
+       {{ badfish_cmd_container }}{{ bastion_machine }} --check-boot
+       register: wait_for_prov_idrac
+       until: wait_for_prov_idrac is succeeded
+       retries: 20
+       delay: 30
+
+    - name: Badfish rescue to set Foreman style interface order
+      shell: |
+        {{ badfish_cmd_container }}{{ bastion_machine }} -t foreman
+
+  - name: Set provisioner host to reboot (Dell and in container)
+    shell: |
+      {{ badfish_cmd_container }}{{ bastion_machine }} --power-cycle
+  when: hostvars[bastion_machine]['vendor'] == "Dell"
+
+- name: Supermicro rebuild
+  block:
+  - name: Check power status of node
+    shell: ipmitool -I lanplus -H mgmt-{{ bastion_machine }} -U {{ hostvars[bastion_machine]['bmc_user']  }} -P  {{ hostvars[bastion_machine]['bmc_password'] }} chassis power status
+    register: power_state
+
+  - name: Power on node if off
+    shell: ipmitool -I lanplus -H mgmt-{{ bastion_machine }} -U {{ hostvars[bastion_machine]['bmc_user'] }} -P  {{ hostvars[bastion_machine]['bmc_password'] }} chassis power on
+    when: not 'On' in power_state.stdout
+
+  - name: Wait for node to be powered on
+    wait_for:
+       timeout: 20
+    when: not 'On' in power_state.stdout
+
+  - name: Set provisioner host to foreman boot order (Supermicro)
+    shell: ipmitool -I lanplus -H mgmt-{{ bastion_machine }} -U {{ hostvars[bastion_machine]['bmc_user'] }} -P {{ hostvars[bastion_machine]['bmc_password'] }} chassis bootdev pxe options=persistent
+
+  - name: Power cycle provisioner
+    shell: ipmitool -I lanplus -H mgmt-{{ bastion_machine }} -U {{ hostvars[bastion_machine]['bmc_user'] }} -P  {{ hostvars[bastion_machine]['bmc_password'] }} chassis power cycle
+  when: hostvars[bastion_machine]['vendor'] == "Supermicro"
+
+- name: wait for 420 seconds before checking for provisioner
+  wait_for:
+    timeout: 420
+
+- name: waiting for the bastion to be available
+  wait_for:
+    port: 22
+    host: "{{ bastion_machine }}"
+    search_regex: OpenSSH
+    timeout: 30
+  register: node_reachable
+  retries: 100
+  until: node_reachable is succeeded
+
+- name: copy keys
+  include_tasks: tasks/copy-keys.yml
+

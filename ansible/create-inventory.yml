@@ -8,7 +8,6 @@
 
 - name: Create inventory from a lab cloud
   hosts: localhost
-  gather_facts: false
   vars_files:
   - vars/all.yml
   - vars/lab.yml

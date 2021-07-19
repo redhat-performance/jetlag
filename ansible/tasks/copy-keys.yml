@@ -1,0 +1,12 @@
+- name: copy jump host key
+  shell: |
+    echo '{{ ansible_ssh_pass }}' | sshpass ssh-copy-id -i {{ ansible_ssh_key }} -o 'StrictHostKeyChecking no' -f {{ hostvars[bastion_machine]['ansible_ssh_user'] }}@{{ bastion_machine }}
+  register: ssh_result
+  changed_when: false
+  ignore_errors: true
+
+- name: remove key and add again
+  shell: |
+    ssh-keygen -R {{ bastion_machine }}
+    echo '{{ ansible_ssh_pass }}' | sshpass ssh-copy-id -i {{ ansible_ssh_key }} -o 'StrictHostKeyChecking no' -f {{ hostvars[bastion_machine]['ansible_ssh_user'] }}@{{ bastion_machine }}
+  changed_when: false

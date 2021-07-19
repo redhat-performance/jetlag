@@ -52,4 +52,3 @@
     msg: "networktype is of list type but can have only one value for Bm/RWN clusters"
   when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype is not iterable or networktype is string or networktype is mapping or networktype|length > 1)
 
-
