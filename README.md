@@ -26,7 +26,7 @@ Scale Lab
 | Dell fc640       | No  | No  | Yes |
 | Supermicro 1029p | Yes | Yes | No  |
 
-## Ansible Prerequisites
+## Prerequisites
 
 Versions:
 
@@ -111,6 +111,10 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 ## Troubleshooting
 
 See [troubleshooting.md](docs/troubleshooting.md) in [docs](docs) directory.
+
+## Disconnected API/Console Access
+
+See [disconnected-ipv6-cluster-access.md](docs/disconnected-ipv6-cluster-access.md) in [docs](docs) directory.
 
 ## Hypervisor Network-Impairments
 

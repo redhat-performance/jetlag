@@ -1,0 +1,74 @@
+global
+    log         127.0.0.1 local2
+    maxconn     4000
+    daemon
+
+defaults
+    mode                    tcp
+    log                     global
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+listen stats-50000
+    bind 0.0.0.0:50000
+    mode            http
+    log             global
+    maxconn 10
+    timeout client  100s
+    timeout server  100s
+    timeout connect 100s
+    stats enable
+    stats hide-version
+    stats refresh 30s
+    stats show-node
+    stats auth admin:password
+    stats uri  /haproxy?stats
+
+frontend api-ipv6-6443
+    bind :::6443 v4v6
+    mode tcp
+    default_backend api-ipv6-be
+
+backend api-ipv6-be
+    balance source
+    mode tcp
+    server api [{{ controlplane_network_api }}]:6443 check inter 1s
+
+frontend machineconfig-ipv6-22623
+    bind :::22623 v4v6
+    mode tcp
+    default_backend mc-ipv6-22623
+
+backend mc-ipv6-22623
+    balance source
+    mode tcp
+{% for node in  groups['controlplane'] %}
+    server {{ node }} [{{ hostvars[node].ip }}]:22623 check inter 1s
+{% endfor %}
+
+frontend ingress-router-ipv6-80
+    bind :::80 v4v6
+    mode tcp
+    default_backend ingress-ipv6-80
+
+backend ingress-ipv6-80
+    mode tcp
+    balance source
+    server ingress [{{ controlplane_network_ingress }}]:80 check inter 1s
+
+frontend ingress-router-ipv6-443
+    bind :::443 v4v6
+    mode tcp
+    default_backend 443-ipv6-be
+
+backend 443-ipv6-be
+    mode tcp
+    balance source
+    server ingress [{{ controlplane_network_ingress }}]:443 check inter 1s
