@@ -5,6 +5,30 @@
 #
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
 #
+- name: ensure bastion is powered on
+  hosts: localhost
+  vars_files:
+  - vars/all.yml
+  - vars/lab.yml
+  tasks:
+  - name: Set fact for bastion_machine
+    set_fact:
+      bastion_machine: "{{ groups['bastion'][0] }}"
+
+  - name: Ensure bastion is powered on
+    community.general.redfish_command:
+      category: Systems
+      command: PowerOn
+      baseuri: "{{ hostvars[bastion_machine]['bmc_address'] }}"
+      username: "{{ hostvars[bastion_machine]['bmc_user'] }}"
+      password: "{{ hostvars[bastion_machine]['bmc_password'] }}"
+    register: bastion_power
+
+  - name: Wait if bastion has just been powered on
+    wait_for_connection:
+      delay: 60
+      timeout: 420
+    when: bastion_power.changed
 
 - name: Setup bastion machine
   hosts: bastion

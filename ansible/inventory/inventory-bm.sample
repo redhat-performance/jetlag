@@ -1,9 +1,13 @@
 # Create inventory playbook will generate this for you much easier
 [all:vars]
-allocation_node_count={{ ocpinventory.json.nodes | length }}
+allocation_node_count=10
 
 [bastion]
-example.com ansible_ssh_user=root
+example.com ansible_ssh_user=root bmc_address=mgmt-example.com
+
+[bastion:vars]
+bmc_user=quads
+bmc_password=password
 
 [controlplane]
 control-plane-0 bmc_address=mgmt-control-plane-0.example.com network_mac=40:a6:b7:2a:74:40 lab_mac=bc:97:e1:7a:d4:40 ip=198.18.10.5 vendor=Dell
