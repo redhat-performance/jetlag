@@ -162,3 +162,4 @@
   template:
     src: "inventory-{{ cluster_type }}.j2"
     dest: "{{ playbook_dir }}/inventory/{{ lab_cloud }}.local"
+    backup: true
