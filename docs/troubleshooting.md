@@ -1,5 +1,18 @@
 # Troubleshooting jetlag
 
+_**Table of Contents**_
+
+<!-- TOC -->
+- [Accessing services off the bastion](#accessing-services-off-the-bastion)
+- [Cleaning all pods/containers off the bastion machines](#cleaning-all-podscontainers-off-the-bastion-machines)
+- [Upgrade RHEL to 8.4 in Scalelab](#upgrade-rhel-to-84-in-scalelab)
+- [Resetting SuperMicro BMC / Resolving redfish connection error](#resetting-supermicro-bmc-resolving-redfish-connection-error)
+- [Resetting Dell iDrac](#resetting-dell-idrac)
+- [Failure of TASK SuperMicro Set Boot](#failure-of-task-supermicro-set-boot)
+- [Fix boot order of machines in Scale Lab](#fix-boot-order-of-machines-in-scale-lab)
+- [Clean all container images from disconnected registry on bastion](#clean-all-container-images-from-disconnected-registry-on-bastion)
+<!-- /TOC -->
+
 ## Accessing services off the bastion
 
 Several services are run on the bastion in order to automate the tasks that jetlag performs. You can access them via the following ports:
@@ -96,7 +109,7 @@ sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example
 
 Substitute the user/password/hostname to perform the reset on a desired host. Note it will take a few minutes before the BMC will become available again.
 
-## Failure of TASK [boot-iso : SuperMicro - Set Boot] when using Supermicro servers.
+## Failure of TASK SuperMicro Set Boot
 
 ```
 The property Boot is not in the list of valid properties for the resource.
@@ -122,3 +135,34 @@ If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebui
 ```
 
 Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
+
+## Clean all container images from disconnected registry on bastion
+
+If you are planning a redeploy with new versions and new container images it may make sense to clean all the old container images to start fresh. First [clean the pods and containers off the bastion following this](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines). Then remove the directory containing the images.
+
+On the bastion machine:
+
+```console
+[root@f16-h11-000-1029p ~]# cd /opt/registry
+[root@f16-h11-000-1029p registry]#
+[root@f16-h11-000-1029p registry]# ls -lah
+total 12K
+drwxr-xr-x. 6 root root  144 Jul 20 12:14 .
+drwxr-xr-x. 6 root root   83 Jul 16 15:01 ..
+drwxr-xr-x. 2 root root   22 Jul 20 02:27 auth
+drwxr-xr-x. 2 root root   42 Jul 20 02:27 certs
+drwxr-xr-x. 3 root root   20 Jul 20 02:27 data
+-rwxr--r--. 1 root root  714 Jul 20 02:27 generate-cert.sh
+-rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-disconnected.txt
+-rw-r--r--. 1 root root 2.9K Jul 20 02:27 pull-secret.txt
+drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
+[root@f16-h11-000-1029p registry]# du -sh *
+4.0K    auth
+8.0K    certs
+27G     data
+4.0K    generate-cert.sh
+4.0K    pull-secret-disconnected.txt
+4.0K    pull-secret.txt
+48K     sync-acm-d
+[root@f16-h11-000-1029p registry]# rm -rf data/docker/
+```

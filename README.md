@@ -10,6 +10,19 @@ Three separate layouts of clusters can be deployed:
 
 Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. This allows quicker interaction with these extra nodes in a lab allocation.
 
+_**Table of Contents**_
+
+<!-- TOC -->
+- [Tested Labs/Hardware](#tested-labshardware)
+- [Prerequisites](#prerequisites)
+- [Cluster Deployment Usage](#cluster-deployment-usage)
+- [Quickstart guides](#quickstart-guides)
+- [Troubleshooting](#troubleshooting)
+- [Disconnected API/Console Access](#disconnected-apiconsole-access)
+- [Hypervisor Network-Impairments](#hypervisor-network-impairments)
+- [Workload Usage](#workload-usage)
+<!-- /TOC -->
+
 ## Tested Labs/Hardware
 
 Alias Lab
