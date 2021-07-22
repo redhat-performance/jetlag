@@ -4,7 +4,7 @@ Tooling to install clusters for testing via an on-prem [Assisted Installer](http
 
 Three separate layouts of clusters can be deployed:
 
-* BM - Baremetal - 3 control-plane nodes, X number of worker nodes
+* BM - Bare Metal - 3 control-plane nodes, X number of worker nodes
 * RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
 * SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
@@ -107,6 +107,10 @@ Single Node OpenShift:
 ```console
 ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 ```
+
+## Quickstart guides
+
+[Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
 
 ## Troubleshooting
 
