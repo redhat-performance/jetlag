@@ -5,7 +5,7 @@ labs:
   alias:
     dns:
     - 10.19.96.1
-    foreman: navi.alias.bos.scalelab.redhat.com
+    foreman: foreman.alias.bos.scalelab.redhat.com
     ntp_server: clock2.bos.redhat.com
     quads: quads11.alias.bos.scalelab.redhat.com
   scalelab:
