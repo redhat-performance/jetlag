@@ -6,24 +6,24 @@
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
   register: slurped_ai_ocp_version
-  when: not use_disconnected_registry
+  when: not (use_disconnected_registry | default(false))
 
 - name: Obtain version data for assisted-installer with disconnected registry
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
   register: slurped_ai_ocp_version_disconnected
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Ensure bastion machine is logged in to inspect image digest
   shell: |
     skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Determine digest for assisted-installer-controller image
   shell: |
     skopeo inspect docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}{{ assisted_installer_controller_image | replace('quay.io','') }} | jq -r .Digest
   register: assisted_installer_controller_image_digest
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Create directories for bastion assisted-installer
   file:

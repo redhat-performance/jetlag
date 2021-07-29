@@ -65,7 +65,7 @@ Change `cluster_type` to `cluster_type: bm`
 Set `worker_node_count` if you desire to limit the number of worker nodes from your scale lab allocation.
 
 Change `ocp_release_image` to the desired image if the default (4.8.3) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.9`), then change `ocp_release_image` accordingly.
+If you change `ocp_release_image` to a different major version (Ex `4.9`), then change `openshift_version` accordingly.
 
 Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
 ```yaml

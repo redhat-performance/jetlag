@@ -1,0 +1,263 @@
+# Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart
+
+To deploy a bare metal OpenShift cluster, order 6 machines from the [IBM bare metal server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm). The machines used to test this are of Server profile E5-2620 in DAL10 datacenter with automatic port redundancy. One machine will become the bastion, 3 machines will become control-plane nodes, and the remaining 2 nodes will be worker nodes. Ensure that you order either CentOS or RHEL machines with a new enough version (8.4) otherwise podman will not have host networking functionality. The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. The other machines can have a public ip address but it is not currently in use with this deployment method.
+
+Once your machines are delivered, login to the ibmcloud cli using the cut and paste link from the cloud portal. You should be able to list the machines from your local machine, for example:
+
+```console
+$ ibmcloud sl hardware list
+id        hostname     domain                    public_ip        private_ip    datacenter   status   
+960237    jetlag-bm0   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
+1165601   jetlag-bm1   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
+1112925   jetlag-bm2   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
+1163781   jetlag-bm3   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
+1165519   jetlag-bm4   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
+1117051   jetlag-bm5   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE  
+```
+
+## Clone Jetlag
+
+Clone jetlag on to your laptop and change to the jetlag directory
+
+```console
+[user@fedora ~]$ git clone https://github.com/redhat-performance/jetlag.git
+Cloning into 'jetlag'...
+remote: Enumerating objects: 1639, done.
+remote: Counting objects: 100% (393/393), done.
+remote: Compressing objects: 100% (210/210), done.
+remote: Total 1639 (delta 233), reused 232 (delta 160), pack-reused 1246
+Receiving objects: 100% (1639/1639), 253.01 KiB | 1.07 MiB/s, done.
+Resolving deltas: 100% (704/704), done.
+[user@fedora ~]$ cd jetlag
+```
+
+## Review Prerequisites and set pull-secret
+
+Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
+
+Set your pull secret file `pull_secret.txt` in the root directory. The contents should resemble this json:
+
+```
+{
+  "auths": {
+    "quay.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.redhat.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    }
+  }
+}
+```
+
+If you are deploying nightly builds then you will need a ci token and an entry for `registry.ci.openshift.org`. If you plan on deploying an ACM downstream build be sure to include an entry for `quay.io:443`
+
+## ibmcloud.yml vars file
+
+Next copy the vars file so we can edit it.
+
+```console
+[user@fedora jetlag]$ cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
+[user@fedora jetlag]$ vi ansible/vars/ibmcloud.yml
+```
+
+### Lab & cluster infrastructure vars
+
+Change `lab` to `lab: ibmcloud`
+
+Change `cluster_type` to `cluster_type: bm`
+
+Set `hardware_vendor` to the hardware vendor expected. In our case it has been Supermicro, however it could be different depending on the hardware supplied.  **At the current moment this var is actually not used since there is a license issue with the bare metal servers supplied.**
+
+Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
+
+Change `ocp_release_image` to the required image if the default (4.8.3) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.9`), then change `openshift_version` accordingly.
+
+Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
+
+```yaml
+networktype:
+  - OVNKubernetes
+```
+
+Set `ssh_private_key_file` and `ssh_public_key_file` to the file location of the ssh key files to access your ibmcloud bare metal servers.
+
+### Bastion node vars
+
+The bastion node is usually the first node in the hardware list. In our testbed's case, `bond0` is the private network, and `bond1` is the public network. This matches the defaults for `bastion_public_interface` and `bastion_private_interfaces`. It is unknown if this changes in other hardware or datacenters.
+
+Next, identify your dns servers for your hardware by sshing to the expected bastion machine and reading `/etc/resolv.conf` on the machine. Supply those dns servers to the `dns_servers` list.
+
+```yaml
+dns_servers:
+- X.X.X.X
+- Y.Y.Y.Y
+```
+
+Set `base_dns_name` to the expected base dns name, for example `base_dns_name: performance-scale.cloud`
+
+### OCP node vars
+
+For the OCP nodes it might be necessary to adjust what interfaces are for the private bond (`bond0`) and what the `private_network_prefix` is.  Check your hardware's subnet to determine the prefix. In the event the hardware does not match the defaults, you may need to boot the generated discovery image and observe the console to see what interfaces a machine has when RHCOS is booted.
+
+While inspecting the subnet at cloud.ibm.com, determine two free addresses in the subnet to be used as api and ingress addresses. Provide those addresses in `controlplane_network_api` and `controlplane_network_ingress` as required.
+
+### Extra vars
+
+For the purposes of this guide no extra vars are required.
+
+## Review ibmcloud.yml
+
+The `ansible/vars/ibmcloud.yml` now resembles ..
+
+```yaml
+---
+# ibmcloud sample vars file
+################################################################################
+# Lab & cluster infrastructure vars
+################################################################################
+# Lab is ibmcloud in this case
+lab: ibmcloud
+
+cluster_type: bm
+
+hardware_vendor: Supermicro
+
+# Applies to bm clusters
+worker_node_count: 2
+
+# Applies to sno clusters
+sno_node_count:
+
+# Versions are controlled by this release image. If you want to change images
+# you must stop and rm all assisted-installer containers on the bastion and rerun
+# the setup-bastion step in order to setup your bastion's assisted-installer to
+# the version you specified
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.8.3-x86_64
+
+# This should just match the above release image version (Ex: 4.8)
+openshift_version: "4.8"
+
+# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
+networktype:
+  - OVNKubernetes
+
+ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
+ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
+pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
+
+################################################################################
+# Bastion node vars
+################################################################################
+bastion_cluster_config_dir: /root/{{ cluster_type }}
+
+bastion_public_interface: bond1
+
+bastion_private_interfaces:
+- bond0
+- int0
+- int1
+
+dns_servers:
+- X.X.X.X
+- Y.Y.Y.Y
+
+base_dns_name: performance-scale.cloud
+
+################################################################################
+# OCP node vars
+################################################################################
+# Network configuration for all bm cluster control-plane nodes
+private_bond_interfaces:
+- enp1s0f0
+- enp2s0f0
+
+private_network_prefix: 26
+
+cluster_name: jetlag-ibm
+
+controlplane_network_api: X.X.X.3
+controlplane_network_ingress: X.X.X.4
+
+################################################################################
+# Extra vars
+################################################################################
+# Append override vars below
+```
+
+## Run playbooks
+
+Run the ibmcloud create inventory playbook
+
+```console
+[user@fedora jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
+...
+```
+
+The `ibmcloud-create-inventory.yml` playbook will create an inventory file `ansible/inventory/ibmcloud.local` from the ibmcloud cli data and the vars file.
+
+The inventory file should resemble the [sample one provided](../ansible/inventory/ibmcloud-inventory-bm.sample).
+
+Next run the `ibmcloud-setup-bastion.yml` playbook ...
+
+```console
+[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
+...
+```
+
+Prior to running the deploy playbook, you will need to connect to ibmcloud using vpn and should be able to directly open each node's bmc web gui. Use the credentials in the inventory file per host's bmc in order to login. It is best to open each console so you can observe when a node reboots. Also set each screen to the Virtual Media CD-ROM Image page. You can pre-set the image for Supermicro machine to match:
+
+Share Host - `http://X.X.X.X:8081`
+
+Path to Image - `\\discovery.iso`
+
+**The two slashes (`\\`) are required and is not a typo.**
+
+Finally run the `ibmcloud-bm-deploy.yml` playbook ...
+
+```console
+[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
+...
+```
+
+While the playbook is running, it will prompt that you mounted the Virtual Media:
+
+```console
+TASK [generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud] ****************************************************************************************************
+Wednesday 04 August 2021  11:12:52 -0400 (0:00:06.703)       0:00:32.780 ******
+[generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud]
+Confirm each machine's BMC's virtualmedia mounts http://X.X.X.X:8081/discovery.iso:
+```
+
+Confirm that the Virtual Media is mounted according to each machine's BMC. It then reminds you with another prompt to observe the consoles and unmount the virtual media **after** machines reboot:
+
+```console
+TASK [generate-discovery-iso : Remind to watch for when to unmount the virtual ISO media] ****************************************************************************************************
+Wednesday 04 August 2021  11:13:07 -0400 (0:00:06.088)       0:00:47.220 ******
+[generate-discovery-iso : Remind to watch for when to unmount the virtual ISO media]
+Remember to watch the consoles and unmount immediate after a machine reboots:
+```
+
+Note that in this case with a 5 node cluster, 4 of the machines will rather quickly reboot after writing the discovery image to disk. The bootstrap master won't reboot until later in the process. If you fail to watch the consoles closely and miss the reboot to unmount the ISO at the correct time, the cluster will fail to complete install as the machines will always boot into the discovery ISO. You will be able to see this status if you also observe the Assisted-installer GUI on the bastion machine. (http://$BASTION_IP:8080) You can also ssh to each node while it is running the discovery image from your bastion machine and tail journal logs to see status of the disk writing and reboot process.
+
+If everything goes well you should have a cluster in about 50-60 minutes. You can interact with the cluster from the bastion.
+
+```console
+[root@jetlag-bm0 ~]# export KUBECONFIG=/root/bm/kubeconfig
+[root@jetlag-bm0 ~]# oc get no
+NAME         STATUS   ROLES    AGE     VERSION
+jetlag-bm1   Ready    master   3h34m   v1.21.1+051ac4f
+jetlag-bm2   Ready    master   3h7m    v1.21.1+051ac4f
+jetlag-bm3   Ready    master   3h34m   v1.21.1+051ac4f
+jetlag-bm4   Ready    worker   3h12m   v1.21.1+051ac4f
+jetlag-bm5   Ready    worker   3h13m   v1.21.1+051ac4f
+```
+
+You can also copy the kubeconfig to your local machine and interact with it if you are on the ibmcloud vpn, and add the approiate `/etc/hosts` entries to your local `/etc/hosts` file.

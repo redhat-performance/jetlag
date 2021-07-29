@@ -11,7 +11,7 @@ DEPLOY_TARGET=onprem
 STORAGE=filesystem
 DUMMY_IGNITION=false
 
-{% if use_disconnected_registry %}
+{% if use_disconnected_registry | default(false) %}
 OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version_disconnected.content | b64decode }}
 {% else %}
 OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version.content | b64decode }}
@@ -26,7 +26,7 @@ SKIP_CERT_VERIFICATION=true
 
 SELF_VERSION={{ assisted_service_image }}
 INSTALLER_IMAGE={{ assisted_installer_image }}
-{% if use_disconnected_registry %}
+{% if use_disconnected_registry | default(false) %}
 CONTROLLER_IMAGE={{ assisted_installer_controller_image.split(":")[0] }}@{{ assisted_installer_controller_image_digest.stdout }}
 {% else %}
 CONTROLLER_IMAGE={{ assisted_installer_controller_image }}

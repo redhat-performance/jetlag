@@ -1,0 +1,25 @@
+---
+# Setup bastion machine to deploy an OCP cluster on IBMcloud
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
+#
+
+- name: Setup an ibmcloud bastion machine
+  hosts: bastion
+  vars_files:
+  - vars/ibmcloud.yml
+  - vars/lab.yml
+  vars:
+    assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+    bastion_controlplane_ip: "{{ hostvars[inventory_hostname]['private_address'] }}"
+    http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+  roles:
+  - validate-vars
+  - bastion-install
+  - ibmcloud-bastion-network
+  - bastion-dnsmasq
+  - bastion-http
+  - bastion-ocp-version
+  - bastion-assisted-installer

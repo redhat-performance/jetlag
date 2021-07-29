@@ -1,6 +1,6 @@
 networking:
   networkType: {{ networktype[0] }}
-{% if use_disconnected_registry %}
+{% if use_disconnected_registry | default(false) %}
 imageContentSources:
 - mirrors:
   - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4

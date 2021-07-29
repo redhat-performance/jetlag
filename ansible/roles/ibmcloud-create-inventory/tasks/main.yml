@@ -1,0 +1,143 @@
+---
+# ibmcloud-create-inventory tasks
+#
+# For Bare Metal clusters:
+# * First machine is bastion
+# * Following 3 machines are controlplane nodes (master)
+# * Remaining are worker nodes (depending upon worker_node_count)
+#
+# You can also specify which machines based on machine id should be bastion/controlplane/worker roles
+#
+
+- name: Get list of machines
+  shell: |
+    ibmcloud sl hardware list --output json
+  register: ibm_hardware_list
+
+- name: Set inventory variables
+  set_fact:
+    ibm_hardware_list_json: "{{ ibm_hardware_list.stdout | from_json | selectattr('hardwareStatus.status', 'eq', 'ACTIVE') }}"
+    available_ibm_hardware_count: "{{ ibm_hardware_list.stdout | from_json | selectattr('hardwareStatus.status', 'eq', 'ACTIVE') | length }}"
+    ibmcloud_detailed_worker_data: []
+
+- name: Pick first node as bastion
+  set_fact:
+    bastion_hardware_data: "{{ (ibm_hardware_list_json | first) }}"
+  when: bastion_hardware_id | string | length < 1
+
+- name: Set specific bastion to specific bastion_hardware_id
+  set_fact:
+    bastion_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', bastion_hardware_id) | first) }}"
+  when: bastion_hardware_id | string | length > 1
+
+- name: Remove the bastion from hardware list data
+  set_fact:
+    ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([bastion_hardware_data]) }}"
+
+- name: Get bastion details
+  shell: |
+    ibmcloud sl hardware detail {{ bastion_hardware_data.id }} -p --output json
+  register: ibm_hardware_detail_bastion
+
+- name: Read bastion cli data into json data
+  set_fact:
+    ibm_hardware_detail_b_json: "{{ ibm_hardware_detail_bastion.stdout | from_json }}"
+
+- name: Bare metal cluster type tasks
+  when: cluster_type == "bm"
+  block:
+  - name: Pick controlplane nodes
+    set_fact:
+      cp0_hardware_data: "{{ ibm_hardware_list_json[0] }}"
+      cp1_hardware_data: "{{ ibm_hardware_list_json[1] }}"
+      cp2_hardware_data: "{{ ibm_hardware_list_json[2] }}"
+    when: controlplane_hardware_ids | length != 3
+
+  - name: Set specific controlplane nodes from controlplane_hardware_ids
+    set_fact:
+      cp0_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', controlplane_hardware_ids[0]) | first) }}"
+      cp1_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', controlplane_hardware_ids[1]) | first) }}"
+      cp2_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', controlplane_hardware_ids[2]) | first) }}"
+    when: controlplane_hardware_ids | length == 3
+
+  - name: Remove the controlplane0 from hardware list data
+    set_fact:
+      ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([cp0_hardware_data]) }}"
+
+  - name: Remove the controlplane1 from hardware list data
+    set_fact:
+      ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([cp1_hardware_data]) }}"
+
+  - name: Remove the controlplane2 from hardware list data
+    set_fact:
+      ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([cp2_hardware_data]) }}"
+
+  - name: Set bastion and control-plane details
+    set_fact:
+      ibmcloud_hardware_count: "{{ ibm_hardware_list_json | length }}"
+      bastion_machine_hn: "{{ bastion_hardware_data.hostname }}"
+      controlplane0_hn: "{{ cp0_hardware_data.hostname }}"
+      controlplane1_hn: "{{ cp1_hardware_data.hostname }}"
+      controlplane2_hn: "{{ cp2_hardware_data.hostname }}"
+      bastion_machine_public: "{{ bastion_hardware_data.primaryIpAddress | default('x.x.x.x') }}"
+      controlplane0_private: "{{ cp0_hardware_data.primaryBackendIpAddress | default('x.x.x.x') }}"
+      controlplane1_private: "{{ cp1_hardware_data.primaryBackendIpAddress | default('x.x.x.x') }}"
+      controlplane2_private: "{{ cp2_hardware_data.primaryBackendIpAddress | default('x.x.x.x') }}"
+
+  - name: Get controlplane0 Details
+    shell: |
+      ibmcloud sl hardware detail {{ cp0_hardware_data.id }} -p --output json
+    register: ibm_hardware_detail_cp0
+
+  - name: Get controlplane1 Details
+    shell: |
+      ibmcloud sl hardware detail {{ cp1_hardware_data.id }} -p --output json
+    register: ibm_hardware_detail_cp1
+
+  - name: Get controlplane2 Details
+    shell: |
+      ibmcloud sl hardware detail {{ cp2_hardware_data.id }} -p --output json
+    register: ibm_hardware_detail_cp2
+
+  - name: Read cli data into json data
+    set_fact:
+      ibm_hardware_detail_b_json: "{{ ibm_hardware_detail_bastion.stdout | from_json }}"
+      ibm_hardware_detail_cp0_json: "{{ ibm_hardware_detail_cp0.stdout | from_json }}"
+      ibm_hardware_detail_cp1_json: "{{ ibm_hardware_detail_cp1.stdout | from_json }}"
+      ibm_hardware_detail_cp2_json: "{{ ibm_hardware_detail_cp2.stdout | from_json }}"
+
+  - name: Set max number of nodes
+    set_fact:
+      max_nodes: "{{ ibm_hardware_list_json|length }}"
+    when: worker_node_count == None
+
+  - name: Set max number of nodes (worker_node_count set)
+    set_fact:
+      max_nodes: "{{ worker_node_count|int }}"
+    when: worker_node_count != None
+
+  # All remaining nodes are considered worker nodes when worker_hardware_ids isn't specified
+  - name: Get ibmcloud worker node detailed data
+    shell: |
+      ibmcloud sl hardware detail {{ item.id }} -p --output json
+    loop: "{{ ibm_hardware_list_json[:max_nodes|int] }}"
+    register: ibmcloud_detailed_worker_data
+    when: worker_hardware_ids | length == 0
+
+  - name: Set specific ibmcloud worker node detailed data from worker_hardware_ids
+    shell: |
+      ibmcloud sl hardware detail {{ item }} -p --output json
+    loop: "{{ worker_hardware_ids }}"
+    register: ibmcloud_detailed_worker_data_specific
+    when: worker_hardware_ids | length != 0
+
+  - name: Use specific worker node detailed data
+    set_fact:
+      ibmcloud_detailed_worker_data: "{{ ibmcloud_detailed_worker_data_specific }}"
+    when: worker_hardware_ids | length != 0
+
+- name: Place inventory file named {{ lab_cloud }}.local into inventory directory
+  template:
+    src: "inventory-ibmcloud-bm.j2"
+    dest: "{{ playbook_dir }}/inventory/ibmcloud.local"
+    backup: true

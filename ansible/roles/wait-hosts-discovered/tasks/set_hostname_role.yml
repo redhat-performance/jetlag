@@ -1,24 +1,38 @@
 ---
 # Set hostname and role
 
-- name: Identify the hosts
+- name: Identify the host bmc address
   set_fact:
-    host_inventory: "{{ discovered_host.inventory }}"
+    host_bmc: "{{ (discovered_host.inventory | from_json).bmc_address }}"
+  when: lab in cloud_labs
+
+- name: Identify the host identifing data
+  set_fact:
+    host_interfaces: "{{ (discovered_host.inventory | from_json).interfaces }}"
     host_id: "{{ discovered_host.id }}"
 
-- name: Identify the host interfaces
-  set_fact:
-    host_interfaces: "{{ host_inventory.interfaces }}"
-
-- name : Identify the hostname and role
+- name: Identify the hostname and role via mac address
   set_fact:
     host_name: "{{ item.0 }}"
     host_role: "{{ hostvars[item.0]['role'] }}"
-  when: hostvars[item.0]['lab_mac'] == item.1.mac_address
+  when:
+    - lab in rh_labs
+    - hostvars[item.0]['lab_mac'] == item.1.mac_address
   loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
   no_log: true
 
-- name : Prepare hostname and role for {{ host_name }}
+- name: Identify the hostname and role via bmc address
+  set_fact:
+    host_name: "{{ item }}"
+    host_role: "{{ hostvars[item]['role'] }}"
+  when:
+    - lab in cloud_labs
+    - hostvars[item]['bmc_address'] == host_bmc
+  loop: "{{ inventory_nodes }}"
+  loop_control:
+    label: "{{ hostvars[item]['bmc_address'] }}"
+
+- name: Prepare hostname and role for {{ host_name }}
   set_fact:
     host:
       id: "{{ host_id }}"

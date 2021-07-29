@@ -24,7 +24,7 @@ spec:
   channel: "{{ openshift_version }}"
   installPlanApproval: Automatic
   name: local-storage-operator
-{% if use_disconnected_registry %}
+{% if use_disconnected_registry | default(false) %}
   source:  {{ operator_index_name }}
 {% else %}
   source: redhat-operators

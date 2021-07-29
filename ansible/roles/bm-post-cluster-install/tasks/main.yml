@@ -43,17 +43,17 @@
 - name: Disable default OperatorHub sources on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/imageContentSourcePolicy.yaml
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Apply olm-mirror catalogSource on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/catalogSource.yaml
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store
   when: fix_metal3_provisioningosdownloadurl
