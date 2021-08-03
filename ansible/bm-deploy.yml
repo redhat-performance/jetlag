@@ -18,6 +18,7 @@
   - role: boot-iso
     vars:
       inventory_group: controlplane
+      index: 3
   - role: boot-iso
     vars:
       inventory_group: worker
