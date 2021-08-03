@@ -1,6 +1,11 @@
 ---
 # Lab data (You should not have to edit this file)
 
+# Red Hat lab environments
+rh_labs:
+- alias
+- scalelab
+
 labs:
   alias:
     dns:

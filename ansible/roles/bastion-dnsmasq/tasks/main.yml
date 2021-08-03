@@ -1,0 +1,47 @@
+---
+# bastion-dnsmasq tasks
+
+- name: Increase the size of the arp-cache for dnsmasq
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/arp.conf
+    state: present
+    reload: true
+  loop:
+  - name: net.ipv4.neigh.default.gc_thresh1
+    value: "8192"
+  - name: net.ipv4.neigh.default.gc_thresh2
+    value: "32768"
+  - name: net.ipv4.neigh.default.gc_thresh3
+    value: "65536"
+  - name: net.ipv6.neigh.default.gc_thresh1
+    value: "8192"
+  - name: net.ipv6.neigh.default.gc_thresh2
+    value: "32768"
+  - name: net.ipv6.neigh.default.gc_thresh3
+    value: "65536"
+
+- name: Configure Dnsmasq / NetworkManager
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: jetlag.conf.j2
+    dest: /etc/dnsmasq.d/jetlag.conf
+  - src: 99-jetlag-dns.conf
+    dest: /etc/NetworkManager/conf.d/99-jetlag-dns.conf
+  - src: resolv.conf.j2
+    dest: /etc/resolv.conf
+
+- name: Restart NetworkManager
+  systemd:
+    state: restarted
+    name: NetworkManager
+
+- name: Start and enable dnsmasq
+  systemd:
+    state: restarted
+    enabled: true
+    name: dnsmasq

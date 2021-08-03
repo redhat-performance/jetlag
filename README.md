@@ -44,7 +44,7 @@ Scale Lab
 Versions:
 
 * Ansible 2.10 (on machine running jetlag playbooks)
-* RHEL 8.4 (Bastion)
+* RHEL 8.4 / Centos 8.4 (Bastion)
 * podman 3 (Bastion)
 
 Pre-reqs for the playbooks:

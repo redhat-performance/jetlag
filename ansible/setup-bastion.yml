@@ -1,5 +1,5 @@
 ---
-# Setup bastion machine for Remote Worker Node testing
+# Setup bastion machine to deploy an OCP cluster
 #
 # Example Usage:
 #
@@ -39,6 +39,7 @@
   - validate-vars
   - bastion-install
   - bastion-network
+  - bastion-dnsmasq
   - bastion-http
   - bastion-ocp-version
   - role: bastion-disconnected-registry

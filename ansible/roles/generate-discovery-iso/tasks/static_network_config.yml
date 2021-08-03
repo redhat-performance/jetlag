@@ -6,16 +6,6 @@
     item_network_config:
       network_yaml: "{{ lookup('template', 'nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
-  when:
-    - item in groups['controlplane']
-
-- name: Assemble bm static network config
-  set_fact:
-    item_network_config:
-      network_yaml: "{{ lookup('template', 'nmstate.yml.j2') }}"
-      mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
-  when:
-    - item in groups['worker']
 
 - name: Add {{ item }} ip config
   set_fact:

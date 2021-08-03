@@ -19,6 +19,7 @@
   - role: boot-iso
     vars:
       inventory_group: controlplane
+      index: 3
   - wait-hosts-discovered
   - install-cluster
   - rwn-post-cluster-install
