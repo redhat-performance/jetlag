@@ -1,6 +1,10 @@
 ---
 # Lab data (You should not have to edit this file)
 
+# Bare-metal cloud environments
+cloud_labs:
+- ibmcloud
+
 # Red Hat lab environments
 rh_labs:
 - alias

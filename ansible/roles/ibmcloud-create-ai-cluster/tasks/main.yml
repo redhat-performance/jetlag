@@ -1,0 +1,46 @@
+---
+# create-ai-cluster tasks
+
+- name: Create cluster
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "name": "{{ cluster_name }}",
+        "openshift_version": "{{ openshift_version }}",
+        "base_dns_domain": "{{ base_dns_name }}",
+        "cluster_network_cidr": "{{ cluster_network_cidr }}",
+        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
+        "service_network_cidr": "{{ service_network_cidr }}",
+        "ingress_vip": "{{ controlplane_network_ingress }}",
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
+        "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
+    }
+  register: create_cluster_return
+
+- name: Set cluster ID
+  set_fact:
+    ai_cluster_id: "{{ create_cluster_return.json.id }}"
+
+- name: Add entries in /etc/hosts
+  blockinfile:
+    path: "/etc/hosts"
+    backup: true
+    block: |
+      {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+      {% for route in etc_hosts_ingress_routes %}
+      {{ controlplane_network_ingress }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+      {% endfor %}
+    insertafter: "EOF"
+    marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
+
+- name: Include custom manifest
+  include_tasks: 01_manifest_update.yml
+  with_items:
+  - file_name: rhacm-iscp.yml
+    template_name: "rhacm-icsp.yml"
+    enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"

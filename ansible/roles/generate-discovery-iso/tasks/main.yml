@@ -5,7 +5,7 @@
   slurp:
     src: "{{ registry_path }}/certs/domain.crt"
   register: mirror_cert
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Apply disconnected discovery ignition config override
   uri:
@@ -15,7 +15,7 @@
     status_code: [201]
     return_content: true
     body: { "config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}" }
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 - name: Set empty static network configuration
   set_fact:
@@ -28,7 +28,8 @@
 
 - name : BM - Populate static network configuration with worker nodes
   include_tasks: static_network_config.yml
-  when: cluster_type == "bm"
+  when:
+  - cluster_type == "bm"
   with_items:
     - "{{ groups['worker'] }}"
 
@@ -49,3 +50,26 @@
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
     dest: "{{ http_store_path }}/data/discovery.iso"
+
+- name: Handle ibmcloud Discovery ISO booting (A mostly manually process)
+  when: lab in cloud_labs
+  block:
+  - name: Power off machines
+    shell: |
+      ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
+    loop: "{{ groups['controlplane'] + groups['worker'] }}"
+
+  - name: Pause to allow manual discovery iso mounting for ibmcloud
+    pause:
+      prompt: "Confirm each machine's BMC's virtualmedia mounts http://{{ http_store_host }}:{{ http_store_port }}/discovery.iso"
+      echo: true
+
+  - name: Power on machines
+    shell: |
+      ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power on
+    loop: "{{ groups['controlplane'] + groups['worker'] }}"
+
+  - name: Remind to watch for when to unmount the virtual ISO media
+    pause:
+      prompt: "Remember to watch the consoles and unmount immediate after a machine reboots"
+      echo: true

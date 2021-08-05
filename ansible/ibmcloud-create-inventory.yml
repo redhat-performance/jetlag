@@ -1,0 +1,17 @@
+---
+# IBMcloud create inventory playbook
+#
+# Example Usage:
+#
+# ansible-playbook ansible/ibmcloud-create-inventory.yml
+#
+
+- name: Create inventory from ibmcloud hardware
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+  - vars/ibmcloud.yml
+  - vars/lab.yml
+  roles:
+  - validate-vars
+  - ibmcloud-create-inventory

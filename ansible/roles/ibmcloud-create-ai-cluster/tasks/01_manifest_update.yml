@@ -1,0 +1,12 @@
+- name: Add manifests to disable lab public dhcp interface for control-plane and worker nodes
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
+    method: POST
+    body_format: json
+    status_code: [201]
+    body: {
+        "folder": "manifests",
+        "file_name": "{{ item.file_name }}",
+        "content": "{{ lookup('template', item.template_name) | b64encode }}"
+    }
+  when: item.enabled | default(true) | bool

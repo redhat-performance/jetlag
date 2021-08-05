@@ -1,0 +1,30 @@
+---
+# ibmcloud-bastion-network tasks
+
+- name: Set ipv4 sysctl
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/ipv4.forward.conf
+    state: present
+    reload: true
+
+- name: Start and enable firewalld
+  systemd:
+    state: started
+    enabled: true
+    name: firewalld
+
+- name: Move private interfaces into the trusted zone
+  shell: |
+    firewall-cmd --permanent --zone=trusted --add-interface={{ item }}
+  loop: "{{ bastion_private_interfaces }}"
+
+- name: Reload firewalld to ensure settings are applied
+  shell: |
+    firewall-cmd --reload
+
+- name: Allow natted traffic through bastion public interface
+  shell: |
+    iptables -t nat -A POSTROUTING -o {{ bastion_public_interface }} -j MASQUERADE

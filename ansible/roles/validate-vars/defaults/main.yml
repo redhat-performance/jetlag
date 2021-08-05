@@ -4,7 +4,11 @@
 # bm = baremetal
 # rwn = remote worker node
 # sno = single node openshift
-cluster_types:
+rh_lab_cluster_types:
 - bm
 - rwn
+- sno
+
+ibmcloud_cluster_types:
+- bm
 - sno

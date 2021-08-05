@@ -5,7 +5,7 @@
   slurp:
     src: "{{ registry_path }}/certs/domain.crt"
   register: mirror_cert
-  when: use_disconnected_registry
+  when: use_disconnected_registry | default(false)
 
 # The extra "| to_json(ensure_ascii=False) | string" adds an additional "layer"
 # of escaping.  I am unsure of why I actually need this additional layer other

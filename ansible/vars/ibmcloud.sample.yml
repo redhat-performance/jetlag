@@ -1,27 +1,20 @@
 ---
-# Sample vars file
+# ibmcloud sample vars file
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex scalelab)
-lab:
-# Which cloud in the lab environment (Ex cloud42)
-lab_cloud:
+# Lab is ibmcloud in this case
+lab: ibmcloud
 
-# Either bm or rwn or sno
 cluster_type:
 
-# Applies to both bm/rwn clusters
+hardware_vendor:
+
+# Applies to bm clusters
 worker_node_count:
 
 # Applies to sno clusters
 sno_node_count:
-
-# Lab Network type, applies to sno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
-public_vlan: false
 
 # Versions are controlled by this release image. If you want to change images
 # you must stop and rm all assisted-installer containers on the bastion and rerun
@@ -46,31 +39,31 @@ pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 ################################################################################
 bastion_cluster_config_dir: /root/{{ cluster_type }}
 
-bastion_lab_interface: eno1np0
-bastion_controlplane_interface: ens1f0
+bastion_public_interface: bond1
 
-# vlaned interfaces are for remote worker node clusters only
-bastion_vlaned_interface: ens1f1
+bastion_private_interfaces:
+- bond0
+- int0
+- int1
 
-# Use in conjunction with ipv6 based clusters
-use_disconnected_registry: false
+dns_servers: []
+
+base_dns_name: example.com
 
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
-# Network configuration for public VLAN based sno cluster_type deployment
-controlplane_lab_interface: eno1np0
-controlplane_network_interface: ens1f0
+# Network configuration for all bm cluster control-plane nodes
+private_bond_interfaces:
+- enp1s0f0
+- enp2s0f0
 
-# Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr: 10.1.60.0/25
-controlplane_pub_network_gateway: 10.1.60.126
-jumbo_mtu: false
+private_network_prefix: 26
 
-# Network only for remote worker nodes
-rwn_lab_interface: eno1np0
-rwn_network_interface: ens1f1
+cluster_name: jetlag-ibm
+
+controlplane_network_api:
+controlplane_network_ingress:
 
 ################################################################################
 # Extra vars

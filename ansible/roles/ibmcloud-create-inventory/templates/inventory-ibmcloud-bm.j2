@@ -1,0 +1,61 @@
+[all:vars]
+allocation_node_count={{ available_ibm_hardware_count }}
+
+[bastion]
+{{ bastion_machine_hn }} ansible_host={{ bastion_machine_public }} private_address={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }} bmc_address={{ ibm_hardware_detail_b_json.networkManagementIpAddress }}
+
+[bastion:vars]
+ansible_ssh_user={{ ibm_hardware_detail_b_json.operatingSystem.passwords[0].username }}
+ansible_ssh_private_key_file={{  ssh_private_key_file }}
+bmc_user={{ ibm_hardware_detail_b_json.remoteManagementAccounts[0].username }}
+bmc_password={{ ibm_hardware_detail_b_json.remoteManagementAccounts[0].password }}
+
+[controlplane]
+{{ controlplane0_hn }} ansible_host={{ controlplane0_private }} private_address={{ controlplane0_private }} bond0_macs={{ ((ibm_hardware_detail_cp0_json.networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port1) | first).macAddress }},{{ ((ibm_hardware_detail_cp0_json.networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port2) | first).macAddress }} bmc_address={{ ibm_hardware_detail_cp0_json.networkManagementIpAddress }} bmc_user={{ ibm_hardware_detail_cp0_json.remoteManagementAccounts[0].username }} bmc_password={{ ibm_hardware_detail_cp0_json.remoteManagementAccounts[0].password }} vendor={{ hardware_vendor }}
+{{ controlplane1_hn }} ansible_host={{ controlplane1_private }} private_address={{ controlplane1_private }} bond0_macs={{ ((ibm_hardware_detail_cp1_json.networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port1) | first).macAddress }},{{ ((ibm_hardware_detail_cp1_json.networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port2) | first).macAddress }} bmc_address={{ ibm_hardware_detail_cp1_json.networkManagementIpAddress }} bmc_user={{ ibm_hardware_detail_cp1_json.remoteManagementAccounts[0].username }} bmc_password={{ ibm_hardware_detail_cp1_json.remoteManagementAccounts[0].password }} vendor={{ hardware_vendor }}
+{{ controlplane2_hn }} ansible_host={{ controlplane2_private }} private_address={{ controlplane2_private }} bond0_macs={{ ((ibm_hardware_detail_cp2_json.networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port1) | first).macAddress }},{{ ((ibm_hardware_detail_cp2_json.networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port2) | first).macAddress }} bmc_address={{ ibm_hardware_detail_cp2_json.networkManagementIpAddress }} bmc_user={{ ibm_hardware_detail_cp2_json.remoteManagementAccounts[0].username }} bmc_password={{ ibm_hardware_detail_cp2_json.remoteManagementAccounts[0].password }} vendor={{ hardware_vendor }}
+
+[controlplane:vars]
+role=master
+boot_iso=discovery.iso
+{% if controlplane_bastion_as_dns %}
+dns1={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }}
+{% else %}
+{% if dns_servers | length == 1 %}
+dns1={{ dns_servers[0] }}
+{% elif dns_servers | length >= 2 %}
+dns1={{ dns_servers[0] }}
+dns2={{ dns_servers[1] }}
+{% endif %}
+{% endif %}
+bond0_interfaces={{ private_bond_interfaces }}
+private_network_prefix={{ private_network_prefix }}
+gateway={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }}
+
+[worker]
+{% for worker in ibmcloud_detailed_worker_data.results %}
+{{ (worker.stdout | from_json).hostname }} ansible_host={{ (worker.stdout | from_json).primaryBackendIpAddress }} private_address={{ (worker.stdout | from_json).primaryBackendIpAddress }} bond0_macs={{ (((worker.stdout | from_json).networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port1) | first).macAddress }},{{ (((worker.stdout | from_json).networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port2) | first).macAddress }} bmc_address={{ (worker.stdout | from_json).networkManagementIpAddress }} bmc_user={{ (worker.stdout | from_json).remoteManagementAccounts[0].username }} bmc_password={{ (worker.stdout | from_json).remoteManagementAccounts[0].password }} vendor={{ hardware_vendor }}
+{% endfor %}
+
+[worker:vars]
+role=worker
+boot_iso=discovery.iso
+{% if controlplane_bastion_as_dns %}
+dns1={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }}
+{% else %}
+{% if dns_servers | length == 1 %}
+dns1={{ dns_servers[0] }}
+{% elif dns_servers | length >= 2 %}
+dns1={{ dns_servers[0] }}
+dns2={{ dns_servers[1] }}
+{% endif %}
+{% endif %}
+bond0_interfaces={{ private_bond_interfaces }}
+private_network_prefix={{ private_network_prefix }}
+gateway={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }}
+
+[sno]
+# Unused
+
+[sno:vars]
+# Unused

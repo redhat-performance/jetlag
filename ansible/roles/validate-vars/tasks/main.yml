@@ -3,13 +3,10 @@
 
 - name: Validate lab
   fail:
-    msg: "Invalid lab selected('{{ lab }}') Select from {{ labs | list }} "
-  when: lab not in labs
-
-- name: Validate cluster_type
-  fail:
-    msg: "Invalid cluster_type selected - {{ cluster_type }}"
-  when: cluster_type not in cluster_types
+    msg: "Invalid lab selected('{{ lab }}') Select from {{ rh_labs }} and {{ cloud_labs }} "
+  when:
+  - lab not in rh_labs
+  - lab not in cloud_labs
 
 - name: Check pull secret var is set
   fail:
@@ -18,24 +15,26 @@
 
 - name: Check for RHEL 8.4 (Bastion Validation)
   fail:
-    msg: "Upgrade to RHEL 8.4 for podman ipv6 support"
+    msg: "Upgrade to RHEL 8.4 for podman host network support"
   when:
   - ansible_distribution is defined
-  - (ansible_distribution != "RedHat" or ansible_distribution_version|float < 8.4)
+  - (ansible_distribution|lower != "redhat" and ansible_distribution|lower != "centos") or ansible_distribution_version|float < 8.4
 
 - name: Set worker_node_count if undefined or empty (bm/rwn)
   set_fact:
     worker_node_count: "{{ allocation_node_count - 4 }}"
   when: (cluster_type == "bm" or cluster_type == "rwn") and
         (worker_node_count is undefined or not worker_node_count | int) and
-        ansible_play_name != "Create inventory from a lab cloud"
+        ansible_play_name != "Create inventory from a lab cloud" and
+        ansible_play_name != "Create inventory from ibmcloud hardware"
 
 - name: Set sno_node_count if undefined or empty
   set_fact:
     sno_node_count: "{{ (allocation_node_count - 1) | int   }}"
   when: (cluster_type == "sno")  and
         (sno_node_count is undefined or not sno_node_count | int) and
-        ansible_play_name != "Create inventory from a lab cloud"
+        ansible_play_name != "Create inventory from a lab cloud" and
+        ansible_play_name != "Create inventory from ibmcloud hardware"
 
 - name: Check if the required number of nodes exist for bm/rwn
   fail:
@@ -52,4 +51,18 @@
     msg: "networktype is of list type but can have only one value for Bm/RWN clusters"
   when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype is not iterable or networktype is string or networktype is mapping or networktype|length > 1)
 
+- name: Validate Red Hat lab vars
+  when: lab in rh_labs
+  block:
+  - name: Validate cluster_type
+    fail:
+      msg: "Invalid cluster_type selected - {{ cluster_type }} Select from {{ rh_lab_cluster_types }}"
+    when: cluster_type not in rh_lab_cluster_types
 
+- name: Validate ibmcloud vars
+  when: lab in cloud_labs
+  block:
+  - name: Validate cluster_type
+    fail:
+      msg: "Invalid cluster_type selected - {{ cluster_type }} Select from {{ ibmcloud_cluster_types }}"
+    when: cluster_type not in ibmcloud_cluster_types

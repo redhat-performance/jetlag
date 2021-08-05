@@ -1,6 +1,6 @@
 # jetlag
 
-Tooling to install clusters for testing via an on-prem [Assisted Installer](https://github.com/openshift/assisted-installer) on the Scale lab or Alias lab hardware.
+Tooling to install clusters for testing via an on-prem [Assisted Installer](https://github.com/openshift/assisted-installer) in the Red Hat Scale/Alias Lab and bare metal servers in IBMcloud.
 
 Three separate layouts of clusters can be deployed:
 
@@ -25,25 +25,34 @@ _**Table of Contents**_
 
 ## Tested Labs/Hardware
 
-Alias Lab
+**Alias Lab**
 
 | Hardware | BM  | RWN | SNO |
 | -------- | --- | --- | --- |
 | 740xd    | No  | No  | Yes |
 
-Scale Lab
+**Scale Lab**
 
-| Hardware         | BM  | RWN | SNO |
-| ---------------- | --- | --- | --- |
-| Dell r640        | Yes | Yes | Yes |
-| Dell fc640       | No  | No  | Yes |
-| Supermicro 1029p | Yes | Yes | No  |
+| Hardware           | BM  | RWN | SNO |
+| ------------------ | --- | --- | --- |
+| Dell r640          | Yes | Yes | Yes |
+| Dell fc640         | No  | No  | Yes |
+| Supermicro 1029p * | Yes | Yes | No  |
+
+**IBMcloud**
+
+| Hardware             | BM  | SNO |
+| -------------------- | --- | --- |
+| Supermicro E5-2620 * | Yes | No  |
+
+*Note Hardware may require some manual interaction to complete an install
 
 ## Prerequisites
 
 Versions:
 
 * Ansible 2.10 (on machine running jetlag playbooks)
+* ibmcloud cli => 2.0.1 (IBMcloud environments)
 * RHEL 8.4 / Centos 8.4 (Bastion)
 * podman 3 (Bastion)
 
@@ -123,7 +132,8 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 
 ## Quickstart guides
 
-[Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
+* [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
+* [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
 
 ## Troubleshooting
 

@@ -1,0 +1,34 @@
+---
+# Create and deploy a cluster with the Assisted Installer on IBMcloud
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
+#
+
+- name: Creates a bare metal cluster with the assisted-installer on ibmcloud
+  hosts: bastion
+  vars_files:
+  - vars/ibmcloud.yml
+  - vars/lab.yml
+  vars:
+    assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+    http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+  roles:
+  - validate-vars
+  - ibmcloud-create-ai-cluster
+  - generate-discovery-iso
+  # IBMcloud is missing the license to allow redfish to automate the virtualmedia
+  # unmount/mount process and onetimecd boot.
+  # - role: boot-iso
+  #   vars:
+  #     inventory_group: controlplane
+  #     index: 3
+  # - role: boot-iso
+  #   vars:
+  #     inventory_group: worker
+  #     index: "{{ worker_node_count }}"
+  - wait-hosts-discovered
+  - install-cluster
+  # Must monitor and remove virtualcd when machine reboots after install
+  - bm-post-cluster-install
