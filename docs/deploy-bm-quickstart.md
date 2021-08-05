@@ -143,7 +143,28 @@ For the guide we set our values for the Supermicro 1029p.
 
 ### Extra vars
 
-For the purposes of this guide no extra vars are required.
+No extra vars are needed for an ipv4 bare metal cluster.
+
+### Disconnected and ipv6 vars
+
+If you want to deploy a disconnected ipv6 cluster then the following vars need to be set.
+
+Change `use_disconnected_registry` to `use_disconnected_registry: true` under "Bastion node vars"
+
+Append the following "override" vars in "Extra vars"
+
+```yaml
+controlplane_network: fc00:1000::/64
+controlplane_network_prefix: 64
+cluster_network_cidr: fd01::/48
+cluster_network_host_prefix: 64
+service_network_cidr: fd02::/112
+fix_metal3_provisioningosdownloadurl: true
+```
+
+Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
+
+The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
 ## Review all.yml
 
