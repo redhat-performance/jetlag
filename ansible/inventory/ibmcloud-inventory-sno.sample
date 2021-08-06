@@ -1,0 +1,34 @@
+[all:vars]
+allocation_node_count=6
+
+[bastion]
+jetlag-bm0 ansible_host=X.X.X.X private_address=Y.Y.Y.Y bmc_address=X.X.X.X
+
+[bastion:vars]
+ansible_ssh_user=root
+ansible_ssh_private_key_file=/home/user/ibm_cloud_id_rsa
+bmc_user=root
+bmc_password=XXXXXXXXXX
+
+[controlplane]
+# Unused
+
+[controlplane:vars]
+# Unused
+
+[worker]
+# Unused
+
+[worker:vars]
+# Unused
+
+[sno]
+# Single Node OpenShift Clusters
+jetlag-bm4 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:d3:16:dc,0c:c4:7a:d3:16:de bmc_address=X.X.X.X bmc_user=root bmc_password=XXXXXXXXXX vendor=Supermicro
+jetlag-bm5 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:a4:2d:8c,0c:c4:7a:a4:2d:8e bmc_address=X.X.X.X bmc_user=root bmc_password=XXXXXXXXXX vendor=Supermicro
+
+[sno:vars]
+dns1=Y.Y.Y.Y
+bond0_interfaces=['enp1s0f0', 'enp2s0f0']
+private_network_prefix=26
+gateway=Y.Y.Y.Y

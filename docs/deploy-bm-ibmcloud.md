@@ -174,10 +174,13 @@ base_dns_name: performance-scale.cloud
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster control-plane nodes
+# Network configuration for cluster control-plane nodes
 private_bond_interfaces:
 - enp1s0f0
 - enp2s0f0
+
+# Applies to sno only and serves as machine network
+private_network_cidr:
 
 private_network_prefix: 26
 
@@ -260,4 +263,4 @@ jetlag-bm4   Ready    worker   3h12m   v1.21.1+051ac4f
 jetlag-bm5   Ready    worker   3h13m   v1.21.1+051ac4f
 ```
 
-You can also copy the kubeconfig to your local machine and interact with it if you are on the ibmcloud vpn, and add the approiate `/etc/hosts` entries to your local `/etc/hosts` file.
+You can also copy the kubeconfig to your local machine and interact with it if you are on the ibmcloud vpn, and add the appropriate `/etc/hosts` entries to your local `/etc/hosts` file.

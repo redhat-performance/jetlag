@@ -1,9 +1,6 @@
 ---
-# ibmcloud-create-ai-cluster default vars
+# ibmcloud-sno-create-ai-cluster default vars
 
 # This will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
 assisted_installer_port: 8090
-
-# Enable or disable mirroring of image registry
-rhacm_add_acm_d_icsp_manifest: false

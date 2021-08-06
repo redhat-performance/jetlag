@@ -1,0 +1,12 @@
+[
+{% for interface in hostvars[item]['bond0_interfaces'] %}
+    {
+        "mac_address": "{{ (hostvars[item]['bond0_macs'].split(','))[loop.index0] }}",
+        "logical_nic_name": "{{ interface }}"
+  {% if loop.last %}
+    }
+  {% else %}
+    },
+  {% endif %}
+{% endfor %}
+]

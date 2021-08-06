@@ -1,0 +1,44 @@
+[all:vars]
+allocation_node_count={{ available_ibm_hardware_count }}
+
+[bastion]
+{{ bastion_machine_hn }} ansible_host={{ bastion_machine_public }} private_address={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }} bmc_address={{ ibm_hardware_detail_b_json.networkManagementIpAddress }}
+
+[bastion:vars]
+ansible_ssh_user={{ ibm_hardware_detail_b_json.operatingSystem.passwords[0].username }}
+ansible_ssh_private_key_file={{  ssh_private_key_file }}
+bmc_user={{ ibm_hardware_detail_b_json.remoteManagementAccounts[0].username }}
+bmc_password={{ ibm_hardware_detail_b_json.remoteManagementAccounts[0].password }}
+
+[controlplane]
+# Unused
+
+[controlplane:vars]
+# Unused
+
+[worker]
+# Unused
+
+[worker:vars]
+# Unused
+
+[sno]
+# Single Node OpenShift Clusters
+{% for sno in ibmcloud_detailed_sno_data.results %}
+{{ (sno.stdout | from_json).hostname }} ansible_host={{ (sno.stdout | from_json).primaryBackendIpAddress }} private_address={{ (sno.stdout | from_json).primaryBackendIpAddress }} bond0_macs={{ (((sno.stdout | from_json).networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port1) | first).macAddress }},{{ (((sno.stdout | from_json).networkComponents | selectattr('name', 'eq', 'eth')) | selectattr('port', 'eq', bond0_port2) | first).macAddress }} bmc_address={{ (sno.stdout | from_json).networkManagementIpAddress }} bmc_user={{ (sno.stdout | from_json).remoteManagementAccounts[0].username }} bmc_password={{ (sno.stdout | from_json).remoteManagementAccounts[0].password }} vendor={{ hardware_vendor }}
+{% endfor %}
+
+[sno:vars]
+{% if controlplane_bastion_as_dns %}
+dns1={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }}
+{% else %}
+{% if dns_servers | length == 1 %}
+dns1={{ dns_servers[0] }}
+{% elif dns_servers | length >= 2 %}
+dns1={{ dns_servers[0] }}
+dns2={{ dns_servers[1] }}
+{% endif %}
+{% endif %}
+bond0_interfaces={{ private_bond_interfaces }}
+private_network_prefix={{ private_network_prefix }}
+gateway={{ ibm_hardware_detail_b_json.primaryBackendIpAddress }}

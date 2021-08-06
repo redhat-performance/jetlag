@@ -43,7 +43,7 @@ _**Table of Contents**_
 
 | Hardware             | BM  | SNO |
 | -------------------- | --- | --- |
-| Supermicro E5-2620 * | Yes | No  |
+| Supermicro E5-2620 * | Yes | Yes |
 
 *Note Hardware may require some manual interaction to complete an install
 
@@ -134,6 +134,7 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 
 * [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
+* [Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
 
 ## Troubleshooting
 

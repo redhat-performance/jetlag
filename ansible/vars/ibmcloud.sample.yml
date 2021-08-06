@@ -53,15 +53,19 @@ base_dns_name: example.com
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster control-plane nodes
+# Network configuration for cluster control-plane nodes
 private_bond_interfaces:
 - enp1s0f0
 - enp2s0f0
+
+# Applies to sno only and serves as machine network
+private_network_cidr:
 
 private_network_prefix: 26
 
 cluster_name: jetlag-ibm
 
+# Only applies for bm cluster types
 controlplane_network_api:
 controlplane_network_ingress:
 

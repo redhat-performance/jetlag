@@ -1,0 +1,34 @@
+---
+# Create and deploy SNO cluster(s) with the Assisted Installer on IBMcloud
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-sno-deploy.yml
+#
+
+- name: Create SNO cluster(s) with the assisted-installer on ibmcloud
+  hosts: bastion
+  vars_files:
+  - vars/ibmcloud.yml
+  - vars/lab.yml
+  vars:
+    assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+    http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+  roles:
+  - validate-vars
+  - ibmcloud-sno-create-ai-cluster
+  - ibmcloud-sno-generate-discovery-iso
+  # IBMcloud is missing the license to allow redfish to automate the virtualmedia
+  # unmount/mount process and onetimecd boot.
+  # - role: boot-iso
+  #   vars:
+  #     inventory_group: controlplane
+  #     index: 3
+  # - role: boot-iso
+  #   vars:
+  #     inventory_group: worker
+  #     index: "{{ worker_node_count }}"
+  - sno-wait-hosts-discovered
+  - sno-install-cluster
+  # Must monitor and remove virtualcd when machine reboots after install
+  - sno-post-cluster-install

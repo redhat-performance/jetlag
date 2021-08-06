@@ -1,0 +1,55 @@
+---
+# ibmcloud-generate-discovery-iso tasks
+
+- name: Set empty static network configuration
+  set_fact:
+    static_network_config: []
+
+- name : Populate static network configuration with controlplane nodes
+  include_tasks: static_network_config.yml
+  with_items:
+    - "{{ groups['sno'] }}"
+
+# - debug:
+#     msg: "{{ static_network_config }}"
+
+- name: Generate a discovery ISO
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
+  register: http_reply
+  with_items: "{{ ai_cluster_ids }}"
+
+- name: Download discovery ISO
+  get_url:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/image"
+    dest: "{{ http_store_path }}/data/{{ item }}.iso"
+  with_items: "{{ ai_cluster_ids }}"
+
+- name: Handle ibmcloud Discovery ISO booting (A mostly manually process)
+  when: lab in cloud_labs
+  block:
+  - name: Power off machines
+    shell: |
+      ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
+    loop: "{{ groups['sno'] }}"
+
+  - name: Pause to allow manual discovery iso mounting for ibmcloud
+    pause:
+      prompt: "Confirm each machine's BMC's virtualmedia mounts http://{{ http_store_host }}:{{ http_store_port }}/{{ item }}.iso"
+      echo: true
+    with_items: "{{ ai_cluster_ids }}"
+
+  - name: Power on machines
+    shell: |
+      ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power on
+    loop: "{{ groups['sno'] }}"
+
+  - name: Remind to watch for when to unmount the virtual ISO media
+    pause:
+      prompt: "Remember to watch the consoles and unmount immediate after a machine reboots"
+      echo: true

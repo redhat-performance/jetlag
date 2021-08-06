@@ -1,0 +1,29 @@
+interfaces:
+- name: bond0
+  type: bond
+  state: up
+  ipv4:
+    address:
+    - ip: {{ hostvars[item]['private_address'] }}
+      prefix-length: {{ hostvars[item]['private_network_prefix'] }}
+    enabled: true
+  link-aggregation:
+    mode: 802.3ad
+    options:
+      miimon: '100'
+    slaves:
+{% for interface in hostvars[item]['bond0_interfaces'] %}
+    - {{ interface }}
+{% endfor %}
+dns-resolver:
+  config:
+    server:
+    - {{ hostvars[item]['dns1'] }}
+{% if 'dns2' in hostvars[item] %}
+    - {{ hostvars[item]['dns2'] }}
+{% endif %}
+routes:
+  config:
+  - destination: 0.0.0.0/0
+    next-hop-address: {{ hostvars[item]['gateway'] }}
+    next-hop-interface: bond0
