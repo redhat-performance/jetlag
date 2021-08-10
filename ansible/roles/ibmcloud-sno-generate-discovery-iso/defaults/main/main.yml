@@ -1,0 +1,10 @@
+---
+# ibmcloud-generate-discovery-iso default vars
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+assisted_installer_port: 8090
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+http_store_port: 8081

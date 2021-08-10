@@ -13,7 +13,7 @@
 #
 # For Single Node OpenShift clusters:
 # * First machine is bastion
-# * Remaining machines are SNO clusters
+# * Remaining machines are SNO clusters (depending upon sno_node_count)
 #
 
 - name: Download ocpinventory.json
