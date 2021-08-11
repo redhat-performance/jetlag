@@ -1,12 +1,13 @@
 # RWN workload
 
 1. Clone the repo to the bastion machine
-2. (Optional) Label nodes with labeling scripts
-3. Run RWN workload
+2. Install python requirements - `pip3 install -r requirements.txt`
+3. (Optional) Label nodes with labeling scripts
+4. Run RWN workload
 
 ## Labels for RWN Workload
 
-Prior to running any RWN workloads with selectors, you must create a number of labels beforehand. 
+Prior to running any RWN workloads with selectors, you must create a number of labels beforehand.
 
 Create 100 shared labels across the remote worker nodes:
 
@@ -40,9 +41,9 @@ The RWN workload runs in several distinct phases:
 3. Cleanup - Cleanup workload off cluster
 4. Index - Index data collected by kube-burner over duration of test
 
-Each phase can be disabled if intended during testing via arguements. The impairments that can be used are network latency, packet loss, and link flapping. Latency and packet loss can be combined, however link flapping must be run separate. Review the arguments to see all the options for the phases, workload, the impairments, and indexing.
+Each phase can be disabled if intended during testing via arguments. The impairments that can be used are network latency, packet loss, and link flapping. Latency and packet loss can be combined, however link flapping must be run separate. Review the arguments to see all the options for the phases, workload, the impairments, and indexing.
 
-RWN Workload Arguements:
+RWN Workload Arguments:
 
 ```console
 $ ./rwn-workload.py -h

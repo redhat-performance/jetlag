@@ -311,13 +311,13 @@ def main():
       description="Run the rwn workload with or without network impairments",
       prog="rwn-workload.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-  # Disable a phase arguements
+  # Disable a phase arguments
   parser.add_argument("--no-workload-phase", action="store_true", default=False, help="Disables workload phase")
   parser.add_argument("--no-impairment-phase", action="store_true", default=False, help="Disables impairment phase")
   parser.add_argument("--no-cleanup-phase", action="store_true", default=False, help="Disables cleanup workload phase")
   parser.add_argument("--no-index-phase", action="store_true", default=False, help="Disables index phase")
 
-  # Workload arguements
+  # Workload arguments
   parser.add_argument("-i", "--iterations", type=int, default=12, help="Number of RWN namespaces to create")
   parser.add_argument(
       "-c", "--cpu", type=str, default="29", help="Guaranteed CPU requests/limits per pod (Cores or millicores)")
@@ -328,7 +328,7 @@ def main():
   parser.add_argument(
       "-n", "--no-tolerations", action="store_true", default=False, help="Do not include tolerations on pod spec")
 
-  # Impairment arguements
+  # Impairment arguments
   parser.add_argument("-D", "--duration", type=int, default=30, help="Duration of impairment (Seconds)")
   parser.add_argument("-I", "--interface", type=str, default="ens1f1", help="Interface of vlans to impair")
   parser.add_argument("-S", "--start-vlan", type=int, default=100, help="Starting VLAN off interface")
@@ -346,7 +346,7 @@ def main():
   parser.add_argument("-N", "--link-flap-network", type=str, default="198.18.10.0/24",
                       help="Network to block for iptables link flapping")
 
-  # Indexing arguements
+  # Indexing arguments
   parser.add_argument(
       "--index-server", type=str, default="", help="ElasticSearch server (Ex https://user:password@example.org:9200)")
   parser.add_argument("--default-index", type=str, default="rwn-default-test", help="Default index")
@@ -354,7 +354,7 @@ def main():
   parser.add_argument("--prometheus-url", type=str, default="", help="Cluster prometheus URL")
   parser.add_argument("--prometheus-token", type=str, default="", help="Token to access prometheus")
 
-  # Other arguements
+  # Other arguments
   parser.add_argument("-d", "--debug", action="store_true", default=False, help="Set log level debug")
   parser.add_argument("--dry-run", action="store_true", default=False, help="Echos commands instead of executing them")
   parser.add_argument("--reset", action="store_true", default=False, help="Attempts to undo all network impairments")
