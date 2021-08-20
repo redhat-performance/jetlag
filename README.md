@@ -41,11 +41,11 @@ _**Table of Contents**_
 
 **IBMcloud**
 
-| Hardware             | BM  | SNO |
-| -------------------- | --- | --- |
-| Supermicro E5-2620 * | Yes | Yes |
+| Hardware           | BM  | SNO   |
+| ------------------ | --- | ----- |
+| Supermicro E5-2620 | Yes | Yes * |
 
-*Note Hardware may require some manual interaction to complete an install
+*Note Hardware/Cluster Deployment Type may require some manual interaction to complete an install
 
 ## Prerequisites
 

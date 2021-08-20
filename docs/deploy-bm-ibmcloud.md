@@ -103,6 +103,8 @@ dns_servers:
 
 Set `base_dns_name` to the expected base dns name, for example `base_dns_name: performance-scale.cloud`
 
+Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
+
 ### OCP node vars
 
 For the OCP nodes it might be necessary to adjust what interfaces are for the private bond (`bond0`) and what the `private_network_prefix` is.  Check your hardware's subnet to determine the prefix. In the event the hardware does not match the defaults, you may need to boot the generated discovery image and observe the console to see what interfaces a machine has when RHCOS is booted.
@@ -171,6 +173,8 @@ dns_servers:
 
 base_dns_name: performance-scale.cloud
 
+smcipmitool_url: http://example.lab.com/tools/SMCIPMITool_2.25.0_build.210326_bundleJRE_Linux_x64.tar.gz
+
 ################################################################################
 # OCP node vars
 ################################################################################
@@ -215,42 +219,14 @@ Next run the `ibmcloud-setup-bastion.yml` playbook ...
 ...
 ```
 
-Prior to running the deploy playbook, you will need to connect to ibmcloud using vpn and should be able to directly open each node's bmc web gui. Use the credentials in the inventory file per host's bmc in order to login. It is best to open each console so you can observe when a node reboots. Also set each screen to the Virtual Media CD-ROM Image page. You can pre-set the image for Supermicro machine to match:
-
-Share Host - `http://X.X.X.X:8081`
-
-Path to Image - `\\discovery.iso`
-
-**The two slashes (`\\`) are required and is not a typo.**
-
-Finally run the `ibmcloud-bm-deploy.yml` playbook ...
+Lastly, run the `ibmcloud-bm-deploy.yml` playbook ...
 
 ```console
 [user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
 ...
 ```
 
-While the playbook is running, it will prompt that you mounted the Virtual Media:
-
-```console
-TASK [generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud] ****************************************************************************************************
-Wednesday 04 August 2021  11:12:52 -0400 (0:00:06.703)       0:00:32.780 ******
-[generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud]
-Confirm each machine's BMC's virtualmedia mounts http://X.X.X.X:8081/discovery.iso:
-```
-
-Confirm that the Virtual Media is mounted according to each machine's BMC. It then reminds you with another prompt to observe the consoles and unmount the virtual media **after** machines reboot:
-
-```console
-TASK [generate-discovery-iso : Remind to watch for when to unmount the virtual ISO media] ****************************************************************************************************
-Wednesday 04 August 2021  11:13:07 -0400 (0:00:06.088)       0:00:47.220 ******
-[generate-discovery-iso : Remind to watch for when to unmount the virtual ISO media]
-Remember to watch the consoles and unmount immediate after a machine reboots:
-```
-
-Note that in this case with a 5 node cluster, 4 of the machines will rather quickly reboot after writing the discovery image to disk. The bootstrap master won't reboot until later in the process. If you fail to watch the consoles closely and miss the reboot to unmount the ISO at the correct time, the cluster will fail to complete install as the machines will always boot into the discovery ISO. You will be able to see this status if you also observe the Assisted-installer GUI on the bastion machine. (http://$BASTION_IP:8080) You can also ssh to each node while it is running the discovery image from your bastion machine and tail journal logs to see status of the disk writing and reboot process.
-
-If everything goes well you should have a cluster in about 50-60 minutes. You can interact with the cluster from the bastion.
+If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
 ```console
 [root@jetlag-bm0 ~]# export KUBECONFIG=/root/bm/kubeconfig

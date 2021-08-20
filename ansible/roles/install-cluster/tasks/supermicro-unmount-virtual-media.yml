@@ -1,0 +1,26 @@
+---
+# supermicro-unmount-virtual-media tasks
+
+- name: SuperMicro - Power off
+  community.general.redfish_command:
+    category: Systems
+    command: PowerForceOff
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
+
+- name: SuperMicro - Unmount ISO
+  shell: |
+    SMCIPMITool {{ hostvars[item.requested_hostname]['bmc_address'] }} {{ hostvars[item.requested_hostname]['bmc_user'] }} {{ hostvars[item.requested_hostname]['bmc_password'] }} wsiso umount
+
+- name: Pause to allow machine to completely power off
+  pause:
+    seconds: 10
+
+- name: SuperMicro - Power on
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"

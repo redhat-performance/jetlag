@@ -8,6 +8,7 @@
     owner: "1001"
   loop:
   - "{{ http_store_path }}/data"
+  - "{{ http_store_path }}/data/iso"
   - "{{ http_store_path }}/conf"
 
 - name: Configure httpd

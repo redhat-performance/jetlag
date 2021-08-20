@@ -70,3 +70,13 @@
   until: cluster.json.status == 'installed' or cluster.json.status == 'error' or cluster.json.status == 'cancelled'
   retries: 540
   delay: 10
+  when: lab in rh_labs
+
+- name: Set initial loop variables
+  set_fact:
+    boot_order_fixed_hosts: []
+  when: lab in cloud_labs
+
+- name: Check if cluster installed tasks loop
+  include_tasks: check-cluster-install.yml
+  when: lab in cloud_labs

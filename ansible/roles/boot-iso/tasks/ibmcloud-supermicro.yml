@@ -1,0 +1,30 @@
+---
+# IBMCloud Supermicro tasks for booting an iso
+
+- name: SuperMicro - Power off
+  community.general.redfish_command:
+    category: Systems
+    command: PowerForceOff
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+
+- name: SuperMicro - Unmount ISO
+  shell: |
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso umount
+
+- name: SuperMicro - Mount ISO
+  shell: |
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso mount "http://{{ http_store_host }}:{{ http_store_port }}" /iso/{{ hostvars[item]['boot_iso'] }}
+
+- name: SuperMicro - Set one time boot to usb cdrom (virtual media)
+  shell: |
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} ipmi power bootoption 8
+
+- name: SuperMicro - Power on
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
