@@ -18,17 +18,14 @@
   - validate-vars
   - ibmcloud-create-ai-cluster
   - generate-discovery-iso
-  # IBMcloud is missing the license to allow redfish to automate the virtualmedia
-  # unmount/mount process and onetimecd boot.
-  # - role: boot-iso
-  #   vars:
-  #     inventory_group: controlplane
-  #     index: 3
-  # - role: boot-iso
-  #   vars:
-  #     inventory_group: worker
-  #     index: "{{ worker_node_count }}"
+  - role: boot-iso
+    vars:
+      inventory_group: controlplane
+      index: 3
+  - role: boot-iso
+    vars:
+      inventory_group: worker
+      index: "{{ worker_node_count }}"
   - wait-hosts-discovered
   - install-cluster
-  # Must monitor and remove virtualcd when machine reboots after install
   - bm-post-cluster-install
