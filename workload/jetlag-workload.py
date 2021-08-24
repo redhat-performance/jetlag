@@ -26,7 +26,8 @@ import tempfile
 import time
 import uuid
 
-rwn_create = """---
+
+workload_create = """---
 global:
   writeToFile: false
   measurements:
@@ -41,14 +42,14 @@ global:
     type: elastic
 
 jobs:
-  - name: rwn
+  - name: jetlag
     jobType: create
-    jobIterations: {{ iterations }}
+    jobIterations: {{ namespaces }}
     qps: 20
     burst: 40
     namespacedIterations: true
     cleanup: true
-    namespace: rwn
+    namespace: jetlag
     podWait: false
     waitWhenFinished: true
     verifyObjects: true
@@ -56,25 +57,44 @@ jobs:
     jobIterationDelay: 0s
     jobPause: 0s
     objects:
-    - objectTemplate: rwn-deployment-selector.yml
-      replicas: 1
+    - objectTemplate: workload-deployment-selector.yml
+      replicas: {{ deployments }}
       inputVars:
-        image: gcr.io/google_containers/pause-amd64:3.0
-        guaranteed_qos: {{ guaranteed_qos }}
+        pod_replicas: {{ pod_replicas }}
+        containers: {{ containers }}
+        image: {{ container_image }}
+        set_requests_cpu: {{ cpu_requests > 0 }}
+        set_requests_memory: {{ memory_requests > 0 }}
+        set_limits_cpu: {{ cpu_limits > 0 }}
+        set_limits_memory: {{ memory_limits > 0 }}
         resources:
           requests:
-            cpu: {{ cpu }}
-            memory: {{ mem }}Gi
+            cpu: {{ cpu_requests }}m
+            memory: {{ memory_requests }}Mi
           limits:
-            cpu: {{ cpu }}
-            memory: {{ mem }}Gi
+            cpu: {{ cpu_limits }}m
+            memory: {{ memory_limits }}Mi
+        container_env_args: {{ container_env_args }}
+        enable_startup_probe: {{ startup_probe_args | length > 0 }}
+        enable_liveness_probe: {{ liveness_probe_args | length > 0 }}
+        enable_readiness_probe: {{ readiness_probe_args | length > 0 }}
+        startup_probe_args: {{ startup_probe_args }}
+        liveness_probe_args: {{ liveness_probe_args }}
+        readiness_probe_args: {{ readiness_probe_args }}
+        default_selector: "{{ default_selector }}"
         shared_selectors: {{ shared_selectors }}
         unique_selectors: {{ unique_selectors }}
         unique_selector_offset: {{ offset }}
         tolerations: {{ tolerations }}
+    {% if service %}
+    - objectTemplate: workload-service.yml
+      replicas: {{ deployments }}
+      inputVars:
+        ports: {{ containers }}
+    {% endif %}
 """
 
-rwn_delete = """---
+workload_delete = """---
 global:
   writeToFile: false
   measurements:
@@ -89,23 +109,27 @@ global:
     type: elastic
 
 jobs:
-- name: cleanup-rwn
+- name: cleanup-jetlag
   jobType: delete
   waitForDeletion: true
   qps: 10
   burst: 20
   objects:
 
+  - kind: Service
+    labelSelector: {kube-burner-job: jetlag}
+    apiVersion: v1
+
   - kind: Deployment
-    labelSelector: {kube-burner-job: rwn}
+    labelSelector: {kube-burner-job: jetlag}
     apiVersion: apps/v1
 
   - kind: Namespace
-    labelSelector: {kube-burner-job: rwn}
+    labelSelector: {kube-burner-job: jetlag}
     apiVersion: v1
 """
 
-rwn_index = """---
+workload_index = """---
 global:
   writeToFile: false
   measurements:
@@ -120,44 +144,84 @@ global:
     type: elastic
 """
 
-rwn_deployment = """---
+workload_deployment = """---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rwn-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
 spec:
-  replicas: 1
+  replicas: {{ .pod_replicas }}
   selector:
     matchLabels:
-      app: rwn-{{ .Iteration }}-{{ .Replica }}
+      app: jetlag-{{ .Iteration }}-{{ .Replica }}
   strategy:
     resources: {}
   template:
     metadata:
       labels:
-        app: rwn-{{ .Iteration }}-{{ .Replica }}
+        app: jetlag-{{ .Iteration }}-{{ .Replica }}
     spec:
       containers:
-      - name: pause-pod
-        image: {{ .image }}
-        {{ if .guaranteed_qos }}
+      {{ $data := . }}
+      {{ range $index, $element := sequence 1 .containers }}
+      - name: jetlag-container-{{ $element }}
+        image: {{ $data.image }}
+        ports:
+        - containerPort: {{ add 8000 $element }}
+          protocol: TCP
         resources:
           requests:
-            cpu: {{ .resources.requests.cpu }}
-            memory: {{ .resources.requests.memory }}
+            {{ if $data.set_requests_cpu }}
+            cpu: {{ $data.resources.requests.cpu }}
+            {{ end }}
+            {{if $data.set_requests_memory }}
+            memory: {{ $data.resources.requests.memory }}
+            {{ end }}
           limits:
-            cpu: {{ .resources.limits.cpu }}
-            memory: {{ .resources.limits.memory }}
+            {{ if $data.set_limits_cpu }}
+            cpu: {{ $data.resources.limits.cpu }}
+            {{ end }}
+            {{ if $data.set_limits_memory }}
+            memory: {{ $data.resources.limits.memory }}
+            {{ end }}
+        env:
+        - name: PORT
+          value: "{{ add 8000 $element }}"
+        {{ range $data.container_env_args }}
+        - name: "{{ .name }}"
+          value: "{{ .value }}"
         {{ end }}
+        {{ if $data.enable_startup_probe }}
+        startupProbe:
+          {{ range $data.startup_probe_args }}
+          {{ . }}
+          {{ end }}
+            port: {{ add 8000 $element }}
+          {{ end }}
+        {{ if $data.enable_liveness_probe }}
+        livenessProbe:
+          {{ range $data.liveness_probe_args }}
+          {{ . }}
+          {{ end }}
+            port: {{ add 8000 $element }}
+        {{ end }}
+        {{ if $data.enable_readiness_probe }}
+        readinessProbe:
+          {{ range $data.readiness_probe_args }}
+          {{ . }}
+          {{ end }}
+            port: {{ add 8000 $element }}
+        {{ end }}
+      {{ end }}
       nodeSelector:
-        rwn: "true"
+        {{ .default_selector }}
         {{ range $index, $element := sequence 1 .shared_selectors }}
-        rwns-{{ $element }}: "true"
+        jetlags-{{ $element }}: "true"
         {{ end }}
         {{ $data := . }}
         {{ range $index, $element := sequence 1 $data.unique_selectors }}
         {{ $first := multiply $data.unique_selector_offset $index }}
-        rwnu-{{ add $first $data.Iteration }}: "true"
+        jetlagu-{{ add $first $data.Iteration }}: "true"
         {{ end }}
       {{ if .tolerations }}
       tolerations:
@@ -173,9 +237,25 @@ spec:
       {{ end }}
 """
 
+workload_service = """---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
+spec:
+  selector:
+    app: jetlag-{{ .Iteration }}-{{ .Replica }}
+  ports:
+    {{ range $index, $element := sequence 1 .ports }}
+    - protocol: TCP
+      name: port-{{ add 8000 $element }}
+      port: {{ add 80 $element }}
+      targetPort: {{ add 8000 $element }}
+    {{ end }}
+"""
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s : %(levelname)s : %(message)s')
-logger = logging.getLogger('RWN-Workload')
+logger = logging.getLogger('Jetlag-Workload')
 logging.Formatter.converter = time.gmtime
 
 
@@ -224,6 +304,49 @@ def command(cmd, dry_run, cmd_directory="", mask_output=False, mask_arg=0, no_lo
     os.chdir(working_directory)
   return return_code, output
 
+
+def parse_container_env_args(args):
+  container_env_args = []
+  for arg in args:
+    split_args = arg.split("=")
+    logger.debug("Parsing container env args: {}".format(split_args))
+    if len(split_args) == 2:
+      container_env_args.append({"name": split_args[0], "value": split_args[1]})
+    else:
+      logger.warning("Skipping Container env argument: {}".format(split_args))
+  return container_env_args
+
+
+def parse_probe_args(args, path):
+  split_args = args.split(",")
+  prefixes = ["initialDelaySeconds:", "periodSeconds:", "timeoutSeconds:", "failureThreshold:", "successThreshold:"]
+  probe_args = []
+  logger.debug("Parsing probe args: {}".format(split_args))
+
+  if len(split_args) > 1 and len(split_args) <= 6:
+    for index, arg in enumerate(split_args[1:]):
+      if arg.isdigit():
+        probe_args.append("{} {}".format(prefixes[index], arg))
+      else:
+        logger.error("Probe argument not an integer: {}".format(arg))
+        sys.exit(1)
+  elif len(split_args) > 6:
+    logger.error("Too many probe arguments: {}".format(split_args))
+    sys.exit(1)
+
+  if split_args[0].lower() == "http":
+    probe_args.extend(["httpGet:", "  path: {}".format(path)])
+  elif split_args[0].lower() == "tcp":
+    probe_args.append("tcpSocket:")
+  elif split_args[0].lower() == "off":
+    return []
+  else:
+    logger.error("Unrecognized probe argument: {}".format(split_args[0]))
+    sys.exit(1)
+
+  return probe_args
+
+
 def parse_tc_netem_args(cliargs):
   args = {}
 
@@ -235,6 +358,7 @@ def parse_tc_netem_args(cliargs):
     args["bandwidth limit"] = ["rate", "{}kbit".format(cliargs.bandwidth_limit)]
 
   return args
+
 
 def apply_tc_netem(interface, start_vlan, end_vlan, impairments, dry_run=False):
   if len(impairments) > 1:
@@ -250,18 +374,17 @@ def apply_tc_netem(interface, start_vlan, end_vlan, impairments, dry_run=False):
       tc_command.extend(impairment)
     rc, _ = command(tc_command, dry_run)
     if rc != 0:
-      logger.error("RWN workload applying latency and packet loss failed, tc rc: {}".format(rc))
+      logger.error("Jetlag workload applying impairments failed, tc rc: {}".format(rc))
       sys.exit(1)
 
 
-def remove_tc_netem(
-      interface, start_vlan, end_vlan, dry_run=False, ignore_errors=False):
+def remove_tc_netem(interface, start_vlan, end_vlan, dry_run=False, ignore_errors=False):
   logger.info("Removing bandwidth, latency, and packet loss impairments")
   for vlan in range(start_vlan, end_vlan + 1):
     tc_command = ["tc", "qdisc", "del", "dev", "{}.{}".format(interface, vlan), "root", "netem"]
     rc, _ = command(tc_command, dry_run)
     if rc != 0 and not ignore_errors:
-      logger.error("RWN workload removing latency and packet loss failed, tc rc: {}".format(rc))
+      logger.error("Jetlag workload removing impairments failed, tc rc: {}".format(rc))
       sys.exit(1)
 
 
@@ -273,13 +396,13 @@ def flap_links_down(interface, start_vlan, end_vlan, dry_run, iptables, network)
           "iptables", "-A", "FORWARD", "-j", "DROP", "-i", "{}.{}".format(interface, vlan), "-d", network]
       rc, _ = command(iptables_command, dry_run)
       if rc != 0:
-        logger.error("RWN workload, iptables rc: {}".format(rc))
+        logger.error("Jetlag workload, iptables rc: {}".format(rc))
         sys.exit(1)
     else:
       ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "down"]
       rc, _ = command(ip_command, dry_run)
       if rc != 0:
-        logger.error("RWN workload, ip link set {} down rc: {}".format("{}.{}".format(interface, vlan), rc))
+        logger.error("Jetlag workload, ip link set {} down rc: {}".format("{}.{}".format(interface, vlan), rc))
         sys.exit(1)
 
 
@@ -291,13 +414,13 @@ def flap_links_up(interface, start_vlan, end_vlan, dry_run, iptables, network, i
           "iptables", "-D", "FORWARD", "-j", "DROP", "-i", "{}.{}".format(interface, vlan), "-d", network]
       rc, _ = command(iptables_command, dry_run)
       if rc != 0 and not ignore_errors:
-        logger.error("RWN workload, iptables rc: {}".format(rc))
+        logger.error("Jetlag workload, iptables rc: {}".format(rc))
         sys.exit(1)
     else:
       ip_command = ["ip", "link", "set", "{}.{}".format(interface, vlan), "up"]
       rc, _ = command(ip_command, dry_run)
       if rc != 0 and not ignore_errors:
-        logger.error("RWN workload, ip link set {} up rc: {}".format("{}.{}".format(interface, vlan), rc))
+        logger.error("Jetlag workload, ip link set {} up rc: {}".format("{}.{}".format(interface, vlan), rc))
         sys.exit(1)
 
 
@@ -307,29 +430,61 @@ def phase_break():
 
 def main():
   start_time = time.time()
-  parser = argparse.ArgumentParser(
-      description="Run the rwn workload with or without network impairments",
-      prog="rwn-workload.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-  # Disable a phase arguments
+  default_container_env = [
+      "LISTEN_DELAY_SECONDS=20", "LIVENESS_DELAY_SECONDS=10" "READINESS_DELAY_SECONDS=30",
+      "RESPONSE_DELAY_MILLISECONDS=50", "LIVENESS_SUCCESS_MAX=60", "READINESS_SUCCESS_MAX=30"
+  ]
+
+  parser = argparse.ArgumentParser(
+      description="Run the jetlag workload",
+      prog="jetlag-workload.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+  # Phase arguments
   parser.add_argument("--no-workload-phase", action="store_true", default=False, help="Disables workload phase")
-  parser.add_argument("--no-impairment-phase", action="store_true", default=False, help="Disables impairment phase")
+  parser.add_argument("--no-measurement-phase", action="store_true", default=False, help="Disables measurement phase")
   parser.add_argument("--no-cleanup-phase", action="store_true", default=False, help="Disables cleanup workload phase")
   parser.add_argument("--no-index-phase", action="store_true", default=False, help="Disables index phase")
 
   # Workload arguments
-  parser.add_argument("-i", "--iterations", type=int, default=12, help="Number of RWN namespaces to create")
-  parser.add_argument(
-      "-c", "--cpu", type=str, default="29", help="Guaranteed CPU requests/limits per pod (Cores or millicores)")
-  parser.add_argument("-m", "--mem", type=int, default=120, help="Guaranteed Memory requests/limits per pod (GiB)")
-  parser.add_argument("-s", "--shared-selectors", type=int, default=100, help="How many shared node-selectors to use")
-  parser.add_argument("-u", "--unique-selectors", type=int, default=100, help="How many unique node-selectors to use")
-  parser.add_argument("-o", "--offset", type=int, default=6, help="Offset for iterated unique node-selectors")
-  parser.add_argument(
-      "-n", "--no-tolerations", action="store_true", default=False, help="Do not include tolerations on pod spec")
+  parser.add_argument("-n", "--namespaces", type=int, default=1, help="Number of namespaces to create")
+  parser.add_argument("-d", "--deployments", type=int, default=1, help="Number of deployments per namespace to create")
+  parser.add_argument("-l", "--service", action="store_true", default=False, help="Include service per deployment")
+  parser.add_argument("-p", "--pods", type=int, default=1, help="Number of pod replicas per deployment to create")
+  parser.add_argument("-c", "--containers", type=int, default=1, help="Number of containers per pod replica to create")
 
-  # Impairment arguments
-  parser.add_argument("-D", "--duration", type=int, default=30, help="Duration of impairment (Seconds)")
+  # Workload container image, environment, and resources arguments
+  parser.add_argument("-i", "--container-image", type=str,
+                      default="quay.io/redhat-performance/test-gohttp-probe:latest", help="The container image to use")
+  parser.add_argument('-e', "--container-env", nargs='*', default=default_container_env,
+                      help="The container environment variables")
+  parser.add_argument("--cpu-requests", type=int, default=0, help="CPU requests per pod (millicores)")
+  parser.add_argument("--memory-requests", type=int, default=0, help="Memory requests per pod (MiB)")
+  parser.add_argument("--cpu-limits", type=int, default=0, help="CPU limits per pod (millicores)")
+  parser.add_argument("--memory-limits", type=int, default=0, help="Memory limits per pod (MiB)")
+
+  # Workload probe arguments
+  parser.add_argument("--startup-probe", type=str, default="http,0,10,1,12",
+                      help="Container startupProbe configuration")
+  parser.add_argument("--liveness-probe", type=str, default="http,0,10,1,3",
+                      help="Container livenessProbe configuration")
+  parser.add_argument("--readiness-probe", type=str, default="http,0,10,1,3,1",
+                      help="Container readinessProbe configuration")
+  parser.add_argument("--startup-probe-endpoint", type=str, default="/livez", help="startupProbe endpoint")
+  parser.add_argument("--liveness-probe-endpoint", type=str, default="/livez", help="livenessProbe endpoint")
+  parser.add_argument("--readiness-probe-endpoint", type=str, default="/readyz", help="readinessProbe endpoint")
+  parser.add_argument("--no-probes", action="store_true", default=False, help="Disable all probes")
+
+  # Workload node-selector arguments
+  parser.add_argument("--default-selector", type=str, default="jetlag: 'true'", help="Default node-selector")
+  parser.add_argument("-s", "--shared-selectors", type=int, default=0, help="How many shared node-selectors to use")
+  parser.add_argument("-u", "--unique-selectors", type=int, default=0, help="How many unique node-selectors to use")
+  parser.add_argument("-o", "--offset", type=int, default=0, help="Offset for iterated unique node-selectors")
+  parser.add_argument(
+      "--no-tolerations", action="store_true", default=False, help="Do not include RWN tolerations on pod spec")
+
+  # Measurement arguments
+  parser.add_argument("-D", "--duration", type=int, default=30, help="Duration of measurent/impairment phase (Seconds)")
   parser.add_argument("-I", "--interface", type=str, default="ens1f1", help="Interface of vlans to impair")
   parser.add_argument("-S", "--start-vlan", type=int, default=100, help="Starting VLAN off interface")
   parser.add_argument("-E", "--end-vlan", type=int, default=105, help="Ending VLAN off interface")
@@ -338,7 +493,8 @@ def main():
   parser.add_argument(
       "-P", "--packet-loss", type=int, default=0, help="Percentage of packet loss to add to all VLANed interfaces")
   parser.add_argument(
-      "-B", "--bandwidth-limit", type=int, default=0, help="Bandwidth limit to apply to all VLANed interfaces (kilobits). 0 for no limit.")
+      "-B", "--bandwidth-limit", type=int, default=0,
+      help="Bandwidth limit to apply to all VLANed interfaces (kilobits). 0 for no limit.")
   parser.add_argument("-F", "--link-flap-down", type=int, default=0, help="Time period to flap link down (Seconds)")
   parser.add_argument("-U", "--link-flap-up", type=int, default=0, help="Time period to flap link up (Seconds)")
   parser.add_argument("-T", "--link-flap-firewall", action="store_true", default=False,
@@ -349,13 +505,13 @@ def main():
   # Indexing arguments
   parser.add_argument(
       "--index-server", type=str, default="", help="ElasticSearch server (Ex https://user:password@example.org:9200)")
-  parser.add_argument("--default-index", type=str, default="rwn-default-test", help="Default index")
-  parser.add_argument("--measurements-index", type=str, default="rwn-measurements-test", help="Measurements index")
+  parser.add_argument("--default-index", type=str, default="jetlag-default-test", help="Default index")
+  parser.add_argument("--measurements-index", type=str, default="jetlag-measurements-test", help="Measurements index")
   parser.add_argument("--prometheus-url", type=str, default="", help="Cluster prometheus URL")
   parser.add_argument("--prometheus-token", type=str, default="", help="Token to access prometheus")
 
   # Other arguments
-  parser.add_argument("-d", "--debug", action="store_true", default=False, help="Set log level debug")
+  parser.add_argument("--debug", action="store_true", default=False, help="Set log level debug")
   parser.add_argument("--dry-run", action="store_true", default=False, help="Echos commands instead of executing them")
   parser.add_argument("--reset", action="store_true", default=False, help="Attempts to undo all network impairments")
 
@@ -364,12 +520,22 @@ def main():
   if cliargs.debug:
     logger.setLevel(logging.DEBUG)
 
-  netem_impairments = parse_tc_netem_args(cliargs)
-
   phase_break()
-  logger.info("RWN Workload")
+  logger.info("Jetlag Workload")
   phase_break()
   logger.debug("CLI Args: {}".format(cliargs))
+
+  container_env_args = parse_container_env_args(cliargs.container_env)
+
+  if cliargs.no_probes:
+    cliargs.startup_probe = "off"
+    cliargs.liveness_probe = "off"
+    cliargs.readiness_probe = "off"
+  startup_probe_args = parse_probe_args(cliargs.startup_probe, cliargs.startup_probe_endpoint)
+  liveness_probe_args = parse_probe_args(cliargs.liveness_probe, cliargs.liveness_probe_endpoint)
+  readiness_probe_args = parse_probe_args(cliargs.readiness_probe, cliargs.readiness_probe_endpoint)
+
+  netem_impairments = parse_tc_netem_args(cliargs)
 
   if cliargs.reset:
     logger.info("Resetting all network impairments")
@@ -383,13 +549,13 @@ def main():
         ignore_errors=True)
     sys.exit(0)
 
-  if cliargs.no_workload_phase and cliargs.no_cleanup_phase and cliargs.no_impairment_phase:
+  if cliargs.no_workload_phase and cliargs.no_measurement_phase and cliargs.no_cleanup_phase:
     logger.warning("No meaningful phases enabled. Exiting...")
     sys.exit(0)
 
   # Validate link flap args
   flap_links = False
-  if not cliargs.no_impairment_phase:
+  if not cliargs.no_measurement_phase:
     if ((cliargs.link_flap_down == 0 and cliargs.link_flap_up > 0)
        or (cliargs.link_flap_down > 0 and cliargs.link_flap_up == 0)):
       logger.error("Both link flap args (--link-flap-down, --link-flap-up) are required for link flapping. Exiting...")
@@ -400,9 +566,9 @@ def main():
         flap_links = True
       else:
         if len(netem_impairments) > 0:
-          logger.warning(
-              "Netem (Latency/Bandwidth Limit/Packet Loss) impairments are mutually exclusive to link flapping impairment via ip link. "
-              "Use -T flag to combine impairments by using iptables instead of ip link. Disabling link flapping.")
+          logger.warning("Netem (Bandwidth/Latency/Packet Loss) impairments are mutually exclusive to link flapping "
+                         "impairment via ip link. Use -T flag to combine impairments by using iptables instead of ip "
+                         "link. Disabling link flapping.")
         else:
           logger.info("Link flapping enabled via ip link")
           flap_links = True
@@ -459,25 +625,34 @@ def main():
       logger.info("* Workload Phase - Measurement indexing")
     else:
       logger.info("* Workload Phase - No measurement indexing")
-    logger.info("  * {} Namespaces/Deployments/Pods".format(cliargs.iterations))
-    if (cliargs.cpu.isdigit() and int(cliargs.cpu) == 0) or cliargs.mem == 0:
-      logger.info("  * BestEffort QOS Pods")
-      guaranteed_qos = False
-    else:
-      logger.info("  * Guaranteed QOS Pods w/ {} cores and {} memory".format(cliargs.cpu, cliargs.mem))
-      guaranteed_qos = True
+    logger.info("  * {} Namespace(s)".format(cliargs.namespaces))
+    logger.info("  * {} Deployment(s) per namespace".format(cliargs.deployments))
+    if cliargs.service:
+      logger.info("  * 1 Service per deployment")
+    logger.info("  * {} Pod replica(s) per deployment".format(cliargs.pods))
+    logger.info("  * {} Container(s) per pod replica".format(cliargs.containers))
+    logger.info("  * Container Image: {}".format(cliargs.container_image))
+    logger.info("  * Container CPU: {}m requests, {}m limits".format(cliargs.cpu_requests, cliargs.cpu_limits))
+    logger.info(
+        "  * Container Memory: {}Mi requests, {}Mi limits".format(cliargs.memory_requests, cliargs.memory_limits))
+    logger.info("  * Container Environment: {}".format(container_env_args))
+    su_probe = cliargs.startup_probe.split(",")[0]
+    l_probe = cliargs.liveness_probe.split(",")[0]
+    r_probe = cliargs.readiness_probe.split(",")[0]
+    logger.info("  * Probes: startup: {}, liveness: {}, readiness: {}".format(su_probe, l_probe, r_probe))
+    logger.info("  * Default Node-Selector: {}".format(cliargs.default_selector))
     logger.info("  * {} Shared Node-Selectors".format(cliargs.shared_selectors))
     logger.info("  * {} Unique Node-Selectors".format(cliargs.unique_selectors))
     if cliargs.no_tolerations:
       logger.info("  * No tolerations")
     else:
       logger.info("  * RWN tolerations")
-  if not cliargs.no_impairment_phase:
-    logger.info("* Impairment Phase - {}s Duration".format(cliargs.duration))
+  if not cliargs.no_measurement_phase:
+    logger.info("* Measurement Phase - {}s Duration".format(cliargs.duration))
     if len(netem_impairments) > 0:
+      logger.info("  * Bandwidth Limit: {}kbits".format(cliargs.bandwidth_limit))
       logger.info("  * Link Latency: {}ms".format(cliargs.latency))
       logger.info("  * Packet Loss: {}%".format(cliargs.packet_loss))
-      logger.info("  * Bandwidth Limit: {}kbits".format(cliargs.bandwidth_limit))
     if flap_links:
       flapping = "ip link"
       if cliargs.link_flap_firewall:
@@ -508,49 +683,63 @@ def main():
     phase_break()
     workload_start_time = time.time()
 
-    t = Template(rwn_create)
-    rwn_create_rendered = t.render(
+    t = Template(workload_create)
+    workload_create_rendered = t.render(
         measurements_index=cliargs.measurements_index,
         indexing=index_measurement_data,
         index_server=cliargs.index_server,
         default_index=cliargs.default_index,
-        iterations=cliargs.iterations,
-        guaranteed_qos=guaranteed_qos,
-        cpu=cliargs.cpu,
-        mem=cliargs.mem,
+        namespaces=cliargs.namespaces,
+        deployments=cliargs.deployments,
+        pod_replicas=cliargs.pods,
+        containers=cliargs.containers,
+        container_image=cliargs.container_image,
+        cpu_requests=cliargs.cpu_requests,
+        cpu_limits=cliargs.cpu_limits,
+        memory_requests=cliargs.memory_requests,
+        memory_limits=cliargs.memory_limits,
+        container_env_args=container_env_args,
+        startup_probe_args=startup_probe_args,
+        liveness_probe_args=liveness_probe_args,
+        readiness_probe_args=readiness_probe_args,
+        default_selector=cliargs.default_selector,
         shared_selectors=cliargs.shared_selectors,
         unique_selectors=cliargs.unique_selectors,
         offset=cliargs.offset,
-        tolerations=(not cliargs.no_tolerations))
+        tolerations=(not cliargs.no_tolerations),
+        service=cliargs.service)
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
-    with open("{}/rwn-create.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(rwn_create_rendered)
-    logger.info("Created {}/rwn-create.yml".format(tmp_directory))
-    with open("{}/rwn-deployment-selector.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(rwn_deployment)
-    logger.info("Created {}/rwn-deployment-selector.yml".format(tmp_directory))
+    with open("{}/workload-create.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_create_rendered)
+    logger.info("Created {}/workload-create.yml".format(tmp_directory))
+    with open("{}/workload-deployment-selector.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_deployment)
+    logger.info("Created {}/workload-deployment-selector.yml".format(tmp_directory))
+    with open("{}/workload-service.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_service)
+    logger.info("Created {}/workload-service.yml".format(tmp_directory))
 
-    kb_cmd = ["kube-burner", "init", "-c", "rwn-create.yml", "--uuid", workload_UUID]
+    kb_cmd = ["kube-burner", "init", "-c", "workload-create.yml", "--uuid", workload_UUID]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory)
     if rc != 0:
-      logger.error("RWN workload (rwn-create.yml) failed, kube-burner rc: {}".format(rc))
+      logger.error("Jetlag workload (workload-create.yml) failed, kube-burner rc: {}".format(rc))
       sys.exit(1)
     workload_end_time = time.time()
     logger.info("Workload phase complete")
 
-  # Impairment phase
-  if not cliargs.no_impairment_phase:
+  # Measurement phase
+  if not cliargs.no_measurement_phase:
     phase_break()
-    logger.info("Impairment phase starting")
+    logger.info("Measurement phase starting")
     phase_break()
-    impairment_start_time = time.time()
-    impairment_expected_end_time = impairment_start_time + cliargs.duration
+    measurement_start_time = time.time()
+    measurement_expected_end_time = measurement_start_time + cliargs.duration
 
-    logger.info("Impairment start: {}, end: {}, duration: {}".format(
-        round(impairment_start_time, 1),
-        round(impairment_expected_end_time, 1),
+    logger.info("Measurement phase start: {}, end: {}, duration: {}".format(
+        round(measurement_start_time, 1),
+        round(measurement_expected_end_time, 1),
         cliargs.duration))
 
     if len(netem_impairments):
@@ -570,7 +759,7 @@ def main():
 
     wait_logger = 0
     current_time = time.time()
-    while current_time < impairment_expected_end_time:
+    while current_time < measurement_expected_end_time:
       if flap_links:
         if current_time >= next_flap_time:
           if links_down:
@@ -588,7 +777,7 @@ def main():
       time.sleep(.1)
       wait_logger += 1
       if wait_logger >= 100:
-        logger.info("Remaining impairment duration: {}".format(round(impairment_expected_end_time - current_time, 1)))
+        logger.info("Remaining measurement duration: {}".format(round(measurement_expected_end_time - current_time, 1)))
         wait_logger = 0
       current_time = time.time()
 
@@ -602,21 +791,21 @@ def main():
           cliargs.start_vlan,
           cliargs.end_vlan,
           cliargs.dry_run)
-    impairment_end_time = time.time()
-    logger.info("Impairment phase complete")
+    measurement_end_time = time.time()
+    logger.info("Measurement phase complete")
 
     # Check for pods evicted before cleanup
     phase_break()
-    logger.info("Post impairment pod eviction check")
+    logger.info("Post measurement pod eviction check")
     phase_break()
-    ns_pattern = re.compile("rwn-[0-9]+")
+    ns_pattern = re.compile("jetlag-[0-9]+")
     eviction_pattern = re.compile("Marking for deletion Pod")
     killed_pod = 0
     marked_evictions = 0
     oc_cmd = ["oc", "get", "ev", "-A", "--field-selector", "reason=TaintManagerEviction", "-o", "json"]
     rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
     if rc != 0:
-      logger.error("RWN workload, oc get ev rc: {}".format(rc))
+      logger.error("Jetlag workload, oc get ev rc: {}".format(rc))
       sys.exit(1)
     json_data = json.loads(output)
     for item in json_data['items']:
@@ -625,14 +814,14 @@ def main():
     oc_cmd = ["oc", "get", "ev", "-A", "--field-selector", "reason=Killing", "-o", "json"]
     rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
     if rc != 0:
-      logger.error("RWN workload, oc get ev rc: {}".format(rc))
+      logger.error("Jetlag workload, oc get ev rc: {}".format(rc))
       sys.exit(1)
     json_data = json.loads(output)
     for item in json_data['items']:
       if ns_pattern.search(item['involvedObject']['namespace']):
         killed_pod += 1
-    logger.info("rwn-* pods marked for deletion by Taint Manager: {}".format(marked_evictions))
-    logger.info("rwn-* pods killed: {}".format(killed_pod))
+    logger.info("jetlag-* pods marked for deletion by Taint Manager: {}".format(marked_evictions))
+    logger.info("jetlag-* pods killed: {}".format(killed_pod))
 
   # Cleanup Phase
   if not cliargs.no_cleanup_phase:
@@ -641,8 +830,8 @@ def main():
     phase_break()
     cleanup_start_time = time.time()
 
-    t = Template(rwn_delete)
-    rwn_delete_rendered = t.render(
+    t = Template(workload_delete)
+    workload_delete_rendered = t.render(
         measurements_index=cliargs.measurements_index,
         indexing=index_measurement_data,
         index_server=cliargs.index_server,
@@ -650,14 +839,14 @@ def main():
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
-    with open("{}/rwn-delete.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(rwn_delete_rendered)
-    logger.info("Created {}/rwn-delete.yml".format(tmp_directory))
+    with open("{}/workload-delete.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_delete_rendered)
+    logger.info("Created {}/workload-delete.yml".format(tmp_directory))
 
-    kb_cmd = ["kube-burner", "init", "-c", "rwn-delete.yml", "--uuid", workload_UUID]
+    kb_cmd = ["kube-burner", "init", "-c", "workload-delete.yml", "--uuid", workload_UUID]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory)
     if rc != 0:
-      logger.error("RWN workload (rwn-delete.yml) failed, kube-burner rc: {}".format(rc))
+      logger.error("Jetlag workload (workload-delete.yml) failed, kube-burner rc: {}".format(rc))
       sys.exit(1)
     cleanup_end_time = time.time()
     logger.info("Cleanup phase complete")
@@ -669,17 +858,17 @@ def main():
     phase_break()
     index_start_time = time.time()
 
-    t = Template(rwn_index)
-    rwn_index_rendered = t.render(
+    t = Template(workload_index)
+    workload_index_rendered = t.render(
         index_server=cliargs.index_server,
         default_index=cliargs.default_index,
         measurements_index=cliargs.measurements_index)
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
-    with open("{}/rwn-index.yml".format(tmp_directory), "w") as file1:
-      file1.writelines(rwn_index_rendered)
-    logger.info("Created {}/rwn-index.yml".format(tmp_directory))
+    with open("{}/workload-index.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_index_rendered)
+    logger.info("Created {}/workload-index.yml".format(tmp_directory))
 
     # Copy metrics.yml to tmp directory
     base_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -689,25 +878,25 @@ def main():
 
     if not cliargs.no_workload_phase:
       start_time = workload_start_time
-    elif not cliargs.no_impairment_phase:
-      start_time = impairment_start_time
+    elif not cliargs.no_measurement_phase:
+      start_time = measurement_start_time
     else:
       start_time = cleanup_start_time
 
     if not cliargs.no_cleanup_phase:
       end_time = cleanup_end_time
-    elif not cliargs.no_impairment_phase:
-      end_time = impairment_end_time
+    elif not cliargs.no_measurement_phase:
+      end_time = measurement_end_time
     else:
       end_time = workload_end_time
 
     kb_cmd = [
-        "kube-burner", "index", "-c", "rwn-index.yml", "--start", str(int(start_time)),
+        "kube-burner", "index", "-c", "workload-index.yml", "--start", str(int(start_time)),
         "--end", str(int(end_time)), "--uuid", workload_UUID, "-u", index_prometheus_server,
         "-m", "{}/metrics-aggregated.yaml".format(tmp_directory), "-t", index_prometheus_token]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory, mask_arg=16)
     if rc != 0:
-      logger.error("RWN workload (rwn-index.yml) failed, kube-burner rc: {}".format(rc))
+      logger.error("Jetlag workload (workload-index.yml) failed, kube-burner rc: {}".format(rc))
       sys.exit(1)
 
     index_end_time = time.time()
@@ -715,16 +904,16 @@ def main():
 
   # Dump timings on the test/workload
   phase_break()
-  logger.info("RWN Workload Stats")
+  logger.info("Jetlag Workload Stats")
   if flap_links:
     logger.info("* Number of times links flapped down: {}".format(link_flap_count))
-  if not cliargs.no_impairment_phase:
-    logger.info("* Number of rwn pods marked for deletion (TaintManagerEviction): {}".format(marked_evictions))
-    logger.info("* Number of rwn pods killed: {}".format(killed_pod))
+  if not cliargs.no_measurement_phase:
+    logger.info("* Number of jetlag pods marked for deletion (TaintManagerEviction): {}".format(marked_evictions))
+    logger.info("* Number of jetlag pods killed: {}".format(killed_pod))
   if not cliargs.no_workload_phase:
     logger.info("Workload phase duration: {}".format(round(workload_end_time - workload_start_time, 1)))
-  if not cliargs.no_impairment_phase:
-    logger.info("Impairment phase duration: {}".format(round(impairment_end_time - impairment_start_time, 1)))
+  if not cliargs.no_measurement_phase:
+    logger.info("Measurement phase duration: {}".format(round(measurement_end_time - measurement_start_time, 1)))
   if not cliargs.no_cleanup_phase:
     logger.info("Cleanup phase duration: {}".format(round(cleanup_end_time - cleanup_start_time, 1)))
   if not cliargs.no_index_phase:
