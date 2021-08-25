@@ -33,7 +33,7 @@
 
 - name: Label the remote worker nodes
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} rwn=true node-role.kubernetes.io/rwn-{{ hostvars[item].vlan }}= topology.kubernetes.io/zone=rwn-{{ hostvars[item].vlan }} node-role.kubernetes.io/worker-
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} rwn=true jetlag=true node-role.kubernetes.io/rwn-{{ hostvars[item].vlan }}= topology.kubernetes.io/zone=rwn-{{ hostvars[item].vlan }} node-role.kubernetes.io/worker-
   with_items: "{{ groups['remoteworker'] }}"
 
 - name: Label all nodes with topology.kubernetes.io/region=scalelab

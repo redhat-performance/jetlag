@@ -23,3 +23,8 @@
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/files?file_name=kubeadmin-password"
     dest: "{{ bastion_cluster_config_dir }}/{{ item }}/kubeadmin-password"
   with_items: "{{ ai_cluster_ids }}"
+
+- name: Apply a label to the worker node(s)
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item }}/kubeconfig oc label no --all --overwrite jetlag=true
+  with_items: "{{ ai_cluster_ids }}"
