@@ -20,7 +20,7 @@ import sys
 import time
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s : %(levelname)s : %(message)s')
-logger = logging.getLogger('RWN-Labeler')
+logger = logging.getLogger('Labeler')
 logging.Formatter.converter = time.gmtime
 
 
@@ -101,8 +101,8 @@ def phase_break():
 def main():
   start_time = time.time()
   parser = argparse.ArgumentParser(
-      description="Label nodes for the rwn workload",
-      prog="rwn-labeler.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+      description="Label nodes for the jetlag workload",
+      prog="jetlag-labeler.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
   parser.add_argument("-c", "--count", type=int, default=100, help="Count of labels")
 
@@ -111,9 +111,9 @@ def main():
 
   parser.add_argument("--clear", action="store_true", default=False, help="Clear labels")
 
-  parser.add_argument("-l", "--label-selector", type=str, default="rwn=true", help="Label to select nodes for labeling")
-  parser.add_argument("--shared-prefix", type=str, default="rwns", help="Shared label prefix")
-  parser.add_argument("--unique-prefix", type=str, default="rwnu", help="Unique label prefix")
+  parser.add_argument("-l", "--label-selector", type=str, default="jetlag=true", help="Label to select nodes for labeling")
+  parser.add_argument("--shared-prefix", type=str, default="jetlags", help="Shared label prefix")
+  parser.add_argument("--unique-prefix", type=str, default="jetlagu", help="Unique label prefix")
 
   parser.add_argument("-d", "--debug", action="store_true", default=False, help="Set log level debug")
   parser.add_argument("--dry-run", action="store_true", default=False, help="Echos commands instead of executing them")
@@ -124,7 +124,7 @@ def main():
     logger.setLevel(logging.DEBUG)
 
   phase_break()
-  logger.info("RWN Labeler")
+  logger.info("jetlag Labeler")
   phase_break()
   logger.debug("CLI Args: {}".format(cliargs))
 
