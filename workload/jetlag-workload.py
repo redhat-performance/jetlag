@@ -63,6 +63,7 @@ jobs:
         pod_replicas: {{ pod_replicas }}
         containers: {{ containers }}
         image: {{ container_image }}
+        starting_port: {{ starting_port }}
         set_requests_cpu: {{ cpu_requests > 0 }}
         set_requests_memory: {{ memory_requests > 0 }}
         set_limits_cpu: {{ cpu_limits > 0 }}
@@ -91,6 +92,7 @@ jobs:
       replicas: {{ deployments }}
       inputVars:
         ports: {{ containers }}
+        starting_port: {{ starting_port }}
     {% endif %}
 """
 
@@ -167,7 +169,7 @@ spec:
       - name: jetlag-container-{{ $element }}
         image: {{ $data.image }}
         ports:
-        - containerPort: {{ add 8000 $element }}
+        - containerPort: {{ add $data.starting_port $element }}
           protocol: TCP
         resources:
           requests:
@@ -186,7 +188,7 @@ spec:
             {{ end }}
         env:
         - name: PORT
-          value: "{{ add 8000 $element }}"
+          value: "{{ add $data.starting_port $element }}"
         {{ range $data.container_env_args }}
         - name: "{{ .name }}"
           value: "{{ .value }}"
@@ -196,21 +198,21 @@ spec:
           {{ range $data.startup_probe_args }}
           {{ . }}
           {{ end }}
-            port: {{ add 8000 $element }}
+            port: {{ add $data.starting_port $element }}
           {{ end }}
         {{ if $data.enable_liveness_probe }}
         livenessProbe:
           {{ range $data.liveness_probe_args }}
           {{ . }}
           {{ end }}
-            port: {{ add 8000 $element }}
+            port: {{ add $data.starting_port $element }}
         {{ end }}
         {{ if $data.enable_readiness_probe }}
         readinessProbe:
           {{ range $data.readiness_probe_args }}
           {{ . }}
           {{ end }}
-            port: {{ add 8000 $element }}
+            port: {{ add $data.starting_port $element }}
         {{ end }}
       {{ end }}
       nodeSelector:
@@ -248,9 +250,9 @@ spec:
   ports:
     {{ range $index, $element := sequence 1 .ports }}
     - protocol: TCP
-      name: port-{{ add 8000 $element }}
+      name: port-{{ add $data.starting_port $element }}
       port: {{ add 80 $element }}
-      targetPort: {{ add 8000 $element }}
+      targetPort: {{ add $data.starting_port $element }}
     {{ end }}
 """
 
@@ -453,15 +455,17 @@ def main():
   parser.add_argument("-p", "--pods", type=int, default=1, help="Number of pod replicas per deployment to create")
   parser.add_argument("-c", "--containers", type=int, default=1, help="Number of containers per pod replica to create")
 
-  # Workload container image, environment, and resources arguments
+  # Workload container image, port, environment, and resources arguments
   parser.add_argument("-i", "--container-image", type=str,
                       default="quay.io/redhat-performance/test-gohttp-probe:latest", help="The container image to use")
+  parser.add_argument("--container-port", type=int, default=8000,
+                      help="The starting container port to expose (PORT Env Var)")
   parser.add_argument('-e', "--container-env", nargs='*', default=default_container_env,
                       help="The container environment variables")
-  parser.add_argument("--cpu-requests", type=int, default=0, help="CPU requests per pod (millicores)")
-  parser.add_argument("--memory-requests", type=int, default=0, help="Memory requests per pod (MiB)")
-  parser.add_argument("--cpu-limits", type=int, default=0, help="CPU limits per pod (millicores)")
-  parser.add_argument("--memory-limits", type=int, default=0, help="Memory limits per pod (MiB)")
+  parser.add_argument("--cpu-requests", type=int, default=0, help="CPU requests per container (millicores)")
+  parser.add_argument("--memory-requests", type=int, default=0, help="Memory requests per container (MiB)")
+  parser.add_argument("--cpu-limits", type=int, default=0, help="CPU limits per container (millicores)")
+  parser.add_argument("--memory-limits", type=int, default=0, help="Memory limits per container (MiB)")
 
   # Workload probe arguments
   parser.add_argument("--startup-probe", type=str, default="http,0,10,1,12",
@@ -475,7 +479,7 @@ def main():
   parser.add_argument("--readiness-probe-endpoint", type=str, default="/readyz", help="readinessProbe endpoint")
   parser.add_argument("--no-probes", action="store_true", default=False, help="Disable all probes")
 
-  # Workload node-selector arguments
+  # Workload node-selector/tolerations arguments
   parser.add_argument("--default-selector", type=str, default="jetlag: 'true'", help="Default node-selector")
   parser.add_argument("-s", "--shared-selectors", type=int, default=0, help="How many shared node-selectors to use")
   parser.add_argument("-u", "--unique-selectors", type=int, default=0, help="How many unique node-selectors to use")
@@ -694,6 +698,7 @@ def main():
         pod_replicas=cliargs.pods,
         containers=cliargs.containers,
         container_image=cliargs.container_image,
+        starting_port=cliargs.container_port - 1,
         cpu_requests=cliargs.cpu_requests,
         cpu_limits=cliargs.cpu_limits,
         memory_requests=cliargs.memory_requests,
