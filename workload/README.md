@@ -52,13 +52,14 @@ jetlag workload arguments:
 
 ```console
 $ ./jetlag-workload.py -h
-usage: jetlag-workload.py [-h] [--no-workload-phase] [--no-measurement-phase] [--no-cleanup-phase] [--no-index-phase] [-n NAMESPACES] [-d DEPLOYMENTS] [-l] [-p PODS] [-c CONTAINERS] [-i CONTAINER_IMAGE]
-                          [-e [CONTAINER_ENV ...]] [--cpu-requests CPU_REQUESTS] [--memory-requests MEMORY_REQUESTS] [--cpu-limits CPU_LIMITS] [--memory-limits MEMORY_LIMITS] [--startup-probe STARTUP_PROBE]
-                          [--liveness-probe LIVENESS_PROBE] [--readiness-probe READINESS_PROBE] [--startup-probe-endpoint STARTUP_PROBE_ENDPOINT] [--liveness-probe-endpoint LIVENESS_PROBE_ENDPOINT]
-                          [--readiness-probe-endpoint READINESS_PROBE_ENDPOINT] [--no-probes] [--default-selector DEFAULT_SELECTOR] [-s SHARED_SELECTORS] [-u UNIQUE_SELECTORS] [-o OFFSET] [--no-tolerations]
-                          [-D DURATION] [-I INTERFACE] [-S START_VLAN] [-E END_VLAN] [-L LATENCY] [-P PACKET_LOSS] [-B BANDWIDTH_LIMIT] [-F LINK_FLAP_DOWN] [-U LINK_FLAP_UP] [-T] [-N LINK_FLAP_NETWORK]
-                          [--index-server INDEX_SERVER] [--default-index DEFAULT_INDEX] [--measurements-index MEASUREMENTS_INDEX] [--prometheus-url PROMETHEUS_URL] [--prometheus-token PROMETHEUS_TOKEN]
-                          [--debug] [--dry-run] [--reset]
+usage: jetlag-workload.py [-h] [--no-workload-phase] [--no-measurement-phase] [--no-cleanup-phase] [--no-index-phase] [-n NAMESPACES] [-d DEPLOYMENTS] [-l] [-p PODS] [-c CONTAINERS]
+                          [-i CONTAINER_IMAGE] [--container-port CONTAINER_PORT] [-e [CONTAINER_ENV ...]] [--cpu-requests CPU_REQUESTS] [--memory-requests MEMORY_REQUESTS]
+                          [--cpu-limits CPU_LIMITS] [--memory-limits MEMORY_LIMITS] [--startup-probe STARTUP_PROBE] [--liveness-probe LIVENESS_PROBE] [--readiness-probe READINESS_PROBE]
+                          [--startup-probe-endpoint STARTUP_PROBE_ENDPOINT] [--liveness-probe-endpoint LIVENESS_PROBE_ENDPOINT] [--readiness-probe-endpoint READINESS_PROBE_ENDPOINT]
+                          [--no-probes] [--default-selector DEFAULT_SELECTOR] [-s SHARED_SELECTORS] [-u UNIQUE_SELECTORS] [-o OFFSET] [--no-tolerations] [-D DURATION] [-I INTERFACE]
+                          [-S START_VLAN] [-E END_VLAN] [-L LATENCY] [-P PACKET_LOSS] [-B BANDWIDTH_LIMIT] [-F LINK_FLAP_DOWN] [-U LINK_FLAP_UP] [-T] [-N LINK_FLAP_NETWORK]
+                          [--index-server INDEX_SERVER] [--default-index DEFAULT_INDEX] [--measurements-index MEASUREMENTS_INDEX] [--prometheus-url PROMETHEUS_URL]
+                          [--prometheus-token PROMETHEUS_TOKEN] [--debug] [--dry-run] [--reset]
 
 Run the jetlag workload
 
@@ -79,17 +80,19 @@ optional arguments:
                         Number of containers per pod replica to create (default: 1)
   -i CONTAINER_IMAGE, --container-image CONTAINER_IMAGE
                         The container image to use (default: quay.io/redhat-performance/test-gohttp-probe:latest)
+  --container-port CONTAINER_PORT
+                        The starting container port to expose (PORT Env Var) (default: 8000)
   -e [CONTAINER_ENV ...], --container-env [CONTAINER_ENV ...]
                         The container environment variables (default: ['LISTEN_DELAY_SECONDS=20', 'LIVENESS_DELAY_SECONDS=10READINESS_DELAY_SECONDS=30', 'RESPONSE_DELAY_MILLISECONDS=50',
                         'LIVENESS_SUCCESS_MAX=60', 'READINESS_SUCCESS_MAX=30'])
   --cpu-requests CPU_REQUESTS
-                        CPU requests per pod (millicores) (default: 0)
+                        CPU requests per container (millicores) (default: 0)
   --memory-requests MEMORY_REQUESTS
-                        Memory requests per pod (MiB) (default: 0)
+                        Memory requests per container (MiB) (default: 0)
   --cpu-limits CPU_LIMITS
-                        CPU limits per pod (millicores) (default: 0)
+                        CPU limits per container (millicores) (default: 0)
   --memory-limits MEMORY_LIMITS
-                        Memory limits per pod (MiB) (default: 0)
+                        Memory limits per container (MiB) (default: 0)
   --startup-probe STARTUP_PROBE
                         Container startupProbe configuration (default: http,0,10,1,12)
   --liveness-probe LIVENESS_PROBE
