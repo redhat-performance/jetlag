@@ -64,6 +64,8 @@ jobs:
         containers: {{ containers }}
         image: {{ container_image }}
         starting_port: {{ starting_port }}
+        configmaps: {{ configmaps }}
+        secrets: {{ secrets }}
         set_requests_cpu: {{ cpu_requests > 0 }}
         set_requests_memory: {{ memory_requests > 0 }}
         set_limits_cpu: {{ cpu_limits > 0 }}
@@ -87,6 +89,14 @@ jobs:
         unique_selectors: {{ unique_selectors }}
         unique_selector_offset: {{ offset }}
         tolerations: {{ tolerations }}
+    {% if configmaps > 0 %}
+    - objectTemplate: workload-configmap.yml
+      replicas: {{ deployments * configmaps }}
+    {% endif %}
+    {% if secrets > 0 %}
+    - objectTemplate: workload-secret.yml
+      replicas: {{ deployments * secrets }}
+    {% endif %}
     {% if service %}
     - objectTemplate: workload-service.yml
       replicas: {{ deployments }}
@@ -117,6 +127,14 @@ jobs:
   qps: 10
   burst: 20
   objects:
+
+  - kind: ConfigMap
+    labelSelector: {kube-burner-job: jetlag}
+    apiVersion: v1
+
+  - kind: Secret
+    labelSelector: {kube-burner-job: jetlag}
+    apiVersion: v1
 
   - kind: Service
     labelSelector: {kube-burner-job: jetlag}
@@ -150,7 +168,7 @@ workload_deployment = """---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}
 spec:
   replicas: {{ .pod_replicas }}
   selector:
@@ -214,6 +232,32 @@ spec:
           {{ end }}
             port: {{ add $data.starting_port $element }}
         {{ end }}
+        volumeMounts:
+        {{ range $index, $element := sequence 1 $data.configmaps }}
+        - name: cm-{{ $element }}
+          mountPath: /etc/cm-{{ $element }}
+        {{ end }}
+        {{ range $index, $element := sequence 1 $data.secrets }}
+        - name: secret-{{ $element }}
+          mountPath: /etc/secret-{{ $element }}
+        {{ end }}
+      {{ end }}
+      volumes:
+      {{ range $index, $element := sequence 1 .configmaps }}
+      {{ $d_index := add $data.Replica -1 }}
+      {{ $d_cm_count := multiply $d_index $data.configmaps }}
+      {{ $cm_index := add $d_cm_count $element }}
+      - name: cm-{{ $element }}
+        configMap:
+          name: jetlag-{{ $data.Iteration }}-{{ $cm_index }}-{{ $data.JobName }}
+      {{ end }}
+      {{ range $index, $element := sequence 1 .secrets }}
+      {{ $d_index := add $data.Replica -1 }}
+      {{ $d_s_count := multiply $d_index $data.secrets }}
+      {{ $s_index := add $d_s_count $element }}
+      - name: secret-{{ $element }}
+        secret:
+          secretName: jetlag-{{ $data.Iteration }}-{{ $s_index }}-{{ $data.JobName }}
       {{ end }}
       nodeSelector:
         {{ .default_selector }}
@@ -243,7 +287,7 @@ workload_service = """---
 apiVersion: v1
 kind: Service
 metadata:
-  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{.JobName }}
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}
 spec:
   selector:
     app: jetlag-{{ .Iteration }}-{{ .Replica }}
@@ -254,6 +298,24 @@ spec:
       port: {{ add 80 $element }}
       targetPort: {{ add $data.starting_port $element }}
     {{ end }}
+"""
+
+workload_configmap = """---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}
+data:
+  jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}: "Random data"
+"""
+
+workload_secret = """---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}
+data:
+  jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}: UmFuZG9tIGRhdGEK
 """
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s : %(levelname)s : %(message)s')
@@ -462,6 +524,8 @@ def main():
                       help="The starting container port to expose (PORT Env Var)")
   parser.add_argument('-e', "--container-env", nargs='*', default=default_container_env,
                       help="The container environment variables")
+  parser.add_argument("-m", "--configmaps", type=int, default=0, help="Number of configmaps per container")
+  parser.add_argument("--secrets", type=int, default=0, help="Number of secrets per container")
   parser.add_argument("--cpu-requests", type=int, default=0, help="CPU requests per container (millicores)")
   parser.add_argument("--memory-requests", type=int, default=0, help="Memory requests per container (MiB)")
   parser.add_argument("--cpu-limits", type=int, default=0, help="CPU limits per container (millicores)")
@@ -636,6 +700,9 @@ def main():
     logger.info("  * {} Pod replica(s) per deployment".format(cliargs.pods))
     logger.info("  * {} Container(s) per pod replica".format(cliargs.containers))
     logger.info("  * Container Image: {}".format(cliargs.container_image))
+    logger.info("  * Container starting port: {}".format(cliargs.container_port))
+    logger.info("  * ConfigMap(s) per deployment: {}".format(cliargs.configmaps))
+    logger.info("  * Secret(s) per deployment: {}".format(cliargs.secrets))
     logger.info("  * Container CPU: {}m requests, {}m limits".format(cliargs.cpu_requests, cliargs.cpu_limits))
     logger.info(
         "  * Container Memory: {}Mi requests, {}Mi limits".format(cliargs.memory_requests, cliargs.memory_limits))
@@ -699,6 +766,8 @@ def main():
         containers=cliargs.containers,
         container_image=cliargs.container_image,
         starting_port=cliargs.container_port - 1,
+        configmaps=cliargs.configmaps,
+        secrets=cliargs.secrets,
         cpu_requests=cliargs.cpu_requests,
         cpu_limits=cliargs.cpu_limits,
         memory_requests=cliargs.memory_requests,
@@ -725,6 +794,12 @@ def main():
     with open("{}/workload-service.yml".format(tmp_directory), "w") as file1:
       file1.writelines(workload_service)
     logger.info("Created {}/workload-service.yml".format(tmp_directory))
+    with open("{}/workload-configmap.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_configmap)
+    logger.info("Created {}/workload-configmap.yml".format(tmp_directory))
+    with open("{}/workload-secret.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_secret)
+    logger.info("Created {}/workload-secret.yml".format(tmp_directory))
 
     kb_cmd = ["kube-burner", "init", "-c", "workload-create.yml", "--uuid", workload_UUID]
     rc, _ = command(kb_cmd, cliargs.dry_run, tmp_directory)
