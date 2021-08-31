@@ -57,7 +57,7 @@
 
   - name: Pause during loop
     pause:
-      seconds: 5
+      seconds: "{{ check_cluster_pause_seconds }}"
 
   # - name: Hosts which have had a boot order fix applied
   #   debug:
