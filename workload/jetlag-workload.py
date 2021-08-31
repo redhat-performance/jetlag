@@ -496,7 +496,7 @@ def main():
   start_time = time.time()
 
   default_container_env = [
-      "LISTEN_DELAY_SECONDS=20", "LIVENESS_DELAY_SECONDS=10" "READINESS_DELAY_SECONDS=30",
+      "LISTEN_DELAY_SECONDS=20", "LIVENESS_DELAY_SECONDS=10", "READINESS_DELAY_SECONDS=30",
       "RESPONSE_DELAY_MILLISECONDS=50", "LIVENESS_SUCCESS_MAX=60", "READINESS_SUCCESS_MAX=30"
   ]
 
@@ -887,7 +887,10 @@ def main():
     if rc != 0:
       logger.error("Jetlag workload, oc get ev rc: {}".format(rc))
       sys.exit(1)
-    json_data = json.loads(output)
+    if not cliargs.dry_run:
+      json_data = json.loads(output)
+    else:
+      json_data = {'items': []}
     for item in json_data['items']:
       if ns_pattern.search(item['involvedObject']['namespace']) and eviction_pattern.search(item['message']):
         marked_evictions += 1
@@ -896,7 +899,10 @@ def main():
     if rc != 0:
       logger.error("Jetlag workload, oc get ev rc: {}".format(rc))
       sys.exit(1)
-    json_data = json.loads(output)
+    if not cliargs.dry_run:
+      json_data = json.loads(output)
+    else:
+      json_data = {'items': []}
     for item in json_data['items']:
       if ns_pattern.search(item['involvedObject']['namespace']):
         killed_pod += 1
