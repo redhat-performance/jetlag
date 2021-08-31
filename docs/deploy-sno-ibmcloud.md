@@ -39,7 +39,7 @@ sno_node_count: 2
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.8.6-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.8.9-x86_64
 
 # This should just match the above release image version (Ex: 4.8)
 openshift_version: "4.8"
