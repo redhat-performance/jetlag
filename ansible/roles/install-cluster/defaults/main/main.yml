@@ -8,3 +8,5 @@ assisted_installer_port: 8090
 # This will be your bastion machine (if you run setup-bastion playbook)
 disconnected_registry_host: "{{ groups['bastion'][0] }}"
 disconnected_registry_port: 5000
+
+check_cluster_pause_seconds: 10
