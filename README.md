@@ -59,9 +59,10 @@ Versions:
 Pre-reqs for the playbooks:
 
 ```console
+ansible-galaxy collection install ansible.netcommon
 ansible-galaxy collection install ansible.posix
-ansible-galaxy collection install containers.podman
 ansible-galaxy collection install community.general
+ansible-galaxy collection install containers.podman
 ```
 
 ```console
