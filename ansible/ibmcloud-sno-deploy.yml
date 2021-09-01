@@ -18,17 +18,10 @@
   - validate-vars
   - ibmcloud-sno-create-ai-cluster
   - ibmcloud-sno-generate-discovery-iso
-  # IBMcloud is missing the license to allow redfish to automate the virtualmedia
-  # unmount/mount process and onetimecd boot.
-  # - role: boot-iso
-  #   vars:
-  #     inventory_group: controlplane
-  #     index: 3
-  # - role: boot-iso
-  #   vars:
-  #     inventory_group: worker
-  #     index: "{{ worker_node_count }}"
+  - role: boot-iso
+    vars:
+      inventory_group: sno
+      index: "{{ sno_node_count }}"
   - sno-wait-hosts-discovered
   - sno-install-cluster
-  # Must monitor and remove virtualcd when machine reboots after install
   - sno-post-cluster-install

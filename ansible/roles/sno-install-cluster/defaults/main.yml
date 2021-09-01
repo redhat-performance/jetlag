@@ -4,3 +4,5 @@
 # This will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
+
+check_cluster_pause_seconds: 10

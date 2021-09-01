@@ -39,13 +39,13 @@ _**Table of Contents**_
 | Dell fc640         | No  | No  | Yes |
 | Supermicro 1029p * | Yes | Yes | No  |
 
+*Note Hardware/Cluster Deployment Type may require some manual interaction to complete an install
+
 **IBMcloud**
 
-| Hardware           | BM  | SNO   |
-| ------------------ | --- | ----- |
-| Supermicro E5-2620 | Yes | Yes * |
-
-*Note Hardware/Cluster Deployment Type may require some manual interaction to complete an install
+| Hardware           | BM  | SNO |
+| ------------------ | --- | --- |
+| Supermicro E5-2620 | Yes | Yes |
 
 ## Prerequisites
 
