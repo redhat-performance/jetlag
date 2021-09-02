@@ -292,6 +292,7 @@ spec:
   selector:
     app: jetlag-{{ .Iteration }}-{{ .Replica }}
   ports:
+    {{ $data := . }}
     {{ range $index, $element := sequence 1 .ports }}
     - protocol: TCP
       name: port-{{ add $data.starting_port $element }}
@@ -697,12 +698,14 @@ def main():
     logger.info("  * {} Deployment(s) per namespace".format(cliargs.deployments))
     if cliargs.service:
       logger.info("  * 1 Service per deployment")
+    else:
+      logger.info("  * No Service per deployment")
     logger.info("  * {} Pod replica(s) per deployment".format(cliargs.pods))
     logger.info("  * {} Container(s) per pod replica".format(cliargs.containers))
+    logger.info("  * {} ConfigMap(s) per deployment".format(cliargs.configmaps))
+    logger.info("  * {} Secret(s) per deployment".format(cliargs.secrets))
     logger.info("  * Container Image: {}".format(cliargs.container_image))
     logger.info("  * Container starting port: {}".format(cliargs.container_port))
-    logger.info("  * ConfigMap(s) per deployment: {}".format(cliargs.configmaps))
-    logger.info("  * Secret(s) per deployment: {}".format(cliargs.secrets))
     logger.info("  * Container CPU: {}m requests, {}m limits".format(cliargs.cpu_requests, cliargs.cpu_limits))
     logger.info(
         "  * Container Memory: {}Mi requests, {}Mi limits".format(cliargs.memory_requests, cliargs.memory_limits))
