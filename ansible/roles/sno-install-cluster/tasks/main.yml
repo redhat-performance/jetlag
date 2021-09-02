@@ -36,3 +36,13 @@
   retries: 540
   delay: 10
   with_items: "{{ ai_cluster_ids }}"
+  when: lab in rh_labs
+
+- name: Set initial loop variables
+  set_fact:
+    boot_order_fixed_hosts: []
+  when: lab in cloud_labs
+
+- name: Check if sno installed tasks loop
+  include_tasks: check-sno-install.yml
+  when: lab in cloud_labs

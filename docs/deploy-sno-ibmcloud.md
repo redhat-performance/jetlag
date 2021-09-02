@@ -114,16 +114,6 @@ Next run the `ibmcloud-setup-bastion.yml` playbook ...
 ...
 ```
 
-Prior to running the deploy playbook, you will need to connect to ibmcloud using vpn and should be able to directly open each node's bmc web gui. Use the credentials in the inventory file per host's bmc in order to login. It is best to open each console so you can observe when a node reboots. Also set each screen to the Virtual Media CD-ROM Image page. You can pre-set the image for Supermicro machine to match:
-
-Share Host - `http://X.X.X.X:8081`
-
-Path to Image - `\\$HOSTNAME.iso`
-
-**The two slashes (`\\`) are required and is not a typo.**
-
-Replace `$HOSTNAME` with the entry of the SNO in the inventory. For Example `\\jetlag-bm4.iso`
-
 Finally run the `ibmcloud-sno-deploy.yml` playbook ...
 
 ```console
@@ -131,32 +121,7 @@ Finally run the `ibmcloud-sno-deploy.yml` playbook ...
 ...
 ```
 
-While the playbook is running, it will prompt that you mounted the Virtual Media per SNO:
-
-```console
-TASK [ibmcloud-sno-generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud] ***************************************************************************************
-Monday 09 August 2021  15:07:01 -0400 (0:00:02.764)       0:00:42.555 *********
-[ibmcloud-sno-generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud]
-Confirm each machine's BMC's virtualmedia mounts http://X.X.X.X:8081/jetlag-bm4.iso:
-^Mok: [jetlag-bm0] => (item=jetlag-bm4)
-[ibmcloud-sno-generate-discovery-iso : Pause to allow manual discovery iso mounting for ibmcloud]
-Confirm each machine's BMC's virtualmedia mounts http://X.X.X.X:8081/jetlag-bm5.iso:
-ok: [jetlag-bm0] => (item=jetlag-bm5)
-```
-
-Confirm that the Virtual Media is mounted according to each machine's BMC. It then reminds you with another prompt to observe the consoles and unmount the virtual media **after** machines reboot:
-
-```console
-TASK [ibmcloud-sno-generate-discovery-iso : Remind to watch for when to unmount the virtual ISO media] ***************************************************************************************
-Monday 09 August 2021  15:08:59 -0400 (0:00:04.208)       0:02:40.744 *********
-[ibmcloud-sno-generate-discovery-iso : Remind to watch for when to unmount the virtual ISO media]
-Remember to watch the consoles and unmount immediate after a machine reboots:
-ok: [jetlag-bm0]
-```
-
-Since each cluster is an SNO, each node will reboot in approximately 10 minutes, you must observe the consoles to see when the reboot occurs. Once the reboot occurs, you can switch to the BMC web gui and unmount the discovery iso cd. If you fail to watch the consoles closely and miss the reboot to unmount the ISO at the correct time, the cluster will fail to complete install as the machines will always boot into the discovery ISO. You will be able to see this status if you also observe the Assisted-installer GUI on the bastion machine. (http://$BASTION_IP:8080) You can also ssh to each node while it is running the discovery image from your bastion machine and tail journal logs to see status of the disk writing and reboot process.
-
-If everything goes well you should have SNO(s) in about 40-60 minutes. You can interact with the SNOs from the bastion.
+If everything goes well you should have SNO(s) in about 50-60 minutes. You can interact with the SNOs from the bastion.
 
 ```console
 [root@jetlag-bm0 ~]# cd sno/
