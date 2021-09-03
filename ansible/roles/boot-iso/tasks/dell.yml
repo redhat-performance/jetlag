@@ -25,6 +25,14 @@
 
 - name: Dell - Mount Live ISO, Boot into Live ISO (Dell 13G iDRAC8 and below)
   block:
+    - name: Dell - Power down machine prior to booting iso
+      shell: |
+        ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
+
+    - name: Dell - Pause for power down
+      pause:
+        seconds: 10
+
     - name: Dell - Racadm container to mount and boot to Live ISO
       containers.podman.podman_container:
         name: "{{ hostvars[item]['bmc_address'] }}-rac-image"
