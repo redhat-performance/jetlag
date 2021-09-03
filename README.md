@@ -66,7 +66,7 @@ ansible-galaxy collection install containers.podman
 ```
 
 ```console
-pip3 install netaddr
+pip3 install netaddr python-hpilo
 ```
 
 ## Cluster Deployment Usage

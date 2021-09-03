@@ -1,0 +1,24 @@
+---
+# HP tasks for booting an iso
+
+- name: HP - Power off
+  hpilo_boot:
+    host: "{{ hostvars[item]['bmc_address'] }}"
+    login: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    state: "poweroff"
+
+- name: HP -  Disconnect virtual media
+  hpilo_boot:
+    host: "{{ hostvars[item]['bmc_address'] }}"
+    login: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    state: "disconnect"
+
+- name: HP -  Boot using an iso
+  hpilo_boot:
+    host: "{{ hostvars[item]['bmc_address'] }}"
+    login: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    image: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
+    media: cdrom
