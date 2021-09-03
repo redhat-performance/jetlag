@@ -14,10 +14,13 @@
 #  limitations under the License.
 
 import argparse
+import csv
+from datetime import datetime
 from jinja2 import Template
 import json
 import logging
 import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -493,6 +496,26 @@ def phase_break():
   logger.info("###############################################################################")
 
 
+def write_csv_results(result_file_name, results):
+  header = ["start ts", "end ts", "start time", "end time", "title", "workload uuid", "workload duration",
+      "measurement duration", "cleanup duration", "index duration", "total duration", "namespaces", "deployments",
+      "pods", "containers", "services", "configmaps", "secrets", "image", "cpu requests", "memory requests",
+      "cpu limits", "memory limits", "startup probe", "liveness probe", "readiness probe", "shared selectors",
+      "unique selectors", "tolerations", "duration", "interface", "start vlan", "end vlan", "latency", "packet loss",
+      "bandwidth limit", "flap down", "flap up", "firewall", "network", "indexed", "dry run", "flapped down",
+      "TaintManagerEviction pods", "killed pods"]
+
+  logger.info("Writing results to {}".format(result_file_name))
+  write_header = False
+  if not pathlib.Path(result_file_name).is_file():
+    write_header = True
+  with open(result_file_name, 'a') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    if write_header:
+      csv_writer.writerow(header)
+    csv_writer.writerow(results)
+
+
 def main():
   start_time = time.time()
 
@@ -578,6 +601,10 @@ def main():
   parser.add_argument("--measurements-index", type=str, default="jetlag-measurements-test", help="Measurements index")
   parser.add_argument("--prometheus-url", type=str, default="", help="Cluster prometheus URL")
   parser.add_argument("--prometheus-token", type=str, default="", help="Token to access prometheus")
+
+  # CSV results file arguments:
+  parser.add_argument("--csv-file", type=str, default="results.csv", help="Determines csv results file to append to")
+  parser.add_argument("--csv-title", type=str, default="", help="Determines title of row of data")
 
   # Other arguments
   parser.add_argument("--debug", action="store_true", default=False, help="Set log level debug")
@@ -813,6 +840,9 @@ def main():
     logger.info("Workload phase complete")
 
   # Measurement phase
+  link_flap_count = 0
+  killed_pod = 0
+  marked_evictions = 0
   if not cliargs.no_measurement_phase:
     phase_break()
     logger.info("Measurement phase starting")
@@ -821,8 +851,8 @@ def main():
     measurement_expected_end_time = measurement_start_time + cliargs.duration
 
     logger.info("Measurement phase start: {}, end: {}, duration: {}".format(
-        round(measurement_start_time, 1),
-        round(measurement_expected_end_time, 1),
+        datetime.utcfromtimestamp(measurement_start_time),
+        datetime.utcfromtimestamp(measurement_expected_end_time),
         cliargs.duration))
 
     if len(netem_impairments):
@@ -883,8 +913,6 @@ def main():
     phase_break()
     ns_pattern = re.compile("jetlag-[0-9]+")
     eviction_pattern = re.compile("Marking for deletion Pod")
-    killed_pod = 0
-    marked_evictions = 0
     oc_cmd = ["oc", "get", "ev", "-A", "--field-selector", "reason=TaintManagerEviction", "-o", "json"]
     rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
     if rc != 0:
@@ -991,27 +1019,48 @@ def main():
     index_end_time = time.time()
     logger.info("Index phase complete")
 
-  # Dump timings on the test/workload
+  # Write results on the test/workload
+  end_time = time.time()
   phase_break()
   logger.info("Jetlag Workload Stats")
+
+  workload_duration = 0
+  measurement_duration = 0
+  cleanup_duration = 0
+  index_duration = 0
+
   if flap_links:
     logger.info("* Number of times links flapped down: {}".format(link_flap_count))
   if not cliargs.no_measurement_phase:
     logger.info("* Number of jetlag pods marked for deletion (TaintManagerEviction): {}".format(marked_evictions))
     logger.info("* Number of jetlag pods killed: {}".format(killed_pod))
   if not cliargs.no_workload_phase:
-    logger.info("Workload phase duration: {}".format(round(workload_end_time - workload_start_time, 1)))
+    workload_duration = round(workload_end_time - workload_start_time, 1)
+    logger.info("Workload phase duration: {}".format(workload_duration))
   if not cliargs.no_measurement_phase:
-    logger.info("Measurement phase duration: {}".format(round(measurement_end_time - measurement_start_time, 1)))
+    measurement_duration = round(measurement_end_time - measurement_start_time, 1)
+    logger.info("Measurement phase duration: {}".format(measurement_duration))
   if not cliargs.no_cleanup_phase:
-    logger.info("Cleanup phase duration: {}".format(round(cleanup_end_time - cleanup_start_time, 1)))
+    cleanup_duration = round(cleanup_end_time - cleanup_start_time, 1)
+    logger.info("Cleanup phase duration: {}".format(cleanup_duration))
   if not cliargs.no_index_phase:
-    logger.info("Index phase duration: {}".format(round(index_end_time - index_start_time, 1)))
-  total_time = time.time() - start_time
-  logger.info("Total duration: {}".format(round(total_time, 1)))
+    index_duration = round(index_end_time - index_start_time, 1)
+    logger.info("Index phase duration: {}".format(index_duration))
+  total_time = round(end_time - start_time, 1)
+  logger.info("Total duration: {}".format(total_time))
   if not cliargs.no_index_phase:
     logger.info("Workload UUID: {}".format(workload_UUID))
 
+  results = [start_time, end_time, datetime.utcfromtimestamp(start_time), datetime.utcfromtimestamp(end_time),
+      cliargs.csv_title, workload_UUID, workload_duration, measurement_duration, cleanup_duration, index_duration,
+      total_time, cliargs.namespaces, cliargs.deployments, cliargs.pods, cliargs.containers, cliargs.service,
+      cliargs.configmaps, cliargs.secrets, cliargs.container_image, cliargs.cpu_requests, cliargs.memory_requests,
+      cliargs.cpu_limits, cliargs.memory_limits, cliargs.startup_probe, cliargs.liveness_probe, cliargs.readiness_probe,
+      cliargs.shared_selectors, cliargs.unique_selectors, not cliargs.no_tolerations, cliargs.duration,
+      cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.latency, cliargs.packet_loss,
+      cliargs.bandwidth_limit, cliargs.link_flap_down, cliargs.link_flap_up, cliargs.link_flap_firewall,
+      cliargs.link_flap_network, index_prometheus_data, cliargs.dry_run, link_flap_count, marked_evictions, killed_pod]
+  write_csv_results(cliargs.csv_file, results)
 
 if __name__ == '__main__':
   sys.exit(main())
