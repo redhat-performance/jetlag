@@ -3,3 +3,5 @@ kubeconfig
 .vscode
 id_rsa
 id_rsa.pub
+*.csv
+workload/*.csv
