@@ -15,6 +15,7 @@
 
 import argparse
 import csv
+import dateutil.parser as date_parser
 from datetime import datetime
 from jinja2 import Template
 import json
@@ -503,7 +504,7 @@ def write_csv_results(result_file_name, results):
       "cpu limits", "memory limits", "startup probe", "liveness probe", "readiness probe", "shared selectors",
       "unique selectors", "tolerations", "duration", "interface", "start vlan", "end vlan", "latency", "packet loss",
       "bandwidth limit", "flap down", "flap up", "firewall", "network", "indexed", "dry run", "flapped down",
-      "TaintManagerEviction pods", "killed pods"]
+      "NodeNotReady node-controller", "NodeNotReady kubelet", "NodeReady", "TaintManagerEviction pods", "killed pods"]
 
   logger.info("Writing results to {}".format(result_file_name))
   write_header = False
@@ -840,6 +841,9 @@ def main():
     logger.info("Workload phase complete")
 
   # Measurement phase
+  nodenotready_node_controller_count = 0
+  nodenotready_kubelet_count = 0
+  nodeready_count = 0
   link_flap_count = 0
   killed_pod = 0
   marked_evictions = 0
@@ -907,9 +911,59 @@ def main():
     measurement_end_time = time.time()
     logger.info("Measurement phase complete")
 
+    # OpenShift by default keeps kubernetes events for 3 hours
+    # Thus measurement periods beyond 3 hours may not record correct counts for all events below
+    phase_break()
+    logger.info("Post measurement NodeNotReady/NodeReady count")
+    phase_break()
+    oc_cmd = ["oc", "get", "ev", "-n", "default", "--field-selector", "reason=NodeNotReady", "-o", "json"]
+    rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
+    if rc != 0:
+      logger.error("Jetlag workload, oc get ev rc: {}".format(rc))
+      sys.exit(1)
+    if not cliargs.dry_run:
+      json_data = json.loads(output)
+    else:
+      json_data = {'items': []}
+    for item in json_data['items']:
+      last_timestamp_unix = date_parser.parse(item['lastTimestamp']).timestamp()
+      logger.debug(
+          "Reviewing NodeNotReady event from {} which last occured {} / {}".format(item['source']['component'],
+          item['lastTimestamp'], last_timestamp_unix))
+      if last_timestamp_unix >= measurement_start_time:
+        if item['source']['component'] == "node-controller":
+          nodenotready_node_controller_count += 1
+        elif item['source']['component'] == "kubelet":
+          nodenotready_kubelet_count += 1
+        else:
+          logger.warning("NodeNotReady, Unrecognized component: {}".format(item['source']['component']))
+      else:
+        logger.debug("Event occured before measurement started")
+
+    oc_cmd = ["oc", "get", "ev", "-n", "default", "--field-selector", "reason=NodeReady", "-o", "json"]
+    rc, output = command(oc_cmd, cliargs.dry_run, no_log=True)
+    if rc != 0:
+      logger.error("Jetlag workload, oc get ev rc: {}".format(rc))
+      sys.exit(1)
+    if not cliargs.dry_run:
+      json_data = json.loads(output)
+    else:
+      json_data = {'items': []}
+    for item in json_data['items']:
+      last_timestamp_unix = date_parser.parse(item['lastTimestamp']).timestamp()
+      logger.debug(
+          "Reviewing NodeReady event which last occured {} / {}".format(item['lastTimestamp'], last_timestamp_unix))
+      if last_timestamp_unix >= measurement_start_time:
+        nodeready_count += 1
+      else:
+        logger.debug("Event occured before measurement started")
+    logger.info("NodeNotReady event count reported by node-controller: {}".format(nodenotready_node_controller_count))
+    logger.info("NodeNotReady event count reported by kubelet: {}".format(nodenotready_kubelet_count))
+    logger.info("NodeReady event count: {}".format(nodeready_count))
+
     # Check for pods evicted before cleanup
     phase_break()
-    logger.info("Post measurement pod eviction check")
+    logger.info("Post measurement pod eviction count")
     phase_break()
     ns_pattern = re.compile("jetlag-[0-9]+")
     eviction_pattern = re.compile("Marking for deletion Pod")
@@ -1032,6 +1086,9 @@ def main():
   if flap_links:
     logger.info("* Number of times links flapped down: {}".format(link_flap_count))
   if not cliargs.no_measurement_phase:
+    logger.info("* Number of NodeNotReady events reported by node-controller: {}".format(nodenotready_node_controller_count))
+    logger.info("* Number of NodeNotReady events reported by kubelet: {}".format(nodenotready_kubelet_count))
+    logger.info("* Number of NodeReady events: {}".format(nodeready_count))
     logger.info("* Number of jetlag pods marked for deletion (TaintManagerEviction): {}".format(marked_evictions))
     logger.info("* Number of jetlag pods killed: {}".format(killed_pod))
   if not cliargs.no_workload_phase:
@@ -1059,7 +1116,8 @@ def main():
       cliargs.shared_selectors, cliargs.unique_selectors, not cliargs.no_tolerations, cliargs.duration,
       cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.latency, cliargs.packet_loss,
       cliargs.bandwidth_limit, cliargs.link_flap_down, cliargs.link_flap_up, cliargs.link_flap_firewall,
-      cliargs.link_flap_network, index_prometheus_data, cliargs.dry_run, link_flap_count, marked_evictions, killed_pod]
+      cliargs.link_flap_network, index_prometheus_data, cliargs.dry_run, link_flap_count,
+      nodenotready_node_controller_count, nodenotready_kubelet_count, nodeready_count, marked_evictions, killed_pod]
   write_csv_results(cliargs.csv_file, results)
 
 if __name__ == '__main__':
