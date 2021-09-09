@@ -7,6 +7,12 @@
     - "{{ groups[inventory_group][:index|int] }}"
   when: hostvars[item]['vendor'] == 'Dell'
 
+- name: Boot iso on hp hardware
+  include_tasks: hp.yml
+  with_items:
+    - "{{ groups[inventory_group][:index|int] }}"
+  when: hostvars[item]['vendor'] == 'Hp'
+
 - name: Boot iso on Red Hat lab supermicro hardware
   include_tasks: supermicro.yml
   with_items:
