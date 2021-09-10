@@ -43,6 +43,7 @@
     return_content: true
     body_format: json
     body: {
+        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
         "ingress_vip": "{{ controlplane_network_ingress }}",
         "api_vip": "{{ controlplane_network_api }}"

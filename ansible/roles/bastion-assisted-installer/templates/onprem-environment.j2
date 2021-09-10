@@ -13,14 +13,19 @@ DUMMY_IGNITION=false
 
 {% if use_disconnected_registry | default(false) %}
 OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version_disconnected.content | b64decode }}
+OS_IMAGES={{ slurped_ai_os_images_disconnected.content | b64decode }}
+RELEASE_IMAGES={{ slurped_ai_release_images_disconnected.content | b64decode }}
 {% else %}
 OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version.content | b64decode }}
+OS_IMAGES={{ slurped_ai_os_images.content | b64decode }}
+RELEASE_IMAGES={{ slurped_ai_release_images.content | b64decode }}
 {% endif %}
 ENABLE_SINGLE_NODE_DNSMASQ=true
 PUBLIC_CONTAINER_REGISTRIES=quay.io
 NTP_DEFAULT_SERVER=
 IPV6_SUPPORT=true
 AUTH_TYPE=none
+HW_VALIDATOR_REQUIREMENTS=[{"version":"default","master":{"cpu_cores":4,"ram_mib":16384,"disk_size_gb":120,"installation_disk_speed_threshold_ms":10,"network_latency_threshold_ms":100,"packet_loss_percentage":0},"worker":{"cpu_cores":2,"ram_mib":8192,"disk_size_gb":120,"installation_disk_speed_threshold_ms":10,"network_latency_threshold_ms":1000,"packet_loss_percentage":10},"sno":{"cpu_cores":8,"ram_mib":32768,"disk_size_gb":120,"installation_disk_speed_threshold_ms":10}}]
 
 SKIP_CERT_VERIFICATION=true
 
