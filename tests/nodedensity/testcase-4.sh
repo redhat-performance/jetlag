@@ -7,7 +7,7 @@ sleep_period=120
 
 gohttp_env_vars="-e LISTEN_DELAY_SECONDS=0 LIVENESS_DELAY_SECONDS=0 READINESS_DELAY_SECONDS=0 RESPONSE_DELAY_MILLISECONDS=0 LIVENESS_SUCCESS_MAX=0 READINESS_SUCCESS_MAX=0"
 measurement="-D 180"
-csvfile="--csv-file tc4-$(date -u +%Y%m%d-%H%M%S).csv"
+csvfile="--csv-file tc4-$1-$(date -u +%Y%m%d-%H%M%S).csv"
 
 # Debug/Test entire Run
 # dryrun="--dry-run"
