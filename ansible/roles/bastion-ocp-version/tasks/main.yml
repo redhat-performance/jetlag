@@ -75,16 +75,34 @@
     url: "{{ ocp_version_rootfs_location.stdout }}"
     dest: "{{ http_store_path }}/data/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}"
 
-- name: Dump version json (non-disconnected)
+- name: Dump assisted-installer json configs (non-disconnected)
   copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+  when: setup_bastion | default(true)
+  loop:
+  - dest: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
     content: |
       {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ ocp_release_image }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
-    dest: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
-  when: setup_bastion | default(true)
+  - dest: "{{ ocp_version_path }}/assisted_service_os_images.json"
+    content: |
+      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}","rootfs_url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}","version":"{{ ocp_version_rhcos_version.stdout }}"}]
+  - dest: "{{ ocp_version_path }}/assisted_service_release_images.json"
+    content: |
+      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ ocp_release_image }}","version":"{{ ocp_version_display_name.stdout }}"}]
 
-- name: Dump version json (disconnected)
+- name: Dump assisted-installer json configs (disconnected)
   copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+  when: setup_bastion | default(true)
+  loop:
+  - dest: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
     content: |
       {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
-    dest: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
-  when: setup_bastion | default(true)
+  - dest: "{{ ocp_version_path }}/assisted_service_os_images-disconnected.json"
+    content: |
+      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}","rootfs_url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}","version":"{{ ocp_version_rhcos_version.stdout }}"}]
+  - dest: "{{ ocp_version_path }}/assisted_service_release_images-disconnected.json"
+    content: |
+      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}","version":"{{ ocp_version_display_name.stdout }}"}]

@@ -2,16 +2,40 @@
 # bastion-assisted-installer tasks
 
 # Read the version json off the bastion machine
-- name: Obtain version data for assisted-installer without disconnected registry
+- name: Obtain ocp_version data for assisted-installer without disconnected registry
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
   register: slurped_ai_ocp_version
   when: not (use_disconnected_registry | default(false))
 
-- name: Obtain version data for assisted-installer with disconnected registry
+- name: Obtain os_images data for assisted-installer without disconnected registry
+  slurp:
+    src: "{{ ocp_version_path }}/assisted_service_os_images.json"
+  register: slurped_ai_os_images
+  when: not (use_disconnected_registry | default(false))
+
+- name: Obtain release_images data for assisted-installer without disconnected registry
+  slurp:
+    src: "{{ ocp_version_path }}/assisted_service_release_images.json"
+  register: slurped_ai_release_images
+  when: not (use_disconnected_registry | default(false))
+
+- name: Obtain ocp_version data for assisted-installer with disconnected registry
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
   register: slurped_ai_ocp_version_disconnected
+  when: use_disconnected_registry | default(false)
+
+- name: Obtain os_images data for assisted-installer with disconnected registry
+  slurp:
+    src: "{{ ocp_version_path }}/assisted_service_os_images-disconnected.json"
+  register: slurped_ai_os_images_disconnected
+  when: use_disconnected_registry | default(false)
+
+- name: Obtain release_images data for assisted-installer with disconnected registry
+  slurp:
+    src: "{{ ocp_version_path }}/assisted_service_release_images-disconnected.json"
+  register: slurped_ai_release_images_disconnected
   when: use_disconnected_registry | default(false)
 
 - name: Ensure bastion machine is logged in to inspect image digest
