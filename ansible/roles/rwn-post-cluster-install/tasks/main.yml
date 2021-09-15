@@ -52,6 +52,21 @@
   retries: 60
   delay: 2
 
+- name: Clone performance-dashboards
+  git:
+    repo: https://github.com/cloud-bulldozer/performance-dashboards.git
+    dest: "{{ bastion_cluster_config_dir }}/performance-dashboards"
+    force: true
+    version: master
+
+- name: Deploy performance-dashboards
+  shell: |
+    export KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig
+    {{ bastion_cluster_config_dir }}/performance-dashboards/dittybopper/deploy.sh
+  args:
+    chdir: "{{ bastion_cluster_config_dir }}/performance-dashboards/dittybopper/"
+  when: setup_performance_dashboards | default(true) | bool
+
 - name: Deploy autorules
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/autorules/autorules.yml
