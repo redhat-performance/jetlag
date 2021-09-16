@@ -162,6 +162,7 @@ The jetlag workload creates objects in a hierarchy:
 * Namespaces
   * Deployments per namespace
     * 1 Service per deployment (if enabled)
+    * 1 Route per deployment (if enabled)
     * Pods per deployment
       * Containers per pod
 

@@ -108,6 +108,12 @@ jobs:
         ports: {{ containers }}
         starting_port: {{ starting_port }}
     {% endif %}
+    {% if route %}
+    - objectTemplate: workload-route.yml
+      replicas: {{ deployments }}
+      inputVars:
+        starting_port: {{ starting_port }}
+    {% endif %}
 """
 
 workload_delete = """---
@@ -139,6 +145,10 @@ jobs:
   - kind: Secret
     labelSelector: {kube-burner-job: jetlag}
     apiVersion: v1
+
+  - kind: Route
+    labelSelector: {kube-burner-job: jetlag}
+    apiVersion: route.openshift.io/v1
 
   - kind: Service
     labelSelector: {kube-burner-job: jetlag}
@@ -303,6 +313,18 @@ spec:
       port: {{ add 80 $element }}
       targetPort: {{ add $data.starting_port $element }}
     {{ end }}
+"""
+
+workload_route = """---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}
+spec:
+  tls:
+    termination: edge
+  to:
+    name: jetlag-{{ .Iteration }}-{{ .Replica }}-{{ .JobName }}
 """
 
 workload_configmap = """---
@@ -500,7 +522,7 @@ def phase_break():
 def write_csv_results(result_file_name, results):
   header = ["start ts", "end ts", "start time", "end time", "title", "workload uuid", "workload duration",
       "measurement duration", "cleanup duration", "index duration", "total duration", "namespaces", "deployments",
-      "pods", "containers", "services", "configmaps", "secrets", "image", "cpu requests", "memory requests",
+      "pods", "containers", "services", "routes", "configmaps", "secrets", "image", "cpu requests", "memory requests",
       "cpu limits", "memory limits", "startup probe", "liveness probe", "readiness probe", "shared selectors",
       "unique selectors", "tolerations", "duration", "interface", "start vlan", "end vlan", "latency", "packet loss",
       "bandwidth limit", "flap down", "flap up", "firewall", "network", "indexed", "dry run", "flapped down",
@@ -539,6 +561,7 @@ def main():
   parser.add_argument("-n", "--namespaces", type=int, default=1, help="Number of namespaces to create")
   parser.add_argument("-d", "--deployments", type=int, default=1, help="Number of deployments per namespace to create")
   parser.add_argument("-l", "--service", action="store_true", default=False, help="Include service per deployment")
+  parser.add_argument("-r", "--route", action="store_true", default=False, help="Include route per deployment")
   parser.add_argument("-p", "--pods", type=int, default=1, help="Number of pod replicas per deployment to create")
   parser.add_argument("-c", "--containers", type=int, default=1, help="Number of containers per pod replica to create")
 
@@ -728,6 +751,10 @@ def main():
       logger.info("  * 1 Service per deployment")
     else:
       logger.info("  * No Service per deployment")
+    if cliargs.route:
+      logger.info("  * 1 Route per deployment")
+    else:
+      logger.info("  * No Route per deployment")
     logger.info("  * {} Pod replica(s) per deployment".format(cliargs.pods))
     logger.info("  * {} Container(s) per pod replica".format(cliargs.containers))
     logger.info("  * {} ConfigMap(s) per deployment".format(cliargs.configmaps))
@@ -812,7 +839,8 @@ def main():
         unique_selectors=cliargs.unique_selectors,
         offset=cliargs.offset,
         tolerations=(not cliargs.no_tolerations),
-        service=cliargs.service)
+        service=cliargs.service,
+        route=cliargs.route)
 
     tmp_directory = tempfile.mkdtemp()
     logger.info("Created {}".format(tmp_directory))
@@ -825,6 +853,9 @@ def main():
     with open("{}/workload-service.yml".format(tmp_directory), "w") as file1:
       file1.writelines(workload_service)
     logger.info("Created {}/workload-service.yml".format(tmp_directory))
+    with open("{}/workload-route.yml".format(tmp_directory), "w") as file1:
+      file1.writelines(workload_route)
+    logger.info("Created {}/workload-route.yml".format(tmp_directory))
     with open("{}/workload-configmap.yml".format(tmp_directory), "w") as file1:
       file1.writelines(workload_configmap)
     logger.info("Created {}/workload-configmap.yml".format(tmp_directory))
@@ -1110,11 +1141,11 @@ def main():
 
   results = [start_time, end_time, datetime.utcfromtimestamp(start_time), datetime.utcfromtimestamp(end_time),
       cliargs.csv_title, workload_UUID, workload_duration, measurement_duration, cleanup_duration, index_duration,
-      total_time, cliargs.namespaces, cliargs.deployments, cliargs.pods, cliargs.containers, cliargs.service,
-      cliargs.configmaps, cliargs.secrets, cliargs.container_image, cliargs.cpu_requests, cliargs.memory_requests,
-      cliargs.cpu_limits, cliargs.memory_limits, cliargs.startup_probe, cliargs.liveness_probe, cliargs.readiness_probe,
-      cliargs.shared_selectors, cliargs.unique_selectors, not cliargs.no_tolerations, cliargs.duration,
-      cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.latency, cliargs.packet_loss,
+      total_time, cliargs.namespaces, cliargs.deployments, cliargs.pods, cliargs.containers, int(cliargs.service),
+      int(cliargs.route), cliargs.configmaps, cliargs.secrets, cliargs.container_image, cliargs.cpu_requests,
+      cliargs.memory_requests, cliargs.cpu_limits, cliargs.memory_limits, cliargs.startup_probe, cliargs.liveness_probe,
+      cliargs.readiness_probe, cliargs.shared_selectors, cliargs.unique_selectors, not cliargs.no_tolerations,
+      cliargs.duration, cliargs.interface, cliargs.start_vlan, cliargs.end_vlan, cliargs.latency, cliargs.packet_loss,
       cliargs.bandwidth_limit, cliargs.link_flap_down, cliargs.link_flap_up, cliargs.link_flap_firewall,
       cliargs.link_flap_network, index_prometheus_data, cliargs.dry_run, link_flap_count,
       nodenotready_node_controller_count, nodenotready_kubelet_count, nodeready_count, marked_evictions, killed_pod]
