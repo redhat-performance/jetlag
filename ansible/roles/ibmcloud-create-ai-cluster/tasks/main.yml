@@ -39,8 +39,13 @@
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
 - name: Include custom manifest
-  include_tasks: 01_manifest_update.yml
+  include_role:
+      name: create-ai-cluster
+      tasks_from: 01_manifest_update.yml
   with_items:
+  - file_name: kubeletconfig-max-pods.yml
+    template_name: kubeletconfig-max-pods.yml
+    enabled: "{{ kubelet_config }}"
   - file_name: rhacm-iscp.yml
     template_name: "rhacm-icsp.yml"
     enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
