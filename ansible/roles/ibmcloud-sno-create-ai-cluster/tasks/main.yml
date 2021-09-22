@@ -52,3 +52,9 @@
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} SNO CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'][:sno_node_count|int] }}"
+
+- name: Include custom manifests
+  include_tasks: 01_manifest_task.yml
+  with_items: "{{ ai_cluster_ids }}"
+  loop_control:
+    loop_var: outer_item
