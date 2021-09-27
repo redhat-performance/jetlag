@@ -38,7 +38,7 @@
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
-- name: Include custom manifest
+- name: Include custom manifests
   include_role:
       name: create-ai-cluster
       tasks_from: 01_manifest_update.yml

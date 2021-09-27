@@ -10,5 +10,3 @@ rhacm_add_acm_d_icsp_manifest: false
 
 # Manifest for KubeletConfig to adjust max pods
 kubelet_config: false
-kubelet_config_max_pods: 530
-kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/worker: ''"

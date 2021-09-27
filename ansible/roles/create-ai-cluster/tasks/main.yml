@@ -50,13 +50,16 @@
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
-- name: Include custom manifest
+- name: Include custom manifests
   include_tasks: 01_manifest_update.yml
   with_items:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
     template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
     template_name: "50-worker-disable-lab-dhcp-interface.yml.j2"
+  - file_name: kubeletconfig-max-pods.yml
+    template_name: kubeletconfig-max-pods.yml
+    enabled: "{{ kubelet_config }}"
   - file_name: rhacm-iscp.yml
     template_name: "rhacm-icsp.yml"
     enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"

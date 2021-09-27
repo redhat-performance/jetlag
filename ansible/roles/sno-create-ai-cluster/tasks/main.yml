@@ -74,10 +74,8 @@
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'][:sno_node_count|int] }}"
 
-- name: Include custom manifest
+- name: Include custom manifests
   include_tasks: 01_manifest_task.yml
   with_items: "{{ ai_cluster_ids }}"
   loop_control:
     loop_var: outer_item
-  when:
-    - public_vlan | bool
