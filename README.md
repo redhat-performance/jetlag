@@ -20,7 +20,6 @@ _**Table of Contents**_
 - [Troubleshooting](#troubleshooting)
 - [Disconnected API/Console Access](#disconnected-apiconsole-access)
 - [Hypervisor Network-Impairments](#hypervisor-network-impairments)
-- [Workload Usage](#workload-usage)
 <!-- /TOC -->
 
 ## Tested Labs/Hardware
@@ -151,4 +150,4 @@ See [hypervisor-network-impairments.md](docs/hypervisor-network-impairments.md) 
 
 ## Workload Usage
 
-Review README.md in [workload](workload) directory.
+The jetlag workload has moved into a new repo and renamed [boatload](https://github.com/akrzos/boatload).
