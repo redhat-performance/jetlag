@@ -75,6 +75,10 @@ ansible-galaxy collection install containers.podman
 pip3 install netaddr python-hpilo
 ```
 
+Pre-reqs for Supermicro hardware
+
+* [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo root and renamed `smcipmitool.tar.gz`
+
 ## Cluster Deployment Usage
 
 There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:

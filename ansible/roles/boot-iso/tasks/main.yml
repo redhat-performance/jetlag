@@ -13,21 +13,11 @@
     - "{{ groups[inventory_group][:index|int] }}"
   when: hostvars[item]['vendor'] == 'Hp'
 
-- name: Boot iso on Red Hat lab supermicro hardware
+- name: Boot iso on supermicro hardware
   include_tasks: supermicro.yml
   with_items:
     - "{{ groups[inventory_group][:index|int] }}"
-  when:
-  - hostvars[item]['vendor'] == 'Supermicro'
-  - lab in rh_labs
-
-- name: Boot iso on ibmcloud supermicro hardware
-  include_tasks: ibmcloud-supermicro.yml
-  with_items:
-    - "{{ groups[inventory_group][:index|int] }}"
-  when:
-  - hostvars[item]['vendor'] == 'Supermicro'
-  - lab in cloud_labs
+  when: hostvars[item]['vendor'] == 'Supermicro'
 
 - name: Boot iso on lenovo hardware
   include_tasks: lenovo.yml
