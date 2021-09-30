@@ -16,3 +16,7 @@ disconnected_registry_port: 5000
 # Enable with disconnected in order to download image to bastion and serve via
 # bastion http_store such that metal3 pods run
 fix_metal3_provisioningosdownloadurl: false
+
+# Migrate the ingresscontrollers to the master nodes, used during nodedensity
+# testing to ensure router is always accessible
+migrate_ingresscontrollers: false
