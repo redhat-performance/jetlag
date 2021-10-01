@@ -5,6 +5,65 @@ metadata:
   namespace: openshift-monitoring
 data:
   config.yaml: |+
+{% if migrate_monitoring %}
+    prometheusOperator:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    prometheusK8s:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    alertmanagerMain:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    kubeStateMetrics:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    openshiftStateMetrics:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    grafana:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    telemeterClient:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    k8sPrometheusAdapter:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+    thanosQuerier:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
+{% else %}
+    prometheusOperator:
+      nodeSelector:
+        prometheus: "true"
     prometheusK8s:
       nodeSelector:
         prometheus: "true"
@@ -20,21 +79,22 @@ data:
     alertmanagerMain:
       nodeSelector:
         prometheus: "true"
-    prometheusOperator:
-      nodeSelector:
-        prometheus: "true"
-    grafana:
-      nodeSelector:
-        prometheus: "true"
-    k8sPrometheusAdapter:
-      nodeSelector:
-        prometheus: "true"
     kubeStateMetrics:
-      nodeSelector:
-        prometheus: "true"
-    telemeterClient:
       nodeSelector:
         prometheus: "true"
     openshiftStateMetrics:
       nodeSelector:
         prometheus: "true"
+    grafana:
+      nodeSelector:
+        prometheus: "true"
+    telemeterClient:
+      nodeSelector:
+        prometheus: "true"
+    k8sPrometheusAdapter:
+      nodeSelector:
+        prometheus: "true"
+    thanosQuerier:
+      nodeSelector:
+        prometheus: "true"
+{% endif %}

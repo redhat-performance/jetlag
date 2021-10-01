@@ -17,6 +17,7 @@ disconnected_registry_port: 5000
 # bastion http_store such that metal3 pods run
 fix_metal3_provisioningosdownloadurl: false
 
-# Migrate the ingresscontrollers to the master nodes, used during nodedensity
-# testing to ensure router is always accessible
+# Migrate the ingresscontrollers and/or monitoring components to the master nodes
+# Used during nodedensity testing to ensure these things are more available
 migrate_ingresscontrollers: false
+migrate_monitoring: false

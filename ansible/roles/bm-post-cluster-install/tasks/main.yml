@@ -116,11 +116,12 @@
     retries: 450
     delay: 2
 
-  - name: Configure OpenShift-Monitoring Prometheus to use localstorage
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
-
 - name: Migrate ingresscontrollers (OpenShift Router) to master nodes
   when: migrate_ingresscontrollers | bool
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch ingresscontrollers/default --type merge -n openshift-ingress-operator -p '{"spec": {"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/master": "" }}, "tolerations": [{"effect": "NoSchedule", "key": "node-role.kubernetes.io/master"}]} }}'
+
+- name: Apply OpenShift-Monitoring configuration options
+  when: migrate_monitoring or worker_localstorage_configuration
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
