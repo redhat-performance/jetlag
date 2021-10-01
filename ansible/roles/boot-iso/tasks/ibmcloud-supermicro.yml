@@ -21,6 +21,10 @@
   shell: |
     SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} ipmi power bootoption 8
 
+- name: Supermicro - Pause to allow machine to completely power off before powering on
+  pause:
+    seconds: 10
+
 - name: SuperMicro - Power on
   community.general.redfish_command:
     category: Systems
