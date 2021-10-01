@@ -5,4 +5,4 @@
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 
-check_cluster_pause_seconds: 10
+check_cluster_pause_seconds: 20
