@@ -165,7 +165,7 @@ bastion_public_interface: bond1
 bastion_private_interfaces:
 - bond0
 - int0
-- int1
+- int2
 
 dns_servers:
 - X.X.X.X
