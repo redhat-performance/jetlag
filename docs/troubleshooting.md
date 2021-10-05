@@ -147,17 +147,23 @@ Reboot afterwards and start from the `create-inventory.yml` playbook.
 
 ## SuperMicro - Reset BMC / Resolving redfish connection error
 
-```
-Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The read operation timed out'"
-```
-
-In that case, if it normally works, it can be helpful to reset the baseboard management controller with:
+In some cases, issues during a deployment can be the result of a bmc issue. To reset a Supermicro bmc use `ipmitool` with the following example:
 
 ```console
 ipmitool -I lanplus -H mgmt-computer.example.com -U user -P password mc reset cold
 ```
 
-If that fails, verify that the server supports the redfish API.
+The following example errors can be corrected after resetting the bmc of the problematic machines.
+
+```console
+TASK [boot-iso : SuperMicro - Mount ISO] *****************************************************************************************************************************************************
+Tuesday 05 October 2021  12:20:23 -0500 (0:00:01.256)       0:01:10.117 *******
+fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x root xxxxxxxxx wsiso mount \"http://x.x.x.x:8081\" /iso/discovery.iso\n", "delta": "0:00:00.903331", "end": "2021-10-05 12:20:24.841290", "msg": "non-zero return code", "rc": 204, "start": "2021-10-05 12:20:23.937959", "stderr": "", "stderr_lines": [], "stdout": "An ISO file already mounted. Please umount ISO first", "stdout_lines": ["An ISO file already mounted. Please umount ISO first"]}
+```
+
+```
+Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The read operation timed out'"
+```
 
 ## Supermicro - The node product key needs to be activated for this device
 
