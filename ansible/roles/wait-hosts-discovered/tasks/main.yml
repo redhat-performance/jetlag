@@ -49,6 +49,25 @@
         "api_vip": "{{ controlplane_network_api }}"
     }
 
+- name: Wait for cluster to be ready
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: true
+  register: cluster
+  until: "cluster.json.status == 'ready'"
+  retries: 240
+  delay: 5
+
+- name: Set install disk for control-plane nodes
+  include_tasks: set_node_install_disk.yml
+  vars:
+    bm_control_plane_install_disk: /dev/sda
+  loop: "{{ cluster.json.hosts | selectattr('role', 'eq', 'master') }}"
+  loop_control:
+    loop_var: bm_node
+
 - name: Wait for cluster to be ready for install
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"

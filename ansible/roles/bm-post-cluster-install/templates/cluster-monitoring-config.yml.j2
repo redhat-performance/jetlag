@@ -64,9 +64,15 @@ data:
     prometheusOperator:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     prometheusK8s:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
       retention: {{ prometheus_retention_period }}
       volumeClaimTemplate:
         metadata:
@@ -79,22 +85,43 @@ data:
     alertmanagerMain:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     kubeStateMetrics:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     openshiftStateMetrics:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     grafana:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     telemeterClient:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     k8sPrometheusAdapter:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
     thanosQuerier:
       nodeSelector:
         prometheus: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: "node-role.kubernetes.io/master"
 {% endif %}
