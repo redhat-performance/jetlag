@@ -12,6 +12,9 @@ spec:
         operator: In
         values:
         - "true"
+  tolerations:
+  - effect: NoSchedule
+    key: "node-role.kubernetes.io/master"
   storageClassDevices:
   - storageClassName: "localstorage-sc"
     volumeMode: Filesystem

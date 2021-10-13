@@ -1,0 +1,35 @@
+---
+# Set install disk per bare-metal host
+
+# - debug:
+#     msg: "{{ item }}"
+#   loop:
+#     - "Host ID: {{ bm_node.id }}"
+#     - "Current Install Disk: {{ bm_node.installation_disk_path }}"
+#     - "Future Install Disk: {{ bm_control_plane_install_disk }}"
+
+- name: Adjust selected install disk
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: PATCH
+    status_code: [201]
+    return_content: true
+    body_format: json
+    body: {
+        "disks_selected_config": [
+          {
+            "id": "{{ bm_node.id }}",
+            "disks_config": [
+              {
+                "id": "{{ bm_control_plane_install_disk }}",
+                "role": "install"
+              },
+              {
+                "id": "{{ bm_node.installation_disk_path }}",
+                "role": "none"
+              }
+            ]
+          }
+        ]
+    }
+  when: bm_node.installation_disk_path != bm_control_plane_install_disk

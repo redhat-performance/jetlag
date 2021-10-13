@@ -5,6 +5,23 @@ metadata:
   annontations:
     openshift.io/node-selector: ''
   name: openshift-local-storage
+{% if openshift_version == "4.9" %}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-operators-4-8
+  namespace: openshift-marketplace
+spec:
+  displayName: Red Hat Operators 4.8
+  image: registry.redhat.io/redhat/redhat-operator-index:v4.8
+  priority: -100
+  publisher: Red Hat
+  sourceType: grpc
+  updateStrategy:
+    registryPoll:
+      interval: 10m0s
+{% endif %}
 ---
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
@@ -21,12 +38,16 @@ metadata:
   name: local-storage-operator
   namespace: openshift-local-storage
 spec:
-  channel: "{{ openshift_version }}"
   installPlanApproval: Automatic
   name: local-storage-operator
 {% if use_disconnected_registry | default(false) %}
-  source:  {{ operator_index_name }}
+  channel: "{{ openshift_version }}"
+  source: {{ operator_index_name }}
+{% elif openshift_version == "4.9" %}
+  channel: "4.8"
+  source: redhat-operators-4-8
 {% else %}
+  channel: "{{ openshift_version }}"
   source: redhat-operators
 {% endif %}
   sourceNamespace: openshift-marketplace
