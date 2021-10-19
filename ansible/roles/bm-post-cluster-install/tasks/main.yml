@@ -40,6 +40,7 @@
     dest: "{{ bastion_cluster_config_dir }}/performance-dashboards"
     force: true
     version: master
+  when: setup_performance_dashboards | bool
 
 - name: Deploy performance-dashboards
   shell: |
@@ -47,7 +48,7 @@
     {{ bastion_cluster_config_dir }}/performance-dashboards/dittybopper/deploy.sh
   args:
     chdir: "{{ bastion_cluster_config_dir }}/performance-dashboards/dittybopper/"
-  when: setup_performance_dashboards | default(true) | bool
+  when: setup_performance_dashboards | bool
 
 - name: Add kube-burner sa
   shell: |
