@@ -37,7 +37,7 @@
     status_code: [201]
     return_content: true
     body: { "config": "{{ lookup('template', 'controlplane.ign.j2') | to_json }}" }
-  with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'master') }}"
+  with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'master') | list }}"
   when: (controlplane_etcd_on_nvme or controlplane_localstorage_configuration)
 
 - name: Apply worker host ignition config overrides
@@ -48,7 +48,7 @@
     status_code: [201]
     return_content: true
     body: { "config": "{{ lookup('template', 'worker.ign.j2') | to_json }}" }
-  with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'worker') }}"
+  with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'worker') | list }}"
   when: worker_localstorage_configuration
 
 - name: Install cluster
