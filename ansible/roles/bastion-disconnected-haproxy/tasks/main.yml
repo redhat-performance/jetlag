@@ -1,6 +1,11 @@
 ---
 # bastion-disconnected-haproxy tasks
 
+- name: Create directory for syncing acm-d
+  file:
+    path: /etc/haproxy
+    state: directory
+
 - name: Configure haproxy
   template:
     src: haproxy.cfg.j2

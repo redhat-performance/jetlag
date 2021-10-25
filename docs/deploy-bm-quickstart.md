@@ -64,7 +64,7 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` if you desire to limit the number of worker nodes from your scale lab allocation.
 
-Change `ocp_release_image` to the desired image if the default (4.8.13) is not the desired version.
+Change `ocp_release_image` to the desired image if the default (4.9.1) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.9`), then change `openshift_version` accordingly.
 
 Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
@@ -100,6 +100,12 @@ bastion_lab_interface: eno1np0
 bastion_controlplane_interface: ens1f0
 ```
 
+Dell r650
+```yaml
+bastion_lab_interface: eno12399np0
+bastion_controlplane_interface: ens1f0
+```
+
 Supermicro 1029p
 ```yaml
 bastion_lab_interface: eno1
@@ -121,20 +127,26 @@ For example if your Bare Metal OpenShift systems are ...
 
 Dell fc640
 ```yaml
-bastion_lab_interface: eno1
-bastion_controlplane_interface: eno2
+controlplane_lab_interface: eno1
+controlplane_network_interface: eno2
 ```
 
 Dell r640
 ```yaml
-bastion_lab_interface: eno1np0
-bastion_controlplane_interface: ens1f0
+controlplane_lab_interface: eno1np0
+controlplane_network_interface: ens1f0
+```
+
+Dell r650
+```yaml
+controlplane_lab_interface: eno12399np0
+controlplane_network_interface: ens1f0
 ```
 
 Supermicro 1029p
 ```yaml
-bastion_lab_interface: eno1
-bastion_controlplane_interface: ens2f0
+controlplane_lab_interface: eno1
+controlplane_network_interface: ens2f0
 ```
 
 For the guide we set our values for the Supermicro 1029p.
@@ -199,10 +211,10 @@ public_vlan: false
 # Versions are controlled by this release image. If you want to change images
 # you must rerun the setup-bastion step in order to setup your bastion's
 # assisted-installer to the version you desire
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.8.13-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.9.1-x86_64
 
-# This should just match the above release image version (Ex: 4.8)
-openshift_version: "4.8"
+# This should just match the above release image version (Ex: 4.9)
+openshift_version: "4.9"
 
 # List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
 networktype:
