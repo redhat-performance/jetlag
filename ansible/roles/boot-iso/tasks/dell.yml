@@ -104,6 +104,12 @@
           - DVD
         resource_id: iDRAC.Embedded.1
 
+    # If run directly from bastion, tasks can complete faster and thus the machine might need more time to power on.
+    # This causes the subsequent task to fail since you can not restart something that is not on
+    - name: Dell - Pause for power up to complete
+      pause:
+        seconds: 10
+
     - name: DELL - Restart system power gracefully
       community.general.redfish_command:
         category: Systems
