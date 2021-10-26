@@ -69,11 +69,16 @@
     nmcli d show {{ bastion_controlplane_interface }} | grep "GENERAL.CONNECTION:" | sed 's/GENERAL.CONNECTION://g' | xargs
   register: cp_int_nmcli
 
+- name: Display NetworkManager connection name for bastion control-plane interface
+  debug:
+    msg: "{{ cp_int_nmcli.stdout }}"
+
 - name: Disable original bastion control-plane connection to allow reconfiguration
   nmcli:
     type: ethernet
     conn_name: "{{ cp_int_nmcli.stdout }}"
     state: absent
+  when: cp_int_nmcli.stdout != bastion_controlplane_interface
 
 - name: Setup bastion on control-plane network (ipv4)
   nmcli:
