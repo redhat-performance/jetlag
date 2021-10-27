@@ -28,3 +28,9 @@
   when:
   - hostvars[item]['vendor'] == 'Supermicro'
   - lab in cloud_labs
+
+- name: Boot iso on lenovo hardware
+  include_tasks: lenovo.yml
+  with_items:
+    - "{{ groups[inventory_group][:index|int] }}"
+  when: hostvars[item]['vendor'] == 'lenovo'

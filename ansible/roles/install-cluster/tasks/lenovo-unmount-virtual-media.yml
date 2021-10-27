@@ -1,0 +1,32 @@
+---
+# lenovo-unmount-virtual-media tasks
+
+- name: Lenovo - Power off
+  community.general.redfish_command:
+    category: Systems
+    command: PowerForceOff
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
+
+- name: Eject all Virtual Media
+  community.general.xcc_redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
+    resource_id: "1"
+
+- name: Pause to allow machine to completely power off
+  pause:
+    seconds: 10
+
+- name: Lenovo - Power on
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
+
