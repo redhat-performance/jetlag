@@ -1,5 +1,5 @@
 ---
-# lenovo-unmount-virtual-media tasks
+# Lenovo-unmount-virtual-media tasks
 
 - name: Lenovo - Power off
   community.general.redfish_command:
