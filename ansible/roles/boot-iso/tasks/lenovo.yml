@@ -1,0 +1,41 @@
+---
+# Lenovo tasks for booting an iso
+
+- name: Lenovo - Power off
+  community.general.redfish_command:
+    category: Systems
+    command: PowerForceOff
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+
+- name: Eject all Virtual Media
+  community.general.xcc_redfish_command:
+    category: Manager
+    command: VirtualMediaEject
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    resource_id: "1"
+
+- name: Insert Virtual Media
+  community.general.xcc_redfish_command:
+    category: Manager
+    command: VirtualMediaInsert
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    virtual_media:
+      image_url: "http://{{ http_store_host }}:{{ http_store_port }}/iso/{{ hostvars[item]['boot_iso'] }}"
+      media_types:
+        - CD
+        - DVD
+    resource_id: "1"
+
+- name: Lenovo - Power on
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ hostvars[item]['bmc_address'] }}"
+    username: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"

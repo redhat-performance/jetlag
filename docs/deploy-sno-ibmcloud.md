@@ -6,6 +6,8 @@ To deploy Single Node OpenShift (SNO) clusters on IBMcloud hardware you can simp
 
 Change `cluster_type` to `cluster_type: sno`
 
+Provide your `hardware_vendor`. Currently supported vendors are 'Supermicro' and 'Lenovo'. For Example 'hardware_vendor: Lenovo'
+
 Change `sno_node_count` to the number of SNOs that should be provisioned. For Example `sno_node_count: 2`
 
 Change `private_network_cidr` to the network cidr for the private network of your hardware. For Example `private_network_cidr: X.X.X.0/26`
