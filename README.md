@@ -42,9 +42,11 @@ _**Table of Contents**_
 
 **IBMcloud**
 
-| Hardware           | BM  | SNO |
-| ------------------ | --- | --- |
-| Supermicro E5-2620 | Yes | Yes |
+| Hardware                 | BM  | SNO |
+| -------------------------| --- | --- |
+| Supermicro E5-2620       | Yes | Yes |
+| Lenovo ThinkSystem SR630 | No  | Yes |
+
 
 ## Prerequisites
 

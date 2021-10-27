@@ -33,4 +33,4 @@
   include_tasks: lenovo.yml
   with_items:
     - "{{ groups[inventory_group][:index|int] }}"
-  when: hostvars[item]['vendor'] == 'lenovo'
+  when: hostvars[item]['vendor'] == 'Lenovo'

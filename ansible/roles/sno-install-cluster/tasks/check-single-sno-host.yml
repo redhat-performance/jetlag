@@ -17,7 +17,7 @@
   loop: "{{ cluster_hosts.json| selectattr('status', 'eq', 'installing-pending-user-action') }}"
   when:
   - item.requested_hostname not in boot_order_fixed_hosts
-  - hostvars[item.requested_hostname]['vendor'] == 'lenovo'
+  - hostvars[item.requested_hostname]['vendor'] == 'Lenovo'
 
 - name: Append host with unmounted virtual media to boot order fixed hosts list
   set_fact:
