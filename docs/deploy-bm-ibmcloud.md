@@ -73,12 +73,12 @@ Change `lab` to `lab: ibmcloud`
 
 Change `cluster_type` to `cluster_type: bm`
 
-Set `hardware_vendor` to the hardware vendor expected. In our case it has been Supermicro, however it could be different depending on the hardware supplied.  **At the current moment this var is actually not used since there is a license issue with the bare metal servers supplied.**
+Set `hardware_vendor` to the hardware vendor expected. In our case it has been Supermicro, however it could be different depending on the hardware supplied.
 
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
 Change `ocp_release_image` to the required image if the default (4.9.1) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.9`), then change `openshift_version` accordingly.
+If you change `ocp_release_image` to a different major version (Ex `4.10`), then change `openshift_version` accordingly.
 
 Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
 
