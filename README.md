@@ -57,6 +57,8 @@ Versions:
 * RHEL 8.4 / Centos 8.4 (Bastion)
 * podman 3 (Bastion)
 
+For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
+
 Pre-reqs for the playbooks:
 
 ```console

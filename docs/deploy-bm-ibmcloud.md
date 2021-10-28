@@ -1,6 +1,8 @@
 # Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart
 
-To deploy a bare metal OpenShift cluster, order 6 machines from the [IBM bare metal server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm). The machines used to test this are of Server profile E5-2620 in DAL10 datacenter with automatic port redundancy. One machine will become the bastion, 3 machines will become control-plane nodes, and the remaining 2 nodes will be worker nodes. Ensure that you order either CentOS or RHEL machines with a new enough version (8.4) otherwise podman will not have host networking functionality. The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. The other machines can have a public ip address but it is not currently in use with this deployment method.
+To deploy a bare metal OpenShift cluster, order 6 machines from the [IBM bare metal server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm). 
+For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
+The machines used to test this are of Server profile E5-2620 in DAL10 datacenter with automatic port redundancy. One machine will become the bastion, 3 machines will become control-plane nodes, and the remaining 2 nodes will be worker nodes. Ensure that you order either CentOS or RHEL machines with a new enough version (8.4) otherwise podman will not have host networking functionality. The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. The other machines can have a public ip address but it is not currently in use with this deployment method.
 
 Once your machines are delivered, login to the ibmcloud cli using the cut and paste link from the cloud portal. You should be able to list the machines from your local machine, for example:
 
