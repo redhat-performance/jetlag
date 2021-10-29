@@ -1,0 +1,23 @@
+---
+- name: Assure bash-completion is installed
+  dnf:
+    name: bash-completion
+    state: present
+    update_cache: true
+  become: true
+
+- name: Set the oc bash completion filename var
+  set_fact:
+    oc_bash_completion_path: /etc/bash_completion.d/oc
+
+- name: Check if oc bash completion file exists
+  stat:
+    path: "{{ oc_bash_completion_path }}"
+  register: oc_bash_completion_file
+  become: true
+
+- name: Generate the oc bash completion file
+  shell: |
+    oc completion bash > /etc/bash_completion.d/oc
+  become: true
+  when: not oc_bash_completion_file.stat.exists
