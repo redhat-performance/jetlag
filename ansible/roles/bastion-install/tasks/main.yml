@@ -14,6 +14,7 @@
     - git
     - httpd
     - httpd-tools
+    - ipmitool
     - iproute-tc
     - jq
     - net-tools
