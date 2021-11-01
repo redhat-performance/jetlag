@@ -45,6 +45,14 @@
     {{ ocp_version_path }}/oc version -o json | jq -r .releaseClientVersion
   register: ocp_version_display_name
 
+- name: Identify current shell
+  set_fact:
+     current_shell: "{{ lookup('env','SHELL') }}"
+
+- name: Enable bash completion for oc
+  include_tasks: bash-completion.yml
+  when: "'bash' in current_shell"
+
 - name: Get rhcos version
   shell: |
     {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.release
