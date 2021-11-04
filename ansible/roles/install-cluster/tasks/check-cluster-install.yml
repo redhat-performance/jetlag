@@ -39,13 +39,21 @@
     register: get_hosts
     when: not cluster.json.status == 'installed'
 
-  - name: Fix hosts with incorrect boot order by unmounting virtual media
+  - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
     include_tasks: supermicro-unmount-virtual-media.yml
     loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
     when:
     - not cluster.json.status == 'installed'
     - item.requested_hostname not in boot_order_fixed_hosts
     - hostvars[item.requested_hostname]['vendor'] == 'Supermicro'
+
+  - name: Lenovo Fix hosts with incorrect boot order by unmounting virtual media
+    include_tasks: lenovo-unmount-virtual-media.yml
+    loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
+    when:
+    - not cluster.json.status == 'installed'
+    - item.requested_hostname not in boot_order_fixed_hosts
+    - hostvars[item.requested_hostname]['vendor'] == 'Lenovo'
 
   - name: Append host with unmounted virtual media to boot order fixed hosts list
     set_fact:

@@ -45,7 +45,7 @@ _**Table of Contents**_
 | Hardware                 | BM  | SNO |
 | -------------------------| --- | --- |
 | Supermicro E5-2620       | Yes | Yes |
-| Lenovo ThinkSystem SR630 | No  | Yes |
+| Lenovo ThinkSystem SR630 | Yes | Yes |
 
 
 ## Prerequisites
