@@ -43,9 +43,12 @@
       name: create-ai-cluster
       tasks_from: 01_manifest_update.yml
   with_items:
+  - file_name: 99-master-kdump.yml
+    template_name: 99-master-kdump.yml
+    enabled: "{{ kdump_master_config }}"
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
   - file_name: rhacm-iscp.yml
-    template_name: "rhacm-icsp.yml"
+    template_name: rhacm-icsp.yml
     enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
