@@ -110,6 +110,18 @@
       ibm_hardware_detail_cp1_json: "{{ ibm_hardware_detail_cp1.stdout | from_json }}"
       ibm_hardware_detail_cp2_json: "{{ ibm_hardware_detail_cp2.stdout | from_json }}"
 
+  - name: BM - Get hardware chassis name for control-plane nodes
+    set_fact:
+     cp0_hardware_chassis: "{{ ibm_hardware_detail_cp0_json.hardwareChassis.name }}"
+     cp1_hardware_chassis: "{{ ibm_hardware_detail_cp1_json.hardwareChassis.name }}"
+     cp2_hardware_chassis: "{{ ibm_hardware_detail_cp2_json.hardwareChassis.name }}"
+
+  - name: BM - Get hardware vendor for control-plane nodes
+    set_fact:
+     cp0_hardware_vendor: "{{ 'Supermicro' if cp0_hardware_chassis.find('SM') != -1 else 'Lenovo' }}"
+     cp1_hardware_vendor: "{{ 'Supermicro' if cp1_hardware_chassis.find('SM') != -1 else 'Lenovo' }}"
+     cp2_hardware_vendor: "{{ 'Supermicro' if cp2_hardware_chassis.find('SM') != -1 else 'Lenovo' }}"
+
   - name: BM - Set max number of nodes
     set_fact:
       max_nodes: "{{ ibm_hardware_list_json|length }}"
