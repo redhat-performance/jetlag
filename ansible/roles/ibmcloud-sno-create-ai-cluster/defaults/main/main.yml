@@ -7,3 +7,6 @@ assisted_installer_port: 8090
 
 # Manifest for KubeletConfig to adjust max pods
 kubelet_config: false
+
+# Manifest for MachineConfig to enable kdump on master nodes
+kdump_master_config: false

@@ -10,3 +10,6 @@ rhacm_add_acm_d_icsp_manifest: false
 
 # Manifest for KubeletConfig to adjust max pods
 kubelet_config: false
+
+# Manifest for MachineConfig to enable kdump on master nodes
+kdump_master_config: false

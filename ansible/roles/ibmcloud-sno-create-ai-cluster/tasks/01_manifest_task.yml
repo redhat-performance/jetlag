@@ -5,6 +5,9 @@
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
+  - file_name: 99-master-kdump.yml
+    template_name: 99-master-kdump.yml
+    enabled: "{{ kdump_master_config }}"
   vars:
     ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"
     kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"

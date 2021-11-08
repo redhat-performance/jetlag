@@ -1,0 +1,28 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 99-master-kdump
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+      - contents:
+          source: data:,path%20%2Fvar%2Fcrash%0Acore_collector%20makedumpfile%20-l%20--message-level%207%20-d%2031%0A
+        mode: 420
+        overwrite: true
+        path: /etc/kdump.conf
+      - contents:
+          source: data:,KDUMP_COMMANDLINE_REMOVE%3D%22hugepages%20hugepagesz%20slub_debug%20quiet%20log_buf_len%20swiotlb%22%0AKDUMP_COMMANDLINE_APPEND%3D%22irqpoll%20nr_cpus%3D1%20reset_devices%20cgroup_disable%3Dmemory%20mce%3Doff%20numa%3Doff%20udev.children-max%3D2%20panic%3D10%20rootflags%3Dnofail%20acpi_no_memhotplug%20transparent_hugepage%3Dnever%20nokaslr%20novmcoredd%20hest_disable%22%0AKEXEC_ARGS%3D%22-s%22%0AKDUMP_IMG%3D%22vmlinuz%22%0A
+        mode: 420
+        overwrite: true
+        path: /etc/sysconfig/kdump
+    systemd:
+      units:
+      - enabled: true
+        name: kdump.service
+  kernelArguments:
+  - crashkernel=256M

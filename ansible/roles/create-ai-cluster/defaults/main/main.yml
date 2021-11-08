@@ -12,3 +12,6 @@ rhacm_add_acm_d_icsp_manifest: false
 kubelet_config: false
 kubelet_config_max_pods: 530
 kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/worker: ''"
+
+# Manifest for MachineConfig to enable kdump on master nodes
+kdump_master_config: false
