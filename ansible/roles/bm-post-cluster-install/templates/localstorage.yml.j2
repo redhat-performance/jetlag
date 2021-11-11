@@ -5,7 +5,7 @@ metadata:
   annontations:
     openshift.io/node-selector: ''
   name: openshift-local-storage
-{% if openshift_version == "4.9" and not use_disconnected_registry %}
+{% if openshift_version == "4.9" and not use_disconnected_registry | default(false) %}
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
