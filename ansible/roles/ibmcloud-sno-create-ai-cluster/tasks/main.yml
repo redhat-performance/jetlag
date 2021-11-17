@@ -46,12 +46,19 @@
     backup: true
     block: |
       {{ hostvars[item].private_address }} api.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].private_address }} api-int.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
       {% for route in etc_hosts_ingress_routes %}
       {{ hostvars[item].private_address }} {{ route }}.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
       {% endfor %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} SNO CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'][:sno_node_count|int] }}"
+
+- name: Restart dnsmasq after /etc/hosts update
+  systemd:
+    state: restarted
+    name: dnsmasq
+  when: controlplane_bastion_as_dns
 
 - name: Include custom manifests
   include_tasks: 01_manifest_task.yml
