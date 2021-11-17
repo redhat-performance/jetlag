@@ -79,7 +79,7 @@ Set `hardware_vendor` to the hardware vendor expected. In our case it has been S
 
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
-Change `ocp_release_image` to the required image if the default (4.9.1) is not the desired version.
+Change `ocp_release_image` to the required image if the default (4.9.7) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.10`), then change `openshift_version` accordingly.
 
 Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
@@ -144,7 +144,7 @@ sno_node_count:
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.9.1-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.9.7-x86_64
 
 # This should just match the above release image version (Ex: 4.9)
 openshift_version: "4.9"
