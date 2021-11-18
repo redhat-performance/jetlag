@@ -58,10 +58,37 @@
   - name: Append host with unmounted virtual media to boot order fixed hosts list
     set_fact:
       boot_order_fixed_hosts: "{{ boot_order_fixed_hosts + [item.requested_hostname] }}"
+    loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
     when:
     - not cluster.json.status == 'installed'
     - item.requested_hostname not in boot_order_fixed_hosts
-    loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
+
+  - name: Unmount virtual media from machines in status error
+    when: unmount_virtual_media_on_error
+    block:
+    - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
+      include_tasks: supermicro-unmount-virtual-media.yml
+      loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      when:
+      - not cluster.json.status == 'installed'
+      - item.requested_hostname not in boot_order_fixed_hosts
+      - hostvars[item.requested_hostname]['vendor'] == 'Supermicro'
+
+    - name: Lenovo Fix hosts with incorrect boot order by unmounting virtual media
+      include_tasks: lenovo-unmount-virtual-media.yml
+      loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      when:
+      - not cluster.json.status == 'installed'
+      - item.requested_hostname not in boot_order_fixed_hosts
+      - hostvars[item.requested_hostname]['vendor'] == 'Lenovo'
+
+    - name: Append host with unmounted virtual media to boot order fixed hosts list
+      set_fact:
+        boot_order_fixed_hosts: "{{ boot_order_fixed_hosts + [item.requested_hostname] }}"
+      loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      when:
+      - not cluster.json.status == 'installed'
+      - item.requested_hostname not in boot_order_fixed_hosts
 
   - name: Pause during loop
     pause:
