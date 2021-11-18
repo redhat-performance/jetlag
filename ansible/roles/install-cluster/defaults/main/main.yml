@@ -10,3 +10,7 @@ disconnected_registry_host: "{{ groups['bastion'][0] }}"
 disconnected_registry_port: 5000
 
 check_cluster_pause_seconds: 20
+
+# Unmount virtual media on machines that report status as error in addition to "installing-pending-user-action"
+# Defaulting this to false as it has only been observed on a few Lenovo machines
+unmount_virtual_media_on_error: false
