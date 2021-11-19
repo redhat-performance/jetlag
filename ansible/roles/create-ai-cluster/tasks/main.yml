@@ -44,11 +44,18 @@
     backup: true
     block: |
       {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+      {{ controlplane_network_api }} api-int.{{ cluster_name }}.{{ base_dns_name }}
       {% for route in etc_hosts_ingress_routes %}
       {{ controlplane_network_ingress }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
       {% endfor %}
     insertafter: "EOF"
     marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
+
+- name: Restart dnsmasq after /etc/hosts update
+  systemd:
+    state: restarted
+    name: dnsmasq
+  when: controlplane_bastion_as_dns
 
 - name: Include custom manifests
   include_tasks: 01_manifest_update.yml
