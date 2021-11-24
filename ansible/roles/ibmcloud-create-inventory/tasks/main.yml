@@ -110,6 +110,21 @@
       ibm_hardware_detail_cp1_json: "{{ ibm_hardware_detail_cp1.stdout | from_json }}"
       ibm_hardware_detail_cp2_json: "{{ ibm_hardware_detail_cp2.stdout | from_json }}"
 
+  - name: BM - Get controlplane0 hardware vendor
+    shell: |
+      ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ cp0_hardware_data.id }} --mask="mask[components]" | jq '.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer'
+    register: ibm_hardware_components_cp0_parsed
+
+  - name: BM - Get controlplane1 hardware vendor
+    shell: |
+      ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ cp1_hardware_data.id }} --mask="mask[components]" | jq '.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer'
+    register: ibm_hardware_components_cp1_parsed
+
+  - name: BM - Get controlplane2 hardware vendor
+    shell: |
+      ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ cp2_hardware_data.id }} --mask="mask[components]" | jq '.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer'
+    register: ibm_hardware_components_cp2_parsed
+
   - name: BM - Set max number of nodes
     set_fact:
       max_nodes: "{{ ibm_hardware_list_json|length }}"
@@ -140,23 +155,38 @@
       ibmcloud_detailed_worker_data: "{{ ibmcloud_detailed_worker_data_specific }}"
     when: worker_hardware_ids | length != 0
 
+  - name: BM - Get hardware vendor with hostname for worker nodes
+    shell: |
+      ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ (item.stdout | from_json).id }} --mask="mask[components]" | jq '{ (.hostname) : (.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer)}'
+    register: ibm_hardware_components_worker_jq_parsed
+    loop: "{{ ibmcloud_detailed_worker_data.results }}"
+    loop_control:
+      label: "{{ (item.stdout | from_json).id }}"
+
+  - name: BM - Merge worker nodes hostname:vendor hashes to a single dictionary
+    set_fact:
+      vendor_mapping: "{{ vendor_mapping | combine(item.stdout | from_json) }}"
+    loop: "{{ ibm_hardware_components_worker_jq_parsed.results }}"
+    loop_control:
+      label: "{{ item.stdout | from_json }}"
+
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"
   block:
   - name: SNO - Set max number of nodes
     set_fact:
-      max_nodes: "{{ ibm_hardware_list_json|length }}"
+      max_snos: "{{ ibm_hardware_list_json|length }}"
     when: sno_node_count == None
 
   - name: SNO - Set max number of SNO nodes (sno_node_count is set)
     set_fact:
-      max_nodes: "{{ sno_node_count|int }}"
+      max_snos: "{{ sno_node_count|int }}"
     when: sno_node_count != None
 
   - name: SNO - Get ibmcloud SNO node detailed data
     shell: |
       ibmcloud sl hardware detail {{ item.id }} -p --output json
-    loop: "{{ ibm_hardware_list_json[:max_nodes|int] }}"
+    loop: "{{ ibm_hardware_list_json[:max_snos|int] }}"
     register: ibmcloud_detailed_sno_data
     when: sno_hardware_ids | length == 0
 
@@ -171,6 +201,21 @@
     set_fact:
       ibmcloud_detailed_sno_data: "{{ ibmcloud_detailed_sno_data_specific }}"
     when: sno_hardware_ids | length != 0
+
+  - name: SNO - Get hardware vendor with hostname for SNO nodes
+    shell: |
+      ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ (item.stdout | from_json).id }} --mask="mask[components]" | jq '{ (.hostname) : (.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer)}'
+    register: ibm_hardware_components_sno_jq_parsed
+    loop: "{{ ibmcloud_detailed_sno_data.results }}"
+    loop_control:
+      label: "{{ (item.stdout | from_json).id }}"
+
+  - name: SNO - Merge sno hostname:vendor hashes to a single dictionary
+    set_fact:
+      vendor_mapping: "{{ vendor_mapping | combine(item.stdout | from_json) }}"
+    loop: "{{ ibm_hardware_components_sno_jq_parsed.results }}"
+    loop_control:
+      label: "{{ item.stdout | from_json }}"
 
 - name: Place inventory file named ibmcloud.local into inventory directory
   template:

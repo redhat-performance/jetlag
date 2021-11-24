@@ -75,8 +75,6 @@ Change `lab` to `lab: ibmcloud`
 
 Change `cluster_type` to `cluster_type: bm`
 
-Set `hardware_vendor` to the hardware vendor expected. In our case it has been Supermicro, however it could be different depending on the hardware supplied.
-
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
 Change `ocp_release_image` to the required image if the default (4.9.7) is not the desired version.
@@ -131,8 +129,6 @@ The `ansible/vars/ibmcloud.yml` now resembles ..
 lab: ibmcloud
 
 cluster_type: bm
-
-hardware_vendor: Supermicro
 
 # Applies to bm clusters
 worker_node_count: 2
