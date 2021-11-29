@@ -2,7 +2,7 @@
 
 To deploy Single Node OpenShift (SNO) clusters on IBMcloud hardware you can simply follow the bare metal cluster guide with a few differences. The changes in this guide will apply after [Review ibmcloud.yml](deploy-bm-ibmcloud.md#review-ibmcloudyml) section.
 
-For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
+For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](../docs/order-hardware-ibmcloud.md) in [docs](../docs) directory.
 
 ## SNO var changes
 
@@ -28,8 +28,6 @@ The `ansible/vars/ibmcloud.yml` now resembles ..
 lab: ibmcloud
 
 cluster_type: sno
-
-hardware_vendor: Supermicro
 
 # Applies to bm clusters
 worker_node_count:
