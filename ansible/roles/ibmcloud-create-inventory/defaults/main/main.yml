@@ -9,6 +9,8 @@ worker_hardware_ids: []
 
 sno_hardware_ids: []
 
+vendor_mapping: {}
+
 # Index of the ports for bond0. Bond0 is the intended private network bond name.
 # Typically ports 0 & 2 are bonded to bond0 (Private network) and ports 1 & 3
 # are bonded to bond1 (Public network)

@@ -8,8 +8,6 @@ lab: ibmcloud
 
 cluster_type:
 
-hardware_vendor:
-
 # Applies to bm clusters
 worker_node_count:
 
