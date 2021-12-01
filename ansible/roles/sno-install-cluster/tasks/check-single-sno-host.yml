@@ -6,6 +6,8 @@
     name: install-cluster
     tasks_from: supermicro-unmount-virtual-media.yml
   loop: "{{ cluster_hosts.json| selectattr('status', 'eq', 'installing-pending-user-action') }}"
+  loop_control:
+    label: "{{ item.requested_hostname }}"
   when:
   - item.requested_hostname not in boot_order_fixed_hosts
   - hostvars[item.requested_hostname]['vendor'] == 'Supermicro'
@@ -15,6 +17,8 @@
     name: install-cluster
     tasks_from: lenovo-unmount-virtual-media.yml
   loop: "{{ cluster_hosts.json| selectattr('status', 'eq', 'installing-pending-user-action') }}"
+  loop_control:
+    label: "{{ item.requested_hostname }}"
   when:
   - item.requested_hostname not in boot_order_fixed_hosts
   - hostvars[item.requested_hostname]['vendor'] == 'Lenovo'
@@ -25,3 +29,5 @@
   when:
   - item.requested_hostname not in boot_order_fixed_hosts
   loop: "{{ cluster_hosts.json| selectattr('status', 'eq', 'installing-pending-user-action') }}"
+  loop_control:
+    label: "{{ item.requested_hostname }}"
