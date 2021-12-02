@@ -1,11 +1,11 @@
 ---
 # bastion-assisted-installer default vars
 
-assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.26.1
-assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.26.1
-assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.26.1
-assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.26.1
-assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.26.1
+assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.27.6
+assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.27.6
+assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.27.6
+assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.27.6
+assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.27.6
 assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
 
 # This will be your bastion machine (if you run setup-bastion playbook)

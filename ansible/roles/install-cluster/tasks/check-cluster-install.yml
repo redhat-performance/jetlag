@@ -42,6 +42,8 @@
   - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
     include_tasks: supermicro-unmount-virtual-media.yml
     loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
+    loop_control:
+      label: "{{ item.requested_hostname }}"
     when:
     - not cluster.json.status == 'installed'
     - item.requested_hostname not in boot_order_fixed_hosts
@@ -50,6 +52,8 @@
   - name: Lenovo Fix hosts with incorrect boot order by unmounting virtual media
     include_tasks: lenovo-unmount-virtual-media.yml
     loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
+    loop_control:
+      label: "{{ item.requested_hostname }}"
     when:
     - not cluster.json.status == 'installed'
     - item.requested_hostname not in boot_order_fixed_hosts
@@ -59,6 +63,8 @@
     set_fact:
       boot_order_fixed_hosts: "{{ boot_order_fixed_hosts + [item.requested_hostname] }}"
     loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
+    loop_control:
+      label: "{{ item.requested_hostname }}"
     when:
     - not cluster.json.status == 'installed'
     - item.requested_hostname not in boot_order_fixed_hosts
@@ -69,6 +75,8 @@
     - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
       include_tasks: supermicro-unmount-virtual-media.yml
       loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      loop_control:
+        label: "{{ item.requested_hostname }}"
       when:
       - not cluster.json.status == 'installed'
       - item.requested_hostname not in boot_order_fixed_hosts
@@ -77,6 +85,8 @@
     - name: Lenovo Fix hosts with incorrect boot order by unmounting virtual media
       include_tasks: lenovo-unmount-virtual-media.yml
       loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      loop_control:
+        label: "{{ item.requested_hostname }}"
       when:
       - not cluster.json.status == 'installed'
       - item.requested_hostname not in boot_order_fixed_hosts
@@ -86,6 +96,8 @@
       set_fact:
         boot_order_fixed_hosts: "{{ boot_order_fixed_hosts + [item.requested_hostname] }}"
       loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      loop_control:
+        label: "{{ item.requested_hostname }}"
       when:
       - not cluster.json.status == 'installed'
       - item.requested_hostname not in boot_order_fixed_hosts

@@ -38,7 +38,9 @@
       status_code: [200]
       return_content: true
     register: get_hosts
-    with_items: "{{ cluster.results }}"
+    loop: "{{ cluster.results }}"
+    loop_control:
+      label: "{{ item.json.name }}"
     when: not item.json.status == 'installed'
 
   - name: Check each cluster's host(s) for incorrect boot order
@@ -59,7 +61,9 @@
   - name: Fail for a repeat check if cluster(s) are not installed
     fail:
       msg: Cluster(s) not finished installing
-    with_items: "{{ cluster.results }}"
+    loop: "{{ cluster.results }}"
+    loop_control:
+      label: "{{ item.json.name }}"
     when: not item.json.status == 'installed'
 
   rescue:
@@ -72,6 +76,8 @@
       fail:
         msg: Cluster install failed or cancelled
       loop: "{{ cluster.results }}"
+      loop_control:
+        label: "{{ item.json.name }}"
       when: item.json.status == 'error' or item.json.status == 'cancelled'
 
     - name: Retry the check sno install tasks
