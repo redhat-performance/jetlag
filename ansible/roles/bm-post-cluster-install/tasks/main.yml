@@ -8,6 +8,7 @@
   with_items:
     - "{{ bastion_cluster_config_dir }}"
     - "{{ bastion_cluster_config_dir }}/localstorage"
+    - "{{ bastion_cluster_config_dir }}/net-attach-def"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
@@ -31,6 +32,8 @@
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
     - src: localvolume.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
+    - src: network-attachment-definition.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
     - src: cluster-monitoring-config.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
 
@@ -151,3 +154,8 @@
   when: migrate_monitoring or worker_localstorage_configuration
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
+
+- name: Setup NetworkAttachmentDefinition for 2nd pod network (macvlan type only)
+  when: setup_network_attachment_definition
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml
