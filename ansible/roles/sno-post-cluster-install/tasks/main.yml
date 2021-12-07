@@ -6,37 +6,49 @@
     path: "{{ bastion_cluster_config_dir }}"
     state: directory
 
-- name: Create directory per sno cluster
+- name: Create directories per sno cluster
   file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item }}"
+    path: "{{ bastion_cluster_config_dir }}/{{ item.0.key }}/{{ item.1 }}"
     state: directory
-  with_items: "{{ ai_cluster_ids }}"
+  loop: "{{ ai_cluster_ids | dict2items | product(['', 'net-attach-def']) }}"
+
+- name: Place templated net-attachment-definition
+  template:
+    src: network-attachment-definition.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/net-attach-def/network-attachment-definition.yml"
+  loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Get credentials (kubeconfig) from installed cluster(s)
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/files?file_name=kubeconfig"
-    dest: "{{ bastion_cluster_config_dir }}/{{ item }}/kubeconfig"
-  with_items: "{{ ai_cluster_ids }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/files?file_name=kubeconfig"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig"
+  loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Get credentials (kubeadmin-password) from installed cluster(s)
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/downloads/files?file_name=kubeadmin-password"
-    dest: "{{ bastion_cluster_config_dir }}/{{ item }}/kubeadmin-password"
-  with_items: "{{ ai_cluster_ids }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/files?file_name=kubeadmin-password"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeadmin-password"
+  loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Apply a label to the worker node(s)
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item }}/kubeconfig oc label no --all --overwrite jetlag=true
-  with_items: "{{ ai_cluster_ids }}"
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc label no --all --overwrite jetlag=true
+  loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Add kube-burner sa
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item }}/kubeconfig oc create sa kubeburner
-  with_items: "{{ ai_cluster_ids }}"
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create sa kubeburner
+  loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Add cluster-admin role to kube-burner sa
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
-  with_items: "{{ ai_cluster_ids }}"
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
+  loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
+
+- name: Setup NetworkAttachmentDefinition for 2nd pod network (macvlan type only)
+  when: setup_network_attachment_definition
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/net-attach-def/network-attachment-definition.yml
+  loop: "{{ ai_cluster_ids | dict2items }}"

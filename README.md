@@ -17,7 +17,7 @@ _**Table of Contents**_
 - [Prerequisites](#prerequisites)
 - [Cluster Deployment Usage](#cluster-deployment-usage)
 - [Quickstart guides](#quickstart-guides)
-- [Troubleshooting](#troubleshooting)
+- [Tips and Troubleshooting](#tips-and-troubleshooting)
 - [Disconnected API/Console Access](#disconnected-apiconsole-access)
 - [Hypervisor Network-Impairments](#hypervisor-network-impairments)
 <!-- /TOC -->
@@ -140,7 +140,9 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
 * [Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
 
-## Troubleshooting
+## Tips and Troubleshooting
+
+See [tips-and-vars.md](docs/tips-and-vars.md) in [docs](docs) directory.
 
 See [troubleshooting.md](docs/troubleshooting.md) in [docs](docs) directory.
 
