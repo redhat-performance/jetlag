@@ -24,6 +24,8 @@ _**Table of Contents**_
 
 ## Tested Labs/Hardware
 
+The listed hardware has been used for cluster deployments successfully. Potentially other hardware has been tested but just not documented here.
+
 **Alias Lab**
 
 | Hardware | BM  | RWN | SNO |
@@ -34,6 +36,7 @@ _**Table of Contents**_
 
 | Hardware           | BM  | RWN | SNO |
 | ------------------ | --- | --- | --- |
+| Dell r650          | Yes | No  | Yes |
 | Dell r640          | Yes | Yes | Yes |
 | Dell fc640         | No  | No  | Yes |
 | Supermicro 1029p * | Yes | Yes | No  |
