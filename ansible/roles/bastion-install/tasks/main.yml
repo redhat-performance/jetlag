@@ -67,9 +67,12 @@
       update_cache: true
       disable_gpg_check: yes
     register: kernel_modules_installed
+    when: bastion_install_tc_reboot
 
   - name: Reboot if kernel modules installed
-    when: kernel_modules_installed.changed
+    when:
+    - bastion_install_tc_reboot
+    - kernel_modules_installed.changed
     block:
     - name: Reboot bastion
       shell: "sleep 5; reboot now"
