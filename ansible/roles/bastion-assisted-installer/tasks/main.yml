@@ -105,7 +105,7 @@
     volume:
     - /opt/assisted-service/nginx-ui.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf
     name: gui
-    image: "{{ assisted_service_gui_image }}"
+    image: "{{ assisted_installer_ui_image }}"
     state: started
 
 - name: Create assisted installer service container in assisted-service pod
@@ -113,8 +113,21 @@
     pod: assisted-service
     network: host
     env_file: /opt/assisted-service/onprem-environment
-    name: installer
+    name: service
     image: "{{ assisted_service_image }}"
+    env:
+      DUMMY_IGNITION: False
+    volume:
+    - /etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem
+    state: started
+
+- name: Create assisted image service container in assisted-service pod
+  containers.podman.podman_container:
+    pod: assisted-service
+    network: host
+    env_file: /opt/assisted-service/onprem-environment
+    name: image-service
+    image: "{{ assisted_image_service_image }}"
     env:
       DUMMY_IGNITION: False
     volume:

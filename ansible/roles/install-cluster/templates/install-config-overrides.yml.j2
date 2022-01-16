@@ -11,6 +11,9 @@ imageContentSources:
 - mirrors:
   - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocpmetal
   source: quay.io/ocpmetal
+- mirrors:
+  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure
+  source: quay.io/edge-infrastructure
 additionalTrustBundle: |
   {{ mirror_cert.content | b64decode | indent(width=2, indentfirst=false) }}
 {% endif %}

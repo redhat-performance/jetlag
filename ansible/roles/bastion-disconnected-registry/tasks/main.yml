@@ -84,11 +84,17 @@
   shell: |
     oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt {{ item }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocpmetal/{{ item.split("/")[-1] }}
   with_items:
-  - "{{ assisted_service_image }}"
+  - "{{ assisted_installer_controller_image }}"
+
+- name: Mirror edge-infrastructure images
+  shell: |
+    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt {{ item }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure/{{ item.split("/")[-1] }}
+  with_items:
+  - "{{ assisted_image_service_image }}"
   - "{{ assisted_installer_image }}"
   - "{{ assisted_installer_agent_image }}"
-  - "{{ assisted_installer_controller_image }}"
-  - "{{ assisted_service_gui_image }}"
+  - "{{ assisted_installer_ui_image }}"
+  - "{{ assisted_service_image }}"
   - "{{ assisted_postgres_image }}"
 
 - name: Create pruned redhat-operator-index image with {{ operators_to_sync }}

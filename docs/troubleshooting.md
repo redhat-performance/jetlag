@@ -20,6 +20,7 @@ Several services are run on the bastion in order to automate the tasks that jetl
 
 * On-prem assisted-installer GUI - 8080
 * On-prem assisted-installer API - 8090
+* On-prem assisted-image-service - 8888
 * HTTP server - 8081
 * Container Registry (When disconnected) - 5000
 * HAProxy (When disconnected) - 6443, 443, 80
@@ -41,12 +42,12 @@ Example accessing the disconnected registry and listing repositories:
 {
   "repositories": [
     "ocp4/openshift4",
-    "ocpmetal/assisted-installer",
-    "ocpmetal/assisted-installer-agent",
+    "edge-infrastructure/assisted-installer",
+    "edge-infrastructure/assisted-installer-agent",
     "ocpmetal/assisted-installer-controller",
-    "ocpmetal/assisted-service",
-    "ocpmetal/ocp-metal-ui",
-    "ocpmetal/postgresql-12-centos7",
+    "edge-infrastructure/assisted-service",
+    "edge-infrastructure/ocp-metal-ui",
+    "edge-infrastructure/postgresql-12-centos7",
     "olm-mirror/olm-mirror-redhat-operator-index",
     "olm-mirror/openshift4-ose-local-storage-diskmaker",
     "olm-mirror/openshift4-ose-local-storage-operator",

@@ -1,13 +1,15 @@
 ---
 # bastion-assisted-installer default vars
 
-assisted_service_image: quay.io/ocpmetal/assisted-service:v1.0.27.6
-assisted_installer_image: quay.io/ocpmetal/assisted-installer:v1.0.27.6
-assisted_installer_agent_image: quay.io/ocpmetal/assisted-installer-agent:v1.0.27.6
-assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v1.0.27.6
-assisted_service_gui_image: quay.io/ocpmetal/ocp-metal-ui:v1.0.27.6
-assisted_postgres_image: quay.io/ocpmetal/postgresql-12-centos7
+assisted_image_service_image: quay.io/edge-infrastructure/assisted-image-service:v2.0.10
+assisted_installer_image: quay.io/edge-infrastructure/assisted-installer:v2.0.10
+assisted_installer_agent_image: quay.io/edge-infrastructure/assisted-installer-agent:v2.0.10
+assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v2.0.10
+assisted_installer_ui_image: quay.io/edge-infrastructure/assisted-installer-ui:v2.0.7
+assisted_service_image: quay.io/edge-infrastructure/assisted-service:v2.0.10
+assisted_postgres_image: quay.io/edge-infrastructure/postgresql-12-centos7
 
 # This will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
+assisted_image_service_port: 8888
