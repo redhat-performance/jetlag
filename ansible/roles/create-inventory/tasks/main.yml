@@ -16,9 +16,19 @@
 # * Remaining machines are SNO clusters (depending upon sno_node_count)
 #
 
+- name: Set ocp inventory download url from lab wiki
+  set_fact:
+    ocp_inventory_url: "http://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
+  when:  ocp_inventory_override | string | length < 1
+
+- name: Set ocp inventory download url to override
+  set_fact:
+    ocp_inventory_url: "{{ ocp_inventory_override }}"
+  when:  ocp_inventory_override | string | length > 1
+
 - name: Download ocpinventory.json
   uri:
-    url: "http://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
+    url: "{{ ocp_inventory_url }}"
     return_content: true
   register: ocpinventory
 
