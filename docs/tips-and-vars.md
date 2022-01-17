@@ -3,8 +3,17 @@
 _**Table of Contents**_
 
 <!-- TOC -->
+- [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
 - [Post Deployment - Network Attachment Definition](#post-deployment---network-attachment-definition)
 <!-- /TOC -->
+
+## Override lab ocpinventory json file
+
+Current jetlag lab use selects machines for roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You may have to create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
+
+```yaml
+ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
+```
 
 ## Post Deployment - Network Attachment Definition
 
