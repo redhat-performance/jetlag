@@ -39,6 +39,16 @@
     register: get_hosts
     when: not cluster.json.status == 'installed'
 
+  - name: Dell Fix hosts with incorrect boot order by unmounting virtual media
+    include_tasks: dell-unmount-virtual-media.yml
+    loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
+    loop_control:
+      label: "{{ item.requested_hostname }}"
+    when:
+    - not cluster.json.status == 'installed'
+    - item.requested_hostname not in boot_order_fixed_hosts
+    - hostvars[item.requested_hostname]['vendor'] == 'Dell'
+
   - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
     include_tasks: supermicro-unmount-virtual-media.yml
     loop: "{{ get_hosts.json|selectattr('status', 'eq', 'installing-pending-user-action') }}"
@@ -72,6 +82,16 @@
   - name: Unmount virtual media from machines in status error
     when: unmount_virtual_media_on_error
     block:
+    - name: Dell Fix hosts with incorrect boot order by unmounting virtual media
+      include_tasks: dell-unmount-virtual-media.yml
+      loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"
+      loop_control:
+        label: "{{ item.requested_hostname }}"
+      when:
+      - not cluster.json.status == 'installed'
+      - item.requested_hostname not in boot_order_fixed_hosts
+      - hostvars[item.requested_hostname]['vendor'] == 'Dell'
+
     - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
       include_tasks: supermicro-unmount-virtual-media.yml
       loop: "{{ get_hosts.json|selectattr('status', 'eq', 'error') }}"

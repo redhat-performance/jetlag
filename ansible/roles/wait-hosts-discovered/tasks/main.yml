@@ -86,8 +86,6 @@
 
 - name: Set install disk for control-plane nodes
   include_tasks: set_node_install_disk.yml
-  vars:
-    bm_control_plane_install_disk: /dev/sda
   loop: "{{ cluster.json.hosts | selectattr('role', 'eq', 'master') | list }}"
   loop_control:
     loop_var: bm_node
