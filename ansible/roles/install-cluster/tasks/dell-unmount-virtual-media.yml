@@ -1,0 +1,37 @@
+---
+# dell-unmount-virtual-media tasks
+
+- name: Dell - Power off
+  community.general.redfish_command:
+    category: Systems
+    command: PowerForceOff
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
+
+- name: Dell - Eject any CD Virtual Media
+  uri:
+    url: "https://{{ hostvars[item.requested_hostname]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
+    user: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {}
+    body_format: json
+    validate_certs: no
+    status_code: 204
+    return_content: yes
+
+- name: Pause to allow machine to completely power off
+  pause:
+    seconds: 10
+
+- name: Dell - Power on
+  community.general.redfish_command:
+    category: Systems
+    command: PowerOn
+    baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
+    username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
+    password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"

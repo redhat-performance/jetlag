@@ -23,98 +23,120 @@
       ]
   register: drac_version
 
+- name: Dell - Power down machine prior to booting iso
+  shell: |
+    ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
+  ignore_errors: true
+  register: ipmi_poweroff
+
+- name: Dell - Pause for power down
+  pause:
+    seconds: 10
+  when: not ipmi_poweroff.failed
+
 - name: Dell - Mount Live ISO, Boot into Live ISO (Dell 13G iDRAC8 and below)
   block:
-    - name: Dell - Power down machine prior to booting iso
-      shell: |
-        ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
-
-    - name: Dell - Pause for power down
-      pause:
-        seconds: 10
-
-    - name: Dell - Racadm container to mount and boot to Live ISO
-      containers.podman.podman_container:
-        name: "{{ hostvars[item]['bmc_address'] }}-rac-image"
-        network: host
-        image: quay.io/dphillip/racadm-image
-        state: started
-        rm: true
-        command:
-          [
-            "-r",
-            "{{ hostvars[item]['bmc_address'] }}",
-            "-u",
-            "{{ hostvars[item]['bmc_user'] }}",
-            "-p",
-            "{{ hostvars[item]['bmc_password'] }}",
-            "-i",
-            "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
-          ]
+  - name: Dell - Racadm container to mount and boot to Live ISO
+    containers.podman.podman_container:
+      name: "{{ hostvars[item]['bmc_address'] }}-rac-image"
+      network: host
+      image: quay.io/dphillip/racadm-image
+      state: started
+      rm: true
+      command:
+        [
+          "-r",
+          "{{ hostvars[item]['bmc_address'] }}",
+          "-u",
+          "{{ hostvars[item]['bmc_user'] }}",
+          "-p",
+          "{{ hostvars[item]['bmc_password'] }}",
+          "-i",
+          "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
+        ]
   when: drac_version.stdout_lines[0] | int <= 13
 
 - name: Dell - Mount Live ISO, Boot into Live ISO (Dell iDRAC9+ only)
   block:
-    - name: DELL - Power ON
-      community.general.redfish_command:
-        category: Systems
-        command: PowerOn
-        baseuri: "{{ hostvars[item]['bmc_address'] }}"
-        username: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
+  - name: Dell - Set OneTimeBoot VirtualCD
+    uri:
+      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration"
+      user: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      method: POST
+      headers:
+        content-type: application/json
+        Accept: application/json
+      body: {"ShareParameters":{"Target":"ALL"},"ImportBuffer":"<SystemConfiguration><Component FQDD=\"iDRAC.Embedded.1\"><Attribute Name=\"ServerBoot.1#BootOnce\">Enabled</Attribute><Attribute Name=\"ServerBoot.1#FirstBootDevice\">VCD-DVD</Attribute></Component></SystemConfiguration>"}
+      body_format: json
+      validate_certs: no
+      status_code: 202
+      return_content: yes
 
-    - name: Dell - Set OneTimeBoot VirtualCD
-      uri:
-        url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration"
-        user: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
-        method: POST
-        headers:
-          content-type: application/json
-          Accept: application/json
-        body: {"ShareParameters":{"Target":"ALL"},"ImportBuffer":"<SystemConfiguration><Component FQDD=\"iDRAC.Embedded.1\"><Attribute Name=\"ServerBoot.1#BootOnce\">Enabled</Attribute><Attribute Name=\"ServerBoot.1#FirstBootDevice\">VCD-DVD</Attribute></Component></SystemConfiguration>"}
-        body_format: json
-        validate_certs: no
-        status_code: 202
-        return_content: yes
+  - name: Dell - Check for Virtual Media
+    uri:
+      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD"
+      user: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      method: Get
+      headers:
+        content-type: application/json
+        Accept: application/json
+      body: {}
+      body_format: json
+      validate_certs: no
+      status_code: 200
+      return_content: yes
+    register: check_virtual_media
 
-    - name: DELL - Eject Virtual Media (if any)
-      community.general.redfish_command:
-        category: Manager
-        command: VirtualMediaEject
-        baseuri: "{{ hostvars[item]['bmc_address'] }}"
-        username: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
-        virtual_media:
-          image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
-        resource_id: iDRAC.Embedded.1
-      ignore_errors: yes
+  - name: Dell - Eject any CD Virtual Media
+    uri:
+      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
+      user: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      method: POST
+      headers:
+        content-type: application/json
+        Accept: application/json
+      body: {}
+      body_format: json
+      validate_certs: no
+      status_code: 204
+      return_content: yes
+    when: check_virtual_media.json.Image
 
-    - name: DELL - Insert Virtual Media
-      community.general.redfish_command:
-        category: Manager
-        command: VirtualMediaInsert
-        baseuri: "{{ hostvars[item]['bmc_address'] }}"
-        username: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
-        virtual_media:
-          image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
-          media_types:
-          - CD
-          - DVD
-        resource_id: iDRAC.Embedded.1
+  # # Eject just the found image
+  # - name: DELL - Eject Virtual Media
+  #   community.general.redfish_command:
+  #     category: Manager
+  #     command: VirtualMediaEject
+  #     baseuri: "{{ hostvars[item]['bmc_address'] }}"
+  #     username: "{{ hostvars[item]['bmc_user'] }}"
+  #     password: "{{ hostvars[item]['bmc_password'] }}"
+  #     virtual_media:
+  #       image_url: "{{ check_virtual_media.json.Image  }}"
+  #     resource_id: iDRAC.Embedded.1
+  #   ignore_errors: yes
 
-    # If run directly from bastion, tasks can complete faster and thus the machine might need more time to power on.
-    # This causes the subsequent task to fail since you can not restart something that is not on
-    - name: Dell - Pause for power up to complete
-      pause:
-        seconds: 10
+  - name: DELL - Insert Virtual Media
+    community.general.redfish_command:
+      category: Manager
+      command: VirtualMediaInsert
+      baseuri: "{{ hostvars[item]['bmc_address'] }}"
+      username: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      virtual_media:
+        image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
+        media_types:
+        - CD
+        - DVD
+      resource_id: iDRAC.Embedded.1
 
-    - name: DELL - Restart system power gracefully
-      community.general.redfish_command:
-        category: Systems
-        command: PowerGracefulRestart
-        baseuri: "{{ hostvars[item]['bmc_address'] }}"
-        username: "{{ hostvars[item]['bmc_user'] }}"
-        password: "{{ hostvars[item]['bmc_password'] }}"
+  - name: DELL - Power ON
+    community.general.redfish_command:
+      category: Systems
+      command: PowerOn
+      baseuri: "{{ hostvars[item]['bmc_address'] }}"
+      username: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
   when: drac_version.stdout_lines[0] | int > 13

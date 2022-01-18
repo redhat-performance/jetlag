@@ -1,6 +1,17 @@
 ---
 # check-single-sno-host tasks
 
+- name: Dell Fix hosts with incorrect boot order by unmounting virtual media
+  include_role:
+    name: install-cluster
+    tasks_from: dell-unmount-virtual-media.yml
+  loop: "{{ cluster_hosts.json| selectattr('status', 'eq', 'installing-pending-user-action') }}"
+  loop_control:
+    label: "{{ item.requested_hostname }}"
+  when:
+  - item.requested_hostname not in boot_order_fixed_hosts
+  - hostvars[item.requested_hostname]['vendor'] == 'Dell'
+
 - name: Supermicro Fix hosts with incorrect boot order by unmounting virtual media
   include_role:
     name: install-cluster
