@@ -10,68 +10,20 @@
     password: "{{ hostvars[item]['bmc_password'] }}"
 
 - name: SuperMicro - Unmount ISO
-  uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.UnMount"
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
-    method: POST
-    headers:
-      content-type: application/json
-      Accept: application/json
-    body: {}
-    body_format: json
-    validate_certs: no
-    force_basic_auth: yes
-    return_content: yes
-
-- name: SuperMicro - Patching Host and Path for Mounting ISO
-  uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD"
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
-    method: PATCH
-    headers:
-      content-type: application/json
-      Accept: application/json
-    body: "{\"Host\": \"http://{{ http_store_host }}:{{ http_store_port }}\", \"Path\": \"\\\\\\\\{{ hostvars[item]['boot_iso'] }}\"}"
-    body_format: json
-    force_basic_auth: yes
-    validate_certs: no
-    return_content: yes
+  shell: |
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso umount
 
 - name: SuperMicro - Mount ISO
-  uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/1/VM1/CfgCD/Actions/IsoConfig.Mount"
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
-    method: POST
-    headers:
-      content-type: application/json
-      Accept: application/json
-    body: {}
-    body_format: json
-    validate_certs: no
-    force_basic_auth: yes
-    return_content: yes
+  shell: |
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso mount "http://{{ http_store_host }}:{{ http_store_port }}" /iso/{{ hostvars[item]['boot_iso'] }}
 
-- name: SuperMicro - Set Boot
-  # Error ignored as a workaround for old firmware.
-  # If this errors, you will need to manually configure the boot order to put CD boot entries on top,
-  # then unmount the ISO when it is done with it, which will be the first restart after a long delay.
-  ignore_errors: yes
-  uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/1"
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
-    method: PATCH
-    headers:
-      content-type: application/json
-      Accept: application/json
-    body: '{"Boot":{"BootSourceOverrideEnabled":"Once","BootSourceOverrideMode":"UEFI","BootSourceOverrideTarget":"Cd"}}'
-    body_format: json
-    force_basic_auth: yes
-    validate_certs: no
-    return_content: yes
+- name: SuperMicro - Set one time boot to usb cdrom (virtual media)
+  shell: |
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} ipmi power bootoption 8
+
+- name: Supermicro - Pause to allow machine to completely power off before powering on
+  pause:
+    seconds: 10
 
 - name: SuperMicro - Power on
   community.general.redfish_command:

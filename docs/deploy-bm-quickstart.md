@@ -77,7 +77,11 @@ For the ssh keys we have a chicken before the egg problem in that our bastion ma
 
 ### Bastion node vars
 
-The bastion node is always the first node in an allocation. The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
+The bastion node is usually the first node in an allocation.
+
+Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
+
+The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
 Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
 
@@ -153,6 +157,12 @@ Supermicro 1029p
 ```yaml
 controlplane_lab_interface: eno1
 controlplane_network_interface: ens2f0
+```
+
+Supermicro 5039ms
+```yaml
+controlplane_lab_interface: enp2s0f0
+controlplane_network_interface: enp1s0f0
 ```
 
 For the guide we set our values for the Supermicro 1029p.
@@ -234,6 +244,8 @@ pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 # Bastion node vars
 ################################################################################
 bastion_cluster_config_dir: /root/{{ cluster_type }}
+
+smcipmitool_url: http://example.lab.com/tools/SMCIPMITool_2.25.0_build.210326_bundleJRE_Linux_x64.tar.gz
 
 bastion_lab_interface: eno1
 bastion_controlplane_interface: ens2f0

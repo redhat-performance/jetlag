@@ -46,6 +46,8 @@ pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 ################################################################################
 bastion_cluster_config_dir: /root/{{ cluster_type }}
 
+smcipmitool_url:
+
 bastion_lab_interface: eno1np0
 bastion_controlplane_interface: ens1f0
 
