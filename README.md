@@ -102,7 +102,6 @@ Make sure to set/review the following vars:
 * `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 * `public_vlan` - applies to sno cluster_types, set to be `true` only for public routable vlan deployment
 * `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
-* `controlplane_network_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the cluster(controlplane apis) needs to be hosted on and also required for public routable vlan based sno deployment
 * `controlplane_pub_network_cidr` and `controlplane_pub_network_gateway` - only required for public routable vlan based sno deployment to input lab public routable vlan network and gateway
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
 * More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name.
