@@ -128,41 +128,35 @@ For the guide we set our values for the Supermicro 1029p.
 
 ### OCP node vars
 
-The same chart provided by the scale lab for the bastion machine, is used to identify the nic names for vars `controlplane_lab_interface` and `controlplane_network_interface`.
+The same chart provided by the scale lab for the bastion machine, is used to identify the nic names for `controlplane_lab_interface`.
 
 * `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
-* `controlplane_network_interface` should be set to the nic name under "Network 1" for this guide
 
 For example if your Bare Metal OpenShift systems are ...
 
 Dell fc640
 ```yaml
 controlplane_lab_interface: eno1
-controlplane_network_interface: eno2
 ```
 
 Dell r640
 ```yaml
 controlplane_lab_interface: eno1np0
-controlplane_network_interface: ens1f0
 ```
 
 Dell r650
 ```yaml
 controlplane_lab_interface: eno12399np0
-controlplane_network_interface: ens1f0
 ```
 
 Supermicro 1029p
 ```yaml
 controlplane_lab_interface: eno1
-controlplane_network_interface: ens2f0
 ```
 
 Supermicro 5039ms
 ```yaml
 controlplane_lab_interface: enp2s0f0
-controlplane_network_interface: enp1s0f0
 ```
 
 For the guide we set our values for the Supermicro 1029p.
@@ -262,7 +256,6 @@ use_disconnected_registry: false
 # Network configuration for all bm cluster and rwn control-plane nodes
 # Network configuration for public VLAN based sno cluster_type deployment
 controlplane_lab_interface: eno1
-controlplane_network_interface: ens2f0
 
 # Network configuration for public VLAN based sno cluster_type deployment
 controlplane_pub_network_cidr: 10.1.60.0/25
@@ -314,7 +307,7 @@ boot_iso=discovery.iso
 bmc_user=quads
 bmc_password=XXXXXXX
 lab_interface=eno1
-network_interface=ens2f0
+network_interface=eth0
 network_prefix=24
 gateway=198.18.10.1
 dns1=198.18.10.1
@@ -335,7 +328,7 @@ boot_iso=discovery.iso
 bmc_user=quads
 bmc_password=XXXXXXX
 lab_interface=eno1
-network_interface=ens2f0
+network_interface=eth0
 network_prefix=24
 gateway=198.18.10.1
 dns1=198.18.10.1

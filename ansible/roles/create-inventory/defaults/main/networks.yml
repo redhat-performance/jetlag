@@ -1,6 +1,10 @@
 ---
 # Network configuration for bm cluster and rwn control-plane nodes
 controlplane_network_interface_idx: 0
+# The assisted-installer actually does not need the exact nic name for our controlplane network. Eth0 is used
+# as a representative for the actual nic name. The actual nic is determined by the mac address which is
+# discovered by the ocpinventory.json file from the lab.
+controlplane_network_interface: eth0
 controlplane_network: 198.18.10.0/24
 controlplane_network_prefix: 24
 controlplane_network_gateway: "{{ controlplane_network | next_nth_usable(1) }}"
