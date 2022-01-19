@@ -74,9 +74,6 @@ base_dns_name: performance-scale.cloud
 # OCP node vars
 ################################################################################
 # Network configuration for cluster control-plane nodes
-private_bond_interfaces:
-- enp1s0f0
-- enp2s0f0
 
 # Applies to sno only and serves as machine network
 private_network_cidr: X.X.X.0/26

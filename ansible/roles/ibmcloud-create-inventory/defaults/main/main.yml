@@ -16,3 +16,10 @@ vendor_mapping: {}
 # are bonded to bond1 (Public network)
 bond0_port1: 0
 bond0_port2: 2
+
+# The assisted-installer actually does not need the exact nic names for our private bond. These names are used
+# as representatives for the actual nic names, the actual nics are determined by the mac addresses which are
+# discovered by the above bond0_port1 and bond0_port1 indexes and data acquired via the ibmcloud cli.
+private_bond_interfaces:
+- eth0
+- eth2
