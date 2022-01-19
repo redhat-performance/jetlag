@@ -29,6 +29,6 @@ jetlag-bm5 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:a4:2
 
 [sno:vars]
 dns1=Y.Y.Y.Y
-bond0_interfaces=['enp1s0f0', 'enp2s0f0']
+bond0_interfaces=['eth0', 'eth2']
 private_network_prefix=26
 gateway=Y.Y.Y.Y

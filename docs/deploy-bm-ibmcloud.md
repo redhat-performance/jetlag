@@ -107,7 +107,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 ### OCP node vars
 
-For the OCP nodes it might be necessary to adjust what interfaces are for the private bond (`bond0`) and what the `private_network_prefix` is.  Check your hardware's subnet to determine the prefix. In the event the hardware does not match the defaults, you may need to boot the generated discovery image and observe the console to see what interfaces a machine has when RHCOS is booted.
+For the OCP nodes it might be necessary to adjust the `private_network_prefix`.  Check your hardware's subnet to determine the prefix.
 
 While inspecting the subnet at cloud.ibm.com, determine two free addresses in the subnet to be used as api and ingress addresses. Provide those addresses in `controlplane_network_api` and `controlplane_network_ingress` as required.
 
@@ -177,9 +177,6 @@ smcipmitool_url: http://example.lab.com/tools/SMCIPMITool_2.25.0_build.210326_bu
 # OCP node vars
 ################################################################################
 # Network configuration for cluster control-plane nodes
-private_bond_interfaces:
-- enp1s0f0
-- enp2s0f0
 
 # Applies to sno only and serves as machine network
 private_network_cidr:
