@@ -17,9 +17,21 @@
   shell: |
     SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso mount "http://{{ http_store_host }}:{{ http_store_port }}" /iso/{{ hostvars[item]['boot_iso'] }}
 
+# $ SMCIPMITool mgmt-example.com user xxxx ipmi power bootoption
+# Option for next boot: NONE
+#
+# For bootoption index :
+# 1: PXE              2:  Hard-drive
+# 3: CD/DVD           4:  Bios
+# 5: USB KEY          6:  USB HDD
+# 7: USB Floppy       8:  USB CD/DVD
+# 9: UEFI Hard-drive  10: UEFI CD/DVD
+# 11: UEFI USB KEY    12: UEFI USB HDD
+# 13: UEFI USB CD/DVD 14: UEFI PXE
+# 0: NONE
 - name: SuperMicro - Set one time boot to usb cdrom (virtual media)
   shell: |
-    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} ipmi power bootoption 8
+    SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} ipmi power bootoption 13
 
 - name: Supermicro - Pause to allow machine to completely power off before powering on
   pause:
