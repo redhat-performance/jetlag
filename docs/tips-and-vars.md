@@ -5,6 +5,7 @@ _**Table of Contents**_
 <!-- TOC -->
 - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
 - [Post Deployment - Network Attachment Definition](#post-deployment---network-attachment-definition)
+- [Updating the OCP version](#updating-the-ocp-version)
 <!-- /TOC -->
 
 ## Override lab ocpinventory json file
@@ -37,3 +38,29 @@ To have a pod attach an interface to the additional network, add the following e
 annotations:
   k8s.v1.cni.cncf.io/networks: '[{"name": "net1", "namespace": "default"}]'
 ```
+
+## Updating the OCP version
+
+Versions are controlled by the release image. If you want to change images:
+
+Modify the vars file to update release image path with `ocp_release_image` and the openshift version with `openshift_version`
+Example:
+
+```yaml
+ocp_release_image: registry.ci.openshift.org/ocp/release:4.10.0-0.nightly-2022-01-18-044014
+openshift_version: "4.10"
+```
+Ensure that your pull secrets are still valid.
+When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:
+* Login to https://console-openshift-console.apps.ci.l2s4.p1.opensthiftapps.com/ with your github id. You must be a member of Openshift Org to do this.
+* Select *Copy login command* from the drop-down list under your account name
+* Copy the oc login command and run it on your terminal
+* Execute the command shown below to print out the pull secret:
+
+```console
+[user@fedora jetlag]$ oc registry login --to=-
+```
+* Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
+
+You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deloying a fresh cluster with that version.
+
