@@ -5,16 +5,16 @@ metadata:
   annontations:
     openshift.io/node-selector: ''
   name: openshift-local-storage
-{% if openshift_version == "4.9" and not use_disconnected_registry | default(false) %}
+{% if openshift_version == "4.10" and not use_disconnected_registry | default(false) %}
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: redhat-operators-4-8
+  name: redhat-operators-4-9
   namespace: openshift-marketplace
 spec:
-  displayName: Red Hat Operators 4.8
-  image: registry.redhat.io/redhat/redhat-operator-index:v4.8
+  displayName: Red Hat Operators 4.9
+  image: registry.redhat.io/redhat/redhat-operator-index:v4.9
   priority: -100
   publisher: Red Hat
   sourceType: grpc
@@ -41,15 +41,15 @@ spec:
   installPlanApproval: Automatic
   name: local-storage-operator
 {% if use_disconnected_registry | default(false) %}
-{% if openshift_version == "4.9" %}
-  channel: "4.8"
+{% if openshift_version == "4.10" %}
+  channel: "4.9"
 {% else %}
   channel: "{{ openshift_version }}"
 {% endif %}
   source: {{ operator_index_name }}
-{% elif openshift_version == "4.9" %}
-  channel: "4.8"
-  source: redhat-operators-4-8
+{% elif openshift_version == "4.10" %}
+  channel: "4.9"
+  source: redhat-operators-4-9
 {% else %}
   channel: "{{ openshift_version }}"
   source: redhat-operators
