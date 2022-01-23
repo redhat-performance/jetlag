@@ -17,32 +17,17 @@
 
 - name: Install cluster(s)
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}/actions/install"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/actions/install"
     method: POST
     status_code: [202]
     return_content: true
     body_format: json
     body: { }
-  with_items: "{{ ai_cluster_ids }}"
-
-- name: Wait for 90 min until each cluster is installed
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
-    method: GET
-    status_code: [200, 201]
-    return_content: true
-  register: cluster
-  until: cluster.json.status == 'installed' or cluster.json.status == 'error' or cluster.json.status == 'cancelled'
-  retries: 540
-  delay: 10
-  with_items: "{{ ai_cluster_ids }}"
-  when: lab in rh_labs
+  loop: "{{ ai_cluster_ids | dict2items  }}"
 
 - name: Set initial loop variables
   set_fact:
     boot_order_fixed_hosts: []
-  when: lab in cloud_labs
 
 - name: Check if sno installed tasks loop
   include_tasks: check-sno-install.yml
-  when: lab in cloud_labs

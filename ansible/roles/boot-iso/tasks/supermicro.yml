@@ -13,9 +13,14 @@
   shell: |
     SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso umount
 
+# Retry because sometimes mounting will fail if it occurs too quickly after unmounting
 - name: SuperMicro - Mount ISO
   shell: |
     SMCIPMITool {{ hostvars[item]['bmc_address'] }} {{ hostvars[item]['bmc_user'] }} {{ hostvars[item]['bmc_password'] }} wsiso mount "http://{{ http_store_host }}:{{ http_store_port }}" /iso/{{ hostvars[item]['boot_iso'] }}
+  register: mount_iso
+  until: not mount_iso.failed
+  retries: 10
+  delay: 1
 
 # $ SMCIPMITool mgmt-example.com user xxxx ipmi power bootoption
 # Option for next boot: NONE
