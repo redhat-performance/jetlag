@@ -15,5 +15,5 @@ imageContentSources:
   - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure
   source: quay.io/edge-infrastructure
 additionalTrustBundle: |
-  {{ mirror_cert.content | b64decode | indent(width=2, indentfirst=false) }}
+  {{ mirror_cert.content | b64decode | indent(width=2) }}
 {% endif %}
