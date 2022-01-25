@@ -1,6 +1,8 @@
 ---
 # Sync ACM downstream container images into disconnected registry to allow an ACM
-# downstream build to be installed on a disconnected ipv6 cluster
+# downstream build to be installed on a disconnected ipv6 cluster.
+#
+# Prior to use, set `pull_secret.acm_d.txt` in base repo directory
 #
 # Example Usage:
 #
