@@ -17,13 +17,13 @@
     AUTHSTRING="{\"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
     jq -c ".auths += $AUTHSTRING" < {{ disconnected_sync_path }}/pull-secret.acm_d.txt > {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt
 
-- name: Download mapping file from open-cluster-management/deploy repo
+- name: Download mapping file from stolostron/deploy repo
   when: download_mapping_file_from_deploy_repo
   block:
   - name: Download the mapping file from github
     get_url:
       force: true
-      url: "https://raw.githubusercontent.com/open-cluster-management/deploy/master/mirror/{{ acm_snapshot }}.txt"
+      url: "https://raw.githubusercontent.com/stolostron/deploy/master/mirror/{{ acm_snapshot }}.txt"
       dest: "{{ disconnected_sync_path }}/mapping.txt"
 
   - name: Replacements in downloaded mapping file
