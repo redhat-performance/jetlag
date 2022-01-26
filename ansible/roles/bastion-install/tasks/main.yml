@@ -135,7 +135,7 @@
     extra_opts:
     - --strip-components=1
 
-- name: Get OpenShift clients, opm, kube-burner, and grpcurl
+- name: Get OpenShift clients, opm, kube-burner, grpcurl, and yq
   get_url:
     validate_certs: false
     force: true
@@ -150,6 +150,8 @@
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
     dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+  - url: "{{ yq_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
 
 # We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
 # likely not the actual version of the intended cluster, those specific clients
@@ -185,3 +187,17 @@
   - "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+
+- name: Untar yq tool
+  unarchive:
+    src: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}"
+    remote_src: yes
+    mode: 0700
+
+- name: Copy yq tool into a pathed directory
+  copy:
+    src: "{{ bastion_cluster_config_dir }}/yq_linux_amd64"
+    dest: /usr/local/bin/yq
+    remote_src: true
+    mode: 0700
