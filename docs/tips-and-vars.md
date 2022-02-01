@@ -4,7 +4,7 @@ _**Table of Contents**_
 
 <!-- TOC -->
 - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
-- [Post Deployment - Network Attachment Definition](#post-deployment---network-attachment-definition)
+- [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
 <!-- /TOC -->
 
@@ -16,7 +16,9 @@ Current jetlag lab use selects machines for roles bastion, control-plane, and wo
 ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
 ```
 
-## Post Deployment - Network Attachment Definition
+## Post Deployment Tasks 
+
+### Network Attachment Definition
 
 Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to add a Macvlan Network Attachment
 Definition. This allows you to add an additional network to pods created in your cluster.
@@ -38,6 +40,18 @@ To have a pod attach an interface to the additional network, add the following e
 annotations:
   k8s.v1.cni.cncf.io/networks: '[{"name": "net1", "namespace": "default"}]'
 ```
+
+### Installing Performance Addon Operator
+
+Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to install Performance Addon Operator to allow for low latency node performance tunings on your cluster.
+
+```yaml
+install_performance_addon_operator: true
+```
+
+**Please Note**
+* This feature is available for GA releases of OCP only
+* Currently available only for Single Node Openshift clusters
 
 ## Updating the OCP version
 
@@ -62,5 +76,5 @@ When worikng with OCP development builds/nightly releases, it might be required 
 ```
 * Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
 
-You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deloying a fresh cluster with that version.
+You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
