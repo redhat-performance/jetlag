@@ -1,7 +1,10 @@
 ---
 # Sample disconnected-sync-acm-d vars file
 
-acm_snapshot: 2.4.2-DOWNSTREAM-2022-01-24-02-35-01
+acm_snapshot: 2.5.0-DOWNSTREAM-2022-02-01-23-07-31
+
+# For ACM 2.5, MCE is a prerequisite and must also be synced to the disconnected registry
+sync_mce_image: true
 
 # Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
 acm_operator_bundle: v2.3.0-185
