@@ -45,3 +45,93 @@ hw_vendor:
   6048p: Supermicro
   6029r: Supermicro
   dl360: Hp
+
+# This dictionary contains the expected nic names for networks in the scale lab. This determines the name of the
+# nic for impaired_nic for hypervisors. Expected OS is always RHEL 8.
+# http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces
+hw_nic_name:
+  #$lab:
+  #  $hw_name:
+  #  - (nic 0 - public nic)
+  #  - (nic 1 - Network 1)
+  #  - (nic 2 - Network 2)
+  #  ...
+  # Thus hw_nic_name['scalelab']['r640'][1] = Network 1 = ens1f0
+  scalelab:
+    r630:
+    - enp3s0f0
+    - eno1
+    - eno2
+    - eno3
+    - eno4
+    r640:
+    - eno1np0
+    - ens1f0
+    - ens1f1
+    - ens2f0
+    - ens2f1
+    r650:
+    - eno12399np0
+    - ens1f0
+    - ens1f1
+    - ens2f0
+    - ens2f1
+    - eno12409np1
+    r730xd:
+    - eno3
+    - eno1
+    - eno2
+    - enp130s0f0
+    - enp130s0f1
+    r930:
+    - em3
+    - eno1
+    - eno2
+    - enp10s0f0
+    - enp10s0f1
+    fc640:
+    - eno1
+    - eno2
+    - ens2f0
+    - ens2f1
+    6018r:
+    - eno1
+    - enp4s0f0
+    - enp4s0f1
+    - enp4s0f2
+    - enp4s0f3
+    6048r:
+    - eno1
+    - enp4s0f0
+    - enp4s0f1
+    - enp131s0f0
+    - enp131s0f1
+    1029u:
+    - eno1
+    - ens1f0
+    - ens1f1
+    - ens2f0
+    - ens2f1
+    1029p:
+    - eno1
+    - ens2f0
+    - ens2f1
+    - ens2f2
+    - ens2f3
+    5039ms:
+    - enp2s0f0
+    - enp1s0f0
+    - enp1s0f1
+    - enp2s0f1
+    6049p:
+    - eno1
+    - ens3f0
+    - ens3f1
+    - ens2f0
+    - ens2f1
+    dl360:
+    - eno5np0
+    - ens2f0
+    - ens2f1
+    - ens1f0
+    - ens1f1

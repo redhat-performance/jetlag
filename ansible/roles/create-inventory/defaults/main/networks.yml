@@ -27,3 +27,7 @@ cluster_network_host_prefix: 23
 service_network_cidr: 172.30.0.0/16
 
 vip_dhcp_allocation: false
+
+# This index var corresponds to the index in hw_nic_name in labs.yml for which network to use as the impaired nic for
+# the hypervisor impairments playbook
+hypervisor_nic_interface_idx: 1
