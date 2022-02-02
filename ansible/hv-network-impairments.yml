@@ -25,13 +25,13 @@
   post_tasks:
   - name: Remove any existing egress impairments
     shell: |
-      tc qdisc del dev {{ impaired_nic }} root netem
+      tc qdisc del dev {{ hostvars[inventory_hostname]['impaired_nic'] }} root netem
     ignore_errors: true
 
   - name: Remove any existing ingress impairments
     shell: |
       tc qdisc del dev ifb0 root netem
-      tc qdisc del dev {{ impaired_nic }} ingress
+      tc qdisc del dev {{ hostvars[inventory_hostname]['impaired_nic'] }} ingress
       ip link set dev ifb0 down
       modprobe -r ifb
     ignore_errors: true
@@ -53,7 +53,7 @@
 
   - name: Apply egress impairments
     shell: |
-      tc qdisc add dev {{ impaired_nic }} root netem {{ egress_impairments }}
+      tc qdisc add dev {{ hostvars[inventory_hostname]['impaired_nic'] }} root netem {{ egress_impairments }}
     when: apply_egress_impairments|bool
 
   - name: Set ingress delay
@@ -75,9 +75,9 @@
     shell: |
       modprobe ifb
       ip link set dev ifb0 up
-      tc qdisc add dev {{ impaired_nic }} ingress
-      tc filter add dev {{ impaired_nic }} parent ffff: protocol ip u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
-      tc filter add dev {{ impaired_nic }} parent ffff: protocol ipv6 u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
+      tc qdisc add dev {{ hostvars[inventory_hostname]['impaired_nic'] }} ingress
+      tc filter add dev {{ hostvars[inventory_hostname]['impaired_nic'] }} parent ffff: protocol ip u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
+      tc filter add dev {{ hostvars[inventory_hostname]['impaired_nic'] }} parent ffff: protocol ipv6 u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
       tc qdisc add dev ifb0 root netem {{ ingress_impairments }}
     when:
     - apply_ingress_impairments|bool

@@ -64,7 +64,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [hv]
 {% for hv in ocpinventory_hv_nodes %}
-{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} ip={{ controlplane_network | next_nth_usable(loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }}
+{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} ip={{ controlplane_network | next_nth_usable(loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} impaired_nic={{ hw_nic_name[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hypervisor_nic_interface_idx] if lab == 'scalelab' }}
 {% endfor %}
 
 [hv:vars]
