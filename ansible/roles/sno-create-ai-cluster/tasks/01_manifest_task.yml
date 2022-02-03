@@ -11,6 +11,9 @@
   - file_name: 99-master-kdump.yml
     template_name: 99-master-kdump.yml
     enabled: "{{ kdump_master_config }}"
+  - file_name: 99-master-workload-partitioning.yml
+    template_name: 99-master-workload-partitioning.yml
+    enabled: "{{ install_performance_addon_operator }}"
   vars:
     ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"
     kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"

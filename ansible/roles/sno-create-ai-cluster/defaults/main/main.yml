@@ -10,3 +10,7 @@ kubelet_config: false
 
 # Manifest for MachineConfig to enable kdump on master nodes
 kdump_master_config: false
+
+# Performance-addon-operator vars
+install_performance_addon_operator: false
+reserved_cpus: 0-1,32-33
