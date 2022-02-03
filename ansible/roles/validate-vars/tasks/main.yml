@@ -66,3 +66,8 @@
     fail:
       msg: "Invalid cluster_type selected - {{ cluster_type }} Select from {{ ibmcloud_cluster_types }}"
     when: cluster_type not in ibmcloud_cluster_types
+
+- name: Check reserved_cpus var is set
+  fail:
+    msg: "reserved_cpus is unset"
+  when: (cluster_type == "sno") and (install_performance_addon_operator | bool) and reserved_cpus is undefined

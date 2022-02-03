@@ -16,7 +16,7 @@ Current jetlag lab use selects machines for roles bastion, control-plane, and wo
 ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
 ```
 
-## Post Deployment Tasks 
+## Post Deployment Tasks
 
 ### Network Attachment Definition
 
@@ -52,6 +52,35 @@ install_performance_addon_operator: true
 **Please Note**
 * This feature is available for GA releases of OCP only
 * Currently available only for Single Node Openshift clusters
+* You must define `reserved_cpus` in the vars file when installing Performance Addon Operator on Single Node Openshift clusters
+* The workload partitioning CPUs (`reserved_cpus`) should match the reserved cpu specs within your performance-profile
+
+Setting `reserved_cpus` would allow us to isolate the control plane services to run on a restricted set of CPUs.
+
+Choosing the CPUs to isolate requires careful consideration of the CPU topology of the system. If you plan to enable rt-kernel also in your performance-profile, different use cases may require different configuration:
+
+If you have a multi-threaded application where threads need to communicate with one another by sharing cache, they may need to be kept on the same NUMA node or physical socket.
+If you run multiple unrelated real-time applications, separating the CPUs by NUMA node or socket may be suitable.
+
+If you are unsure about which cpus to reserve for housekeeping-pods, the general rule is to identify any two processors and their siblings on separate NUMA nodes:
+
+```console
+# lscpu -e | head -n1
+CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
+
+# lscpu -e |  egrep "0:0:0:0|1:1:1:1"
+0   0    0      0    0:0:0:0       yes    3900.0000 800.0000
+1   1    1      1    1:1:1:1       yes    3900.0000 800.0000
+40  0    0      0    0:0:0:0       yes    3900.0000 800.0000
+41  1    1      1    1:1:1:1       yes    3900.0000 800.0000
+```
+
+Example settings of `reserved_cpus`:
+
+```yaml
+install_performance_addon_operator: true
+reserved_cpus: 0-1,40-41
+```
 
 ## Updating the OCP version
 
@@ -77,4 +106,3 @@ When worikng with OCP development builds/nightly releases, it might be required 
 * Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
-
