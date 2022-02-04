@@ -9,6 +9,7 @@
   hosts: localhost
   vars:
     ssh_known_hosts_file: "{{ lookup('env','HOME') + '/.ssh/known_hosts' }}"
+    ssh_pub_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
   vars_files:
   - vars/all.yml
   - vars/lab.yml
@@ -44,6 +45,12 @@
       key: "{{ item.stdout }}"
       path: "{{ ssh_known_hosts_file }}"
     with_items: "{{ ssh_known_host_results.results }}"
+
+  - name: Set authorized key took from file
+    authorized_key:
+      user: root
+      state: present
+      key: "{{ ssh_pub_key }}"
 
 - name: Setup bastion machine
   hosts: bastion
