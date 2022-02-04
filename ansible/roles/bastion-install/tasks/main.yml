@@ -27,7 +27,7 @@
     update_cache: true
     disable_gpg_check: yes
 
-- name: Install python 
+- name: Install python
   pip:
     name: python-hpilo
     executable: pip3
@@ -115,13 +115,13 @@
       mode: "644"
 
 - name: Supermicro tool tasks
-  block: 
+  block:
     - name: Check if SMCIPMITool tar is downloaded
       stat:
         path: "{{ playbook_dir }}/smcipmitool.tar.gz"
       delegate_to: localhost
       register: stat_smcipmitool
-    
+
     # This is "proxied", assuming your local laptop can reach the smcipmitool URL
     # and that the bastion machine may not (Ex you copy the smcipmitool tar file
     # to a local lab machine)
@@ -133,7 +133,7 @@
         dest: "{{ playbook_dir }}/smcipmitool.tar.gz"
       delegate_to: localhost
       when: not stat_smcipmitool.stat.exists
-    
+
     - name: Untar SMCIPMITool
       unarchive:
         src: "{{ playbook_dir }}/smcipmitool.tar.gz"
