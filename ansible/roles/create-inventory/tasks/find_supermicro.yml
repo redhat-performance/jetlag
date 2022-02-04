@@ -1,10 +1,5 @@
 ---
-- name: Print vendor for each node
-  debug:
-    msg: "{{ hw_vendor[(item.pm_addr.split('.')[0]).split('-')[-1]] }}"
-  register: vendor
-
 - name: Found Supermicro node
   set_fact:
     has_supermicro: true
-  when: vendor == "Supermicro"
+  when: hw_vendor[(item.pm_addr.split('.')[0]).split('-')[-1]] == 'Supermicro'
