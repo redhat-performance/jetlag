@@ -168,12 +168,13 @@
     set_fact:
       mac_query: "json.interfaces[?type=='interface'].mac"
 
+- name: Loop over all OCP nodes to find Supermicro hardware
+  include_tasks: find_supermicro.yml
+  loop: "{{ ocpinventory.json.nodes }}"
+
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
     src: "inventory-{{ cluster_type }}.j2"
     dest: "{{ playbook_dir }}/inventory/{{ lab_cloud }}.local"
     backup: true
 
-- name: Loop over all OCP nodes to find Supermicro hardware
-  include_tasks: find_supermicro.yml
-  loop: "{{ ocpinventory.json.nodes }}"
