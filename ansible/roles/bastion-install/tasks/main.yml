@@ -32,13 +32,6 @@
     name: python-hpilo
     executable: pip3
 
-- name: Install ansible-galaxy collections
-  shell: |
-    ansible-galaxy collection install ansible.netcommon
-    ansible-galaxy collection install ansible.posix
-    ansible-galaxy collection install community.general
-    ansible-galaxy collection install containers.podman
-
 - name: Scale / Alias lab bastion tasks
   when: lab in rh_labs
   block:

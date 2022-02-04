@@ -14,4 +14,5 @@
   - vars/lab.yml
   roles:
   - validate-vars
+  - install-early-deps
   - create-inventory
