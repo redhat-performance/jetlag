@@ -1,0 +1,12 @@
+---
+# bastion-gogs default vars
+
+gogs_host: "{{ controlplane_network_gateway }}"
+
+gogs_ipv4_port: 10881
+gogs_ipv6_port: 10880
+
+gogs_username: testadmin
+gogs_password: testadmin
+
+gogs_image: gogs/gogs

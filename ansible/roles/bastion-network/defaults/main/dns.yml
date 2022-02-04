@@ -19,10 +19,12 @@ etc_hosts_ingress_routes:
 - cluster-openshift-gitops
 - kam-openshift-gitops
 - openshift-gitops-server-openshift-gitops
+- canary-openshift-ingress-canary
 - alertmanager-main-openshift-monitoring
 - grafana-openshift-monitoring
 - prometheus-k8s-openshift-monitoring
 - thanos-querier-openshift-monitoring
+- assisted-image-service-open-cluster-management
 - assisted-service-open-cluster-management
 - multicloud-console
 - dittybopper-dittybopper

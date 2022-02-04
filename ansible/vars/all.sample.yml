@@ -54,6 +54,9 @@ bastion_controlplane_interface: ens1f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
+# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
+setup_gogs: false
+
 # Use in conjunction with ipv6 based clusters
 use_disconnected_registry: false
 
