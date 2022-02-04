@@ -61,18 +61,6 @@ Versions:
 
 For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
 
-Pre-reqs for the playbooks:
-
-```console
-ansible-galaxy collection install ansible.netcommon
-ansible-galaxy collection install ansible.posix
-ansible-galaxy collection install community.general
-ansible-galaxy collection install containers.podman
-```
-
-```console
-pip3 install netaddr python-hpilo
-```
 
 Pre-reqs for Supermicro hardware
 
