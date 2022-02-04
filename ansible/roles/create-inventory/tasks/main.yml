@@ -172,6 +172,11 @@
   include_tasks: find_supermicro.yml
   loop: "{{ ocpinventory.json.nodes }}"
 
+- name: If no Supermicros found set fact
+  set_fact:
+    has_supermicro: false
+  when: has_supermicro is not defined
+
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
     src: "inventory-{{ cluster_type }}.j2"
