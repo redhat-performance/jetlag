@@ -1,0 +1,5 @@
+---
+- name: Found Supermicro node
+  set_fact:
+    has_supermicro: true
+  when: hw_vendor[(item.pm_addr.split('.')[0]).split('-')[-1]] == 'Supermicro'

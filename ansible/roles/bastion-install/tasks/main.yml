@@ -19,13 +19,18 @@
     - jq
     - net-tools
     - podman
-    - python3
     - skopeo
     - tcpdump
     - tmux
+    - vim
     state: present
     update_cache: true
     disable_gpg_check: yes
+
+- name: Install python
+  pip:
+    name: python-hpilo
+    executable: pip3
 
 - name: Scale / Alias lab bastion tasks
   when: lab in rh_labs
@@ -109,31 +114,34 @@
       dest: /root/.ssh/id_rsa.pub
       mode: "644"
 
-- name: Check if SMCIPMITool tar is downloaded
-  stat:
-    path: "{{ playbook_dir }}/smcipmitool.tar.gz"
-  delegate_to: localhost
-  register: stat_smcipmitool
+- name: Supermicro tool tasks
+  block:
+    - name: Check if SMCIPMITool tar is downloaded
+      stat:
+        path: "{{ playbook_dir }}/smcipmitool.tar.gz"
+      delegate_to: localhost
+      register: stat_smcipmitool
 
-# This is "proxied", assuming your local laptop can reach the smcipmitool URL
-# and that the bastion machine may not (Ex you copy the smcipmitool tar file
-# to a local lab machine)
-- name: Get SMCIPMITool
-  get_url:
-    validate_certs: false
-    force: true
-    url: "{{ smcipmitool_url }}"
-    dest: "{{ playbook_dir }}/smcipmitool.tar.gz"
-  delegate_to: localhost
-  when: not stat_smcipmitool.stat.exists
+    # This is "proxied", assuming your local laptop can reach the smcipmitool URL
+    # and that the bastion machine may not (Ex you copy the smcipmitool tar file
+    # to a local lab machine)
+    - name: Get SMCIPMITool
+      get_url:
+        validate_certs: false
+        force: true
+        url: "{{ smcipmitool_url }}"
+        dest: "{{ playbook_dir }}/smcipmitool.tar.gz"
+      delegate_to: localhost
+      when: not stat_smcipmitool.stat.exists
 
-- name: Untar SMCIPMITool
-  unarchive:
-    src: "{{ playbook_dir }}/smcipmitool.tar.gz"
-    dest: /usr/local/bin
-    mode: 0700
-    extra_opts:
-    - --strip-components=1
+    - name: Untar SMCIPMITool
+      unarchive:
+        src: "{{ playbook_dir }}/smcipmitool.tar.gz"
+        dest: /usr/local/bin
+        mode: 0700
+        extra_opts:
+        - --strip-components=1
+  when: supermicro_nodes
 
 - name: Get OpenShift clients, opm, kube-burner, grpcurl, and yq
   get_url:
