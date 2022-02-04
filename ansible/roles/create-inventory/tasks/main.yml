@@ -173,3 +173,7 @@
     src: "inventory-{{ cluster_type }}.j2"
     dest: "{{ playbook_dir }}/inventory/{{ lab_cloud }}.local"
     backup: true
+
+- name: Loop over all OCP nodes to find Supermicro hardware
+  include_tasks: find_supermicro.yml
+  loop: "{{ ocpinventory.json.nodes }}"
