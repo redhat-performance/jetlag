@@ -19,13 +19,25 @@
     - jq
     - net-tools
     - podman
-    - python3
     - skopeo
     - tcpdump
     - tmux
+    - vim
     state: present
     update_cache: true
     disable_gpg_check: yes
+
+- name: Install python 
+  pip:
+    name: python-hpilo
+    executable: pip3
+
+- name: Install ansible-galaxy collections
+  shell: |
+    ansible-galaxy collection install ansible.netcommon
+    ansible-galaxy collection install ansible.posix
+    ansible-galaxy collection install community.general
+    ansible-galaxy collection install containers.podman
 
 - name: Scale / Alias lab bastion tasks
   when: lab in rh_labs

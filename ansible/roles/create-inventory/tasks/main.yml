@@ -16,6 +16,14 @@
 # * Remaining machines are SNO clusters (depending upon sno_node_count)
 #
 
+- name: Install python netaddr prereq
+  yum:
+    name:
+    - python3-netaddr
+    state: present
+    update_cache: true
+    disable_gpg_check: yes
+
 - name: Set ocp inventory download url from lab wiki
   set_fact:
     ocp_inventory_url: "http://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
