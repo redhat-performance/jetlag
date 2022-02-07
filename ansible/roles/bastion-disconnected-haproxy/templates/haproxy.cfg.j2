@@ -72,3 +72,15 @@ backend 443-ipv6-be
     mode tcp
     balance source
     server ingress [{{ controlplane_network_ingress }}]:443 check inter 1s
+
+{% if setup_gogs %}
+frontend gogs-ipv4-{{ gogs_ipv4_port }}
+    bind :::{{ gogs_ipv4_port }} v4v6
+    mode tcp
+    default_backend gogs-ipv6-{{ gogs_ipv6_port }}
+
+backend gogs-ipv6-{{ gogs_ipv6_port }}
+    mode tcp
+    balance source
+    server ingress [{{ gogs_host }}]:{{ gogs_ipv6_port }} check inter 1s
+{% endif %}

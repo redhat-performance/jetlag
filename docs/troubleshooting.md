@@ -24,6 +24,7 @@ Several services are run on the bastion in order to automate the tasks that jetl
 * HTTP server - 8081
 * Container Registry (When disconnected) - 5000
 * HAProxy (When disconnected) - 6443, 443, 80
+* Gogs - Self-hosted Git (Disconnected and setup_gogs=true) - 10881 (http), 10022 (git)
 * Dnsmasq - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser

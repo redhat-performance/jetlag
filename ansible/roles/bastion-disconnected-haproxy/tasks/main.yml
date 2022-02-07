@@ -1,7 +1,7 @@
 ---
 # bastion-disconnected-haproxy tasks
 
-- name: Create directory for syncing acm-d
+- name: Create directory for haproxy
   file:
     path: /etc/haproxy
     state: directory
@@ -21,7 +21,7 @@
 - name: Start and enable haproxy
   systemd:
     enabled: true
-    state: started
+    state: restarted
     name: haproxy
 
 # Dump the /etc/hosts configuration you should use in your laptops /etc/hosts

@@ -1,0 +1,58 @@
+---
+# bastion-gogs tasks
+
+- name: Create directories for bastion gogs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - /opt/gogs
+  - /opt/gogs/gogs
+  - /opt/gogs/gogs/conf
+
+- name: Configure podman network
+  template:
+    src: 88-podman6-bridge.conflist
+    dest: /etc/cni/net.d/88-podman6-bridge.conflist
+
+- name: Configure gogs app.ini
+  template:
+    src: app.ini.j2
+    dest: /opt/gogs/gogs/conf/app.ini
+
+- name: Create gogs pod
+  containers.podman.podman_pod:
+    name: gogs
+    network: podman6
+    ports:
+    - "10022:22"
+    - "{{ gogs_ipv6_port }}:3000"
+    state: started
+
+# On a reboot "started" state does not start an exited pod (why..idk)
+- name: Ensure gogs pod is up
+  containers.podman.podman_pod:
+    name: gogs
+    network: podman6
+    ports:
+    - "10022:22"
+    - "{{ gogs_ipv6_port }}:3000"
+    state: restarted
+
+- debug:
+    msg: "{{ gogs_ipv6_port }} - {{ gogs_ipv6_port }}:3000"
+
+- name: Create gogs container in gogs pod
+  containers.podman.podman_container:
+    pod: gogs
+    volume:
+    - /opt/gogs:/data
+    name: gogs-service
+    image: "{{ gogs_image }}"
+    state: started
+
+# Ignore errors because this task can only run once against a "new" gogs instance
+- name: Add admin user to gogs
+  shell: |
+    podman exec gogs-service su git -c "/app/gogs/gogs admin create-user --name {{ gogs_username }} --password {{ gogs_password }} --email {{ gogs_username }}@redhat.com --admin"
+  ignore_errors: true
