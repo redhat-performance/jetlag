@@ -16,6 +16,9 @@ etc_hosts_ingress_routes:
 - oauth-openshift
 - console-openshift-console
 - downloads-openshift-console
+- cluster-openshift-gitops
+- kam-openshift-gitops
+- openshift-gitops-server-openshift-gitops
 - alertmanager-main-openshift-monitoring
 - grafana-openshift-monitoring
 - prometheus-k8s-openshift-monitoring

@@ -7,6 +7,8 @@
     state: directory
   with_items:
     - "{{ bastion_cluster_config_dir }}"
+    - "{{ bastion_cluster_config_dir }}/catalogsource-4.9"
+    - "{{ bastion_cluster_config_dir }}/gitops"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/net-attach-def"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
@@ -28,6 +30,10 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
+    - src: catalogsource-4.9.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/catalogsource-4.9/catalogsource-4.9.yml"
+    - src: openshift-gitops-operator.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
     - src: localstorage.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
     - src: localvolume.yml.j2
@@ -78,6 +84,11 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/catalogSource.yaml
   when: use_disconnected_registry | default(false)
 
+- name: Apply catalogSource for OCP 4.9 on 4.10 non-disconnected clusters
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/catalogsource-4.9/catalogsource-4.9.yml
+  when: openshift_version == "4.10" and not use_disconnected_registry | default(false)
+
 - name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store
   when: fix_metal3_provisioningosdownloadurl
   block:
@@ -98,6 +109,11 @@
   - name: Patch provisioning-configuration
     shell: |
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch provisionings provisioning-configuration -p '{"spec":{"provisioningOSDownloadURL":"http://{{ http_store_host }}:{{ http_store_port }}/{{ metal3_download_url | basename }}" }}' --type=merge
+
+- name: Install OpenShift-gitops-operator
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml
+  when: setup_openshift_gitops
 
 - name: Setup control-plane nodes localstorage
   when: controlplane_localstorage_configuration
