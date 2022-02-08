@@ -95,3 +95,7 @@
   shell: |
     oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt -f {{ disconnected_sync_path }}/mce/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
   ignore_errors: true
+
+- name: Mirror ztp-site-generator image
+  shell: |
+    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ ztp_site_generator_image }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/redhat_emp1/ztp-site-generator:latest --keep-manifest-list --continue-on-error=true
