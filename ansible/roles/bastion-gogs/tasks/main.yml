@@ -39,9 +39,6 @@
     - "{{ gogs_ipv6_port }}:3000"
     state: restarted
 
-- debug:
-    msg: "{{ gogs_ipv6_port }} - {{ gogs_ipv6_port }}:3000"
-
 - name: Create gogs container in gogs pod
   containers.podman.podman_container:
     pod: gogs
