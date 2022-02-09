@@ -115,6 +115,22 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml
   when: setup_openshift_gitops
 
+- name: Setup openshift-gitops for ZTP
+  when: setup_openshift_gitops_ztp
+  block:
+  - name: Get installPlan name
+    shell: |
+      set -o pipefail
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get subs -n openshift-operators openshift-gitops-operator -o json | jq -r '.status.installplan.name'
+    register: installplan_name
+    until: installplan_name.stdout | length > 5
+    retries: 10
+    delay: 1
+
+  - name: Approve installPlan
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch installPlan {{ installplan_name.stdout }} -n openshift-operators --type merge --patch '{"spec": {"approved": true }}'
+
 - name: Setup control-plane nodes localstorage
   when: controlplane_localstorage_configuration
   block:

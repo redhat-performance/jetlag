@@ -6,6 +6,8 @@ acm_snapshot: 2.5.0-DOWNSTREAM-2022-02-01-23-07-31
 # For ACM 2.5, MCE is a prerequisite and must also be synced to the disconnected registry
 sync_mce_image: true
 
+ztp_site_generator_image: quay.io/redhat_emp1/ztp-site-generator:latest
+
 # Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
 acm_operator_bundle: v2.3.0-185
 
