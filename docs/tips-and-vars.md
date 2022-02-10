@@ -51,16 +51,12 @@ install_performance_addon_operator: true
 
 **Please Note**
 * This feature is available for GA releases of OCP only
-* Currently available only for Single Node Openshift clusters
 * You must define `reserved_cpus` in the vars file when installing Performance Addon Operator on Single Node Openshift clusters
 * The workload partitioning CPUs (`reserved_cpus`) should match the reserved cpu specs within your performance-profile
 
 Setting `reserved_cpus` would allow us to isolate the control plane services to run on a restricted set of CPUs.
 
-Choosing the CPUs to isolate requires careful consideration of the CPU topology of the system. If you plan to enable rt-kernel also in your performance-profile, different use cases may require different configuration:
-
-If you have a multi-threaded application where threads need to communicate with one another by sharing cache, they may need to be kept on the same NUMA node or physical socket.
-If you run multiple unrelated real-time applications, separating the CPUs by NUMA node or socket may be suitable.
+You can reserve cores, or threads, for operating system housekeeping tasks from a single NUMA node and put your workloads on another NUMA node. The reason for this is that the housekeeping processes might be using the CPUs in a way that would impact latency sensitive processes running on those same CPUs. Keeping your workloads on a separate NUMA node prevents the processes from interfering with each other. Additionally, each NUMA node has its own memory bus that is not shared.
 
 If you are unsure about which cpus to reserve for housekeeping-pods, the general rule is to identify any two processors and their siblings on separate NUMA nodes:
 

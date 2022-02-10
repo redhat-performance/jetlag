@@ -12,6 +12,7 @@
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/net-attach-def"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
+    - "{{ bastion_cluster_config_dir }}/performance-addon-operator"
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
@@ -24,6 +25,17 @@
 - name: Apply a label to the worker node(s)
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite -l node-role.kubernetes.io/worker jetlag=true
+
+- name: Install Performance-Addon-Operator - find channel
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get packagemanifest performance-addon-operator -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
+  register: channel
+  when: install_performance_addon_operator
+
+- name: Install Performance-Addon-Operator - Store channel in var
+  set_fact:
+    ocp_channel: "{{ channel.stdout }}"
+  when: install_performance_addon_operator
 
 - name: Place templated configuration items
   template:
@@ -42,6 +54,8 @@
       dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
     - src: cluster-monitoring-config.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
+    - src: performance-addon-operator.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/performance-addon-operator/performance-addon-operator.yml"
 
 - name: Clone performance-dashboards
   git:
@@ -191,3 +205,8 @@
   when: setup_network_attachment_definition
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml
+
+- name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/performance-addon-operator/performance-addon-operator.yml
+  when: install_performance_addon_operator
