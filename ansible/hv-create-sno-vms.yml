@@ -1,0 +1,16 @@
+---
+# Creates emulated bare-metal SNOs via virtual machines on hypervisor host machines, creates an inventory file
+# to create manifests for ACM/ZTP deployment of SNOs
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-create-sno-vms.yml
+#
+
+- name: Create emulated bare-metal SNOs via VMs on hypervisors
+  hosts: bastion
+  vars_files:
+  - vars/hv.yml
+  - vars/lab.yml
+  # roles:
+  # - hv-create-sno-vms

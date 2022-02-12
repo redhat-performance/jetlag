@@ -1,0 +1,49 @@
+# sushy emulator configuration file build on top of Flask application
+# configuration infrastructure: http://flask.pocoo.org/docs/config/
+
+# Listen on all local IP interfaces
+{% if hostvars[inventory_hostname].ip | ansible.netcommon.ipv6 %}
+SUSHY_EMULATOR_LISTEN_IP = u'::'
+{% else %}
+SUSHY_EMULATOR_LISTEN_IP = u'0.0.0.0'
+{% endif %}
+
+# Bind to TCP port
+SUSHY_EMULATOR_LISTEN_PORT = {{ hypervisor_bmc_port }}
+
+# Serve this SSL certificate to the clients
+SUSHY_EMULATOR_SSL_CERT = None
+
+# If SSL certificate is being served, this is its RSA private key
+SUSHY_EMULATOR_SSL_KEY = None
+
+# The OpenStack cloud ID to use. This option enables OpenStack driver.
+SUSHY_EMULATOR_OS_CLOUD = None
+
+# The libvirt URI to use. This option enables libvirt driver.
+SUSHY_EMULATOR_LIBVIRT_URI = u'qemu:///system'
+
+# Instruct the libvirt driver to ignore any instructions to
+# set the boot device. Allowing the UEFI firmware to instead
+# rely on the EFI Boot Manager
+# Note: This sets the legacy boot element to dev="fd"
+# and relies on the floppy not existing, it likely wont work
+# your VM has a floppy drive.
+SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = True
+
+# The map of firmware loaders dependant on the boot mode and
+# system architecture
+SUSHY_EMULATOR_BOOT_LOADER_MAP = {
+    u'UEFI': {
+        u'x86_64': u'/usr/share/OVMF/OVMF_CODE.secboot.fd',
+        u'aarch64': u'/usr/share/AAVMF/AAVMF_CODE.fd'
+    },
+    u'Legacy': {
+        u'x86_64': None,
+        u'aarch64': None
+    }
+}
+
+# Instruct the virtual media insertion not to verify the SSL certificate
+# when retrieving the image.
+SUSHY_EMULATOR_VMEDIA_VERIFY_SSL = False

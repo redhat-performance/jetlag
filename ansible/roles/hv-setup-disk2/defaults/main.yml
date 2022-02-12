@@ -1,0 +1,4 @@
+---
+# hv-setup-disk2 default vars
+
+disk2_mount_path: /mnt/disk2
