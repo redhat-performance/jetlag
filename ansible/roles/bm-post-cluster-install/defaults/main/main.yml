@@ -42,3 +42,4 @@ net_attach_def_range: 192.168.0.0/16
 
 # Performance-addon-operator vars_files
 install_performance_addon_operator: false
+ocp_channel: "{{ openshift_version }}"
