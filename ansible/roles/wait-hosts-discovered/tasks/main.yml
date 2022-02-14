@@ -11,8 +11,7 @@
     inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
   when: cluster_type == "bm"
 
-# Need to add check here for all nodes to be in state (pending-for-input vs discovering and not just length of hosts to be discovered)
-- name: Wait for 40 min for nodes to be discovered
+- name: Wait up to 40 min for nodes to be discovered
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
     method: GET
@@ -23,10 +22,25 @@
   retries: 40
   delay: 60
 
-  # Until the above race condition is fixed, allow some time for discovery to complete
-- name: Sleep to allow full discovery
-  pause:
-    minutes: 2
+- name: Wait up to 5 minutes until hosts no longer in discovering status
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: true
+  loop: "{{ cluster.json.hosts | list }}"
+  register: host_data
+  until: host_data.status != "discovering"
+  retries: 30
+  delay: 10
+
+- name: Get cluster data for host and role setting
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    method: GET
+    status_code: [200, 201]
+    return_content: true
+  register: cluster
 
 - name: Set hostname and role for discovered hosts
   include_tasks: set_hostname_role.yml
