@@ -63,6 +63,18 @@
       update_cache: true
       disable_gpg_check: yes
 
+  - name: Setup chronyd
+    template:
+      src: chrony.conf.j2
+      dest: /etc/chrony.conf
+      backup: true
+
+  - name: Ensure chronyd is running with new configuration
+    systemd:
+      state: restarted
+      enabled: true
+      name: chronyd
+
   - name: Install kernel modules
     yum:
       name:

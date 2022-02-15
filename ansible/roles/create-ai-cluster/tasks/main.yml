@@ -30,7 +30,7 @@
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "additional_ntp_source": "{{ labs[lab]['ntp_server'] }}"
+        "additional_ntp_source": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}"
     }
   register: create_cluster_return
 
