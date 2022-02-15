@@ -38,6 +38,10 @@
     - "10022:22"
     - "{{ gogs_ipv6_port }}:3000"
     state: restarted
+  register: result
+  until: not result.failed
+  retries: 10
+  delay: 1
 
 - name: Create gogs container in gogs pod
   containers.podman.podman_container:
