@@ -1,10 +1,10 @@
 ---
 # Sample disconnected-sync-acm-d vars file
 
-acm_snapshot: 2.5.0-DOWNSTREAM-2022-02-01-23-07-31
+acm_snapshot: 2.5.0-DOWNSTREAM-2022-02-14-20-43-25
 
-# For ACM 2.5, MCE is a prerequisite and must also be synced to the disconnected registry
-sync_mce_image: true
+# For ACM 2.5, we need mce-custom-registry and the mapping file does not include the snapshot tagged version
+fix_mce_custom_registry_image: true
 
 ztp_site_generator_image: quay.io/redhat_emp1/ztp-site-generator:latest
 
