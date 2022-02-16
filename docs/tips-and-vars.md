@@ -91,7 +91,7 @@ openshift_version: "4.10"
 ```
 Ensure that your pull secrets are still valid.
 When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:
-* Login to https://console-openshift-console.apps.ci.l2s4.p1.opensthiftapps.com/ with your github id. You must be a member of Openshift Org to do this.
+* Login to https://console-openshift-console.apps.ci.l2s4.p1.openshiftapps.com/ with your github id. You must be a member of Openshift Org to do this.
 * Select *Copy login command* from the drop-down list under your account name
 * Copy the oc login command and run it on your terminal
 * Execute the command shown below to print out the pull secret:
