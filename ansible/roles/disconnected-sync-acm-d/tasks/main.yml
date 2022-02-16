@@ -1,14 +1,13 @@
 ---
 # disconnected-sync-acm-d tasks
 
-- name: Create directories for syncing acm and mce
+- name: Create directories for syncing acm
   file:
     path: "{{ item }}"
     state: directory
   loop:
   - "{{ disconnected_sync_path }}"
   - "{{ disconnected_sync_path }}/acm"
-  - "{{ disconnected_sync_path }}/mce"
 
 - name: Template out pull-secret
   copy:
@@ -36,6 +35,14 @@
       regexp: "__DESTINATION_ORG__"
       replace: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d"
       backup: true
+
+  - name: Fix mce-custom-registry
+    replace:
+      path: "{{ disconnected_sync_path }}/acm/mapping.txt"
+      regexp: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/mce-custom-registry:.*"
+      replace: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/mce-custom-registry:{{ acm_snapshot }}"
+      backup: true
+    when: fix_mce_custom_registry_image
 
 - name: Generate acm mapping file from acm-custom-registry image
   when: not download_mapping_file_from_deploy_repo
@@ -66,34 +73,11 @@
     - regexp: rhacm2
       replace: acm-d
 
-- name: Generate mce mapping file from mce-custom-registry image
-  when: sync_mce_image
-  block:
-  - name: Copy mce-custom-registry to disconnected registry
-    shell: |
-      skopeo copy --authfile {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt --all docker://quay.io:443/acm-d/mce-custom-registry:{{ acm_snapshot }} docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/mce-custom-registry:{{ acm_snapshot }}
-
-  - name: Generate mce container image mapping.txt
-    shell: |
-      oc adm catalog mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt quay.io:443/acm-d/mce-custom-registry:{{ acm_snapshot }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }} --manifests-only --to-manifests={{ disconnected_sync_path }}/mce/
-
-  - name: Replacements in mce mapping file
-    replace:
-      path: "{{ disconnected_sync_path }}/mce/mapping.txt"
-      regexp: "registry.redhat.io/multicluster-engine/"
-      replace: "quay.io:443/acm-d/"
-      backup: true
-
 # TODO: ignore_errors might be able to be removed here since we added "--max-per-registry"
 # ignore_errors because there are always images that are not available with this mirroring procedure
 - name: Mirror acm images onto the disconnected registry
   shell: |
     oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt -f {{ disconnected_sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
-  ignore_errors: true
-
-- name: Mirror mce images onto the disconnected registry
-  shell: |
-    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt -f {{ disconnected_sync_path }}/mce/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
   ignore_errors: true
 
 - name: Mirror ztp-site-generator image
