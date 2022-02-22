@@ -1,0 +1,71 @@
+---
+# hv-network tasks
+
+- name: Clean lab interfaces
+  shell: |
+    /root/clean-interfaces.sh --nuke
+
+- name: Restart NetworkManager to remove lab interfaces
+  systemd:
+    state: restarted
+    name: NetworkManager
+
+- name: Stop and disable iptables
+  systemd:
+    state: stopped
+    enabled: false
+    name: iptables
+
+- name: Comment out scale lab injected ipv6 disabling
+  replace:
+    path: /etc/sysctl.conf
+    regexp: "net.ipv6.conf.all.disable_ipv6 = 1"
+    replace: "# net.ipv6.conf.all.disable_ipv6 = 1"
+    backup: true
+
+- name: Set ipv6 sysctl
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/ipv6.conf
+    state: present
+    reload: true
+  loop:
+  - name: net.ipv6.conf.all.forwarding
+    value: "1"
+  - name: net.ipv6.conf.all.disable_ipv6
+    value: "0"
+  when: hostvars[inventory_hostname].ip | ansible.netcommon.ipv6
+
+- name: Setup bridge for hypervisor "control-plane" interface (ipv4)
+  nmcli:
+    type: bridge
+    conn_name: "{{ hypervisor_bridge_name }}"
+    ifname: "{{ hypervisor_bridge_name }}"
+    ip4: "{{ hostvars[inventory_hostname].ip }}/{{ hostvars[inventory_hostname].network_prefix }}"
+    state: present
+  when: hostvars[inventory_hostname].ip | ansible.netcommon.ipv4
+
+- name: Setup bridge for hypervisor "control-plane" interface (ipv6)
+  nmcli:
+    type: bridge
+    conn_name: "{{ hypervisor_bridge_name }}"
+    ifname: "{{ hypervisor_bridge_name }}"
+    ip6: "{{ hostvars[inventory_hostname].ip }}/{{ hostvars[inventory_hostname].network_prefix }}"
+    state: present
+  when: hostvars[inventory_hostname].ip | ansible.netcommon.ipv6
+
+- name: Bind interface with bridge
+  shell: |
+    nmcli con add type bridge-slave ifname {{ hostvars[inventory_hostname].nic }} con-name {{ hostvars[inventory_hostname].nic }}-{{ hypervisor_bridge_name }} master {{ hypervisor_bridge_name }}
+
+- name: Disable previous interface
+  shell: |
+    nmcli con down {{ hostvars[inventory_hostname].nic }}
+  ignore_errors: yes
+
+- name: Enable bridge and the bridge interface
+  shell: |
+    nmcli con up {{ hypervisor_bridge_name }}
+    nmcli con up {{ hostvars[inventory_hostname].nic }}-{{ hypervisor_bridge_name }}

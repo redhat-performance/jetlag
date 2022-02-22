@@ -1,0 +1,19 @@
+# Jetlag provided DNS
+# Bastion / assisted-installer / http-server / registry / router / dns
+address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
+
+address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
+address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
+
+# Jetlag provided DNS for clusterdeployments
+{% for cd_index in range(bastion_dnsmasq_cd_network_count) %}
+address=/{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
+address=/apps.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
+address=/api.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | next_nth_usable(cd_index + bastion_dnsmasq_cd_network_offset) }}
+{% endfor %}
+
+{% for item in groups['sno'] %}
+{% if hostvars[item].ip_address is defined %}
+address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip_address }}
+{% endif %}
+{% endfor %}

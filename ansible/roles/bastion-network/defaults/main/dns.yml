@@ -7,7 +7,7 @@ base_dns_name: example.com
 # the default count of 0 ignores setting this up
 bastion_dnsmasq_cd_prefix: sno
 bastion_dnsmasq_cd_network: "{{ controlplane_network }}"
-bastion_dnsmasq_cd_network_offset: 14
+bastion_dnsmasq_cd_network_offset: 1000
 bastion_dnsmasq_cd_network_count: 0
 
 # Appends each entry to /etc/hosts of bastion machine during cluster install to

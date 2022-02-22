@@ -47,7 +47,7 @@ hw_vendor:
   dl360: Hp
 
 # This dictionary contains the expected nic names for networks in the scale lab. This determines the name of the
-# nic for impaired_nic for hypervisors. Expected OS is always RHEL 8.
+# nic for hypervisors. Expected OS is always RHEL 8.
 # http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces
 hw_nic_name:
   #$lab:

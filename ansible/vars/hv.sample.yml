@@ -1,0 +1,8 @@
+---
+# Hypervisor sample vars file
+
+# Which lab to be deployed into (Ex scalelab)
+lab:
+
+bastion_dnsmasq_cd_network_offset: 1000
+bastion_dnsmasq_cd_network_count: 2100

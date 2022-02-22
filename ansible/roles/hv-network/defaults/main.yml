@@ -1,0 +1,4 @@
+---
+# hv-network default vars
+
+hypervisor_bridge_name: br0

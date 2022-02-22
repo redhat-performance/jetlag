@@ -1,0 +1,4 @@
+---
+# hv-libvirt default vars
+
+hypervisor_bmc_port: 9000

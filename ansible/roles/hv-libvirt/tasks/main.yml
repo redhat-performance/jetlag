@@ -1,0 +1,58 @@
+---
+# hv-libvirt tasks
+
+- name: Create directories for libvirt/sushy-emulator configuration
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - /etc/sushy-emulator
+  - /opt/hv/
+  - /var/lib/libvirt/images
+
+- name: Template out libvirt/sushy-emulator configuration files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: sushy-emulator.conf.j2
+    dest: /etc/sushy-emulator/sushy-emulator.conf
+  - src: sushy-emulator.service.j2
+    dest: /etc/systemd/system/sushy-emulator.service
+  - src: pool.xml.j2
+    dest: /opt/hv/pool.xml
+
+- name: Start and enable sushy-emulator
+  systemd:
+    state: restarted
+    enabled: true
+    name: sushy-emulator
+
+- name: Start and enable libvirtd
+  systemd:
+    state: restarted
+    enabled: true
+    name: libvirtd
+
+- name: Check if libvirt storage pool defined
+  shell: |
+    virsh pool-info default
+  register: check_pool_exists
+  ignore_errors: true
+
+- name: Setup libvirt default storage pool
+  shell: |
+    virsh pool-define /opt/hv/pool.xml
+    virsh pool-start default
+  when: check_pool_exists.failed
+  register: output
+
+- name: Setup libvirt default storage pool auto start
+  shell: |
+    virsh pool-autostart default
+
+# The libvirtd restart re-enables the default network everytime
+- name: Disable default libvirt network
+  shell: |
+    virsh net-destroy default
+  register: network_output
