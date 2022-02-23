@@ -177,6 +177,87 @@
     has_supermicro: false
   when: has_supermicro is not defined
 
+- name: Hypervisor tasks to determine if there is a 2nd disk available
+  when: hv_inventory
+  block:
+  - name: Disable disk2 for all hypervisor machines
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': false, 'disk2_device': '/dev/nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  - name: Enable disk2_enable for r630 with /dev/sdb
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': '/dev/sdb'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r630']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  - name: Check for disk2 on r640
+    shell: |
+       lsblk -l -o NAME | egrep "nvme0n1$|sdb$" | sort | head -n 1
+    delegate_to: "{{ item.pm_addr | replace('mgmt-','') }}"
+    vars:
+      ansible_user: root
+      ansible_ssh_pass: "{{ hv_ssh_pass }}"
+    register: r640_disks
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r640']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  - name: Enable disk2_enable for r640 with the captured extra disk
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true if (r640_disks.results)[idx].stdout else false, 'disk2_device': '/dev/' + (r640_disks.results)[idx].stdout })] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r640']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  - name: Enable disk2_enable for r650, r730xd, and r930 with /dev/nvme0n1
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': '/dev/nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r730xd', 'r930']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  # Skip fc640 type since it has no extra disk
+  # Skip 6018r type since it has only 2 80G disks
+
+  - name: Append disk2_enable for 6048r, 1029u and 1029p with /dev/nvme0n1
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': '/dev/nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['6048r', '1029u', '1029p']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  - name: Append disk2_enable for 5039ms and dl360 with /dev/sdb
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': '/dev/sdb'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['5039ms', 'dl360']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
+  - name: Append disk2_enable for 6049p with /dev/nvme0n1
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': '/dev/nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['6049p']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
     src: "inventory-{{ cluster_type }}.j2"

@@ -9,6 +9,9 @@ bm_worker_node_offset: 7
 ################################################################################
 # Var(s) for bare-metal hypervisors
 ################################################################################
+# Enables placing extra machines as hypervisors in the inventory
+hv_inventory: false
+
 # ssh password for hypervisors
 hv_ssh_pass:
 
