@@ -22,3 +22,15 @@
     version: 4.5.0
   - name: sushy-tools
     version: 0.16.0
+
+- name: Setup chronyd
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    backup: true
+
+- name: Ensure chronyd is running with new configuration
+  systemd:
+    state: restarted
+    enabled: true
+    name: chronyd
