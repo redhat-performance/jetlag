@@ -12,6 +12,8 @@
   - vars/hv.yml
   - vars/lab.yml
   roles:
+  - name: install-tc
+    when: install_tc
   - hv-install
   - hv-network
   - hv-dnsmasq
