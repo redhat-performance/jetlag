@@ -1,6 +1,6 @@
 ## Hypervisor Network-Impairments
 
-BM/RWN cluster types will allocate remaining hardware that was not put in the inventory for the cluster as Hypervisor nodes. For testing where network impairments are required, we can apply latency/packet-loss/bandwidth impairments on the hypervisor nodes. The `create-inventory.yml` playbook automatically selects scale lab "network 1" nic names for the host var `nic` in the hypervisor inventory. To change this, adjust `hypervisor_nic_interface_idx` as an extra var applied to the `all.yml` vars file.
+BM/RWN cluster types will allocate remaining hardware that was not put in the inventory for the cluster as Hypervisor machines if `hv_inventory: true` is set in the `all.yml` vars file. For testing where network impairments are required, we can apply latency/packet-loss/bandwidth impairments on the hypervisor nodes. The `create-inventory.yml` playbook automatically selects scale lab "network 1" nic names for the host var `nic` in the hypervisor inventory. To change this, adjust `hypervisor_nic_interface_idx` as an extra var applied to the `all.yml` vars file.
 
 To apply network impairments, first copy the network-impairments sample vars file
 

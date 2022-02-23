@@ -38,7 +38,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 # rwn node.  In the lab case, we use vlans to separate each rwn node and allow the bastion machine
 # to route traffic between the control-plane nodes and the remote worker nodes
 {% for remoteworker in ocpinventory_rwn_nodes %}
-{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vendor={{ hw_vendor[(remoteworker.pm_addr.split('.')[0]).split('-')[-1]] }} disk2_enable=false disk2_device=/dev/sdb
+{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vendor={{ hw_vendor[(remoteworker.pm_addr.split('.')[0]).split('-')[-1]] }}
 {% endfor %}
 
 [remoteworker:vars]
@@ -57,9 +57,10 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 [sno:vars]
 # Unused
 
+{% if hv_inventory %}
 [hv]
 {% for hv in ocpinventory_hv_nodes %}
-{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} nic={{ hw_nic_name[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hypervisor_nic_interface_idx] if lab == 'scalelab' }}
+{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} nic={{ hw_nic_name[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hypervisor_nic_interface_idx] if lab == 'scalelab' }} disk2_enable={{ hv.disk2_enable }} disk2_device={{ hv.disk2_device }}
 {% endfor %}
 
 [hv:vars]
@@ -68,3 +69,4 @@ ansible_ssh_pass={{ hv_ssh_pass }}
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 network_prefix={{ controlplane_network_prefix }}
+{% endif %}
