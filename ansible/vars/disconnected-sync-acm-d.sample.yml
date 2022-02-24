@@ -8,6 +8,10 @@ fix_mce_custom_registry_image: true
 
 ztp_site_generator_image: quay.io/redhat_emp1/ztp-site-generator:latest
 
+# TALO - Topology Aware Lifecycle Operator used with DU profile
+cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator:latest
+kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+
 # Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
 acm_operator_bundle: v2.3.0-185
 
