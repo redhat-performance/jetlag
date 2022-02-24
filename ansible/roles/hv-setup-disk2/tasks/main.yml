@@ -3,18 +3,18 @@
 
 - name: Create disk2 primary partition
   parted:
-    device: "{{ hostvars[inventory_hostname].disk2_device }}"
+    device: "/dev/{{ hostvars[inventory_hostname].disk2_device }}"
     number: 1
     state: present
     label: gpt
 
 - name: Set paritioned device path
   set_fact:
-    disk2_device_parted_path: "{{ hostvars[inventory_hostname].disk2_device }}1"
+    disk2_device_parted_path: "/dev/{{ hostvars[inventory_hostname].disk2_device }}1"
 
 - name: Set paritioned device path for nvme
   set_fact:
-    disk2_device_parted_path: "{{ hostvars[inventory_hostname].disk2_device }}p1"
+    disk2_device_parted_path: "/dev/{{ hostvars[inventory_hostname].disk2_device }}p1"
   when: '"nvme" in hostvars[inventory_hostname].disk2_device'
 
 - name: Format the 2nd disk as XFS
@@ -22,7 +22,7 @@
     fstype: xfs
     dev: "{{ disk2_device_parted_path }}"
 
-- name: Create the mount directory
+- name: Create the disk2 mount directory
   file:
     path: "{{ disk2_mount_path }}"
     state: directory
@@ -37,3 +37,11 @@
 - name: Verify that disk2 is mounted
   shell: |
     cat /proc/mounts | grep "{{ disk2_mount_path }}"
+
+- name: Create the directories for libvirt to host disk files
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - "{{ disk2_mount_path }}/libvirt"
+  - "{{ disk2_mount_path }}/libvirt/images"

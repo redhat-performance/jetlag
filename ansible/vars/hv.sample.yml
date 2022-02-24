@@ -4,7 +4,11 @@
 # Which lab to be deployed into (Ex scalelab)
 lab:
 
+ssh_public_key_file: ~/.ssh/id_rsa.pub
+
 install_tc: true
+
+hv_sno_generate_manifests: true
 
 bastion_dnsmasq_cd_network_offset: 1000
 bastion_dnsmasq_cd_network_count: 2100

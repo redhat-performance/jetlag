@@ -1,0 +1,6 @@
+---
+# hv-sno-create-vm default vars
+
+hv_kvm_def_path: /opt/hv
+
+hv_bmc_port: 9000

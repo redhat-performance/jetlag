@@ -1,0 +1,35 @@
+---
+# Cleans up hypervisor machines of emulated bare-metal SNO machines
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-sno-delete-vms.yml
+#
+
+- name: Delete emulated bare-metal SNOs on hypervisors
+  hosts: hv_sno
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
+  - hv-sno-delete-vm
+
+- name: Cleanup hypervisors after clearing off SNO VMs
+  hosts: hv
+  gather_facts: false
+  tasks:
+  - name: Restart sushy-emulator
+    systemd:
+      state: restarted
+      enabled: true
+      name: sushy-emulator
+
+  - name: Clean up directory where boot iso files can accumulate
+    file:
+      path: /var/lib/libvirt/images/
+      state: absent
+
+  - name: Ensure libvirt images directory exists
+    file:
+      path: /var/lib/libvirt/images/
+      state: directory

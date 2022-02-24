@@ -1,0 +1,8 @@
+---
+# hv-sno-delete-vm default vars
+
+hv_sno_manifests_directory: /root/hv-sno
+
+hv_sno_remove_all_manifests: false
+
+hv_kvm_def_path: /opt/hv
