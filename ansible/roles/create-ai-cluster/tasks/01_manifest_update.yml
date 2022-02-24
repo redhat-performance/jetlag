@@ -9,4 +9,6 @@
         "file_name": "{{ item.file_name }}",
         "content": "{{ lookup('template', item.template_name) | b64encode }}"
     }
-  when: item.enabled | default(true) | bool
+  when:
+   - item.enabled | default(true) | bool
+   - not (item.enabled_pao | default(false) | bool)

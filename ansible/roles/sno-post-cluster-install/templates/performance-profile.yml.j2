@@ -1,0 +1,51 @@
+---
+apiVersion: performance.openshift.io/v2
+kind: PerformanceProfile
+metadata:
+# This profile is for typical lab DELL R640 with 2 x 26 pcores
+  name: perf-profile
+{% if kubelet_config %}
+  annotations:
+    kubeletconfig.experimental: |
+      {"maxPods": {{ kubelet_config_max_pods }}}
+{% endif %}
+spec:
+{% if kernel_rt %}
+  additionalKernelArgs:
+  - idle=poll
+  - rcupdate.rcu_normal_after_boot=0
+{% endif %}
+  cpu:
+    # Temp. workaround for RT kernel bugs that consume too much
+    # CPU power: add more isolated cores
+    isolated: "{{ isolated_cpus }}"
+    reserved: "{{ reserved_cpus }}"
+{% if hugepages_count is defined %}
+  hugepages:
+   defaultHugepagesSize: "1G"
+   pages:
+   - size: "1G"
+     count: {{ hugepages_count }}
+     node: 0
+{% endif %}
+  # for 3 node converged master/worker and SNO clusters we use the masters as a selector
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  machineConfigPoolSelector:
+    pools.operator.machineconfiguration.openshift.io/master: ""
+  # this is for larger clusters
+  # nodeSelector:
+    # Pay attention to the node label, create MCP accordingly
+    #node-role.kubernetes.io/worker-cnf: ""
+{% if topology_manager_policy is defined %}
+  numa:
+   topologyPolicy: "{{ topology_manager_policy }}"
+{% endif %}
+{% if kernel_rt %}
+    # For CU should be false
+  realTimeKernel:
+    enabled: true
+{% else %}
+  realTimeKernel:
+    enabled: false
+{% endif %}

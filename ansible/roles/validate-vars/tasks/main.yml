@@ -70,4 +70,9 @@
 - name: Check reserved_cpus var is set
   fail:
     msg: "reserved_cpus is unset"
-  when: (cluster_type == "sno") and (install_performance_addon_operator | bool) and reserved_cpus is undefined
+  when: (cluster_type == "sno") and (install_performance_addon_operator | default(false) | bool) and reserved_cpus is undefined
+
+- name: Check isolated_cpus var is set
+  fail:
+    msg: "isolated_cpus is unset"
+  when: (cluster_type == "sno") and (install_performance_addon_operator | default(false) | bool) and isolated_cpus is undefined
