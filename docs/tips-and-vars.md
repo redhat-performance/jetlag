@@ -78,6 +78,29 @@ install_performance_addon_operator: true
 reserved_cpus: 0-1,40-41
 ```
 
+#### Performance Profile vars
+
+The following vars are relevant to performance profile creation post SNO install:
+
+```yaml
+# Required vars
+install_performance_addon_operator: true
+# The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
+reserved_cpus: 0-1,48-49
+isolated_cpus: 2-47,50-95
+
+#Optional vars
+
+# If you want to install real-time kernel:
+kernel_rt: true
+
+# Number of hugepages of size 1G to be allocated on the SNO
+hugepages_count: 16
+
+# Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
+topology_manager_policy: best-effort
+```
+
 ## Updating the OCP version
 
 Versions are controlled by the release image. If you want to change images:

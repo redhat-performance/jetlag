@@ -8,6 +8,7 @@
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
+    enabled_pao: "{{ install_performance_addon_operator }}"
   - file_name: 99-master-kdump.yml
     template_name: 99-master-kdump.yml
     enabled: "{{ kdump_master_config }}"
