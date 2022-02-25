@@ -12,11 +12,13 @@
     - dnsmasq
     - frr
     - git
+    - golang-bin
     - httpd
     - httpd-tools
     - ipmitool
     - iproute-tc
     - jq
+    - make
     - net-tools
     - podman
     - skopeo
