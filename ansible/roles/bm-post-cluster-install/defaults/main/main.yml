@@ -21,7 +21,7 @@ setup_openshift_gitops: false
 # Deploy specific openshift-gitops required for ZTP using "manual" approval process
 setup_openshift_gitops_ztp: false
 # ZTP gitops requires this version of the gitops operator
-gitops_starting_csv: openshift-gitops-operator.v1.3.2
+gitops_starting_csv: openshift-gitops-operator.v1.4.0
 
 # Enable with disconnected in order to download image to bastion and serve via
 # bastion http_store such that metal3 pods run
