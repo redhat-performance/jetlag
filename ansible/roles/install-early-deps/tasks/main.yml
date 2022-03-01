@@ -11,7 +11,8 @@
     state: present
     update_cache: true
     disable_gpg_check: yes
+  become: true
 
 - name: Install ansible-galaxy collections
   command: ansible-galaxy collection install ansible.netcommon ansible.posix community.general containers.podman
-
+  become: true
