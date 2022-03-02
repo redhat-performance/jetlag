@@ -1,0 +1,12 @@
+---
+# hv-sno-create-manifests default vars
+
+hv_sno_manifests_directory: /root/hv-sno
+
+cluster_image_set: openshift-4.10.0-rc.5
+
+registry_path: /opt/registry
+
+# Used with bmc-secret
+bmc_username_base64: "{{ 'redhat' | b64encode }}"
+bmc_password_base64: "{{ 'password' | b64encode }}"

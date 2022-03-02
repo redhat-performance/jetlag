@@ -4,13 +4,15 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-create-sno-vms.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-sno-create-vms.yml
 #
 
 - name: Create emulated bare-metal SNOs via VMs on hypervisors
-  hosts: bastion
+  hosts: hv_sno
+  gather_facts: false
   vars_files:
   - vars/hv.yml
-  - vars/lab.yml
-  # roles:
-  # - hv-create-sno-vms
+  roles:
+  - hv-sno-create-vm
+  - role: hv-sno-create-manifests
+    when: hv_sno_generate_manifests

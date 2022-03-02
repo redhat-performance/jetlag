@@ -7,12 +7,21 @@ ocp_inventory_override: ''
 bm_worker_node_offset: 7
 
 ################################################################################
-# Var(s) for bare-metal hypervisors
+# Var(s) for bare-metal hypervisors and emulated bare-metal SNOs
 ################################################################################
-# Enables placing extra machines as hypervisors in the inventory
+# Enables placing extra machines as hypervisors in the inventory and generating the inventory of emulated bare-metal
+# SNOs on those hypervisors
 hv_inventory: false
 
 # ssh password for hypervisors
 hv_ssh_pass:
 
 hv_ip_offset: 0
+
+# Emulated bare-metal SNO VM Size
+hv_sno_cpu_count: 8
+hv_sno_memory_size: 28
+hv_sno_disk_size: 120
+
+# Path for SNO VMs on disk2
+disk2_mount_path: /mnt/disk2

@@ -1,0 +1,46 @@
+---
+# hv-sno-create-manifests tasks
+
+- name: Create directories for hv-sno manifests on bastion
+  file:
+    path: "{{ item }}"
+    state: directory
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  loop:
+  - "{{ hv_sno_manifests_directory }}/"
+  - "{{ hv_sno_manifests_directory }}/manifests"
+  - "{{ hv_sno_manifests_directory }}/siteconfigs"
+  - "{{ hv_sno_manifests_directory }}/pre-siteconfigs-manifests"
+
+- name: Obtain pull-secret for disconnected
+  slurp:
+    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  register: slurped_pull_secret
+
+- name: Set pull-secret for disconnected
+  set_fact:
+    pull_secret: "{{ slurped_pull_secret.content }}"
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+
+- name: Create directories for hv-sno manifests on bastion
+  file:
+    path: "{{ hv_sno_manifests_directory }}/manifests/{{ inventory_hostname }}"
+    state: directory
+  delegate_to: "{{ groups['bastion'][0] }}"
+
+- name: Template a manifest per hv-sno on bastion
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: manifest.yml.j2
+    dest: "{{ hv_sno_manifests_directory }}/manifests/{{ inventory_hostname }}/manifest.yml"
+  - src: siteconfig.yml.j2
+    dest: "{{ hv_sno_manifests_directory }}/siteconfigs/{{ inventory_hostname }}.yml"
+  - src: siteconfigs-manifests.yml.j2
+    dest: "{{ hv_sno_manifests_directory }}/pre-siteconfigs-manifests/{{ inventory_hostname }}.yml"
+  delegate_to: "{{ groups['bastion'][0] }}"

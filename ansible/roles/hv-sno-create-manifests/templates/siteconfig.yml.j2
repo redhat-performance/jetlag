@@ -1,0 +1,93 @@
+---
+# Manifests for Siteconfigs in gitops
+# 100-namespace
+# siteconfig
+#
+# Commented out because the namespace will be created beforehand
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: {{ inventory_hostname }}
+#   labels:
+#     name: {{ inventory_hostname }}
+---
+apiVersion: ran.openshift.io/v1
+kind: SiteConfig
+metadata:
+  name: {{ inventory_hostname }}
+  namespace: {{ inventory_hostname }}
+spec:
+  baseDomain: {{ hostvars[inventory_hostname]['base_domain'] }}
+  pullSecretRef:
+    name: "assisted-deployment-pull-secret"
+  clusterImageSetNameRef: {{ cluster_image_set }}
+  sshPublicKey: {{ lookup('file', ssh_public_key_file) }}
+  clusters:
+  - clusterName: {{ inventory_hostname }}
+    clusterType: "sno"
+    clusterProfile: "du"
+    clusterLabels:
+      group-sno-du: 'true'
+      group-du-sno: ''
+      common: 'true'
+      name: {{ inventory_hostname }}
+      sites: {{ inventory_hostname }}
+      observability: disabled
+    clusterNetwork:
+    - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "10.128.0.0/14" }}
+      hostPrefix: {{  hostvars[inventory_hostname]['network_prefix']  }}
+    machineNetwork:
+    - cidr: {{ hostvars[inventory_hostname]['machine_network'] }}
+    serviceNetwork:
+    - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "172.30.0.0/16" }}
+    # additionalNTPSources:
+    # - {{ hostvars[inventory_hostname]['hv_ip'] }}
+    nodes:
+    - hostName: "{{ inventory_hostname }}"
+      bmcAddress: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
+      bmcCredentialsName:
+        name: {{ inventory_hostname }}-bmc-secret
+      bootMACAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
+      bootMode: "UEFI"
+      rootDeviceHints:
+        hctl: '0:1:0'
+      # cpuset: "0-1,2-3"
+      nodeNetwork:
+        interfaces:
+        - name: eno1
+          macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
+        config:
+          interfaces:
+          - name: eno1
+            type: ethernet
+            state: up
+            macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
+{% if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv4 %}
+            ipv4:
+              enabled: true
+              address:
+              - ip: "{{ hostvars[inventory_hostname]['ip'] }}"
+                prefix-length: {{ hostvars[inventory_hostname]['network_prefix'] }}
+            ipv6:
+              enabled: false
+{% else %}
+            ipv4:
+              enabled: false
+            ipv6:
+              enabled: true
+              address:
+              - ip: "{{ hostvars[inventory_hostname]['ip'] }}"
+                prefix-length: {{ hostvars[inventory_hostname]['network_prefix'] }}
+{% endif %}
+          dns-resolver:
+            config:
+              # search:
+              # - clus2.t5g.lab.eng.bos.redhat.com
+              server:
+              - {{ hostvars[inventory_hostname]['hv_ip'] }}
+          routes:
+            config:
+            - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "0.0.0.0/0" }}
+              next-hop-interface: eno1
+              next-hop-address: {{ hostvars[inventory_hostname]['gateway'] }}
+              table-id: 254

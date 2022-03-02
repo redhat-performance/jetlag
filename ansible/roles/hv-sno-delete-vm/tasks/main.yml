@@ -1,0 +1,36 @@
+---
+# hv-sno-delete-vm tasks
+
+- name: Remove directories for hv-sno manifests on bastion
+  file:
+    path: "{{ item }}"
+    state: absent
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  loop:
+  - "{{ hv_sno_manifests_directory }}/manifests"
+  - "{{ hv_sno_manifests_directory }}/siteconfigs"
+  - "{{ hv_sno_manifests_directory }}/pre-siteconfigs-manifests"
+  when: hv_sno_remove_all_manifests
+
+- name: Destroy SNO VM
+  shell: |
+    virsh destroy {{ inventory_hostname }}
+  ignore_errors: true
+
+- name: Undefine SNO VM
+  shell: |
+    virsh undefine --nvram {{ inventory_hostname }}
+  ignore_errors: true
+
+- name: Delete SNO VM disk
+  file:
+    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
+    state: absent
+  ignore_errors: true
+
+- name: Remove SNO VM definition file
+  file:
+    path: "{{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml"
+    state: absent
+  ignore_errors: true
