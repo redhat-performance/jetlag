@@ -51,7 +51,11 @@ spec:
       bootMode: "UEFI"
       rootDeviceHints:
         hctl: '0:1:0'
-      # cpuset: "0-1,2-3"
+{% if siteconfig_enable_cpuset %}
+      cpuset: "{{ siteconfig_cpuset }}"
+{% else %}
+      # cpuset: "{{ siteconfig_cpuset }}"
+{% endif %}
       nodeNetwork:
         interfaces:
         - name: eno1
