@@ -23,5 +23,11 @@ hv_sno_cpu_count: 8
 hv_sno_memory_size: 28
 hv_sno_disk_size: 120
 
+# Bandwith limits for SNO VMs (in KB/s)
+hv_sno_bandwidth_limit: false
+hv_sno_bandwidth_average: 11500
+hv_sno_bandwidth_peak: 12500
+hv_sno_bandwidth_burst: 11750
+
 # Path for SNO VMs on disk2
 disk2_mount_path: /mnt/disk2

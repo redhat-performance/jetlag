@@ -87,6 +87,12 @@
       <mac address='{{ hostvars[inventory_hostname]['mac_address'] }}'/>
       <source bridge='br0'/>
       <model type='virtio'/>
+{% if bw_limit | default(false) %}
+      <bandwidth>
+        <inbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+        <outbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+      </bandwidth>
+{% endif %}
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>
     <serial type='pty'>
