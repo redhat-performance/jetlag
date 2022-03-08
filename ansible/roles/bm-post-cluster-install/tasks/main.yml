@@ -7,7 +7,6 @@
     state: directory
   with_items:
     - "{{ bastion_cluster_config_dir }}"
-    - "{{ bastion_cluster_config_dir }}/catalogsource-4.9"
     - "{{ bastion_cluster_config_dir }}/gitops"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/net-attach-def"
@@ -42,8 +41,6 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: catalogsource-4.9.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/catalogsource-4.9/catalogsource-4.9.yml"
     - src: openshift-gitops-operator.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
     - src: localstorage.yml.j2
@@ -98,11 +95,6 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror/catalogSource.yaml
   when: use_disconnected_registry | default(false)
 
-- name: Apply catalogSource for OCP 4.9 on 4.10 non-disconnected clusters
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/catalogsource-4.9/catalogsource-4.9.yml
-  when: openshift_version == "4.10" and not use_disconnected_registry | default(false)
-
 - name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store
   when: fix_metal3_provisioningosdownloadurl
   block:
@@ -138,7 +130,7 @@
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get subs -n openshift-operators openshift-gitops-operator -o json | jq -r '.status.installplan.name'
     register: installplan_name
     until: installplan_name.stdout | length > 5
-    retries: 10
+    retries: 60
     delay: 1
 
   - name: Approve installPlan

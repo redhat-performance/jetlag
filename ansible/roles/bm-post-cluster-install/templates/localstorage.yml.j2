@@ -23,18 +23,10 @@ metadata:
 spec:
   installPlanApproval: Automatic
   name: local-storage-operator
+  channel: "{{ openshift_version }}"
 {% if use_disconnected_registry | default(false) %}
-{% if openshift_version == "4.10" %}
-  channel: "4.9"
-{% else %}
-  channel: "{{ openshift_version }}"
-{% endif %}
   source: {{ operator_index_name }}
-{% elif openshift_version == "4.10" %}
-  channel: "4.9"
-  source: redhat-operators-4-9
 {% else %}
-  channel: "{{ openshift_version }}"
   source: redhat-operators
 {% endif %}
   sourceNamespace: openshift-marketplace
