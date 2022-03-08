@@ -96,7 +96,9 @@
   when: use_disconnected_registry | default(false)
 
 - name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store
-  when: fix_metal3_provisioningosdownloadurl
+  when:
+  - fix_metal3_provisioningosdownloadurl
+  - (openshift_version == "4.8" or openshift_version == "4.9")
   block:
   - name: Determine metal3 provisioning URL
     shell: |
