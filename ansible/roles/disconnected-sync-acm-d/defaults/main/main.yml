@@ -10,3 +10,6 @@ disconnected_sync_path: /opt/registry/sync
 # Number of concurrent requests to a registry while mirroring content (oc defaults to 6)
 # When this is set too high (>2?), You will see "429 Too Many Requests" from quay
 max_per_registry: 2
+
+fix_acm_postgres: false
+corrected_postgres_image_sha: b006af9af125adce28546d0ed9d77421abe54182741f6b5e1d31c88dd763580b
