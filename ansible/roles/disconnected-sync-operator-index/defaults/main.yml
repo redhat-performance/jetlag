@@ -1,0 +1,15 @@
+---
+# disconnected-sync-operator-index default vars
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+disconnected_registry_host: "{{ groups['bastion'][0] }}"
+disconnected_registry_port: 5000
+
+registry_path: /opt/registry
+
+# Defaults here match default of 4.10
+operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.10
+operator_index_name: redhat-operator-index
+operator_index_tag: v4.10
+
+operators_to_sync: cluster-logging,local-storage-operator,openshift-gitops-operator,performance-addon-operator,ptp-operator,sriov-network-operator
