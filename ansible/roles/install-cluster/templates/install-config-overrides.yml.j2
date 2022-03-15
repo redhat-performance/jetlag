@@ -9,9 +9,6 @@ imageContentSources:
   - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocpmetal
-  source: quay.io/ocpmetal
-- mirrors:
   - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure
   source: quay.io/edge-infrastructure
 additionalTrustBundle: |

@@ -1,12 +1,12 @@
 ---
 # bastion-assisted-installer default vars
 
-assisted_image_service_image: quay.io/edge-infrastructure/assisted-image-service:v2.0.10
-assisted_installer_image: quay.io/edge-infrastructure/assisted-installer:v2.0.10
-assisted_installer_agent_image: quay.io/edge-infrastructure/assisted-installer-agent:v2.0.10
-assisted_installer_controller_image: quay.io/ocpmetal/assisted-installer-controller:v2.0.10
-assisted_installer_ui_image: quay.io/edge-infrastructure/assisted-installer-ui:v2.0.7
-assisted_service_image: quay.io/edge-infrastructure/assisted-service:v2.0.10
+assisted_image_service_image: quay.io/edge-infrastructure/assisted-image-service:v2.1.2
+assisted_installer_image: quay.io/edge-infrastructure/assisted-installer:v2.1.2
+assisted_installer_agent_image: quay.io/edge-infrastructure/assisted-installer-agent:v2.1.2
+assisted_installer_controller_image: quay.io/edge-infrastructure/assisted-installer-controller:v2.1.2
+assisted_installer_ui_image: quay.io/edge-infrastructure/assisted-installer-ui:v2.1.2
+assisted_service_image: quay.io/edge-infrastructure/assisted-service:v2.1.2
 assisted_postgres_image: quay.io/edge-infrastructure/postgresql-12-centos7
 
 # This will be your bastion machine (if you run setup-bastion playbook)

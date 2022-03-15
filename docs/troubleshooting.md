@@ -42,13 +42,14 @@ Example accessing the disconnected registry and listing repositories:
 100   532  100   532    0     0    104      0  0:00:05  0:00:05 --:--:--   120
 {
   "repositories": [
-    "ocp4/openshift4",
+    "edge-infrastructure/assisted-image-service",
     "edge-infrastructure/assisted-installer",
     "edge-infrastructure/assisted-installer-agent",
-    "ocpmetal/assisted-installer-controller",
+    "edge-infrastructure/assisted-installer-controller",
+    "edge-infrastructure/assisted-installer-ui",
     "edge-infrastructure/assisted-service",
-    "edge-infrastructure/ocp-metal-ui",
     "edge-infrastructure/postgresql-12-centos7",
+    "ocp4/openshift4",
     "olm-mirror/olm-mirror-redhat-operator-index",
     "olm-mirror/openshift4-ose-local-storage-diskmaker",
     "olm-mirror/openshift4-ose-local-storage-operator",
