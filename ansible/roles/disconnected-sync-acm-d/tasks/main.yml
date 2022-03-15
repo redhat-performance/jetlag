@@ -39,17 +39,6 @@
     loop:
     - regexp: "__DESTINATION_ORG__"
       replace: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d"
-    - regexp: "registry.redhat.io/rhel8/postgresql-12@sha256:.*="
-      replace: "registry.redhat.io/rhel8/postgresql-12@sha256:{{ corrected_postgres_image_sha }}="
-      enabled: "{{ fix_acm_postgres | bool }}"
-
-  - name: Fix mce-custom-registry
-    replace:
-      path: "{{ disconnected_sync_path }}/acm/mapping.txt"
-      regexp: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/mce-custom-registry:.*"
-      replace: "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/mce-custom-registry:{{ acm_snapshot }}"
-      backup: true
-    when: fix_mce_custom_registry_image
 
 - name: Generate acm mapping file from acm-custom-registry image
   when: not download_mapping_file_from_deploy_repo
