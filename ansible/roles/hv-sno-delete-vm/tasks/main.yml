@@ -10,7 +10,6 @@
   loop:
   - "{{ hv_sno_manifests_directory }}/manifests"
   - "{{ hv_sno_manifests_directory }}/siteconfigs"
-  - "{{ hv_sno_manifests_directory }}/pre-siteconfigs-manifests"
   when: hv_sno_remove_all_manifests
 
 - name: Destroy SNO VM

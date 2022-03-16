@@ -1,17 +1,9 @@
 ---
-# The siteconfig manifests
+# The siteconfig resources
 #
-# 100-namespace
 # 200-bmc-secret
 # 400-image-pull-secret
 #
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ inventory_hostname }}
-  labels:
-    name: {{ inventory_hostname }}
----
 apiVersion: v1
 kind: Secret
 metadata:

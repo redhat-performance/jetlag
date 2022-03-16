@@ -1,16 +1,4 @@
 ---
-# Manifests for Siteconfigs in gitops
-# 100-namespace
-# siteconfig
-#
-# Commented out because the namespace will be created beforehand
-# apiVersion: v1
-# kind: Namespace
-# metadata:
-#   name: {{ inventory_hostname }}
-#   labels:
-#     name: {{ inventory_hostname }}
----
 apiVersion: ran.openshift.io/v1
 kind: SiteConfig
 metadata:
