@@ -4,6 +4,7 @@ _**Table of Contents**_
 
 <!-- TOC -->
 - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
+- [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
 <!-- /TOC -->
@@ -15,6 +16,22 @@ Current jetlag lab use selects machines for roles bastion, control-plane, and wo
 ```yaml
 ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
 ```
+## DU Profile for SNOs
+
+Use var `du_profile` to apply the DU specific machine configurations to your SNOs. Append the var to the "Extra vars" section of your `all.yml` or `ibmcloud.yml`.
+
+```yaml
+du_profile: true
+```
+As a result, the following machine configuration files will be added to the cluster during SNO install:
+* 01-container-mount-ns-and-kubelet-conf-master.yaml 
+* 03-sctp-machine-config-master.yaml
+* 04-accelerated-container-startup-master.yaml
+* 05-chrony-dynamic-master.yaml
+
+In addition, Network Diagnostics will be disabled post SNO install.
+
+Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
 
 ## Post Deployment Tasks
 
