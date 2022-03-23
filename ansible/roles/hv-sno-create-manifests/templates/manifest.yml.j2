@@ -166,6 +166,8 @@ metadata:
   name: {{ inventory_hostname }}
   namespace: {{ inventory_hostname }}
 spec:
+  additionalNTPSources:
+  - {{ hostvars[inventory_hostname]['hv_ip'] }}
   clusterRef:
     name: {{ inventory_hostname }}
     namespace: {{ inventory_hostname }}
@@ -197,7 +199,7 @@ spec:
     credentialsName: {{ inventory_hostname }}-bmc-secret
   bootMACAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
   automatedCleaningMode: disabled
-  online: false
+  online: true
 {% if siteconfig_enable_cpuset %}
 ---
 kind: ConfigMap
