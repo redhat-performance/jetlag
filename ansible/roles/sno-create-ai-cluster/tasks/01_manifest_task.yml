@@ -15,6 +15,19 @@
   - file_name: 99-master-workload-partitioning.yml
     template_name: 99-master-workload-partitioning.yml
     enabled: "{{ install_performance_addon_operator }}"
+  - file_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
+    template_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
+    enabled: "{{ du_profile }}"
+  - file_name: 03-sctp-machine-config-master.yaml
+    template_name: 03-sctp-machine-config-master.yaml
+    enabled: "{{ du_profile }}"
+  - file_name: 04-accelerated-container-startup-master.yaml
+    template_name: 04-accelerated-container-startup-master.yaml
+    enabled: "{{ du_profile }}"
+  - file_name: 05-chrony-dynamic-master.yaml
+    template_name: 05-chrony-dynamic-master.yaml
+    enabled: "{{ du_profile }}"
+
   vars:
     ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"
     kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"

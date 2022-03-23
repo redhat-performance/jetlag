@@ -28,6 +28,8 @@ spec:
      count: {{ hugepages_count }}
      node: 0
 {% endif %}
+  net:
+    userLevelNetworking: true
   # for 3 node converged master/worker and SNO clusters we use the masters as a selector
   nodeSelector:
     node-role.kubernetes.io/master: ""

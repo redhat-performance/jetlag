@@ -19,3 +19,5 @@ kernel_rt: false
 hugepages_count: 16
 isolated_cpus: 2-47,50-95
 topology_manager_policy: restricted
+
+du_profile: false
