@@ -54,7 +54,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 Versions:
 
-* Ansible 2.10 (on machine running jetlag playbooks)
+* Ansible 4.10 (core 2.11.10) (on machine running jetlag playbooks)
 * ibmcloud cli => 2.0.1 (IBMcloud environments)
 * RHEL 8.4 / Centos 8.4 (Bastion)
 * podman 3 (Bastion)
