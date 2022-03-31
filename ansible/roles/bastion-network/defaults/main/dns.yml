@@ -13,6 +13,9 @@ bastion_dnsmasq_cd_network_count: 0
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
 etc_hosts_ingress_routes:
+- assisted-image-service-multicluster-engine
+- assisted-service-multicluster-engine
+- multicloud-console
 - oauth-openshift
 - console-openshift-console
 - downloads-openshift-console
@@ -26,5 +29,4 @@ etc_hosts_ingress_routes:
 - thanos-querier-openshift-monitoring
 - assisted-image-service-open-cluster-management
 - assisted-service-open-cluster-management
-- multicloud-console
 - dittybopper-dittybopper
