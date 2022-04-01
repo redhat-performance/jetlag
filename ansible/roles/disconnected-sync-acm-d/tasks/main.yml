@@ -84,7 +84,7 @@
 
 - name: Mirror cluster-group-upgrades-operator image
   shell: |
-    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ cluster_group_upgrades_operator_image }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/openshift-kni/cluster-group-upgrades-operator:latest --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ cluster_group_upgrades_operator_image }}:{{ cluster_group_upgrades_operator_image_tag }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/openshift-kni/cluster-group-upgrades-operator:{{ cluster_group_upgrades_operator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror kube-rbac-proxy image
   shell: |

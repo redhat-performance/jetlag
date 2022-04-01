@@ -6,7 +6,8 @@ acm_snapshot: 2.5.0-DOWNSTREAM-2022-03-14-18-18-07
 ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator:latest
 
 # TALO - Topology Aware Lifecycle Operator used with DU profile
-cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator:latest
+cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
+cluster_group_upgrades_operator_image_tag: 4.10.0
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 
 # Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
