@@ -136,7 +136,7 @@ hw_nic_name:
     - ens1f0
     - ens1f1
 
-# Based on SNO Size (8vCPU, 28GiB Memory, 120G Disk)
+# Based on SNO Size (8vCPU, 18GiB Memory, 120G Disk)
 hw_vm_sno_counts:
   scalelab:
     r630:
@@ -144,36 +144,78 @@ hw_vm_sno_counts:
       sdb: 2
     r640:
       default: 8
-      sdb: 5
-      nvme0n1: 5
+      sdb: 12
+      nvme0n1: 12
     r650:
       default: 7
-      nvme0n1: 11
+      nvme0n1: 20
     r730xd:
-      default: 2
-      nvme0n1: 2
+      default: 3
+      nvme0n1: 3
     r930:
       default: 5
-      nvme0n1: 13
+      nvme0n1: 14
     fc640:
       default: 8
     6018r:
       default: 2
     6048r:
-      default: 9
+      default: 8
     # Or potentially 13 on larger memory 1029u
     1029u:
       default: 0
-      nvme0n1: 9
+      nvme0n1: 13
     1029p:
-      default: 4
-      nvme0n1: 5
+      default: 6
+      nvme0n1: 7
     5039ms:
       default: 0
-      sdb: 2
+      sdb: 3
     6049p:
-      default: 5
-      nvme0n1: 8
+      default: 10
+      nvme0n1: 10
     dl360:
-      default: 5
-      sdc: 8
+      default: 8
+      sdc: 12
+
+# # Based on SNO Size (8vCPU, 28GiB Memory, 120G Disk)
+# hw_vm_sno_counts:
+#   scalelab:
+#     r630:
+#       default: 2
+#       sdb: 2
+#     r640:
+#       default: 8
+#       sdb: 5
+#       nvme0n1: 5
+#     r650:
+#       default: 7
+#       nvme0n1: 10
+#     r730xd:
+#       default: 2
+#       nvme0n1: 2
+#     r930:
+#       default: 5
+#       nvme0n1: 12
+#     fc640:
+#       default: 8
+#     6018r:
+#       default: 2
+#     6048r:
+#       default: 8
+#     # Or potentially 13 on larger memory 1029u
+#     1029u:
+#       default: 0
+#       nvme0n1: 8
+#     1029p:
+#       default: 4
+#       nvme0n1: 4
+#     5039ms:
+#       default: 0
+#       sdb: 2
+#     6049p:
+#       default: 5
+#       nvme0n1: 8
+#     dl360:
+#       default: 5
+#       sdc: 8
