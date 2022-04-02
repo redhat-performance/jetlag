@@ -20,7 +20,7 @@ hv_ip_offset: 0
 
 # Emulated bare-metal SNO VM Size
 hv_sno_cpu_count: 8
-hv_sno_memory_size: 28
+hv_sno_memory_size: 18
 hv_sno_disk_size: 120
 
 # Bandwith limits for SNO VMs (in KB/s)
