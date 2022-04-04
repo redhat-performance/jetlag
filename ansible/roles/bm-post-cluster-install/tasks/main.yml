@@ -9,6 +9,7 @@
     - "{{ bastion_cluster_config_dir }}"
     - "{{ bastion_cluster_config_dir }}/gitops"
     - "{{ bastion_cluster_config_dir }}/localstorage"
+    - "{{ bastion_cluster_config_dir }}/minio"
     - "{{ bastion_cluster_config_dir }}/net-attach-def"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
     - "{{ bastion_cluster_config_dir }}/performance-addon-operator"
@@ -47,6 +48,10 @@
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
     - src: localvolume.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
+    - src: localvolume2.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml"
+    - src: minio.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
     - src: network-attachment-definition.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
     - src: cluster-monitoring-config.yml.j2
@@ -160,6 +165,15 @@
     retries: 60
     delay: 2
 
+  - name: Create localvolume2 resource
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml
+    register: lv_result
+    until: not lv_result.failed
+    retries: 60
+    delay: 2
+    when: localvolume2_configuration
+
   - name: Configure OpenShift-Monitoring Prometheus to use localstorage
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
@@ -184,6 +198,20 @@
     until: not lv_result.failed
     retries: 450
     delay: 2
+
+  - name: Create localvolume2 resource
+    shell:
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml
+    register: lv_result
+    until: not lv_result.failed
+    retries: 60
+    delay: 2
+    when: localvolume2_configuration
+
+- name: Setup Minio
+  when: setup_minio | bool
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/minio/minio.yml
 
 - name: Migrate ingresscontrollers (OpenShift Router) to master nodes
   when: migrate_ingresscontrollers | bool

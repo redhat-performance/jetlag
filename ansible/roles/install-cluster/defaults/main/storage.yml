@@ -12,3 +12,6 @@ worker_localstorage_lv_count: 10
 worker_localstorage_lv_size: 100G
 
 prometheus_retention_period: 15d
+
+localvolume2_configuration: false
+localvolume2_device: /dev/sdc

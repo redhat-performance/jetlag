@@ -89,3 +89,7 @@
 - name: Mirror kube-rbac-proxy image
   shell: |
     oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ kube_rbac_proxy_image }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/kubebuilder/kube-rbac-proxy:v0.8.0 --keep-manifest-list --continue-on-error=true
+
+- name: Mirror minio image
+  shell: |
+    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ minio_image }}:{{ minio_image_tag }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/minio/minio:{{ minio_image_tag }} --keep-manifest-list --continue-on-error=true

@@ -1,7 +1,7 @@
 ---
 # Sample disconnected-sync-acm-d vars file
 
-acm_snapshot: 2.5.0-DOWNSTREAM-2022-03-14-18-18-07
+acm_snapshot: 2.5.0-DOWNSTREAM-2022-04-05-06-20-55
 
 ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator:latest
 
@@ -9,6 +9,9 @@ ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator:latest
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
 cluster_group_upgrades_operator_image_tag: 4.10.0
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+
+minio_image: quay.io/minio/minio
+minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 
 # Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
 acm_operator_bundle: v2.3.0-185
