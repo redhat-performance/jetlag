@@ -1,6 +1,5 @@
 # Deployed by Jetlag automation for hypervisors
 search {{ base_dns_name }}
-nameserver {{ hostvars[inventory_hostname].ip }}
 {% for dns in labs[lab]['dns'] %}
-# nameserver {{ dns }}
+nameserver {{ dns }}
 {% endfor %}
