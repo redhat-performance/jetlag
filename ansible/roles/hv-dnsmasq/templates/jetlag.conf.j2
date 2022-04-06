@@ -1,4 +1,11 @@
 # Jetlag provided DNS
+
+# Do not use the servers in /etc/resolv.conf, this will flood the lab dns servers
+no-resolv
+
+# Block the ridiculous number of requests for the timeservers
+address=/0.rhel.pool.ntp.org/
+
 # Bastion / assisted-installer / http-server / registry / router / dns
 address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
 
