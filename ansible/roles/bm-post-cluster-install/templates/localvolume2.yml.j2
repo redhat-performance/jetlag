@@ -1,0 +1,23 @@
+---
+apiVersion: "local.storage.openshift.io/v1"
+kind: "LocalVolume"
+metadata:
+  name: "localvolume2"
+  namespace: "openshift-local-storage"
+spec:
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: "localstorage"
+        operator: In
+        values:
+        - "true"
+  tolerations:
+  - effect: NoSchedule
+    key: "node-role.kubernetes.io/master"
+  storageClassDevices:
+  - storageClassName: "localstorage2-sc"
+    volumeMode: Filesystem
+    fsType: xfs
+    devicePaths:
+    - {{ localvolume2_device }}

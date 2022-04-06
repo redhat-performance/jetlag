@@ -32,6 +32,11 @@ fix_metal3_provisioningosdownloadurl: false
 migrate_ingresscontrollers: false
 migrate_monitoring: false
 
+# Minio deployment is an object storage pod for use with ACM
+setup_minio: false
+minio_image_tag: RELEASE.2022-04-01T03-41-39Z
+minio_pv_storageclass: localstorage2-sc
+
 # Setup a network attachment definition so pods can have a 2nd interface (macvlan type only)
 setup_network_attachment_definition: false
 # Configuration of the network attachment definition
