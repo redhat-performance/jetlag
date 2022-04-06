@@ -74,3 +74,16 @@ spec:
   selector:
     app.kubernetes.io/name: minio
   type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: minio
+  namespace: minio
+spec:
+#  tls:
+#    termination: edge
+  to:
+    name: minio
+  port:
+    targetPort: 9000
