@@ -16,11 +16,15 @@
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{ item }}"
-    dest: "{{ bastion_cluster_config_dir }}/{{ item }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{ item.name }}"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.dest }}"
   with_items:
-    - kubeadmin-password
-    - kubeconfig
+    - name: kubeadmin-password
+      dest: kubeadmin-password
+    - name: kubeconfig
+      dest: kubeconfig
+    - name: kubeconfig
+      dest: kubeconfig.backup
 
 - name: Apply a label to the worker node(s)
   shell: |

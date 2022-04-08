@@ -30,3 +30,4 @@ etc_hosts_ingress_routes:
 - assisted-image-service-open-cluster-management
 - assisted-service-open-cluster-management
 - dittybopper-dittybopper
+- minio-minio
