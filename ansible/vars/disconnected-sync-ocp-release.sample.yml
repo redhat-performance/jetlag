@@ -1,6 +1,6 @@
 ---
 # Sample disconnected-sync-ocp-release vars file
 
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.10.8-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.10.9-x86_64
 
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
