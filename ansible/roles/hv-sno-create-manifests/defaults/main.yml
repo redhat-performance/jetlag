@@ -3,7 +3,7 @@
 
 hv_sno_manifests_directory: /root/hv-sno
 
-cluster_image_set: openshift-4.10.8
+cluster_image_set: openshift-4.10.9
 
 registry_path: /opt/registry
 
