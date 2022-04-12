@@ -3,7 +3,10 @@
 
 acm_snapshot: 2.5.0-DOWNSTREAM-2022-04-08-18-34-34
 
-ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator:latest
+# Temporary fix to pull the correct image for this testing
+# ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator
+ztp_site_generator_image: quay.io/melserng/ztp-site-generator
+ztp_site_generator_image_tag: v4.10.0
 
 # TALO - Topology Aware Lifecycle Operator used with DU profile
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator

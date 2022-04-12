@@ -80,7 +80,7 @@
 
 - name: Mirror ztp-site-generator image
   shell: |
-    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ ztp_site_generator_image }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/openshift-kni/ztp-site-generator:latest --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt {{ ztp_site_generator_image }}:{{ ztp_site_generator_image_tag }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/openshift-kni/ztp-site-generator:{{ ztp_site_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror cluster-group-upgrades-operator image
   shell: |
