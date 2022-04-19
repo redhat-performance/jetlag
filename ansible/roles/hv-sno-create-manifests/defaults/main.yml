@@ -14,3 +14,6 @@ bmc_password_base64: "{{ 'password' | b64encode }}"
 # Used in conjunction with including the PerformanceProfile in the DU profile
 siteconfig_enable_cpuset: false
 siteconfig_cpuset: "0-3"
+
+# Used to enable observability in siteconfigs
+siteconfig_observability: false

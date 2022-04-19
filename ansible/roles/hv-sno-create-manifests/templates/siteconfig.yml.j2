@@ -20,7 +20,11 @@ spec:
       common: 'true'
       name: {{ inventory_hostname }}
       sites: {{ inventory_hostname }}
+{% if siteconfig_observability %}
+      observability: enabled
+{% else %}
       observability: disabled
+{% endif %}
     clusterNetwork:
     - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "10.128.0.0/14" }}
       hostPrefix: {{  hostvars[inventory_hostname]['network_prefix']  }}
