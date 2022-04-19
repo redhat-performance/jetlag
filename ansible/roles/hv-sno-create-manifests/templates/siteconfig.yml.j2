@@ -41,8 +41,8 @@ spec:
         name: {{ inventory_hostname }}-bmc-secret
       bootMACAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
       bootMode: "UEFI"
-      rootDeviceHints:
-        hctl: '0:1:0'
+      # rootDeviceHints:
+      #   hctl: '0:0:0:0'
 {% if siteconfig_enable_cpuset %}
       cpuset: "{{ siteconfig_cpuset }}"
 {% else %}
