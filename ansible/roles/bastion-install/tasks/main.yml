@@ -224,3 +224,19 @@
     dest: /usr/local/bin/yq
     remote_src: true
     mode: 0700
+
+- name: Download promdump
+  get_url:
+    url: "{{ promdump_url }}"
+    dest: "{{ promdump_tarball }}"
+
+- name: Untar promdump
+  unarchive:
+    src: "{{ promdump_tarball }}"
+    dest: /usr/local/bin
+    remote_src: yes
+
+- name: Remove promdump tarball
+  file:
+    path: "{{ promdump_tarball }}"
+    state: absent
