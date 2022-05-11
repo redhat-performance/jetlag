@@ -9,3 +9,7 @@ yq_url: https://github.com/mikefarah/yq/releases/download/v4.17.2/yq_linux_amd64
 # Since the use of tc on the bastion machine is rare and only for remote worker node testing in scale/alias labs, we
 # disable rebooting the bastion machine by default.
 bastion_install_tc_reboot: false
+
+# promdump
+promdump_url: https://github.com/ihcsim/promdump/releases/download/v0.2.3/kubectl-promdump-linux-amd64-v0.2.3.tar.gz
+promdump_tarball: /tmp/kubectl-promdump-linux-amd64.tar.gz
