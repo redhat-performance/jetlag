@@ -228,6 +228,7 @@
     loop_control:
       index_var: idx
 
+  # Skip r750 type since it has no extra disk
   # Skip fc640 type since it has no extra disk
   # Skip 6018r type since it has only 2 80G disks
 
