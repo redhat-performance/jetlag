@@ -31,6 +31,7 @@ hw_vendor:
   r640: Dell
   r650: Dell
   r730xd: Dell
+  r750: Dell
   r930: Dell
   fc640: Dell
   740xd: Dell
@@ -83,6 +84,12 @@ hw_nic_name:
     - eno2
     - enp130s0f0
     - enp130s0f1
+    r750:
+    - eno8303
+    - ens3f0
+    - ens3f1
+    - ens6f0
+    - ens6f1
     r930:
     - em3
     - eno1
@@ -152,6 +159,8 @@ hw_vm_sno_counts:
     r730xd:
       default: 3
       nvme0n1: 3
+    r750:
+      default: 2
     r930:
       default: 5
       nvme0n1: 14
