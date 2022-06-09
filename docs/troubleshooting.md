@@ -36,7 +36,7 @@ HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
 
 Example accessing the disconnected registry and listing repositories:
 ```console
-[root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq                                                 
+[root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   532  100   532    0     0    104      0  0:00:05  0:00:05 --:--:--   120
@@ -130,17 +130,17 @@ If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebui
 
 Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
 
-## Scalelab - Upgrade RHEL to 8.4
+## Scalelab - Upgrade RHEL to 8.6
 
 On the bastion machine:
 
 ```console
-[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.4
-Changing repository from 8.2 to 8.4
+[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.6
+Changing repository from 8.2 to 8.6
 Cleaning dnf repo cache..
 
 -------------------------
-Run dnf update to upgrade to RHEL 8.4
+Run dnf update to upgrade to RHEL 8.6
 
 [root@f16-h21-000-1029p ~]# dnf update -y
 ...
