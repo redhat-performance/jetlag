@@ -57,15 +57,6 @@
       ssh-keygen -q -t rsa -f /root/.ssh/id_rsa -C "" -N ""
     when: not ssh_key_result.stat.exists
 
-  # Ansible isn't available on the IBMCloud RHEL/Centos bare-metal machine for unknown reasons at this moment
-  - name: Install ansible
-    yum:
-      name:
-      - ansible
-      state: present
-      update_cache: true
-      disable_gpg_check: yes
-
   - name: Setup chronyd
     template:
       src: chrony.conf.j2
