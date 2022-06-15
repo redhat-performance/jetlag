@@ -29,7 +29,7 @@ https://cloud.ibm.com/docs/bare-metal?topic=bare-metal-about-bm
 
 Points to keep in mind while ordering hardware:
 
-* Ensure that you order either CentOS or RHEL machines with a new enough version (8.4) otherwise podman will not have host networking functionality
+* Ensure that you order either CentOS or RHEL machines with a new enough version (8.6) otherwise podman will not have host networking functionality
 * Add your SSH keys while ordering. Generate a new key pair for ibmcloud as a best practice.
 * Select an SSD disk
 * 32 GB RAM at minimum

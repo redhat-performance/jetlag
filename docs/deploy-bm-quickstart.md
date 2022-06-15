@@ -354,7 +354,7 @@ bmc_user=quads
 bmc_password=XXXXXXX
 ```
 
-** If your bastion machine is not running RHEL 8.4, you will have to upgrade following [this short procedure](troubleshooting.md#upgrade-rhel-to-84-in-scalelab).
+** If your bastion machine is not running RHEL 8.6, you will have to upgrade following [this short procedure](troubleshooting.md#upgrade-rhel-to-86-in-scalelab).
 
 Next run the `setup-bastion.yml` playbook ...
 
