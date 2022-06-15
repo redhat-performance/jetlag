@@ -8,7 +8,7 @@ _**Table of Contents**_
 - [Bastion - Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
 - [Dell - Reset BMC / iDrac](#dell---reset-bmc--idrac)
 - [Scalelab - Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
-- [Scalelab - Upgrade RHEL to 8.4](#scalelab---upgrade-rhel-to-84)
+- [Scalelab - Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
 - [SuperMicro - Reset BMC / Resolving redfish connection error](#supermicro---reset-bmc--resolving-redfish-connection-error)
 - [Supermicro - The node product key needs to be activated for this device](#supermicro---the-node-product-key-needs-to-be-activated-for-this-device)
 - [Supermicro - Failure of TASK SuperMicro Set Boot](#supermicro---failure-of-task-supermicro-set-boot)
