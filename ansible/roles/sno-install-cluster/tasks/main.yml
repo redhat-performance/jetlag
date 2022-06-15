@@ -15,6 +15,28 @@
   loop_control:
     index_var: ai_indx
 
+- name: Get host ids
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/hosts"
+    method: GET
+    body_format: json
+    status_code: [200]
+    return_content: true
+  register: get_hosts
+  with_items: "{{ ai_cluster_ids | dict2items  }}"
+  when: sno_localstorage_configuration
+
+- name: Apply sno host ignition config overrides
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.cluster_id }}/hosts/{{ item.id }}/ignition"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: { "config": "{{ lookup('template', 'sno.ign.j2') | to_json }}" }
+  with_items: "{{ get_hosts | json_query('results[*].json') }}"
+  when: sno_localstorage_configuration
+
 - name: Install cluster(s)
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/actions/install"
