@@ -59,10 +59,19 @@ Versions:
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 (Bastion)
 
+Installing Ansible
+
+```console
+$ python3 -m venv ansible       # Create a virtualenv if one does not already exist
+$ source ansible/bin/activate   # Activate the virtual environment
+$ pip install --upgrade pip     # Ensure pip is updated
+$ pip install ansible           # Install the lastest version of ansible
+```
+
 For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
 
 
-Pre-reqs for Supermicro hardware
+Pre-reqs for Supermicro hardware:
 
 * [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo root and renamed `smcipmitool.tar.gz`
 

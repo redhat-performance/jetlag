@@ -45,7 +45,6 @@
     virsh pool-define /opt/hv/pool.xml
     virsh pool-start default
   when: check_pool_exists.failed
-  register: output
 
 - name: Setup libvirt default storage pool auto start
   shell: |
@@ -55,4 +54,4 @@
 - name: Disable default libvirt network
   shell: |
     virsh net-destroy default
-  register: network_output
+  ignore_errors: true
