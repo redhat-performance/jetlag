@@ -90,6 +90,7 @@
 - name: Create database container in assisted-service pod
   containers.podman.podman_container:
     pod: assisted-service
+    network: host
     env_file: /opt/assisted-service/onprem-environment
     volume:
     - /opt/assisted-service/data/postgresql:/var/lib/pgsql
