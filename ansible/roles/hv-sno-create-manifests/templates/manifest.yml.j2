@@ -41,7 +41,7 @@ spec:
     - name: enp1s0
       type: ethernet
       state: up
-      {{ "ipv6" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "ipv4" }}:
+      {{ "ipv6" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
         enabled: true
         address:
         - ip: {{ hostvars[inventory_hostname]['ip'] }}
@@ -53,7 +53,7 @@ spec:
         - {{ hostvars[inventory_hostname]['hv_ip'] }}
     routes:
       config:
-      - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "0.0.0.0/0" }}
+      - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
         metric: 1
         next-hop-address: {{ hostvars[inventory_hostname]['gateway'] }}
         next-hop-interface: enp1s0
@@ -85,12 +85,12 @@ spec:
     name: {{ cluster_image_set }}
   networking:
     clusterNetwork:
-      - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "10.128.0.0/14" }}
+      - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
         hostPrefix: {{ hostvars[inventory_hostname]['network_prefix'] }}
     machineNetwork:
       - cidr: {{ hostvars[inventory_hostname]['machine_network'] }}
     serviceNetwork:
-      - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "172.30.0.0/16" }}
+      - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
   provisionRequirements:
     controlPlaneAgents: 1
     workerAgents: 0

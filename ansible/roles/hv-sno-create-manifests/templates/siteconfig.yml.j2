@@ -26,12 +26,12 @@ spec:
       observability: disabled
 {% endif %}
     clusterNetwork:
-    - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "10.128.0.0/14" }}
+    - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
       hostPrefix: {{  hostvars[inventory_hostname]['network_prefix']  }}
     machineNetwork:
     - cidr: {{ hostvars[inventory_hostname]['machine_network'] }}
     serviceNetwork:
-    - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "172.30.0.0/16" }}
+    - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
     additionalNTPSources:
     - {{ hostvars[inventory_hostname]['hv_ip'] }}
     nodes:
@@ -58,7 +58,7 @@ spec:
             type: ethernet
             state: up
             macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
-{% if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv4 %}
+{% if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4 %}
             ipv4:
               enabled: true
               address:
@@ -83,7 +83,7 @@ spec:
               - {{ hostvars[inventory_hostname]['hv_ip'] }}
           routes:
             config:
-            - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6 else "0.0.0.0/0" }}
+            - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
               next-hop-interface: eno1
               next-hop-address: {{ hostvars[inventory_hostname]['gateway'] }}
               table-id: 254

@@ -23,12 +23,12 @@
 - name: Set bmc url ipv4
   set_fact:
     bmc_url: "http://{{ hostvars[inventory_hostname]['hv_ip'] }}:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
-  when: hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv4
+  when: hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4
 
 - name: Set bmc url ipv6
   set_fact:
     bmc_url: "http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
-  when: hostvars[inventory_hostname]['ip'] | ansible.netcommon.ipv6
+  when: hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6
 
 - name: Verify virtual bmc is accessible
   uri:

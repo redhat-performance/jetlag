@@ -54,18 +54,27 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 Versions:
 
-* Ansible 4.10+ (core >= 2.11.10) (on machine running jetlag playbooks)
+* Ansible 4.10+ (core >= 2.11.12) (on machine running jetlag playbooks)
 * ibmcloud cli => 2.0.1 (IBMcloud environments)
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Installing Ansible
+Installing Ansible via bootstrap
 
 ```console
-$ python3 -m venv ansible       # Create a virtualenv if one does not already exist
-$ source ansible/bin/activate   # Activate the virtual environment
-$ pip install --upgrade pip     # Ensure pip is updated
-$ pip install ansible           # Install the lastest version of ansible
+[root@f31-h05-000-r640 jetlag]# source bootstrap.sh
+...
+(.ansible) [root@f31-h05-000-r640 jetlag]#
+```
+
+Installing Ansible via python3
+
+```console
+$ python3 -m venv .ansible       # Create a virtualenv if one does not already exist
+$ source .ansible/bin/activate   # Activate the virtual environment
+$ pip3 install --upgrade pip     # Ensure pip is updated
+$ pip3 install ansible netaddr   # Install the lastest version of ansible and netaddr library
+$ ansible-galaxy collection install ansible.utils
 ```
 
 For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
