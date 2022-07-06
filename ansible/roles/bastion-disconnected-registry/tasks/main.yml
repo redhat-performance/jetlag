@@ -59,6 +59,7 @@
       REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
       REGISTRY_HTTP_TLS_KEY: /certs/domain.key
       REGISTRY_COMPATIBILITY_SCHEMA1_ENABLED: true
+      REGISTRY_STORAGE_DELETE_ENABLED: true
     volume:
     - "{{ registry_path }}/data:/var/lib/registry"
     - "{{ registry_path }}/auth:/auth"
