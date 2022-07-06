@@ -162,7 +162,7 @@ For on-demand mirroring, the next command runs on the bastion will mirror the im
 ```yaml
 oc image mirror -a /opt/registry/pull-secret-disconnected.txt perf176b.xxx.com:5000/$image_path --keep-manifest-list --continue-on-error=true
 ```
-And finally to delete an image from the disconnected registry, you need to modify the registry creation task to enable DELTE
+And finally to be able to delete an image from the disconnected registry,the registry has to have DELETE enabled. In actuality, you might have to make this change, and re-run the playbook (redeploy the cluster). I have not tried to restart the registry alone with the ENABLE flag and keep all existing repos in-tact.
 
 ```yaml
 index ac403e4..fb13031 100644
