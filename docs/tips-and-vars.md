@@ -142,3 +142,59 @@ When worikng with OCP development builds/nightly releases, it might be required 
 * Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
+
+## Add/delete contents to the disconnected registry
+There might be use-cases when you would like to add and delete images to/from the disconnected registry. For example for single stack IPv6 deployment and  with our current lab networking situation, it is unlikely that your container can reach quay.io.  In this situation, you could use the ICSP (ImageContentSecurityPolicy) mechanism in conjuction with image mirroring. When the container requests an image on quay.io, cri-o intercepts the request and redirects and maps it to an image on the local registry.
+For example, this policy will map images on quay.io/XXX/client-server to the disconnected registry on perf176b, the bastion of this IPv6 disconnect cluster.
+```yaml
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  name: crucible-repo
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - perf176b.xxx.com:5000/XXX/client-server
+    source: quay.io/XXX/client-server
+```
+
+For on-demand mirroring, the next command runs on the bastion will mirror the image from quay.io to perf176b disconnected registry
+```yaml
+oc image mirror -a /opt/registry/pull-secret-disconnected.txt perf176b.xxx.com:5000/$image_path --keep-manifest-list --continue-on-error=true
+```
+And finally to delete an image from the disconnected registry, you need to modify the registry creation task to enable DELTE
+
+```yaml
+index ac403e4..fb13031 100644
+--- a/ansible/roles/bastion-disconnected-registry/tasks/main.yml
++++ b/ansible/roles/bastion-disconnected-registry/tasks/main.yml
+@@ -59,6 +59,7 @@
+       REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+       REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+       REGISTRY_COMPATIBILITY_SCHEMA1_ENABLED: true
++      REGISTRY_STORAGE_DELETE_ENABLED: true
+     volume:
+     - "{{ registry_path }}/data:/var/lib/registry"
+     - "{{ registry_path }}/auth:/auth"
+diff --git a/ansible/roles/bastion-install/tasks/main.yml b/ansible/roles/bastion-install/tasks/main.yml
+
+```
+Next use the Docker V2 REST API to delete the image. Not that the deletion operation argument has to be image's digest not image's tag. So if you want to delete the image by tag, you have to get the digest from the tag. The follwing is a convenient script that deletes an image by tag.
+
+```yaml
+### script
+#!/bin/bash
+registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
+name='XXX/client-server'
+auth='-u username:passwd'
+
+function rm_XXX_tag {
+ ltag=$1
+ curl $auth -X DELETE -sI -k "https://${registry}/v2/${name}/manifests/$(
+   curl $auth -sI -k \
+     -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+      "https://${registry}/v2/${name}/manifests/${ltag}" \
+   | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
+ )"
+}
+```
