@@ -7,6 +7,7 @@ _**Table of Contents**_
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
+- [Add/delete contents to the disconnected registry](#Add/delete-contents-to-the-disconnected-registry)
 <!-- /TOC -->
 
 ## Override lab ocpinventory json file
@@ -144,7 +145,7 @@ When worikng with OCP development builds/nightly releases, it might be required 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
 ## Add/delete contents to the disconnected registry
-There might be use-cases when you would like to add and delete images to/from the disconnected registry. For example for single stack IPv6 disconnect deployment you deployment cannot reach quay.io to get the image for your container.  In this situation, you can use the ICSP (ImageContentSecurityPolicy) mechanism in conjuction with image mirroring. When the deployment requests an image on quay.io, cri-o intercepts the request, redirects and maps it to an image on the local registry.
+There might be use-cases when you want to add and delete images to/from the disconnected registry. For example, for the single stack IPv6 disconnect deployment, you deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjuction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the local registry.
 For example, this policy will map images on quay.io/XXX/client-server to the disconnected registry on perf176b, the bastion of this IPv6 disconnect cluster.
 ```yaml
 apiVersion: operator.openshift.io/v1alpha1
@@ -162,9 +163,9 @@ For on-demand mirroring, the next command run on the bastion will mirror the ima
 ```yaml
 oc image mirror -a /opt/registry/pull-secret-disconnected.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
-Once the image is succesfully mirrored to the disconnect registry, your deployment will be able to succesfully create the container.
+Once the image has succesfully mirrored onto the disconnect registry, your deployment will be able to create the container.
 
-For image deletion, use the Docker V2 REST API to do that. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
+For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
 
 ```yaml
 ### script
