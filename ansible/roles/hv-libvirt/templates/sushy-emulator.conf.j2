@@ -2,7 +2,7 @@
 # configuration infrastructure: http://flask.pocoo.org/docs/config/
 
 # Listen on all local IP interfaces
-{% if hostvars[inventory_hostname].ip | ansible.netcommon.ipv6 %}
+{% if hostvars[inventory_hostname].ip | ansible.utils.ipv6 %}
 SUSHY_EMULATOR_LISTEN_IP = u'::'
 {% else %}
 SUSHY_EMULATOR_LISTEN_IP = u'0.0.0.0'

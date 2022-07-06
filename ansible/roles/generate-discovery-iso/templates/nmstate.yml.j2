@@ -2,7 +2,7 @@ interfaces:
 - name: {{ hostvars[item]['network_interface'] }}
   type: ethernet
   state: up
-{% if bastion_controlplane_ip | ansible.netcommon.ipv4 %}
+{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
   ipv4:
 {% else %}
   ipv6:
@@ -27,7 +27,7 @@ dns-resolver:
 {% endif %}
 routes:
   config:
-{% if bastion_controlplane_ip | ansible.netcommon.ipv4 %}
+{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
   - destination: 0.0.0.0/0
 {% else %}
   - destination: ::/0
