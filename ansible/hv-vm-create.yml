@@ -1,0 +1,34 @@
+---
+# Creates VMs on hypervisors
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-create.yml
+#
+
+- name: Create VMs on hypervisors
+  hosts: hv_vm
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
+  - hv-vm-create
+  - role: hv-vm-manifests-sno
+    when:
+    - hv_vm_generate_manifests
+    - hv_vm_manifest_type == "sno"
+
+- name: Create multi/jumbo cluster manifests
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
+  - role: hv-vm-manifests-jumbo
+    when:
+    - hv_vm_generate_manifests
+    - hv_vm_manifest_type == "jumbo"
+  - role: hv-vm-manifests-multicluster
+    when:
+    - hv_vm_generate_manifests
+    - hv_vm_manifest_type == "multicluster"

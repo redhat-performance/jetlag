@@ -8,7 +8,7 @@ Three separate layouts of clusters can be deployed:
 * RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
 * SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
-Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. This allows quicker interaction with these extra nodes in a lab allocation.
+Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
 
 _**Table of Contents**_
 
@@ -19,7 +19,7 @@ _**Table of Contents**_
 - [Quickstart guides](#quickstart-guides)
 - [Tips and Troubleshooting](#tips-and-troubleshooting)
 - [Disconnected API/Console Access](#disconnected-apiconsole-access)
-- [Hypervisor Network-Impairments](#hypervisor-network-impairments)
+- [Jetlag Hypervisors](#jetlag-hypervisors)
 <!-- /TOC -->
 
 ## Tested Labs/Hardware
@@ -169,10 +169,6 @@ See [troubleshooting.md](docs/troubleshooting.md) in [docs](docs) directory.
 
 See [disconnected-ipv6-cluster-access.md](docs/disconnected-ipv6-cluster-access.md) in [docs](docs) directory.
 
-## Hypervisor Network-Impairments
+## Jetlag Hypervisors
 
-See [hypervisor-network-impairments.md](docs/hypervisor-network-impairments.md) in [docs](docs) directory.
-
-## Workload Usage
-
-The jetlag workload has moved into a new repo and renamed [boatload](https://github.com/akrzos/boatload).
+See [hypervisors.md](docs/hypervisors.md) in [docs](docs) directory.

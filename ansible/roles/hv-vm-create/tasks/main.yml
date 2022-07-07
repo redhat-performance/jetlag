@@ -1,15 +1,15 @@
 ---
-# hv-sno-create-vm tasks
+# hv-vm-create tasks
 
-- name: Check if sno disk file exists
+- name: Check if vm disk file exists
   stat:
     path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
-  register: sno_disk_stat
+  register: vm_disk_stat
 
-- name: Create sno disk
+- name: Create vm disk
   shell: |
     qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2 {{ hostvars[inventory_hostname]['disk_size'] }}G
-  when: not sno_disk_stat.stat.exists
+  when: not vm_disk_stat.stat.exists
 
 - name: Template out kvm definition file
   template:

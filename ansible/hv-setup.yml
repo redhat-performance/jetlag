@@ -1,12 +1,12 @@
 ---
-# Setups up hypervisor machines to host virtual machine SNOs that emulate bare-metal SNOs for RHACM/ZTP scale testing
+# Setups up hypervisors to host VMs
 #
 # Example Usage:
 #
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-setup.yml
 #
 
-- name: Setup hypervisor machines to host emulated bare-metal SNOs
+- name: Setup hypervisors to host VMs
   hosts: hv
   vars_files:
   - vars/hv.yml

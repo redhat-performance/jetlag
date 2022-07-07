@@ -143,8 +143,8 @@ hw_nic_name:
     - ens1f0
     - ens1f1
 
-# Based on SNO Size (8vCPU, 18GiB Memory, 120G Disk)
-hw_vm_sno_counts:
+# Based on VM Size (8vCPU, 18GiB Memory, 120G Disk)
+hw_vm_counts:
   scalelab:
     r630:
       default: 2
@@ -187,8 +187,8 @@ hw_vm_sno_counts:
       default: 8
       sdc: 12
 
-# # Based on SNO Size (8vCPU, 28GiB Memory, 120G Disk)
-# hw_vm_sno_counts:
+# # Based on VM Size (8vCPU, 28GiB Memory, 120G Disk)
+# hw_vm_counts:
 #   scalelab:
 #     r630:
 #       default: 2
