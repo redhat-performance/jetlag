@@ -59,7 +59,14 @@ Versions:
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Installing Ansible via bootstrap
+Update to RHEL 8.6
+```console
+[root@f31-h05-000-r640]# ./update-latest-rhel-release.sh 8.6
+[root@f31-h05-000-r640]# dnf update -y
+[root@f31-h05-000-r640]# reboot
+```
+
+Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
 [root@f31-h05-000-r640 jetlag]# source bootstrap.sh

@@ -2,6 +2,12 @@
 
 Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Supermicro 1029p.
 
+## Prerequisites
+
+Before you start with jetlag, there are a couple of things to be installed on the machine. These instructions are also on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
+
+Good practice when you get your lab allocation is to copy your ssh pubkey to the bastion and start with jetlag from there.
+
 ## Clone Jetlag
 
 Clone jetlag on to your laptop and change to the jetlag directory
