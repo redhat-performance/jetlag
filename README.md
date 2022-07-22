@@ -38,7 +38,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | ------------------ | --- | --- | --- |
 | Dell r650          | Yes | No  | Yes |
 | Dell r640          | Yes | Yes | Yes |
-| Dell fc640         | No  | No  | Yes |
+| Dell fc640         | Yes | No  | Yes |
 | Supermicro 1029p   | Yes | Yes | No  |
 | Supermicro 5039ms  | Yes | No  | Yes |
 
@@ -139,6 +139,7 @@ Bare Metal Cluster:
 ```console
 ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
 ```
+The page linked [HERE](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) has a couple of details for troubleshooting those cases.
 
 Remote Worker Node Cluster:
 
