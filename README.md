@@ -38,7 +38,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | ------------------ | --- | --- | --- |
 | Dell r650          | Yes | No  | Yes |
 | Dell r640          | Yes | Yes | Yes |
-| Dell fc640         | No  | No  | Yes |
+| Dell fc640         | Yes | No  | Yes |
 | Supermicro 1029p   | Yes | Yes | No  |
 | Supermicro 5039ms  | Yes | No  | Yes |
 
@@ -59,7 +59,14 @@ Versions:
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Installing Ansible via bootstrap
+Update to RHEL 8.6
+```console
+[root@f31-h05-000-r640]# ./update-latest-rhel-release.sh 8.6
+[root@f31-h05-000-r640]# dnf update -y
+[root@f31-h05-000-r640]# reboot
+```
+
+Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
 [root@f31-h05-000-r640 jetlag]# source bootstrap.sh
@@ -132,6 +139,7 @@ Bare Metal Cluster:
 ```console
 ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
 ```
+The page linked [HERE](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) has a couple of details for troubleshooting those cases.
 
 Remote Worker Node Cluster:
 
