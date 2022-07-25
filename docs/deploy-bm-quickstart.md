@@ -387,3 +387,10 @@ Finally run the `bm-deploy.yml` playbook ...
 ```
 
 A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f16-h11-000-1029p.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+
+If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
+
+```console
+[root@f16-h11-000-1029p ~]# export KUBECONFIG=/root/bm/kubeconfig
+[root@f16-h11-000-1029p ~]# oc get no
+```
