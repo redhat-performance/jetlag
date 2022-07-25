@@ -139,7 +139,7 @@ Bare Metal Cluster:
 ```console
 ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
 ```
-The page linked [HERE](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) has a couple of details for troubleshooting those cases.
+See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for BM install related issues
 
 Remote Worker Node Cluster:
 
