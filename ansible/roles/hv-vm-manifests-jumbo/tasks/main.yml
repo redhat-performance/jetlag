@@ -1,0 +1,30 @@
+---
+# hv-vm-manifests-jumbo tasks
+
+- name: Create directories for hv-vm manifests on bastion for jumbo cluster
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - "{{ hv_vm_manifests_directory }}/"
+  - "{{ hv_vm_manifests_directory }}/jumbo"
+  - "{{ hv_vm_manifests_directory }}/jumbo/manifests"
+
+- name: Obtain pull-secret for disconnected
+  slurp:
+    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+  register: slurped_pull_secret
+  when: use_disconnected_registry
+
+- name: Set pull-secret for disconnected
+  set_fact:
+    pull_secret: "{{ slurped_pull_secret.content }}"
+  when: use_disconnected_registry
+
+- name: Template a manifest for jumbo cluster
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: manifest.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/jumbo/manifests/manifest.yml"

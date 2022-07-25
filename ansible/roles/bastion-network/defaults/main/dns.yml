@@ -3,13 +3,6 @@
 cluster_name: bm
 base_dns_name: example.com
 
-# bastion dnsmasq clusterdeployment entries (Enables hub cluster to provision spoke clusters via clusterdeployments)
-# the default count of 0 ignores setting this up
-bastion_dnsmasq_cd_prefix: sno
-bastion_dnsmasq_cd_network: "{{ controlplane_network }}"
-bastion_dnsmasq_cd_network_offset: 1000
-bastion_dnsmasq_cd_network_count: 0
-
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
 etc_hosts_ingress_routes:
@@ -31,3 +24,7 @@ etc_hosts_ingress_routes:
 - assisted-service-open-cluster-management
 - dittybopper-dittybopper
 - minio-minio
+
+# Default number of additional dns entries to add in the event we have hypervisor machines with VMs.
+# Ignore if you are not doing anything with hypervisor machines and VMs
+multicluster_count: 4

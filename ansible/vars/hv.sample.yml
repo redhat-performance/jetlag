@@ -8,7 +8,26 @@ ssh_public_key_file: ~/.ssh/id_rsa.pub
 
 install_tc: true
 
-hv_sno_generate_manifests: true
+# Enables using DHCP instead of relying on static network configuration for VMs
+setup_hv_vm_dhcp: false
 
-bastion_dnsmasq_cd_network_offset: 1000
-bastion_dnsmasq_cd_network_count: 2100
+hv_vm_generate_manifests: true
+
+# Types: sno, jumbo, multicluster
+hv_vm_manifest_type: sno
+
+# The cluster imageset used in the manifests
+cluster_image_set: openshift-4.10.21
+
+# Include ACM CRs in the manifests
+hv_vm_manifest_acm_cr: false
+
+# If hv_vm_manifest_type is set to multicluster, use these vars to adjust the count and size of clusters
+# Careful not to exceed the count of your VMs, EX 4 * 60 means you must have 240 vms
+multicluster_count: 4
+multicluster_node_count: 60
+
+# Retrieves the disconnected pull-secret instead of below pull-secret
+use_disconnected_registry: false
+# Provide pull-secret for non-disconnected manifests
+pull_secret: "{{ lookup('file', '../pull_secret.txt') | b64encode }}"

@@ -1,0 +1,8 @@
+---
+# hv-vm-delete default vars
+
+hv_vm_manifests_directory: /root/hv-vm
+
+hv_vm_remove_all_manifests: true
+
+hv_kvm_def_path: /opt/hv

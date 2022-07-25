@@ -7,10 +7,9 @@ ocp_inventory_override: ''
 bm_worker_node_offset: 7
 
 ################################################################################
-# Var(s) for bare-metal hypervisors and emulated bare-metal SNOs
+# Var(s) for hypervisors and hypervisor hosted VMs
 ################################################################################
-# Enables placing extra machines as hypervisors in the inventory and generating the inventory of emulated bare-metal
-# SNOs on those hypervisors
+# Enables placing extra machines as hypervisors in the inventory and generating the inventory of VMs
 hv_inventory: false
 
 # ssh password for hypervisors
@@ -18,16 +17,19 @@ hv_ssh_pass:
 
 hv_ip_offset: 0
 
-# Emulated bare-metal SNO VM Size
-hv_sno_cpu_count: 8
-hv_sno_memory_size: 18
-hv_sno_disk_size: 120
+hv_vm_prefix: sno
+hv_vm_ip_offset: 1000
 
-# Bandwith limits for SNO VMs (in KB/s)
-hv_sno_bandwidth_limit: false
-hv_sno_bandwidth_average: 11500
-hv_sno_bandwidth_peak: 12500
-hv_sno_bandwidth_burst: 11750
+# "Emulated bare-metal" VM Size
+hv_vm_cpu_count: 8
+hv_vm_memory_size: 18
+hv_vm_disk_size: 120
 
-# Path for SNO VMs on disk2
+# Bandwith limits for VMs (in KB/s)
+hv_vm_bandwidth_limit: false
+hv_vm_bandwidth_average: 11500
+hv_vm_bandwidth_peak: 12500
+hv_vm_bandwidth_burst: 11750
+
+# Path for VMs on disk2
 disk2_mount_path: /mnt/disk2

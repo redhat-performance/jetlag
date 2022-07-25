@@ -1,5 +1,5 @@
 ---
-# hv-sno-create-vm default vars
+# hv-vm-create default vars
 
 hv_kvm_def_path: /opt/hv
 

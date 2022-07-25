@@ -1,20 +1,20 @@
 ---
-# Cleans up hypervisor machines of emulated bare-metal SNO machines
+# Cleans up VMS on hypervisors
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-sno-delete-vms.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-delete.yml
 #
 
-- name: Delete emulated bare-metal SNOs on hypervisors
-  hosts: hv_sno
+- name: Delete VMs on hypervisors
+  hosts: hv_vm
   gather_facts: false
   vars_files:
   - vars/hv.yml
   roles:
-  - hv-sno-delete-vm
+  - hv-vm-delete
 
-- name: Cleanup hypervisors after clearing off SNO VMs
+- name: Cleanup hypervisors after clearing off VMs
   hosts: hv
   gather_facts: false
   tasks:

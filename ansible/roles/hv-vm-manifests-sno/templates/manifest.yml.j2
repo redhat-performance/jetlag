@@ -123,6 +123,7 @@ spec:
           cluster-name: {{ inventory_hostname }}
   pullSecretRef:
     name: assisted-deployment-pull-secret
+{% if hv_vm_manifest_acm_cr %}
 ---
 apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
@@ -159,6 +160,7 @@ metadata:
     group-sno-du: "true"
 spec:
   hubAcceptsClient: true
+{% endif %}
 ---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: InfraEnv
@@ -194,7 +196,11 @@ metadata:
 spec:
   bootMode: "UEFI"
   bmc:
+{% if hostvars[inventory_hostname]['hv_ip'] | ansible.utils.ipv6 %}
     address: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
+{% else %}
+    address: redfish-virtualmedia+http://{{ hostvars[inventory_hostname]['hv_ip'] }}:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
+{% endif %}
     disableCertificateVerification: true
     credentialsName: {{ inventory_hostname }}-bmc-secret
   bootMACAddress: {{ hostvars[inventory_hostname]['mac_address'] }}

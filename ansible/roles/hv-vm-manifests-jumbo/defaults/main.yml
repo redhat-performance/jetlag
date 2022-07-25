@@ -1,0 +1,12 @@
+---
+# hv-vm-manifests-jumbo default vars
+
+hv_vm_manifests_directory: /root/hv-vm
+
+jumbo_cluster_network_host_prefix: 23
+
+registry_path: /opt/registry
+
+# Used with bmc-secret
+bmc_username_base64: "{{ 'redhat' | b64encode }}"
+bmc_password_base64: "{{ 'password' | b64encode }}"

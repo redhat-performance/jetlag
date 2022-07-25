@@ -1,0 +1,253 @@
+---
+# 00-namespace
+# 02-image-pull-secret
+# 03-clusterdeployment
+# 04-agentclusterinstall
+# 05-klusterletaddonconfig
+# 06-managedcluster
+# 07-infraenv
+# 01-bmc-secret
+# 08-bmh
+# 09-nmstate
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jumbocluster00
+  labels:
+    name: jumbocluster00
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assisted-deployment-pull-secret
+  namespace: jumbocluster00
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ pull_secret }}
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: jumbocluster00
+  namespace: jumbocluster00
+spec:
+  baseDomain: {{ hostvars[groups['hv_vm'][0]]['base_domain'] }}
+  clusterInstallRef:
+    group: extensions.hive.openshift.io
+    kind: AgentClusterInstall
+    name: jumbocluster00
+    version: v1beta1
+  clusterName: jumbocluster00
+  platform:
+    agentBareMetal:
+      agentSelector:
+        matchLabels:
+          cluster-name: jumbocluster00
+  pullSecretRef:
+    name: assisted-deployment-pull-secret
+---
+apiVersion: extensions.hive.openshift.io/v1beta1
+kind: AgentClusterInstall
+metadata:
+  annotations:
+    agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"}}'
+  name: jumbocluster00
+  namespace: jumbocluster00
+spec:
+  apiVIP: {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
+  clusterDeploymentRef:
+    name: jumbocluster00
+  imageSetRef:
+    name: {{ cluster_image_set }}
+  ingressVIP: {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-3) }}
+  networking:
+    clusterNetwork:
+      - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][0]]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
+        hostPrefix: {{ jumbo_cluster_network_host_prefix }}
+    machineNetwork:
+      - cidr: {{ hostvars[groups['hv_vm'][0]]['machine_network'] }}
+    serviceNetwork:
+      - {{ "fd02::/112" if hostvars[groups['hv_vm'][0]]['ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
+  provisionRequirements:
+    controlPlaneAgents: 3
+    workerAgents: {{ (groups['hv_vm'] | length) - 3 }}
+  sshPublicKey: {{ lookup('file', ssh_public_key_file) }}
+  compute:
+  - hyperthreading: Enabled
+    name: worker
+  controlPlane:
+    hyperthreading: Enabled
+    name: master
+{% if hv_vm_manifest_acm_cr %}
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: jumbocluster00
+  namespace: jumbocluster00
+spec:
+  clusterName: jumbocluster00
+  clusterNamespace: jumbocluster00
+  clusterLabels:
+    cloud: auto-detect
+    vendor: auto-detect
+  applicationManager:
+    enabled: false
+  certPolicyController:
+    enabled: false
+  iamPolicyController:
+    enabled: false
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: false
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: jumbocluster00
+  labels:
+    name: jumbocluster00
+    vendor: OpenShift
+    observability: disabled
+    # common: "true"
+    # group-du-sno: ""
+    # group-sno-du: "true"
+spec:
+  hubAcceptsClient: true
+{% endif %}
+---
+apiVersion: agent-install.openshift.io/v1beta1
+kind: InfraEnv
+metadata:
+  name: jumbocluster00
+  namespace: jumbocluster00
+spec:
+  additionalNTPSources:
+  - {{ hostvars[groups['hv_vm'][0]]['gateway'] }}
+  clusterRef:
+    name: jumbocluster00
+    namespace: jumbocluster00
+  sshAuthorizedKey: {{ lookup('file', ssh_public_key_file) }}
+  agentLabelSelector:
+    matchLabels:
+      cluster-name: jumbocluster00
+  pullSecretRef:
+    name: assisted-deployment-pull-secret
+{% if setup_hv_vm_dhcp %}
+  # nmStateConfigLabelSelector:
+  #   matchLabels:
+  #     cluster: jumbocluster00
+{% else %}
+  nmStateConfigLabelSelector:
+    matchLabels:
+      cluster: jumbocluster00
+{% endif %}
+{% for vm in groups['hv_vm'] %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ vm }}-bmc-secret
+  namespace: jumbocluster00
+type: Opaque
+data:
+  password: {{ bmc_password_base64 }}
+  username: {{ bmc_username_base64 }}
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: {{ vm }}
+  namespace: jumbocluster00
+  annotations:
+    inspect.metal3.io: disabled
+    bmac.agent-install.openshift.io/hostname: "{{ vm }}"
+  labels:
+    infraenvs.agent-install.openshift.io: "jumbocluster00"
+spec:
+  bootMode: "UEFI"
+  bmc:
+{% if hostvars[vm]['hv_ip'] | ansible.utils.ipv6 %}
+    address: redfish-virtualmedia+http://[{{ hostvars[vm]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[vm]['domain_uuid'] }}
+{% else %}
+    address: redfish-virtualmedia+http://{{ hostvars[vm]['hv_ip'] }}:9000/redfish/v1/Systems/{{ hostvars[vm]['domain_uuid'] }}
+{% endif %}
+    disableCertificateVerification: true
+    credentialsName: {{ vm }}-bmc-secret
+  bootMACAddress: {{ hostvars[vm]['mac_address'] }}
+  automatedCleaningMode: disabled
+  online: true
+{% if setup_hv_vm_dhcp %}
+# ---
+# apiVersion: agent-install.openshift.io/v1beta1
+# kind: NMStateConfig
+# metadata:
+#   name: {{ vm }}
+#   namespace: jumbocluster00
+#   labels:
+#     cluster: jumbocluster00
+# spec:
+#   config:
+#     interfaces:
+#     - name: enp1s0
+#       type: ethernet
+#       state: up
+#       {{ "ipv6" if hostvars[vm]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
+#         enabled: true
+#         address:
+#         - ip: {{ hostvars[vm]['ip'] }}
+#           prefix-length: {{ hostvars[vm]['network_prefix'] }}
+#         dhcp: false
+#     dns-resolver:
+#       config:
+#         server:
+#         - {{ hostvars[vm]['hv_ip'] }}
+#     routes:
+#       config:
+#       - destination: {{ "::/0" if hostvars[vm]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
+#         metric: 1
+#         next-hop-address: {{ hostvars[vm]['gateway'] }}
+#         next-hop-interface: enp1s0
+#         table-id: 254
+#   interfaces:
+#   - name: "enp1s0"
+#     macAddress: {{ hostvars[vm]['mac_address'] }}
+{% else %}
+---
+apiVersion: agent-install.openshift.io/v1beta1
+kind: NMStateConfig
+metadata:
+  name: {{ vm }}
+  namespace: jumbocluster00
+  labels:
+    cluster: jumbocluster00
+spec:
+  config:
+    interfaces:
+    - name: enp1s0
+      type: ethernet
+      state: up
+      {{ "ipv6" if hostvars[vm]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
+        enabled: true
+        address:
+        - ip: {{ hostvars[vm]['ip'] }}
+          prefix-length: {{ hostvars[vm]['network_prefix'] }}
+        dhcp: false
+    dns-resolver:
+      config:
+        server:
+        - {{ hostvars[vm]['hv_ip'] }}
+    routes:
+      config:
+      - destination: {{ "::/0" if hostvars[vm]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
+        metric: 1
+        next-hop-address: {{ hostvars[vm]['gateway'] }}
+        next-hop-interface: enp1s0
+        table-id: 254
+  interfaces:
+  - name: "enp1s0"
+    macAddress: {{ hostvars[vm]['mac_address'] }}
+{% endif %}
+{% endfor %}
