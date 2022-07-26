@@ -23,7 +23,11 @@ metadata:
 spec:
   installPlanApproval: Automatic
   name: local-storage-operator
+{% if openshift_version == "4.11" %}
+  channel: "4.10"
+{% else %}
   channel: "{{ openshift_version }}"
+{% endif %}
 {% if use_disconnected_registry | default(false) %}
   source: {{ operator_index_name }}
 {% else %}
