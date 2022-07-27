@@ -30,7 +30,7 @@
     return_content: true
   loop: "{{ cluster.json.hosts | list }}"
   register: host_data
-  until: host_data.status != "discovering"
+  until: host_data.json.status != "discovering"
   retries: 30
   delay: 10
 
