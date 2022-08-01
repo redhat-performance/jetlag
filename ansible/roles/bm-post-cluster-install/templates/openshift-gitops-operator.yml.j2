@@ -14,7 +14,7 @@ metadata:
 spec:
   name: openshift-gitops-operator
   sourceNamespace: openshift-marketplace
-  channel: stable
+  channel: {{ gitops_channel }}
 {% if setup_openshift_gitops_ztp %}
   installPlanApproval: Manual
   startingCSV: {{ gitops_starting_csv }}

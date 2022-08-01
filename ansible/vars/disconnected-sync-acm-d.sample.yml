@@ -1,7 +1,7 @@
 ---
 # Sample disconnected-sync-acm-d vars file
 
-acm_snapshot: 2.5.0-DOWNSTREAM-2022-04-08-18-34-34
+acm_snapshot: 2.6.0-DOWNSTREAM-2022-07-28-23-21-09
 
 # Temporary fix to pull the correct image for this testing
 # ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator

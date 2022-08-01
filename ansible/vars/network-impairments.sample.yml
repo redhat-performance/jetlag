@@ -7,8 +7,8 @@ apply_egress_impairments: true
 apply_ingress_impairments: true
 
 # delay in milliseconds
-egress_delay: 75
-ingress_delay: 75
+egress_delay: 25
+ingress_delay: 25
 # packet loss in %
 egress_packet_loss: 0.02
 ingress_packet_loss: 0.02
