@@ -385,7 +385,7 @@ A typical deployment will require around 60-70 minutes to complete mostly depend
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
 ```console
-[root@jetlag-bm0 ~]# export KUBECONFIG=/root/bm/kubeconfig
-[root@jetlag-bm0 ~]# oc get no
+[root@f16-h11-000-1029p ~]# export KUBECONFIG=/root/bm/kubeconfig
+[root@f16-h11-000-1029p ~]# oc get no
 ...
 ```
