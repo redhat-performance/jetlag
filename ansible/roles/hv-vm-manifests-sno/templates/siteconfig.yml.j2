@@ -12,12 +12,10 @@ spec:
   sshPublicKey: {{ lookup('file', ssh_public_key_file) }}
   clusters:
   - clusterName: {{ inventory_hostname }}
-    clusterType: "sno"
-    clusterProfile: "du"
+    networkType: "OVNKubernetes"
     clusterLabels:
-      group-sno-du: 'true'
-      group-du-sno: ''
       common: 'true'
+      group-du-sno: ''
       name: {{ inventory_hostname }}
       sites: {{ inventory_hostname }}
 {% if siteconfig_observability %}
@@ -34,6 +32,8 @@ spec:
     - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
     additionalNTPSources:
     - {{ hostvars[inventory_hostname]['hv_ip'] }}
+    crTemplates:
+      KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
     nodes:
     - hostName: "{{ inventory_hostname }}"
       bmcAddress: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
