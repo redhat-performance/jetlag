@@ -393,4 +393,5 @@ If everything goes well you should have a cluster in about 60-70 minutes. You ca
 ```console
 [root@f16-h11-000-1029p ~]# export KUBECONFIG=/root/bm/kubeconfig
 [root@f16-h11-000-1029p ~]# oc get no
+...
 ```
