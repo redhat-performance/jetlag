@@ -12,3 +12,6 @@ disconnected_registry_port: 5000
 # This will be your bastion machine (if you run setup-bastion playbook)
 http_store_host: "{{ groups['bastion'][0] }}"
 http_store_port: 8081
+
+# Raises the neighbor table sizes for the discovery image
+discovery_sysctl_thresholds: true
