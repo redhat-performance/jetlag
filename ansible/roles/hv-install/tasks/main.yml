@@ -4,12 +4,13 @@
 - name: Install packages
   dnf:
     name:
-    - "@virt"
-    - virt-install
-    - virt-viewer
-    - gcc
-    - python3-devel
-    - libvirt-devel
+      - "@virt"
+      - virt-install
+      - virt-viewer
+      - gcc
+      - python3-devel
+      - libvirt-devel
+      - tuned
     state: present
     update_cache: true
     disable_gpg_check: yes
@@ -19,10 +20,10 @@
     name: "{{ item.name }}"
     version: "{{ item.version }}"
   loop:
-  - name: libvirt-python
-    version: 6.0.0
-  - name: sushy-tools
-    version: 0.16.0
+    - name: libvirt-python
+      version: 6.0.0
+    - name: sushy-tools
+      version: 0.16.0
 
 - name: Setup chronyd
   template:
@@ -35,6 +36,15 @@
     state: restarted
     enabled: true
     name: chronyd
+
+- name: Ensure tuned is running
+  systemd:
+    state: restarted
+    enabled: true
+    name: tuned
+
+- name: Set tuned profile to virtual-host
+  shell: /usr/sbin/tuned-adm profile virtual-host
 
 - name: Copying the public key to the root user's authorized_keys
   copy:

@@ -3,7 +3,10 @@
   <uuid>{{ hostvars[inventory_hostname]['domain_uuid'] }}</uuid>
   <memory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</memory>
   <currentMemory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</currentMemory>
-  <vcpu placement='static'>{{ hostvars[inventory_hostname]['cpus'] }}</vcpu>
+  <vcpu placement='auto'>{{ hostvars[inventory_hostname]['cpus'] }}</vcpu>
+  <numatune>
+    <memory mode='interleave' placement='auto'/>
+  </numatune>
   <os>
     <type arch='x86_64' machine='pc-q35-rhel7.6.0'>hvm</type>
     <boot dev='hd'/>
@@ -94,6 +97,7 @@
       </bandwidth>
 {% endif %}
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+      <driver name='vhost' queues='{{ hostvars[inventory_hostname]['cpus'] }}'/>
     </interface>
     <serial type='pty'>
       <target type='isa-serial' port='0'>

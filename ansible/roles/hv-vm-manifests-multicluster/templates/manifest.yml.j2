@@ -63,7 +63,7 @@ spec:
   ingressVIP: {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (item * -2) - 1) }}
   networking:
     clusterNetwork:
-      - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][0]]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
+      - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][0]]['ip'] | ansible.utils.ipv6 else "10.128.0.0/10" }}
         hostPrefix: {{ multicluster_cluster_network_host_prefix }}
     machineNetwork:
       - cidr: {{ hostvars[groups['hv_vm'][0]]['machine_network'] }}

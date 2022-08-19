@@ -22,7 +22,7 @@ rwn_network_prefix: 30
 rwn_network_mask: 255.255.255.252
 
 # OCP networks
-cluster_network_cidr: 10.128.0.0/14
+cluster_network_cidr: 10.128.0.0/10
 cluster_network_host_prefix: 23
 service_network_cidr: 172.30.0.0/16
 

@@ -85,7 +85,7 @@ spec:
     name: {{ cluster_image_set }}
   networking:
     clusterNetwork:
-      - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
+      - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/10" }}
         hostPrefix: {{ hostvars[inventory_hostname]['network_prefix'] }}
     machineNetwork:
       - cidr: {{ hostvars[inventory_hostname]['machine_network'] }}
