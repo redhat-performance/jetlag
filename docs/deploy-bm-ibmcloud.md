@@ -37,6 +37,8 @@ Resolving deltas: 100% (704/704), done.
 
 Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
 
+Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+
 Set your pull secret file `pull_secret.txt` in the root directory. The contents should resemble this json:
 
 ```
@@ -192,9 +194,27 @@ controlplane_network_ingress: X.X.X.4
 # Extra vars
 ################################################################################
 # Append override vars below
+# Optional: Add IBM hardware id  [$ ibmcloud sl hardware list]
+bastion_hardware_id: bs_id
+
+controlplane_hardware_ids:
+- node1_id
+- node2_id
+- node3_id
 ```
 
 ## Run playbooks
+
+### Prerequisite
+
+1. Bastion: update public key in authorized_keys
+```
+$ ssh-keygen
+$ cd .ssh
+$ echo id_rsa.pub >> authorized_keys 
+```
+
+2. Open IBM cloud case 'Set Privilege Level to ADMINISTRATOR for IPMI' for all machines.
 
 Run the ibmcloud create inventory playbook
 
@@ -204,6 +224,8 @@ Run the ibmcloud create inventory playbook
 ```
 
 The `ibmcloud-create-inventory.yml` playbook will create an inventory file `ansible/inventory/ibmcloud.local` from the ibmcloud cli data and the vars file.
+
+** For custom master/worker node name: replace first parameter in ibmcloud.local file under [controlplane] and [worker] sections   
 
 The inventory file should resemble the [sample one provided](../ansible/inventory/ibmcloud-inventory-bm.sample).
 

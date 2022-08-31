@@ -28,6 +28,8 @@ Resolving deltas: 100% (704/704), done.
 
 Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
 
+Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+
 Set your pull secret file `pull_secret.txt` in the root directory. The contents should resemble this json:
 
 ```
