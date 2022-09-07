@@ -10,7 +10,7 @@ _**Table of Contents**_
 - [Scalelab - Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
 - [Scalelab - Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
 - [SuperMicro - Reset BMC / Resolving redfish connection error](#supermicro---reset-bmc--resolving-redfish-connection-error)
-- [Supermicro - The node product key needs to be activated for this device](#supermicro---the-node-product-key-needs-to-be-activated-for-this-device)
+- [Supermicro - Missing Administrator IPMI privileges](#supermicro---missing-administrator-ipmi-privileges)
 - [Supermicro - Failure of TASK SuperMicro Set Boot](#supermicro---failure-of-task-supermicro-set-boot)
 <!-- /TOC -->
 
@@ -168,9 +168,9 @@ fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x ro
 Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The read operation timed out'"
 ```
 
-## Supermicro - The node product key needs to be activated for this device
+## Supermicro - Missing Administrator IPMI privileges
 
-While running a deploy with Supermicro machines if you run across this error:
+Error: The node product key needs to be activated for this device
 
 ```console
 TASK [boot-iso : SuperMicro - Unmount ISO] ***************************************************************************************************************************************************
@@ -178,10 +178,19 @@ Thursday 30 September 2021  15:04:14 -0400 (0:00:04.861)       0:01:51.715 ****
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x root xxxxxxxxx wsiso umount\n", "delta": "0:00:00.857430", "end": "2021-09-30 14:04:15.985123", "msg": "non-zero return code", "rc": 155, "start": "2021-09-30 14:04:15.127693", "stderr": "", "stderr_lines": [], "stdout": "The node product key needs to be activated for this device", "stdout_lines": ["The node product key needs to be activated for this device"]}
 ```
 
-The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to have the bmc account permissions upgraded to administrator.
+Error: This device doesn't support WSISO commands
 
-One way to verify is to check via SMCIPMITool:
+```console
+TASK [boot-iso : SuperMicro - Unmount ISO] *************************************
+Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ****** 
+fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
+```
 
+The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator.
+
+How to verify that ipmi privilege set to administrator level permissions
+
+1. SMCIPMITool:
 ```console
 [root@jetlag-bm0 ~]# SMCIPMITool x.x.x.x root xxxxxxxxx user list
 Maximum number of Users          : 10
@@ -197,8 +206,15 @@ Count of currently enabled Users : 8
        2 | ADMIN           | Administrator      | Yes
        3 | root            | Administrator      | Yes
 ```
-
 Machine `y.y.y.y` has the correct permissions.
+
+2. ipmitool:
+
+```console
+[root@hwprov2-bs ~]# ipmitool -I lanplus -L ADMINISTRATOR -H <IPMIADDRESS> -p 623 -U root -P <PASSWORD> power status
+```
+
+Expected result: Chassis Power is on
 
 ## Supermicro - Failure of TASK SuperMicro Set Boot
 
