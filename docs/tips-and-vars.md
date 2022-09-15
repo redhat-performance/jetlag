@@ -1,7 +1,6 @@
 # Jetlag Tips and additional Vars
 
 _**Table of Contents**_
-
 <!-- TOC -->
 - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
 - [DU Profile for SNOs](#du-profile-for-snos)
@@ -19,20 +18,46 @@ ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp
 ```
 ## DU Profile for SNOs
 
-Use var `du_profile` to apply the DU specific machine configurations to your SNOs. Append the var to the "Extra vars" section of your `all.yml` or `ibmcloud.yml`.
+Use var `du_profile` to apply the DU specific machine configurations to your SNOs. You must also define `reserved_cpus` and `isolated_cpus` when applying DU profile. Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml`.
+
+Example settings:
 
 ```yaml
 du_profile: true
+# The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
+reserved_cpus: 0-1,40-41
+isolated_cpus: 2-39,42-79
 ```
+
 As a result, the following machine configuration files will be added to the cluster during SNO install:
 * 01-container-mount-ns-and-kubelet-conf-master.yaml 
 * 03-sctp-machine-config-master.yaml
 * 04-accelerated-container-startup-master.yaml
 * 05-chrony-dynamic-master.yaml
+* 99-master-workload-partitioning.yml
 
-In addition, Network Diagnostics will be disabled post SNO install.
+In addition, Network Diagnostics will be disabled, and performance-profile will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
 
 Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
+
+**About Reserved CPUs**
+
+Setting `reserved_cpus` would allow us to isolate the control plane services to run on a restricted set of CPUs.
+
+You can reserve cores, or threads, for operating system housekeeping tasks from a single NUMA node and put your workloads on another NUMA node. The reason for this is that the housekeeping processes might be using the CPUs in a way that would impact latency sensitive processes running on those same CPUs. Keeping your workloads on a separate NUMA node prevents the processes from interfering with each other. Additionally, each NUMA node has its own memory bus that is not shared.
+
+If you are unsure about which cpus to reserve for housekeeping-pods, the general rule is to identify any two processors and their siblings on separate NUMA nodes:
+
+```console
+# lscpu -e | head -n1
+CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
+
+# lscpu -e |  egrep "0:0:0:0|1:1:1:1"
+0   0    0      0    0:0:0:0       yes    3900.0000 800.0000
+1   1    1      1    1:1:1:1       yes    3900.0000 800.0000
+40  0    0      0    0:0:0:0       yes    3900.0000 800.0000
+41  1    1      1    1:1:1:1       yes    3900.0000 800.0000
+```
 
 ## Post Deployment Tasks
 
@@ -59,50 +84,15 @@ annotations:
   k8s.v1.cni.cncf.io/networks: '[{"name": "net1", "namespace": "default"}]'
 ```
 
-### Installing Performance Addon Operator
+### SNO DU Profile
 
-Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to install Performance Addon Operator to allow for low latency node performance tunings on your cluster.
-
-```yaml
-install_performance_addon_operator: true
-```
-
-**Please Note**
-* This feature is available for GA releases of OCP only
-* You must define `reserved_cpus` in the vars file when installing Performance Addon Operator on Single Node Openshift clusters
-* The workload partitioning CPUs (`reserved_cpus`) should match the reserved cpu specs within your performance-profile
-
-Setting `reserved_cpus` would allow us to isolate the control plane services to run on a restricted set of CPUs.
-
-You can reserve cores, or threads, for operating system housekeeping tasks from a single NUMA node and put your workloads on another NUMA node. The reason for this is that the housekeeping processes might be using the CPUs in a way that would impact latency sensitive processes running on those same CPUs. Keeping your workloads on a separate NUMA node prevents the processes from interfering with each other. Additionally, each NUMA node has its own memory bus that is not shared.
-
-If you are unsure about which cpus to reserve for housekeeping-pods, the general rule is to identify any two processors and their siblings on separate NUMA nodes:
-
-```console
-# lscpu -e | head -n1
-CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
-
-# lscpu -e |  egrep "0:0:0:0|1:1:1:1"
-0   0    0      0    0:0:0:0       yes    3900.0000 800.0000
-1   1    1      1    1:1:1:1       yes    3900.0000 800.0000
-40  0    0      0    0:0:0:0       yes    3900.0000 800.0000
-41  1    1      1    1:1:1:1       yes    3900.0000 800.0000
-```
-
-Example settings of `reserved_cpus`:
-
-```yaml
-install_performance_addon_operator: true
-reserved_cpus: 0-1,40-41
-```
-
-#### Performance Profile vars
+#### Performance Profile
 
 The following vars are relevant to performance profile creation post SNO install:
 
 ```yaml
 # Required vars
-install_performance_addon_operator: true
+du_profile: true
 # The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
 reserved_cpus: 0-1,48-49
 isolated_cpus: 2-47,50-95
@@ -118,6 +108,18 @@ hugepages_count: 16
 # Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
 topology_manager_policy: best-effort
 ```
+
+#### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
+
+Performance Addon Operator must be installed for the usage of performance-profile in versions older than OCP 4.11.
+Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to install Performance Addon Operator to allow for low latency node performance tunings on your OCP 4.9 or 4.10 SNO.
+
+```yaml
+install_performance_addon_operator: true
+```
+
+**Please Note**
+* Performance Addon Operator is not available in OCP 4.11 or higher. The PAO code was moved into the Node Tuning Operator in OCP 4.11
 
 ## Updating the OCP version
 
