@@ -19,12 +19,12 @@
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_network_attachment_definition
 
-- name: Create performance-addon-operator directory per sno cluster
+- name: Create performance-profile directory per sno cluster
   file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-addon-operator"
+    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile"
     state: directory
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
+  when: install_performance_addon_operator or du_profile
 
 - name: Place templated net-attachment-definition
   template:
@@ -96,13 +96,13 @@
 - name: Install Performance-Addon-Operator - Place templated PAO namespace, OperatorGroup and subscription
   template:
     src: performance-addon-operator.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-addon-operator/performance-addon-operator.yml"
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-addon-operator.yml"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: install_performance_addon_operator
 
 - name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-addon-operator/performance-addon-operator.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-addon-operator.yml
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: install_performance_addon_operator
 
@@ -111,17 +111,17 @@
     src: performance-profile.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-addon-operator/performance-profile.yml"
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
+  when: du_profile
 
 - name: Apply the PerformanceProfile
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-addon-operator/performance-profile.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-profile.yml
   register: perf_result
   retries: 120
   delay: 2
   until: not perf_result.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
+  when: du_profile
 
 - name: Wait until MachineConfigPools are updating
   shell: |
@@ -131,7 +131,7 @@
   retries: 120
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
+  when: du_profile
 
 - name: Wait until MachineConfigPools are updated
   shell: |
@@ -141,4 +141,4 @@
   retries: 180
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
+  when: du_profile
