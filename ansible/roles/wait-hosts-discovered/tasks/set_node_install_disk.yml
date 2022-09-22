@@ -21,7 +21,7 @@
             "id": "{{ bm_node.id }}",
             "disks_config": [
               {
-                "id": "{{ bm_control_plane_install_disk }}",
+                "id": "{{ set_to_disk }}",
                 "role": "install"
               },
               {
@@ -32,4 +32,4 @@
           }
         ]
     }
-  when: bm_node.installation_disk_path != bm_control_plane_install_disk
+  when: bm_node.installation_disk_path != set_to_disk
