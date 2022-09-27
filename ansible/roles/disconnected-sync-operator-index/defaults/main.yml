@@ -5,6 +5,8 @@
 disconnected_registry_host: "{{ groups['bastion'][0] }}"
 disconnected_registry_port: 5000
 
+disconnected_sync_path: /opt/registry/sync
+
 registry_path: /opt/registry
 
 # Defaults here match default of 4.10

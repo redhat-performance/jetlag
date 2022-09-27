@@ -1,9 +1,53 @@
 ---
 # disconnected-sync-operator-index tasks
 
-- name: Create pruned redhat-operator-index image with {{ operators_to_sync }}
+- name: Create pruned redhat-operator-index image for v4.9/v4.10 with {{ operators_to_sync }}
   shell: |
     opm index prune -f {{ operator_index_container_image }} -p {{ operators_to_sync }} -t {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
+  when: operator_index_tag == "v4.9" or operator_index_tag == "v4.10"
+
+- name: Create pruned redhat-operator-index image for v4.11 with {{ operators_to_sync }}
+  when: operator_index_tag == "v4.11"
+  block:
+  - name: Create directories for syncing v4.11 operator index
+    file:
+      path: "{{ item }}"
+      state: directory
+    loop:
+    - "{{ disconnected_sync_path }}"
+    - "{{ disconnected_sync_path }}/catalog"
+    - "{{ disconnected_sync_path }}/catalog/redhat-operator-index"
+
+  - name: Render declarative config from the provided index image
+    shell: |
+      cd {{ disconnected_sync_path }}
+      opm render {{ operator_index_container_image }} > {{ operator_index_tag }}-index.json
+
+  - name: Template redhat-operator-index.Dockerfile
+    template:
+      src: redhat-operator-index.Dockerfile.j2
+      dest: "{{ disconnected_sync_path }}/catalog/redhat-operator-index.Dockerfile"
+
+  - name: Clear {{ disconnected_sync_path }}/catalog/redhat-operator-index/index.json
+    copy:
+      content: ""
+      dest: "{{ disconnected_sync_path }}/catalog/redhat-operator-index/index.json"
+
+  - name: Push pruned redhat-operator-index image to disconnected registry
+    shell: |
+      cd {{ disconnected_sync_path }}/catalog
+      jq '. | select((.package=="{{ item }}") or (.name=="{{ item }}"))' ../{{ operator_index_tag }}-index.json >> redhat-operator-index/index.json
+    loop: "{{ operators_to_sync.split(',') }}"
+
+  - name: Validate the new redhat-operator-catalog
+    shell: |
+      cd {{ disconnected_sync_path }}/catalog
+      opm validate redhat-operator-index
+
+  - name: Build new redhat-operator-catalog
+    shell: |
+      cd {{ disconnected_sync_path }}/catalog
+      podman build -f redhat-operator-index.Dockerfile -t {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
 
 - name: Push pruned redhat-operator-index image to disconnected registry
   shell: |
