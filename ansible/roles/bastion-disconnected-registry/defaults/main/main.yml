@@ -15,8 +15,8 @@ registry_container_image: docker.io/library/registry:2
 registry_repo: ocp4/openshift4
 
 # Ideally the name/tags match the original source operator-index
-operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.10
+operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.11
 operator_index_name: redhat-operator-index
-operator_index_tag: v4.10
+operator_index_tag: v4.11
 
 operators_to_sync: cluster-logging,local-storage-operator,openshift-gitops-operator,performance-addon-operator,ptp-operator,sriov-network-operator

@@ -72,8 +72,8 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` if you desire to limit the number of worker nodes from your scale lab allocation.
 
-Change `ocp_release_image` to the desired image if the default (4.10.24) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.10`), then change `openshift_version` accordingly.
+Change `ocp_release_image` to the desired image if the default (4.11.5) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.11`), then change `openshift_version` accordingly.
 
 Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
 ```yaml
@@ -229,10 +229,10 @@ public_vlan: false
 # Versions are controlled by this release image. If you want to change images
 # you must rerun the setup-bastion step in order to setup your bastion's
 # assisted-installer to the version you desire
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.10.24-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.5-x86_64
 
-# This should just match the above release image version (Ex: 4.10)
-openshift_version: "4.10"
+# This should just match the above release image version (Ex: 4.11)
+openshift_version: "4.11"
 
 # List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
 networktype:
