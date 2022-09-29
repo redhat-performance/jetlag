@@ -158,7 +158,9 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 
 * [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
-* [Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
+* [Deploy Single Node OpenShift (SNO) clusters via jetlag quickstart guide](docs/deploy-sno-quickstart.md)
+* [Deploy Single Node OpenShift (SNO) clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
+
 
 ## Tips and Troubleshooting
 
