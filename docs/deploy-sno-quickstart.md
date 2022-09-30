@@ -130,7 +130,7 @@ bastion_lab_interface: enp2s0f0
 bastion_controlplane_interface: enp1s0f0
 ```
 
-For the guide we set our values for the Supermicro 1029p.
+For the guide we set our values for the Supermicro 1029u.
 
 ** If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
 
@@ -173,26 +173,11 @@ For the guide we set our values for the Supermicro 1029U.
 
 ### Extra vars
 
-No extra vars are needed for an ipv4 bare metal cluster.
+No extra vars are needed for an ipv4 SNO cluster.
 
 ### Disconnected and ipv6 vars
 
-If you want to deploy a disconnected ipv6 cluster then the following vars need to be set.
-
-Change `use_disconnected_registry` to `use_disconnected_registry: true` under "Bastion node vars"
-
-Append the following "override" vars in "Extra vars"
-
-```yaml
-controlplane_network: fc00:1000::/64
-controlplane_network_prefix: 64
-cluster_network_cidr: fd01::/48
-cluster_network_host_prefix: 64
-service_network_cidr: fd02::/112
-fix_metal3_provisioningosdownloadurl: true
-```
-
-Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
+This needs to be tested separately for SNO clusters.
 
 The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
@@ -358,8 +343,8 @@ Next run the `setup-bastion.yml` playbook ...
 We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
-[user@fedora jetlag]$ scp root@f16-h11-000-1029p.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
-Warning: Permanently added 'f16-h11-000-1029p.rdu2.scalelab.redhat.com,10.1.43.101' (ECDSA) to the list of known hosts.
+[user@fedora jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
+Warning: Permanently added 'f12-h05-000-1029u.rdu2.scalelab.redhat.com,10.1.43.101' (ECDSA) to the list of known hosts.
 id_rsa.pub                                                                                100%  554    22.6KB/s   00:00
 ```
 
@@ -372,12 +357,12 @@ Finally run the `sno-deploy.yml` playbook ...
 ...
 ```
 
-A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f16-h11-000-1029p.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
-If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
+If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 
 ```console
-[root@f16-h11-000-1029p ~]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
-[root@f16-h11-000-1029p ~]# oc get no
+[root@f12-h05-000-1029p ~]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
+[root@f12-h05-000-1029p ~]# oc get no
 ...
 ```
