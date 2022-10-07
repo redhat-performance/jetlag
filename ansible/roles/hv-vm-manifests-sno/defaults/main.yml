@@ -13,5 +13,8 @@ bmc_password_base64: "{{ 'password' | b64encode }}"
 siteconfig_enable_cpuset: false
 siteconfig_cpuset: "0-3"
 
+# Used in conjuntion with converged flow
+siteconfig_baremetalhost_override_converged_flow: false
+
 # Used to enable observability in siteconfigs
 siteconfig_observability: false
