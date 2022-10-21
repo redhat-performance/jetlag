@@ -16,6 +16,9 @@ disconnected_registry_port: 5000
 # Deploy performance-dashboards
 setup_performance_dashboards: false
 
+# Deploy TALM operator
+setup_talm_operator: false
+
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
 gitops_channel: stable
@@ -29,7 +32,7 @@ gitops_starting_csv: openshift-gitops-operator.v1.5.4
 fix_metal3_provisioningosdownloadurl: false
 
 # Migrate the ingresscontrollers and/or monitoring components to the master nodes
-# Used during nodedensity testing to ensure these things are more available
+# Used during nodedensity testing to ensure these services are more available
 migrate_ingresscontrollers: false
 migrate_monitoring: false
 
