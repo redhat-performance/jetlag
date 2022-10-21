@@ -34,6 +34,9 @@ spec:
     additionalNTPSources:
     - {{ hostvars[inventory_hostname]['hv_ip'] }}
     crTemplates:
+{% if siteconfig_baremetalhost_override_converged_flow %}
+      BareMetalHost: "BareMetalHostOverride.yaml"
+{% endif %}
       KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
     nodes:
     - hostName: "{{ inventory_hostname }}"
