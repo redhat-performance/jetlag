@@ -20,6 +20,7 @@ setup_performance_dashboards: false
 setup_openshift_gitops: false
 gitops_channel: stable
 # Deploy specific openshift-gitops required for ZTP using "manual" approval process
+# ZTP has since no longer required this for at least 4.11
 setup_openshift_gitops_ztp: false
 # ZTP gitops requires this version of the gitops operator
 gitops_starting_csv: openshift-gitops-operator.v1.5.4
