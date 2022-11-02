@@ -175,10 +175,6 @@ For the guide we set our values for the Supermicro 1029U.
 
 No extra vars are needed for an ipv4 SNO cluster.
 
-### Disconnected and ipv6 vars
-
-This needs to be tested separately for SNO clusters.
-
 The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
 ## Review all.yml
