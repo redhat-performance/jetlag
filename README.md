@@ -40,6 +40,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Dell r640          | Yes | Yes | Yes |
 | Dell fc640         | Yes | No  | Yes |
 | Supermicro 1029p   | Yes | Yes | No  |
+| Supermicro 1029U   | No  | No  | Yes |
 | Supermicro 5039ms  | Yes | No  | Yes |
 
 **IBMcloud**
@@ -89,7 +90,7 @@ For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.
 
 Pre-reqs for Supermicro hardware:
 
-* [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo root and renamed `smcipmitool.tar.gz`
+* [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo, renamed to `smcipmitool.tar.gz`, and placed under `ansible/`
 
 ## Cluster Deployment Usage
 
@@ -157,7 +158,9 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 
 * [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
-* [Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
+* [Deploy Single Node OpenShift (SNO) clusters via jetlag quickstart guide](docs/deploy-sno-quickstart.md)
+* [Deploy Single Node OpenShift (SNO) clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
+
 
 ## Tips and Troubleshooting
 
