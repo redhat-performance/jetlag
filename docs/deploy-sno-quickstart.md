@@ -72,7 +72,7 @@ Change `cluster_type` to `cluster_type: sno`
 
 Change `sno_node_count` to the number of SNOs that should be provisioned. For example `sno_node_count: 1`
 
-Change `ocp_release_image` to the desired image if the default (4.11.5) is not the desired version.
+Change `ocp_release_image` to the desired image if the default (4.11.13) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.11`), then change `openshift_version` accordingly.
 
 Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
@@ -210,7 +210,7 @@ public_vlan: false
 # Versions are controlled by this release image. If you want to change images
 # you must rerun the setup-bastion step in order to setup your bastion's
 # assisted-installer to the version you desire
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.5-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.13-x86_64
 
 # This should just match the above release image version (Ex: 4.11)
 openshift_version: "4.11"
@@ -247,8 +247,8 @@ use_disconnected_registry: false
 controlplane_lab_interface: eno1
 
 # Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr: 
-controlplane_pub_network_gateway: 
+controlplane_pub_network_cidr:
+controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
