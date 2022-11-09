@@ -186,7 +186,7 @@ Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
 ```
 
-The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator.
+The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset bmc [here](#supermicro---reset-bmc--resolving-redfish-connection-error).
 
 How to verify that ipmi privilege set to administrator level permissions
 

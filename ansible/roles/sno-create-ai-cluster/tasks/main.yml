@@ -1,6 +1,17 @@
 ---
 # sno-create-ai-cluster tasks
 
+- name: Obtain pull-secret for disconnected
+  slurp:
+    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+  register: slurped_pull_secret
+  when: use_disconnected_registry
+
+- name: Set pull-secret for disconnected
+  set_fact:
+    pull_secret: "{{ slurped_pull_secret.content | b64decode }}"
+  when: use_disconnected_registry
+
 - name: Create SNO cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
@@ -14,7 +25,7 @@
         "high_availability_mode": "None",
         "base_dns_domain": "{{ base_dns_name }}",
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
-        "cluster_network_host_prefix": 23,
+        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "service_network_cidr": "{{ service_network_cidr }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
@@ -34,6 +45,12 @@
     machine_network_cidr: "{{ controlplane_pub_network_cidr }}"
   when:
     - public_vlan | bool
+
+- name: set machine network cidr when using disconnected registry
+  set_fact:
+    machine_network_cidr: "{{ controlplane_network | ipaddr('network/prefix') }}"
+  when:
+    - use_disconnected_registry
 
 - block:
     - name: Set machine network

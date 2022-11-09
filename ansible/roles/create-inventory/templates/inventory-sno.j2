@@ -30,7 +30,12 @@ bmc_password={{ bmc_password }}
 [sno]
 # Single Node OpenShift Clusters
 {% for sno in ocpinventory_sno_nodes %}
-{{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ sno.pm_addr }} boot_iso={{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }}.iso ip_address={{  controlplane_pub_network_cidr | ansible.utils.nthhost(loop.index0 + 1) if public_vlan | bool else (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} lab_mac={{ (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first) | json_query(mac_query) | join(', ') }} network_mac={{ sno.mac[-1] }}
+{%- if use_disconnected_registry -%}
+{%-   set ip_address=controlplane_network | ansible.utils.nthhost(loop.index0 + 5) -%}
+{%- else -%}
+{%-   set ip_address=controlplane_pub_network_cidr | ansible.utils.nthhost(loop.index0 + 1) if public_vlan | bool else (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip -%}
+{%- endif -%}
+{{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ sno.pm_addr }} boot_iso={{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }}.iso ip_address={{ ip_address }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} lab_mac={{ (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first) | json_query(mac_query) | join(', ') }} network_mac={{ sno.mac[0] }}
 {% endfor %}
 
 [sno:vars]
@@ -42,8 +47,18 @@ network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_pub_network_cidr | ipaddr('prefix') }}
 gateway={{ controlplane_pub_network_gateway }}
 {% endif %}
+{% if use_disconnected_registry %}
+lab_interface={{ controlplane_lab_interface }}
+network_interface={{ controlplane_network_interface }}
+network_prefix={{ controlplane_network | ipaddr('prefix') }}
+gateway={{ controlplane_network_gateway }}
+{% endif %}
+{% if controlplane_bastion_as_dns %}
+dns1={{ bastion_controlplane_ip }}
+{% else %}
 dns1={{ labs[lab]['dns'][0] }}
 dns2={{ labs[lab]['dns'][1] | default('') }}
+{% endif %}
 
 [hv]
 # Unused
