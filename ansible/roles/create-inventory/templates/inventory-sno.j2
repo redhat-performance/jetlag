@@ -32,8 +32,10 @@ bmc_password={{ bmc_password }}
 {% for sno in ocpinventory_sno_nodes %}
 {%- if use_disconnected_registry -%}
 {%-   set ip_address=controlplane_network | ansible.utils.nthhost(loop.index0 + 5) -%}
+{%- elif public_vlan | bool -%}
+{%-   set ip_address=controlplane_pub_network_cidr | ansible.utils.nthhost(loop.index0 + 1) -%}
 {%- else -%}
-{%-   set ip_address=controlplane_pub_network_cidr | ansible.utils.nthhost(loop.index0 + 1) if public_vlan | bool else (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip -%}
+{%- set ip_address=(sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip -%}
 {%- endif -%}
 {{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ sno.pm_addr }} boot_iso={{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }}.iso ip_address={{ ip_address }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} lab_mac={{ (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first) | json_query(mac_query) | join(', ') }} network_mac={{ sno.mac[0] }}
 {% endfor %}
@@ -41,17 +43,16 @@ bmc_password={{ bmc_password }}
 [sno:vars]
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
-{% if public_vlan %}
+
+{% if public_vlan or use_disconnected_registry %}
 lab_interface={{ controlplane_lab_interface }}
 network_interface={{ controlplane_network_interface }}
-network_prefix={{ controlplane_pub_network_cidr | ipaddr('prefix') }}
 gateway={{ controlplane_pub_network_gateway }}
 {% endif %}
-{% if use_disconnected_registry %}
-lab_interface={{ controlplane_lab_interface }}
-network_interface={{ controlplane_network_interface }}
+{% if public_vlan %}
+network_prefix={{ controlplane_pub_network_cidr | ipaddr('prefix') }}
+{% elif use_disconnected_registry %}
 network_prefix={{ controlplane_network | ipaddr('prefix') }}
-gateway={{ controlplane_network_gateway }}
 {% endif %}
 {% if controlplane_bastion_as_dns %}
 dns1={{ bastion_controlplane_ip }}

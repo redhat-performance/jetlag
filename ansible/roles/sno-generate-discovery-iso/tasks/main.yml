@@ -47,12 +47,5 @@
 
 - name: Include custom static network config
   include_tasks: 10_custom_iso.yml
-  when:
-    - public_vlan | bool
-  loop: "{{ groups['sno'][:sno_node_count|int] }}"
-
-- name: Include custom static network config for disconnected registry
-  include_tasks: 10_custom_iso.yml
-  when:
-    - use_disconnected_registry
+  when: public_vlan | bool or use_disconnected_registry
   loop: "{{ groups['sno'][:sno_node_count|int] }}"

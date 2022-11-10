@@ -38,7 +38,7 @@
   no_log: true
   when: (public_vlan | default(false) | bool) or (lab in cloud_labs)
 
-- name: Set cluster network host prefix for SNO(s)
+- name: Patch cluster network settings
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: PATCH
