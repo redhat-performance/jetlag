@@ -22,6 +22,7 @@
     - net-tools
     - python3-pip
     - podman
+    - rsync
     - skopeo
     - tcpdump
     - tmux
