@@ -2,6 +2,23 @@
 # sno-generate-discovery-iso tasks
 
 - block:
+  - name: Get disconnected registry certificate
+    slurp:
+      src: "{{ registry_path }}/certs/domain.crt"
+    register: mirror_cert
+    when: use_disconnected_registry | default(false)
+
+  - name: Apply disconnected discovery ignition config override
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/discovery-ignition"
+      method: PATCH
+      body_format: json
+      status_code: [201]
+      return_content: true
+      body: { "config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}" }
+    when: use_disconnected_registry | default(false)
+    loop: "{{ ai_cluster_ids | dict2items  }}"
+
   - name: Generate a discovery ISO
     uri:
       url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/image"
@@ -30,6 +47,5 @@
 
 - name: Include custom static network config
   include_tasks: 10_custom_iso.yml
-  when:
-    - public_vlan | bool
+  when: public_vlan | bool or use_disconnected_registry
   loop: "{{ groups['sno'][:sno_node_count|int] }}"

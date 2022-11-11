@@ -175,6 +175,25 @@ For the guide we set our values for the Supermicro 1029U.
 
 No extra vars are needed for an ipv4 SNO cluster.
 
+### Disconnected and ipv6 vars
+
+If you want to deploy a disconnected ipv6 cluster then the following vars need to be set.
+
+Change `use_disconnected_registry` to `use_disconnected_registry: true` under "Bastion node vars"
+
+Append the following "override" vars in "Extra vars"
+
+```yaml
+controlplane_network: fc00:1000::/64
+controlplane_network_prefix: 64
+cluster_network_cidr: fd01::/48
+cluster_network_host_prefix: 64
+service_network_cidr: fd02::/112
+fix_metal3_provisioningosdownloadurl: true
+```
+
+Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
+
 The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
 ## Review all.yml
@@ -353,7 +372,7 @@ Finally run the `sno-deploy.yml` playbook ...
 ...
 ```
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 
