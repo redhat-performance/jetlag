@@ -10,7 +10,7 @@ registry_path: /opt/registry
 registry_user: registry
 registry_password: registry
 
-registry_container_image: docker.io/library/registry:2
+registry_container_image: quay.io/nchhabra/ocp4:latest
 
 registry_repo: ocp4/openshift4
 
