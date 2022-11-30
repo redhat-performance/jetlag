@@ -6,24 +6,31 @@ base_dns_name: example.com
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
 etc_hosts_ingress_routes:
+- alertmanager-main-openshift-monitoring
+- alertmanager-open-cluster-management-observability
 - assisted-image-service-multicluster-engine
+- assisted-image-service-open-cluster-management
 - assisted-service-multicluster-engine
+- assisted-service-open-cluster-management
+- canary-openshift-ingress-canary
+- cluster-openshift-gitops
+- cluster-proxy-anp
+- cluster-proxy-user
+- console-openshift-console
+- dittybopper-dittybopper
+- downloads-openshift-console
+- grafana-open-cluster-management-observability
+- grafana-openshift-monitoring
+- kam-openshift-gitops
+- minio-minio
 - multicloud-console
 - oauth-openshift
-- console-openshift-console
-- downloads-openshift-console
-- cluster-openshift-gitops
-- kam-openshift-gitops
+- observatorium-api-open-cluster-management-observability
 - openshift-gitops-server-openshift-gitops
-- canary-openshift-ingress-canary
-- alertmanager-main-openshift-monitoring
-- grafana-openshift-monitoring
+- prometheus-k8s-federate-openshift-monitoring
 - prometheus-k8s-openshift-monitoring
+- rbac-query-proxy-open-cluster-management-observability
 - thanos-querier-openshift-monitoring
-- assisted-image-service-open-cluster-management
-- assisted-service-open-cluster-management
-- dittybopper-dittybopper
-- minio-minio
 
 # Default number of additional dns entries to add in the event we have hypervisor machines with VMs.
 # Ignore if you are not doing anything with hypervisor machines and VMs
