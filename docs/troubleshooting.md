@@ -6,6 +6,7 @@ _**Table of Contents**_
 - [Bastion - Accessing services](#bastion---accessing-services)
 - [Bastion - Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
 - [Bastion - Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
+- [Bastion - Specifying incorrect image caused a need to clean up all container services / podman pods
 - [Dell - Reset BMC / iDrac](#dell---reset-bmc--idrac)
 - [Scalelab - Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
 - [Scalelab - Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
@@ -102,6 +103,24 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 48K     sync-acm-d
 [root@f16-h11-000-1029p registry]# rm -rf data/docker/
 ```
+
+## Bastion - Specifying an incorrect image caused a need to clean up all container services / podman pods
+
+In the "all.yml" file, an incorrect image was specified for the "ocp_release_image" variable.  An error showed stating such when running:
+
+ansible-playbook -i ansible/inventory/cloud11.local ansible/setup-bastion.yml 
+
+This error was fixed.  The create-inventory and setup-bastion scripts were run again. However, this error then showed:
+
+```console
+TASK [bastion-http : Create http container in http pod] ***************************************************************************************************************************************************************************
+Monday 12 December 2022  20:10:40 +0000 (0:00:01.731)       0:00:44.896 ******* 
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: KeyError: 'exitcommand'
+fatal: [e23-h01-740xd.alias.bos.scalelab.redhat.com]: FAILED! => {"changed": false, "module_stderr": "Shared connection to e23-h01-740xd.alias.bos.scalelab.redhat.com closed.\r\n", "module_stdout": "Traceback (most recent call last):\r\n  File \"/root/.ansible/tmp/ansible-tmp-1670875841.0440326-79218-181831861685191/AnsiballZ_podman_container.py\", line 100, in <module>\r\n    _ansiballz_main()\r\n  File \"/root/.ansible/tmp/ansible-tmp-1670875841.0440326-79218-181831861685191/AnsiballZ_podman_container.py\", line 92, in _ansiballz_main\r\n    invoke_module(zipped_mod, temp_path, ANSIBALLZ_PARAMS)\r\n  File \"/root/.ansible/tmp/ansible-tmp-1670875841.0440326-79218-181831861685191/AnsiballZ_podman_container.py\", line 41, in invoke_module\r\n    run_name='__main__', alter_sys=True)\r\n  File \"/usr/lib64/python3.6/runpy.py\", line 205, in run_module\r\n    return _run_module_code(code, init_globals, run_name, mod_spec)\r\n  File \"/usr/lib64/python3.6/runpy.py\", line 96, in _run_module_code\r\n    mod_name, mod_spec, pkg_name, script_name)\r\n  File \"/usr/lib64/python3.6/runpy.py\", line 85, in _run_code\r\n    exec(code, run_globals)\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/modules/podman_container.py\", line 1023, in <module>\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/modules/podman_container.py\", line 1018, in main\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/module_utils/podman/podman_container_lib.py\", line 1643, in execute\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/module_utils/podman/podman_container_lib.py\", line 1536, in make_started\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/module_utils/podman/podman_container_lib.py\", line 1336, in different\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/module_utils/podman/podman_container_lib.py\", line 1263, in is_different\r\n  File \"/tmp/ansible_containers.podman.podman_container_payload_7fx3st9z/ansible_containers.podman.podman_container_payload.zip/ansible_collections/containers/podman/plugins/module_utils/podman/podman_container_lib.py\", line 965, in diffparam_log_level\r\nKeyError: 'exitcommand'\r\n", "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 1}
+```
+
+The podman command under the "Bastion - Clean all container services / podman pods" heading in this document had to be performed to clean up this error.
+
 
 ## Dell - Reset BMC / iDrac
 
