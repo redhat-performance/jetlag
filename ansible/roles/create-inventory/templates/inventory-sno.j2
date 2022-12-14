@@ -53,7 +53,7 @@ network_prefix={{ controlplane_pub_network_cidr | ipaddr('prefix') }}
 {% elif use_disconnected_registry %}
 network_prefix={{ controlplane_network | ipaddr('prefix') }}
 {% endif %}
-{% if controlplane_bastion_as_dns %}
+{% if use_disconnected_registry %}
 dns1={{ bastion_controlplane_ip }}
 {% else %}
 dns1={{ labs[lab]['dns'][0] }}
