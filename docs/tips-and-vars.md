@@ -33,10 +33,9 @@ As a result, the following machine configuration files will be added to the clus
 * 01-container-mount-ns-and-kubelet-conf-master.yaml 
 * 03-sctp-machine-config-master.yaml
 * 04-accelerated-container-startup-master.yaml
-* 05-chrony-dynamic-master.yaml
 * 99-master-workload-partitioning.yml
 
-In addition, Network Diagnostics will be disabled, and performance-profile will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
+In addition to this, Network Diagnostics will be disabled, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
 
 Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
 
@@ -108,6 +107,11 @@ hugepages_count: 16
 # Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
 topology_manager_policy: best-effort
 ```
+#### Tuned Performance Patch
+
+After performance-profile is applied, the standard TunedPerformancePatch used for SNO DUs will also be applied post SNO install if DU profile is enabled.
+This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10. 
+Further changes applied can be found in the template 'tunedPerformancePatch.yml.j2' under sno-post-cluster-install templates.
 
 #### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
 

@@ -32,7 +32,7 @@ ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.13-x86_64
 # This should just match the above release image version (Ex: 4.11)
 openshift_version: "4.11"
 
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
+# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN. Do not define this for sno as it is always set to OVNKubernetes for SNOs, OpenshiftSDN networktype is not available for SNOs
 networktype:
   - OpenShiftSDN
   - OVNKubernetes

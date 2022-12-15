@@ -12,7 +12,6 @@ metadata:
 spec:
 {% if kernel_rt %}
   additionalKernelArgs:
-  - idle=poll
   - rcupdate.rcu_normal_after_boot=0
   - efi=runtime
 {% endif %}
