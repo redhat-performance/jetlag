@@ -36,7 +36,7 @@
     }
   with_items: "{{ cluster.results }}"
   no_log: true
-  when: (public_vlan | default(false) | bool) or (lab in cloud_labs)
+  when: (public_vlan | default(false) | bool) or (lab in cloud_labs) or (use_disconnected_registry | default(false))
 
 - name: Patch cluster network settings
   uri:
