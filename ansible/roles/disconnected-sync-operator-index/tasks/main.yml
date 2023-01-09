@@ -55,4 +55,4 @@
 
 - name: Mirror redhat-operator-index images
   shell: |
-    oc adm catalog mirror {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror -a {{ registry_path }}/pull-secret-disconnected.txt --to-manifests={{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_tag }}
+    oc adm catalog mirror {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }} -a {{ registry_path }}/pull-secret-disconnected.txt --to-manifests={{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_tag }}
