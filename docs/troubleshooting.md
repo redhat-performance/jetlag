@@ -50,12 +50,11 @@ Example accessing the disconnected registry and listing repositories:
     "edge-infrastructure/assisted-service",
     "edge-infrastructure/postgresql-12-centos7",
     "ocp4/openshift4",
-    "olm-mirror/olm-mirror-redhat-operator-index",
-    "olm-mirror/openshift4-ose-local-storage-diskmaker",
-    "olm-mirror/openshift4-ose-local-storage-operator",
-    "olm-mirror/openshift4-ose-local-storage-operator-bundle",
-    "olm-mirror/openshift4-ose-local-storage-static-provisioner",
-    "olm-mirror/redhat-operator-index"
+    "olm-mirror/redhat-operator-index",
+    "openshift4/ose-local-storage-diskmaker",
+    "openshift4/ose-local-storage-operator",
+    "openshift4/ose-local-storage-operator-bundle",
+    "openshift4/ose-local-storage-static-provisioner"
   ]
 }
 ```
@@ -182,7 +181,7 @@ Error: This device doesn't support WSISO commands
 
 ```console
 TASK [boot-iso : SuperMicro - Unmount ISO] *************************************
-Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ****** 
+Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
 ```
 
