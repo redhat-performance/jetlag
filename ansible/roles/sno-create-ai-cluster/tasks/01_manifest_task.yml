@@ -24,9 +24,6 @@
   - file_name: 04-accelerated-container-startup-master.yaml
     template_name: 04-accelerated-container-startup-master.yaml
     enabled: "{{ du_profile }}"
-  - file_name: 05-chrony-dynamic-master.yaml
-    template_name: 05-chrony-dynamic-master.yaml
-    enabled: "{{ du_profile }}"
 
   vars:
     ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"

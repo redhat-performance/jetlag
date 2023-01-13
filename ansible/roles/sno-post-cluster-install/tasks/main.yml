@@ -26,6 +26,13 @@
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: install_performance_addon_operator or du_profile
 
+- name: Create tunedPerformancePatch directory per sno cluster
+  file:
+    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/tunedPerformancePatch"
+    state: directory
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: install_performance_addon_operator or du_profile
+
 - name: Place templated net-attachment-definition
   template:
     src: network-attachment-definition.yml.j2
@@ -131,6 +138,13 @@
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
+- name: Place templated TunedPerformancePatch
+  template:
+    src: tunedPerformancePatch.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/tunedPerformancePatch/tunedPerformancePatch.yml"
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
 - name: Apply the PerformanceProfile
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-profile.yml
@@ -138,6 +152,36 @@
   retries: 120
   delay: 2
   until: not perf_result.failed
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
+- name: Wait until MachineConfigPools are updating
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $4}'
+  register: result
+  delay: 2
+  retries: 120
+  until: result.stdout == "True"
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
+- name: Wait until MachineConfigPools are updated
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $3}'
+  register: result
+  delay: 10
+  retries: 180
+  until: result.stdout == "True"
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
+- name: Apply the TunedPerformancePatch
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/tunedPerformancePatch/tunedPerformancePatch.yml
+  register: tunedpatch_result
+  retries: 120
+  delay: 2
+  until: not tunedpatch_result.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
