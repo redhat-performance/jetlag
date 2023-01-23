@@ -97,7 +97,7 @@ Pre-reqs for Supermicro hardware:
 There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:
 
 * `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
-* `pull_secret.txt` - Your OCP pull secret
+* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com](https://console.redhat.com/)
 * `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
@@ -119,7 +119,14 @@ Make sure to set/review the following vars:
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
 * More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name.
 
-Set your pull-secret in `pull_secret.txt` in repo base directory.
+Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
+
+```console
+[user@fedora jetlag]$ cat pull_secret.txt
+{
+  "auths": {
+...
+```
 
 Run create-inventory playbook
 

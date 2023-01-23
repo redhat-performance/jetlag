@@ -39,9 +39,10 @@ Review the Ansible prerequisites on the [README](https://github.com/redhat-perfo
 
 Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
 
-Set your pull secret file `pull_secret.txt` in the root directory. The contents should resemble this json:
+Set your pull secret file `pull_secret.txt` in the base directory of the cloned jetlag repo. The contents should resemble this json:
 
 ```
+[user@fedora jetlag]$ cat pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -153,6 +154,8 @@ networktype:
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
+# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
+# [user@fedora jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
