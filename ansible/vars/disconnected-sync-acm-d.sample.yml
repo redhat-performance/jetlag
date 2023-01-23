@@ -15,6 +15,8 @@ cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgra
 cluster_group_upgrades_operator_image_tag: 4.12.0
 cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
 cluster_group_upgrades_operator_precache_image_tag: 4.12.0
+cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-group-upgrades-operator-recovery
+cluster_group_upgrades_operator_recovery_image_tag: 4.12.0
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 
 minio_image: quay.io/minio/minio
