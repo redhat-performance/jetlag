@@ -73,14 +73,8 @@ Change `cluster_type` to `cluster_type: sno`
 
 Change `sno_node_count` to the number of SNOs that should be provisioned. For example `sno_node_count: 1`
 
-Change `ocp_release_image` to the desired image if the default (4.11.13) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.11`), then change `openshift_version` accordingly.
-
-Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
-```yaml
-networktype:
-  - OVNKubernetes
-```
+Change `ocp_release_image` to the desired image if the default (4.12.1) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.12`), then change `openshift_version` accordingly.
 
 For the ssh keys we have a chicken before the egg problem in that our bastion machine won't be defined or ensure that keys are created until after we run `create-inventory.yml` and `setup-bastion.yml` playbooks. We will revisit that a little bit later.
 
@@ -195,7 +189,7 @@ fix_metal3_provisioningosdownloadurl: true
 
 Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
 
-The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all containers off the bastion and rerun the `setup-bastion.yml` playbook.
+The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all running podman containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
 ## Review all.yml
 
@@ -228,16 +222,16 @@ sno_node_count: 1
 public_vlan: false
 
 # Versions are controlled by this release image. If you want to change images
-# you must rerun the setup-bastion step in order to setup your bastion's
-# assisted-installer to the version you desire
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.13-x86_64
+# you must stop and rm all assisted-installer containers on the bastion and rerun
+# the setup-bastion step in order to setup your bastion's assisted-installer to
+# the version you specified
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.1-x86_64
 
-# This should just match the above release image version (Ex: 4.11)
-openshift_version: "4.11"
+# This should just match the above release image version (Ex: 4.12)
+openshift_version: "4.12"
 
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
-networktype:
-  - OVNKubernetes
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
@@ -258,6 +252,9 @@ bastion_controlplane_interface: ens2f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
+# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
+setup_gogs: false
+
 # Use in conjunction with ipv6 based clusters
 use_disconnected_registry: false
 
@@ -265,7 +262,6 @@ use_disconnected_registry: false
 # OCP node vars
 ################################################################################
 # Network configuration for all bm cluster and rwn control-plane nodes
-# Network configuration for public VLAN based sno cluster_type deployment
 controlplane_lab_interface: eno1
 
 # Network configuration for public VLAN based sno cluster_type deployment

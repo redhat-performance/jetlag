@@ -80,15 +80,10 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
-Change `ocp_release_image` to the required image if the default (4.11.13) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.11`), then change `openshift_version` accordingly.
+Change `ocp_release_image` to the required image if the default (4.12.1) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.12`), then change `openshift_version` accordingly.
 
-Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
-
-```yaml
-networktype:
-  - OVNKubernetes
-```
+Only change `networktype` if you need to test something other than `OVNKubernetes`
 
 Set `ssh_private_key_file` and `ssh_public_key_file` to the file location of the ssh key files to access your ibmcloud bare metal servers.
 
@@ -143,14 +138,13 @@ sno_node_count:
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.13-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.1-x86_64
 
-# This should just match the above release image version (Ex: 4.11)
-openshift_version: "4.11"
+# This should just match the above release image version (Ex: 4.12)
+openshift_version: "4.12"
 
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
-networktype:
-  - OVNKubernetes
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub

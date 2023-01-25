@@ -43,13 +43,13 @@
 
 - name: Check if the required number of nodes exist for sno
   fail:
-    msg: "Insufficient number of nodes in your allocation for bm/rwn"
+    msg: "Insufficient number of nodes in your allocation for number of SNOs to be deployed"
   when: (allocation_node_count is defined and cluster_type == "sno") and (sno_node_count | int   > allocation_node_count | int  - 1)
 
-- name: Check if networktype is of list type and has only one value for BM/RWN
+- name: Check if networktype is either "OVNKubernetes" or "OpenShiftSDN"
   fail:
-    msg: "networktype is of list type but can have only one value for Bm/RWN clusters"
-  when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype is not iterable or networktype is string or networktype is mapping or networktype|length > 1)
+    msg: "networktype can only be OVNKubernetes or OpenShiftSDN for BM/RWN clusters"
+  when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype not in bm_network_types)
 
 - name: Validate Red Hat lab vars
   when: lab in rh_labs

@@ -6,10 +6,10 @@
     opm index prune -f {{ operator_index_container_image }} -p {{ operators_to_sync }} -t {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
   when: operator_index_tag == "v4.9" or operator_index_tag == "v4.10"
 
-- name: Create pruned redhat-operator-index image for v4.11 with {{ operators_to_sync }}
-  when: operator_index_tag == "v4.11"
+- name: Create pruned redhat-operator-index image for v4.11/v4.12 with {{ operators_to_sync }}
+  when: operator_index_tag == "v4.11" or operator_index_tag == "v4.12"
   block:
-  - name: Create directories for syncing v4.11 operator index
+  - name: Create directories for syncing v4.11/v4.12 operator index
     file:
       path: "{{ item }}"
       state: directory
