@@ -208,7 +208,7 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 ```
 3. Note the index of the nic in the array, in this case it is **3** using a zero based indexing.
 4. Subtract **1** from that value, yielding 2.
-5. set 2 as the value of the variable `controlplane_network_interface_idx`. 
+5. Set **2** as the value of the variable `controlplane_network_interface_idx`. 
 ```
 ################################################################################
 # Extra vars
