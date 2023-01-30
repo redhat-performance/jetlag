@@ -7,6 +7,7 @@ _**Table of Contents**_
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
 - [Add/delete contents to the disconnected registry](#Add/delete-contents-to-the-disconnected-registry)
+- [Using Other Network Interfaces](#Other Networks)
 <!-- /TOC -->
 
 ## Override lab ocpinventory json file
@@ -189,4 +190,29 @@ function rm_XXX_tag {
    | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
  )"
 }
+```
+
+## Other Networks
+If you want to use a NIC other than the default, you need to override the `controplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`. 
+In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
+1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
+2. Look for your server model number in `ansible/vars/lab.yml` then look in the yaml array of NIC names for your model.
+```
+    r650:
+    - eno12399np0
+    - ens1f0
+    - ens1f1
+    - ens2f0 <---This is the NIC
+    - ens2f1
+    - eno12409np1
+```
+3. Note the index of the nic in the array, in this case it is **3** using a zero based indexing.
+4. Subtract **1** from that value, yielding 2.
+5. set 2 as the value of the variable `controlplane_network_interface_idx`. 
+```
+################################################################################
+# Extra vars
+################################################################################
+# Append override vars below
+controlplane_network_interface_idx: 2
 ```

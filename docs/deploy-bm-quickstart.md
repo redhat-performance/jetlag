@@ -129,7 +129,8 @@ bastion_controlplane_interface: enp1s0f0
 
 For the guide we set our values for the Supermicro 1029p.
 
-** If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
+** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
+See [tips and vars](https://github.com/mrbojangles3/jetlag/blob/main/docs/tips-and-vars.md) for more information
 
 ### OCP node vars
 
