@@ -9,9 +9,9 @@ disconnected_sync_path: /opt/registry/sync
 
 registry_path: /opt/registry
 
-# Defaults here match default of 4.11
-operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.11
+# Defaults here match default for 4.12
+operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.12
 operator_index_name: redhat-operator-index
-operator_index_tag: v4.11
+operator_index_tag: v4.12
 
 operators_to_sync: cluster-logging,local-storage-operator,openshift-gitops-operator,openshift-special-resource-operator,performance-addon-operator,ptp-operator,redhat-oadp-operator,sriov-network-operator,topology-aware-lifecycle-manager,volsync-product

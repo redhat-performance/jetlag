@@ -39,14 +39,13 @@ sno_node_count: 2
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.11.13-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.1-x86_64
 
-# This should just match the above release image version (Ex: 4.11)
-openshift_version: "4.11"
+# This should just match the above release image version (Ex: 4.12)
+openshift_version: "4.12"
 
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
-networktype:
-  - OVNKubernetes
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
@@ -84,6 +83,7 @@ private_network_prefix: 26
 
 cluster_name: jetlag-ibm
 
+# Only applies for bm cluster types
 controlplane_network_api:
 controlplane_network_ingress:
 
