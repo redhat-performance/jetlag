@@ -7,7 +7,7 @@ _**Table of Contents**_
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
 - [Add/delete contents to the disconnected registry](#Add/delete-contents-to-the-disconnected-registry)
-- [Using Other Network Interfaces](#Other Networks)
+- [Using Other Network Interfaces](#Other-Networks)
 <!-- /TOC -->
 
 ## Override lab ocpinventory json file
