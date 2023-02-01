@@ -196,19 +196,16 @@ function rm_XXX_tag {
 If you want to use a NIC other than the default, you need to override the `controplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`. 
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
-2. Look for your server model number in `ansible/vars/lab.yml` then look in the yaml array of NIC names for your model.
+2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
 ```
-    r650:
-    - eno12399np0
-    - ens1f0
-    - ens1f1
-    - ens2f0 <---This is the NIC
-    - ens2f1
-    - eno12409np1
+* Network 1 = `controlplane_network_interface_idx: 0`
+* Network 2 = `controlplane_network_interface_idx: 1`
+* Network 3 = `controlplane_network_interface_idx: 2`
+* Network 4 = `controlplane_network_interface_idx: 3`
+* Network 5 = `controlplane_network_interface_idx: 4`
 ```
-3. Note the index of the nic in the array, in this case it is **3** using a zero based indexing.
-4. Subtract **1** from that value, yielding 2.
-5. Set **2** as the value of the variable `controlplane_network_interface_idx`. 
+3. Since the desired NIC in this exampls,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
+4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`. 
 ```
 ################################################################################
 # Extra vars
@@ -216,3 +213,5 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 # Append override vars below
 controlplane_network_interface_idx: 2
 ```
+### Alternative method
+In case you are bringing your own lab, set `controlplane_network_interface` to the desired name, eg. `controlplane_network_interface: ens2f0`.
