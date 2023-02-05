@@ -20,3 +20,10 @@ operator_index_name: redhat-operator-index
 operator_index_tag: v4.12
 
 operators_to_sync: cluster-logging,local-storage-operator,openshift-gitops-operator,performance-addon-operator,ptp-operator,sriov-network-operator
+
+# For certified operators, operator-index vars would be:
+# operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.12
+# operator_index_name: certified-operator-index
+# operator_index_tag: v4.12
+# Example of a certified-operator to sync:
+# operators_to_sync: sriov-fec
