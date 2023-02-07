@@ -16,5 +16,8 @@ siteconfig_cpuset: "0-3"
 # Used in conjuntion with converged flow
 siteconfig_baremetalhost_override_converged_flow: false
 
+# Used with 4.12 SNOs when converged flow is enabled
+siteconfig_ironic_inspect: false
+
 # Used to enable observability in siteconfigs
 siteconfig_observability: false

@@ -40,6 +40,9 @@ spec:
       KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
     nodes:
     - hostName: "{{ inventory_hostname }}"
+{% if siteconfig_ironic_inspect %}
+      ironicInspect: enabled
+{% endif %}
       bmcAddress: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
       bmcCredentialsName:
         name: {{ inventory_hostname }}-bmc-secret
