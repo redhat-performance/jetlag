@@ -1,9 +1,16 @@
 ---
 # Sample disconnected-sync-operator-index vars file
 
-# Current defaults match ACM/ZTP testing (4.11 SNO with 4.11 Operators)
-operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.11
+# Current defaults match ACM/ZTP testing (4.12 SNO with 4.12 Operators)
+operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.12
 operator_index_name: redhat-operator-index
-operator_index_tag: v4.11
+operator_index_tag: v4.12
 
 operators_to_sync: cluster-logging,local-storage-operator,openshift-gitops-operator,openshift-special-resource-operator,performance-addon-operator,ptp-operator,redhat-oadp-operator,sriov-network-operator,topology-aware-lifecycle-manager,volsync-product
+
+# For certified operators, operator-index vars would be:
+# operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.12
+# operator_index_name: certified-operator-index
+# operator_index_tag: v4.12
+# Example of a certified-operator to sync:
+# operators_to_sync: sriov-fec
