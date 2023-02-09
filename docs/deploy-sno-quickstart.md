@@ -93,6 +93,10 @@ Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com
 
 You may have to ssh to your intended bastion machine and view the network interface names to ensure the correct nic name is picked here.
 
+Here you can see a network diagram for the SNO cluster on Dell r640 with 3 SNO clusters:
+
+![SNO Cluster](img/sno_cluster.png)
+
 For example if your bastion is ...
 
 Dell fc640
