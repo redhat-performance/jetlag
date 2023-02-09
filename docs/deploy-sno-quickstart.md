@@ -117,6 +117,12 @@ bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
 ```
 
+Dell r750 (on ALIAS lab)
+```yaml
+bastion_lab_interface: eno8303
+bastion_controlplane_interface: ens3f0
+```
+
 Supermicro 1029p or Supermicro 1029U
 ```yaml
 bastion_lab_interface: eno1
@@ -154,6 +160,11 @@ controlplane_lab_interface: eno1np0
 Dell r650
 ```yaml
 controlplane_lab_interface: eno12399np0
+```
+
+Dell r750 (on ALIAS lab)
+```yaml
+controlplane_lab_interface: eno8303
 ```
 
 Supermicro 1029p or Supermicro 1029U
