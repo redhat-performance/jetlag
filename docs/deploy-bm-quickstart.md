@@ -95,6 +95,11 @@ Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com
 
 You may have to ssh to your intended bastion machine and view the network interface names to ensure the correct nic name is picked here.
 
+Here you can see a network diagram for the bare metal cluster on Dell r640 with 3 workers and 3 master nodes:
+
+![BM Cluster](img/bm_cluster.png)
+
+
 For example if your bastion is ...
 
 Dell fc640
@@ -113,6 +118,12 @@ Dell r650
 ```yaml
 bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
+```
+
+Dell r750 (on ALIAS lab)
+```yaml
+bastion_lab_interface: eno8303
+bastion_controlplane_interface: ens3f0
 ```
 
 Supermicro 1029p
@@ -153,6 +164,11 @@ controlplane_lab_interface: eno1np0
 Dell r650
 ```yaml
 controlplane_lab_interface: eno12399np0
+```
+
+Dell r750 (on ALIAS lab)
+```yaml
+controlplane_lab_interface: eno8303
 ```
 
 Supermicro 1029p

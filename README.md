@@ -31,6 +31,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Hardware | BM  | RWN | SNO |
 | -------- | --- | --- | --- |
 | 740xd    | No  | No  | Yes |
+| Dell r750| Yes | No  | Yes |
 
 **Scale Lab**
 
