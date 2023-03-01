@@ -64,7 +64,6 @@ spec:
           - name: eno1
             type: ethernet
             state: up
-            macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
 {% if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4 %}
             ipv4:
               enabled: true
