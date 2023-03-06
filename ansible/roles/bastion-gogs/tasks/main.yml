@@ -20,7 +20,30 @@
     src: app.ini.j2
     dest: /opt/gogs/gogs/conf/app.ini
 
-- name: Create gogs pod
+- name: Create gogs pod (ipv4)
+  containers.podman.podman_pod:
+    name: gogs
+    ports:
+    - "10022:22"
+    - "{{ gogs_ipv6_port }}:3000"
+    state: started
+  when:  bastion_controlplane_ip | ansible.utils.ipv4
+
+# On a reboot "started" state does not start an exited pod (why..idk)
+- name: Ensure gogs pod (ipv4) is up
+  containers.podman.podman_pod:
+    name: gogs
+    ports:
+    - "10022:22"
+    - "{{ gogs_ipv6_port }}:3000"
+    state: restarted
+  register: result
+  until: not result.failed
+  retries: 10
+  delay: 1
+  when:  bastion_controlplane_ip | ansible.utils.ipv4
+
+- name: Create gogs pod (ipv6)
   containers.podman.podman_pod:
     name: gogs
     network: podman6
@@ -28,9 +51,10 @@
     - "10022:22"
     - "{{ gogs_ipv6_port }}:3000"
     state: started
+  when:  bastion_controlplane_ip | ansible.utils.ipv6
 
 # On a reboot "started" state does not start an exited pod (why..idk)
-- name: Ensure gogs pod is up
+- name: Ensure gogs pod (ipv6) is up
   containers.podman.podman_pod:
     name: gogs
     network: podman6
@@ -42,6 +66,7 @@
   until: not result.failed
   retries: 10
   delay: 1
+  when:  bastion_controlplane_ip | ansible.utils.ipv6
 
 - name: Create gogs container in gogs pod
   containers.podman.podman_container:
