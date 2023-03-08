@@ -154,8 +154,8 @@ hw_vm_counts:
       sdb: 12
       nvme0n1: 12
     r650:
-      default: 7
-      nvme0n1: 20
+      default: 4
+      nvme0n1: 23
     r730xd:
       default: 3
       nvme0n1: 3
