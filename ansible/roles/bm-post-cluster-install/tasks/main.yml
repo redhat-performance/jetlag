@@ -6,25 +6,26 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ bastion_cluster_config_dir }}"
-    - "{{ bastion_cluster_config_dir }}/gitops"
-    - "{{ bastion_cluster_config_dir }}/localstorage"
-    - "{{ bastion_cluster_config_dir }}/minio"
-    - "{{ bastion_cluster_config_dir }}/net-attach-def"
-    - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
-    - "{{ bastion_cluster_config_dir }}/performance-addon-operator"
+  - "{{ bastion_cluster_config_dir }}"
+  - "{{ bastion_cluster_config_dir }}/gitops"
+  - "{{ bastion_cluster_config_dir }}/localstorage"
+  - "{{ bastion_cluster_config_dir }}/minio"
+  - "{{ bastion_cluster_config_dir }}/net-attach-def"
+  - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
+  - "{{ bastion_cluster_config_dir }}/performance-addon-operator"
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{ item.name }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{\
+      \ item.name }}"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.dest }}"
   with_items:
-    - name: kubeadmin-password
-      dest: kubeadmin-password
-    - name: kubeconfig
-      dest: kubeconfig
-    - name: kubeconfig
-      dest: kubeconfig.backup
+  - name: kubeadmin-password
+    dest: kubeadmin-password
+  - name: kubeconfig
+    dest: kubeconfig
+  - name: kubeconfig
+    dest: kubeconfig.backup
 
 - name: Apply a label to the worker node(s)
   shell: |
@@ -46,22 +47,22 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: openshift-gitops-operator.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
-    - src: localstorage.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
-    - src: localvolume.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
-    - src: localvolume2.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml"
-    - src: minio.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
-    - src: network-attachment-definition.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
-    - src: cluster-monitoring-config.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
-    - src: performance-addon-operator.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/performance-addon-operator/performance-addon-operator.yml"
+  - src: openshift-gitops-operator.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
+  - src: localstorage.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
+  - src: localvolume.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
+  - src: localvolume2.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml"
+  - src: minio.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
+  - src: network-attachment-definition.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
+  - src: cluster-monitoring-config.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
+  - src: performance-addon-operator.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/performance-addon-operator/performance-addon-operator.yml"
 
 - name: Clone performance-dashboards
   git:
@@ -157,21 +158,18 @@
     with_items: "{{ groups['controlplane'] }}"
 
   - name: Install local-storage operator
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
 
   # The localvolume resource will not be instantly available, thus retry for around 2 minutes
   - name: Create localvolume resource
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
     register: lv_result
     until: not lv_result.failed
     retries: 60
     delay: 2
 
   - name: Create localvolume2 resource
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml
     register: lv_result
     until: not lv_result.failed
     retries: 60
@@ -179,8 +177,7 @@
     when: localvolume2_configuration
 
   - name: Configure OpenShift-Monitoring Prometheus to use localstorage
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
 
 - name: Setup worker nodes localstorage
   when: worker_localstorage_configuration
@@ -191,21 +188,18 @@
     with_items: "{{ groups['worker'] }}"
 
   - name: Install local-storage operator
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
 
   # The localvolume resource will not be instantly available, thus retry for around 15 minutes
   - name: Create localvolume resource
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
     register: lv_result
     until: not lv_result.failed
     retries: 450
     delay: 2
 
   - name: Create localvolume2 resource
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml
     register: lv_result
     until: not lv_result.failed
     retries: 60
@@ -224,13 +218,11 @@
 
 - name: Apply OpenShift-Monitoring configuration options
   when: migrate_monitoring or worker_localstorage_configuration
-  shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
+  shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
 
 - name: Setup NetworkAttachmentDefinition for 2nd pod network (macvlan type only)
   when: setup_network_attachment_definition
-  shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml
+  shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml
 
 - name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
   shell: |

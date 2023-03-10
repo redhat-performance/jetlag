@@ -6,45 +6,46 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ bastion_cluster_config_dir }}"
-    - "{{ bastion_cluster_config_dir }}/livecd"
-    - "{{ bastion_cluster_config_dir }}/autorules"
-    - "{{ bastion_cluster_config_dir }}/mcp"
-    - "{{ bastion_cluster_config_dir }}/localstorage"
-    - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
+  - "{{ bastion_cluster_config_dir }}"
+  - "{{ bastion_cluster_config_dir }}/livecd"
+  - "{{ bastion_cluster_config_dir }}/autorules"
+  - "{{ bastion_cluster_config_dir }}/mcp"
+  - "{{ bastion_cluster_config_dir }}/localstorage"
+  - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{ item.name }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{\
+      \ item.name }}"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.dest }}"
   with_items:
-    - name: kubeadmin-password
-      dest: kubeadmin-password
-    - name: kubeconfig
-      dest: kubeconfig
-    - name: kubeconfig
-      dest: kubeconfig.backup
+  - name: kubeadmin-password
+    dest: kubeadmin-password
+  - name: kubeconfig
+    dest: kubeconfig
+  - name: kubeconfig
+    dest: kubeconfig.backup
 
 - name: Place templated configuration items
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: autorules.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/autorules/autorules.yml"
-    - src: localstorage.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
-    - src: localvolume.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
-    - src: cluster-monitoring-config.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
+  - src: autorules.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/autorules/autorules.yml"
+  - src: localstorage.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
+  - src: localvolume.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume.yml"
+  - src: cluster-monitoring-config.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
 
 - name: Create MachineConfigPool manifest per Remote Worker Node
   template:
     src: mcp.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/mcp/mcp-rwn-{{ hostvars[item].vlan }}.yml"
   with_items:
-    - "{{ groups['remoteworker'] }}"
+  - "{{ groups['remoteworker'] }}"
 
 # Witnessed at least once where the cluster did not seem to be ready for commands
 # thus adding retries to this first command
@@ -115,21 +116,18 @@
     with_items: "{{ groups['controlplane'] }}"
 
   - name: Install local-storage operator
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
 
   # The localvolume resource will not be instantly available, thus retry for around 2 minutes
   - name: Create localvolume resource
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume.yml
     register: lv_result
     until: not lv_result.failed
     retries: 60
     delay: 2
 
   - name: Configure OpenShift-Monitoring Prometheus to use localstorage
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
+    shell: KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
 
 # Ideally we could check the status for the MCO to see that the latest machineconfigs
 # have been rendered into the "rendered" config

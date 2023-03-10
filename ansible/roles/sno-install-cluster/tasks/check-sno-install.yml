@@ -67,18 +67,18 @@
     when: not item.json.status == 'installed'
 
   rescue:
-    - name: Fail on maximum retry count
-      fail:
-        msg: Maximum retries reached
-      when: retry | int == 540
+  - name: Fail on maximum retry count
+    fail:
+      msg: Maximum retries reached
+    when: retry | int == 540
 
-    - name: Fail when a cluster install failed
-      fail:
-        msg: Cluster install failed or cancelled
-      loop: "{{ cluster.results }}"
-      loop_control:
-        label: "{{ item.json.name }}"
-      when: item.json.status == 'error' or item.json.status == 'cancelled'
+  - name: Fail when a cluster install failed
+    fail:
+      msg: Cluster install failed or cancelled
+    loop: "{{ cluster.results }}"
+    loop_control:
+      label: "{{ item.json.name }}"
+    when: item.json.status == 'error' or item.json.status == 'cancelled'
 
-    - name: Retry the check sno install tasks
-      include_tasks: check-sno-install.yml
+  - name: Retry the check sno install tasks
+    include_tasks: check-sno-install.yml

@@ -37,12 +37,12 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - src: networks.csv.j2
-      dest: "{{ bastion_cluster_config_dir }}/livecd/networks.csv"
-    - src: firstboot.sh.j2
-      dest: "{{ bastion_cluster_config_dir }}/livecd/firstboot.sh"
-    - src: iso.ign.template.j2
-      dest: "{{ bastion_cluster_config_dir }}/livecd/iso.ign"
+  - src: networks.csv.j2
+    dest: "{{ bastion_cluster_config_dir }}/livecd/networks.csv"
+  - src: firstboot.sh.j2
+    dest: "{{ bastion_cluster_config_dir }}/livecd/firstboot.sh"
+  - src: iso.ign.template.j2
+    dest: "{{ bastion_cluster_config_dir }}/livecd/iso.ign"
 
 - name: Remove old LiveCD
   file:

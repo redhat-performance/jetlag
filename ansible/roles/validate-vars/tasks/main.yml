@@ -23,18 +23,14 @@
 - name: Set worker_node_count if undefined or empty (bm/rwn)
   set_fact:
     worker_node_count: "{{ allocation_node_count - 4 }}"
-  when: (cluster_type == "bm" or cluster_type == "rwn") and
-        (worker_node_count is undefined or not worker_node_count | int) and
-        ansible_play_name != "Create inventory from a lab cloud" and
-        ansible_play_name != "Create inventory from ibmcloud hardware"
+  when: (cluster_type == "bm" or cluster_type == "rwn") and (worker_node_count is undefined or not worker_node_count | int) and ansible_play_name != "Create
+    inventory from a lab cloud" and ansible_play_name != "Create inventory from ibmcloud hardware"
 
 - name: Set sno_node_count if undefined or empty
   set_fact:
     sno_node_count: "{{ (allocation_node_count - 1) | int   }}"
-  when: (cluster_type == "sno")  and
-        (sno_node_count is undefined or not sno_node_count | int) and
-        ansible_play_name != "Create inventory from a lab cloud" and
-        ansible_play_name != "Create inventory from ibmcloud hardware"
+  when: (cluster_type == "sno")  and (sno_node_count is undefined or not sno_node_count | int) and ansible_play_name != "Create inventory from a lab cloud"
+    and ansible_play_name != "Create inventory from ibmcloud hardware"
 
 - name: Check if the required number of nodes exist for bm/rwn
   fail:
@@ -70,7 +66,8 @@
 - name: Check if PAO install is enabled when du_profile is enabled and OCP version is 4.9 or 4.10
   fail:
     msg: "set install_performance_addon_operator to true"
-  when: (cluster_type == "sno") and (openshift_version == "4.9" or openshift_version == "4.10") and (not install_performance_addon_operator | default(false) | bool) and (du_profile | default(false) | bool)
+  when: (cluster_type == "sno") and (openshift_version == "4.9" or openshift_version == "4.10") and (not install_performance_addon_operator | default(false)
+    | bool) and (du_profile | default(false) | bool)
 
 - name: Check reserved_cpus var is set
   fail:

@@ -19,12 +19,12 @@
 - name: Set ocp inventory download url from lab wiki
   set_fact:
     ocp_inventory_url: "http://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
-  when:  ocp_inventory_override | string | length < 1
+  when: ocp_inventory_override | string | length < 1
 
 - name: Set ocp inventory download url to override
   set_fact:
     ocp_inventory_url: "{{ ocp_inventory_override }}"
-  when:  ocp_inventory_override | string | length > 1
+  when: ocp_inventory_override | string | length > 1
 
 - name: Download ocpinventory.json
   uri:
@@ -132,7 +132,7 @@
     password: "{{ bmc_password }}"
     validate_certs: false
   with_items:
-    - "{{ ocpinventory_worker_nodes }}"
+  - "{{ ocpinventory_worker_nodes }}"
   when: cluster_type == "bm"
   register: bm_foreman_data
 
@@ -182,14 +182,16 @@
   block:
   - name: Disable disk2 for all hypervisor machines
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': false, 'disk2_device': ''})] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': false, 'disk2_device': ''})] + ocpinventory_hv_nodes[idx\
+        \ + 1:] }}"
     loop: "{{ ocpinventory_hv_nodes }}"
     loop_control:
       index_var: idx
 
   - name: Enable disk2_enable for r630 with sdb
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'sdb'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'sdb'})] + ocpinventory_hv_nodes[idx\
+        \ + 1:] }}"
     when:
     - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r630']
     loop: "{{ ocpinventory_hv_nodes }}"
@@ -198,7 +200,7 @@
 
   - name: Check for disk2 on r640
     shell: |
-       lsblk -l -o NAME | egrep "nvme0n1$|sdb$" | sort | head -n 1
+      lsblk -l -o NAME | egrep "nvme0n1$|sdb$" | sort | head -n 1
     delegate_to: "{{ item.pm_addr | replace('mgmt-','') }}"
     vars:
       ansible_user: root
@@ -212,7 +214,8 @@
 
   - name: Enable disk2_enable for r640 with the captured extra disk
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true if (r640_disks.results)[idx].stdout else false, 'disk2_device': (r640_disks.results)[idx].stdout })] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true if (r640_disks.results)[idx].stdout\
+        \ else false, 'disk2_device': (r640_disks.results)[idx].stdout })] + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
     - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r640']
     loop: "{{ ocpinventory_hv_nodes }}"
@@ -221,7 +224,8 @@
 
   - name: Enable disk2_enable for r650, r730xd, and r930 with nvme0n1
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})]\
+        \ + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
     - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r730xd', 'r930']
     loop: "{{ ocpinventory_hv_nodes }}"
@@ -234,7 +238,8 @@
 
   - name: Append disk2_enable for 6048r, 1029u and 1029p with nvme0n1
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})]\
+        \ + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
     - (item.pm_addr.split('.')[0]).split('-')[-1] in ['6048r', '1029u', '1029p']
     loop: "{{ ocpinventory_hv_nodes }}"
@@ -243,7 +248,8 @@
 
   - name: Append disk2_enable for 5039ms and dl360 with sdb
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'sdb'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'sdb'})] + ocpinventory_hv_nodes[idx\
+        \ + 1:] }}"
     when:
     - (item.pm_addr.split('.')[0]).split('-')[-1] in ['5039ms', 'dl360']
     loop: "{{ ocpinventory_hv_nodes }}"
@@ -252,7 +258,8 @@
 
   - name: Append disk2_enable for 6049p with nvme0n1
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})]\
+        \ + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
     - (item.pm_addr.split('.')[0]).split('-')[-1] in ['6049p']
     loop: "{{ ocpinventory_hv_nodes }}"

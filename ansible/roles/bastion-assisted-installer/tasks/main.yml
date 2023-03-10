@@ -117,7 +117,7 @@
     name: service
     image: "{{ assisted_service_image }}"
     env:
-      DUMMY_IGNITION: False
+      DUMMY_IGNITION: false
     volume:
     - /etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem
     state: started
@@ -130,7 +130,7 @@
     name: image-service
     image: "{{ assisted_image_service_image }}"
     env:
-      DUMMY_IGNITION: False
+      DUMMY_IGNITION: false
     volume:
     - /etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem
     state: started

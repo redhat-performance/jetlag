@@ -14,24 +14,24 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: { "config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}" }
+    body: {"config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}"}
   when: use_disconnected_registry | default(false)
 
 - name: Set empty static network configuration
   set_fact:
     static_network_config: []
 
-- name : Populate static network configuration with controlplane nodes
+- name: Populate static network configuration with controlplane nodes
   include_tasks: static_network_config.yml
   with_items:
-    - "{{ groups['controlplane'] }}"
+  - "{{ groups['controlplane'] }}"
 
-- name : BM - Populate static network configuration with worker nodes
+- name: BM - Populate static network configuration with worker nodes
   include_tasks: static_network_config.yml
   when:
   - cluster_type == "bm"
   with_items:
-    - "{{ groups['worker'] }}"
+  - "{{ groups['worker'] }}"
 
 # - debug:
 #     msg: "{{ static_network_config }}"
@@ -43,7 +43,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
+    body: {"ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config": "{{ static_network_config }}", "image_type": "full-iso"}
     timeout: 60
   register: http_reply
 

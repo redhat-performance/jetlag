@@ -28,7 +28,7 @@ Resolving deltas: 100% (704/704), done.
 
 Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
 
-Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+Recommended: run ansible inside virtual environment: `source bootstrap.sh`
 
 Set your pull secret file `pull_secret.txt` in the base directory of the cloned jetlag repo. The contents should resemble this json:
 
@@ -88,8 +88,8 @@ The system type determines the values of `bastion_lab_interface` and `bastion_co
 
 Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
 
-* `bastion_lab_interface` will always be set to the nic name under "Public Network"
-* `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
+- `bastion_lab_interface` will always be set to the nic name under "Public Network"
+- `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
 
 You may have to ssh to your intended bastion machine and view the network interface names to ensure the correct nic name is picked here.
 
@@ -100,36 +100,42 @@ Here you can see a network diagram for the SNO cluster on Dell r640 with 3 SNO c
 For example if your bastion is ...
 
 Dell fc640
+
 ```yaml
 bastion_lab_interface: eno1
 bastion_controlplane_interface: eno2
 ```
 
 Dell r640
+
 ```yaml
 bastion_lab_interface: eno1np0
 bastion_controlplane_interface: ens1f0
 ```
 
 Dell r650
+
 ```yaml
 bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
 ```
 
 Dell r750 (on ALIAS lab)
+
 ```yaml
 bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens3f0
 ```
 
 Supermicro 1029p or Supermicro 1029U
+
 ```yaml
 bastion_lab_interface: eno1
 bastion_controlplane_interface: ens2f0
 ```
 
 Supermicro 5039ms
+
 ```yaml
 bastion_lab_interface: enp2s0f0
 bastion_controlplane_interface: enp1s0f0
@@ -137,49 +143,55 @@ bastion_controlplane_interface: enp1s0f0
 
 For the guide we set our values for the Supermicro 1029u.
 
-** If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
+\*\* If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
 
 ### OCP node vars
 
 The same chart provided by the scale lab for the bastion machine, is used to identify the nic names for `controlplane_lab_interface`.
 
-* `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
+- `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
 
 For example if your Bare Metal OpenShift systems are ...
 
 Dell fc640
+
 ```yaml
 controlplane_lab_interface: eno1
 ```
 
 Dell r640
+
 ```yaml
 controlplane_lab_interface: eno1np0
 ```
 
 Dell r650
+
 ```yaml
 controlplane_lab_interface: eno12399np0
 ```
 
 Dell r750 (on ALIAS lab)
+
 ```yaml
 controlplane_lab_interface: eno8303
 ```
 
 Supermicro 1029p or Supermicro 1029U
+
 ```yaml
 controlplane_lab_interface: eno1
 ```
 
 Supermicro 5039ms
+
 ```yaml
 controlplane_lab_interface: enp2s0f0
 ```
 
 For the guide we set our values for the Supermicro 1029U.
 
-** If your machine types are not homogeneous, then you will have to manually edit your generated inventory file to correct any nic names until this is reasonably automated.
+\*\* If your machine types are not homogeneous, then you will have to manually edit your generated inventory file to correct any nic names until this is reasonably automated.
 
 ### Extra vars
 
@@ -287,7 +299,6 @@ jumbo_mtu: false
 # Network only for remote worker nodes
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
-
 ################################################################################
 # Extra vars
 ################################################################################
@@ -360,7 +371,7 @@ dns2=10.1.36.2
 # Unused
 ```
 
-** If your bastion machine is not running RHEL 8.6, you will have to upgrade following [this short procedure](troubleshooting.md#upgrade-rhel-to-86-in-scalelab).
+\*\* If your bastion machine is not running RHEL 8.6, you will have to upgrade following [this short procedure](troubleshooting.md#upgrade-rhel-to-86-in-scalelab).
 
 Next run the `setup-bastion.yml` playbook ...
 

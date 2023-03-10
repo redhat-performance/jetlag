@@ -136,15 +136,15 @@
     when: not cluster.json.status == 'installed'
 
   rescue:
-    - name: Fail on maximum retry count
-      fail:
-        msg: Maximum retries reached
-      when: retry | int == 540
+  - name: Fail on maximum retry count
+    fail:
+      msg: Maximum retries reached
+    when: retry | int == 540
 
-    - name: Fail when cluster install failed
-      fail:
-        msg: Cluster install failed or cancelled
-      when: cluster.json.status == 'error' or cluster.json.status == 'cancelled'
+  - name: Fail when cluster install failed
+    fail:
+      msg: Cluster install failed or cancelled
+    when: cluster.json.status == 'error' or cluster.json.status == 'cancelled'
 
-    - name: Retry the check cluster install tasks
-      include_tasks: check-cluster-install.yml
+  - name: Retry the check cluster install tasks
+    include_tasks: check-cluster-install.yml

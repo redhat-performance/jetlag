@@ -61,13 +61,13 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 bastion_public_interface: bond1
 
 bastion_private_interfaces:
-- bond0
-- int0
-- int1
+  - bond0
+  - int0
+  - int1
 
 dns_servers:
-- X.X.X.X
-- Y.Y.Y.Y
+  - X.X.X.X
+  - Y.Y.Y.Y
 
 base_dns_name: performance-scale.cloud
 
@@ -86,7 +86,6 @@ cluster_name: jetlag-ibm
 # Only applies for bm cluster types
 controlplane_network_api:
 controlplane_network_ingress:
-
 ################################################################################
 # Extra vars
 ################################################################################

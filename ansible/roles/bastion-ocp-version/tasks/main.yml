@@ -47,7 +47,7 @@
 
 - name: Identify current shell
   set_fact:
-     current_shell: "{{ lookup('env','SHELL') }}"
+    current_shell: "{{ lookup('env','SHELL') }}"
 
 - name: Enable bash completion for oc
   include_tasks: bash-completion.yml

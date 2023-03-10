@@ -15,7 +15,7 @@
       body_format: json
       status_code: [201]
       return_content: true
-      body: { "config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}" }
+      body: {"config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}"}
     when: use_disconnected_registry | default(false)
     loop: "{{ ai_cluster_ids | dict2items  }}"
 
@@ -26,7 +26,7 @@
       body_format: json
       status_code: [201]
       return_content: true
-      body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "image_type": "full-iso" }
+      body: {"ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "image_type": "full-iso"}
     register: http_reply
     loop: "{{ ai_cluster_ids | dict2items  }}"
 
@@ -43,7 +43,7 @@
       state: link
     loop: "{{ ai_cluster_ids | dict2items  }}"
   when:
-    - not public_vlan | bool
+  - not public_vlan | bool
 
 - name: Include custom static network config
   include_tasks: 10_custom_iso.yml

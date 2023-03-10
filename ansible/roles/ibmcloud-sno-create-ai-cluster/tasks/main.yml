@@ -8,17 +8,9 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: {
-        "name": "{{ hostvars[item].inventory_hostname }}",
-        "openshift_version": "{{ openshift_version }}",
-        "high_availability_mode": "None",
-        "base_dns_domain": "{{ base_dns_name }}",
-        "cluster_network_cidr": "{{ cluster_network_cidr }}",
-        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-        "service_network_cidr": "{{ service_network_cidr }}",
-        "pull_secret": "{{ pull_secret | to_json }}",
-        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-    }
+    body: {"name": "{{ hostvars[item].inventory_hostname }}", "openshift_version": "{{ openshift_version }}", "high_availability_mode": "None", "base_dns_domain": "{{\
+        \ base_dns_name }}", "cluster_network_cidr": "{{ cluster_network_cidr }}", "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}", "service_network_cidr": "{{\
+        \ service_network_cidr }}", "pull_secret": "{{ pull_secret | to_json }}", "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}"}
   loop: "{{ groups['sno'][:sno_node_count|int] }}"
   register: create_cluster_return
 
@@ -35,9 +27,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: {
-        "machine_network_cidr": "{{ private_network_cidr }}"
-    }
+    body: {"machine_network_cidr": "{{ private_network_cidr }}"}
   with_items: "{{ ai_cluster_ids }}"
 
 - name: Add entries in /etc/hosts

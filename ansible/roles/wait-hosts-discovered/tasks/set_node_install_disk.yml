@@ -15,21 +15,6 @@
     status_code: [201]
     return_content: true
     body_format: json
-    body: {
-        "disks_selected_config": [
-          {
-            "id": "{{ bm_node.id }}",
-            "disks_config": [
-              {
-                "id": "{{ set_to_disk }}",
-                "role": "install"
-              },
-              {
-                "id": "{{ bm_node.installation_disk_path }}",
-                "role": "none"
-              }
-            ]
-          }
-        ]
-    }
+    body: {"disks_selected_config": [{"id": "{{ bm_node.id }}", "disks_config": [{"id": "{{ set_to_disk }}", "role": "install"}, {"id": "{{ bm_node.installation_disk_path\
+                \ }}", "role": "none"}]}]}
   when: bm_node.installation_disk_path != set_to_disk

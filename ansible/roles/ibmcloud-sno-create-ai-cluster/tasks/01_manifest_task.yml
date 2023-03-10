@@ -1,3 +1,4 @@
+---
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml

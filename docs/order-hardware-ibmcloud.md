@@ -6,7 +6,6 @@ Ensure you have access to IBMcloud (https://cloud.ibm.com). You will need to con
 
 Currently supported hardware vendors in Jetlag are 'Supermicro' and 'Lenovo'. Unfortunately. you will not get to know which vendor the servers are from until your devices are ready.
 
-
 ## Ordering Hardware
 
 Login to your IBMcloud account
@@ -17,9 +16,9 @@ You can select the location/datacenter and the Server profile based on cost esti
 
 For baremetal deployment, you will need:
 
-* One server to be provisioned as your bastion machine
-* Three additional servers to serve as control-plane nodes 
-* At least two more servers to serve as worker nodes in your openshift cluster
+- One server to be provisioned as your bastion machine
+- Three additional servers to serve as control-plane nodes
+- At least two more servers to serve as worker nodes in your openshift cluster
 
 The following guides can also assist you with procurement of devices:
 
@@ -29,24 +28,23 @@ https://cloud.ibm.com/docs/bare-metal?topic=bare-metal-about-bm
 
 Points to keep in mind while ordering hardware:
 
-* Ensure that you order either CentOS or RHEL machines with a new enough version (8.6) otherwise podman will not have host networking functionality
-* Add your SSH keys while ordering. Generate a new key pair for ibmcloud as a best practice.
-* Select an SSD disk
-* 32 GB RAM at minimum
-* Port speed of 10 Gbps at minimum
-* The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. Other machines can have a public ip address but it is not currently in use with this deployment method.
+- Ensure that you order either CentOS or RHEL machines with a new enough version (8.6) otherwise podman will not have host networking functionality
+- Add your SSH keys while ordering. Generate a new key pair for ibmcloud as a best practice.
+- Select an SSD disk
+- 32 GB RAM at minimum
+- Port speed of 10 Gbps at minimum
+- The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. Other machines can have a public ip address but it is not currently in use with this deployment method.
 
-You might not receive an immediate notification on the order you just placed. 
+You might not receive an immediate notification on the order you just placed.
 If there are significant delays, IBMcloud will open up a support ticket on your behalf to notify about the readiness status of your servers.
 
 Once you are notified of the servers being ready, login to IBMcloud and navigate to 'Classic Infrastructure' to view your devices.
-
 
 ## Post Hardware acquisition
 
 **IBMcloud VPN access:**
 
-To manage your servers remotely and securely over the IBM Cloud private network, you need to connect to IBMcloud VPN. 
+To manage your servers remotely and securely over the IBM Cloud private network, you need to connect to IBMcloud VPN.
 
 To get started, refer to https://cloud.ibm.com/docs/iaas-vpn?topic=iaas-vpn-getting-started
 
@@ -54,7 +52,7 @@ To get started, refer to https://cloud.ibm.com/docs/iaas-vpn?topic=iaas-vpn-gett
 
 To get started with IBMcloud shell, refer to https://cloud.ibm.com/docs/cloud-shell?topic=cloud-shell-getting-started
 
-Once you have successfully logged into the IBMcloud Shell, you should be able to list  your devices using the following command:
+Once you have successfully logged into the IBMcloud Shell, you should be able to list your devices using the following command:
 
 ```console
 [user@fedora]$ ibmcloud sl hardware list
@@ -77,4 +75,3 @@ id        hostname     domain                    public_ip        private_ip    
 
 To open a support case with IBMcloud, access the link below:
 https://cloud.ibm.com/unifiedsupport/supportcenter
-

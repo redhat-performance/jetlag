@@ -36,7 +36,7 @@
     value: "1"
   - name: net.ipv6.conf.all.disable_ipv6
     value: "0"
-  when:  bastion_controlplane_ip | ansible.utils.ipv6
+  when: bastion_controlplane_ip | ansible.utils.ipv6
 
 - name: Allow natted traffic through bastion lab interface
   shell: |
@@ -87,7 +87,7 @@
     ifname: "{{ bastion_controlplane_interface }}"
     ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
     state: present
-  when:  bastion_controlplane_ip | ansible.utils.ipv4
+  when: bastion_controlplane_ip | ansible.utils.ipv4
 
 - name: Setup bastion on control-plane network (ipv6)
   nmcli:
@@ -96,7 +96,7 @@
     ifname: "{{ bastion_controlplane_interface }}"
     ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
     state: present
-  when:  bastion_controlplane_ip | ansible.utils.ipv6
+  when: bastion_controlplane_ip | ansible.utils.ipv6
 
 - name: Setup rwn vlaned interfaces
   nmcli:

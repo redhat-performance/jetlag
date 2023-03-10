@@ -3,6 +3,7 @@
 _**Table of Contents**_
 
 <!-- TOC -->
+
 - [Overview](#overview)
 - [Network](#network)
 - [Setup Hypervisors](#setup-hypervisors)
@@ -17,17 +18,17 @@ BM/RWN cluster types will allocate remaining hardware that was not put in the in
 
 Make sure to set and append the following vars in the "extra vars" section of the `vars/all.yml`
 
-* `hv_inventory` - Enables placing remaining cloud hardware into hypervisor host group in inventory file
-* `hv_ssh_pass` - The ssh password to the hypervisor machines
-* `hv_ip_offset` - Offsets hypervisor ip addresses to allow for future expansion of the "hub" cluster. For example, a setting of `10` allows the hub cluster to grow 10 nodes before the ip addresses will conflict with the hypervisors.
-* `hv_vm_prefix` - Set to a specific prefix. Defaults to `sno` which produces vms with hostnames sno00001, sno00002, ... snoXXXXX
-* `hypervisor_nic_interface_idx` - Defaults to `1` and corresponds to Network 1 in the scalelab. The index is used to lookup which nic name will be bridged for the VMs.
+- `hv_inventory` - Enables placing remaining cloud hardware into hypervisor host group in inventory file
+- `hv_ssh_pass` - The ssh password to the hypervisor machines
+- `hv_ip_offset` - Offsets hypervisor ip addresses to allow for future expansion of the "hub" cluster. For example, a setting of `10` allows the hub cluster to grow 10 nodes before the ip addresses will conflict with the hypervisors.
+- `hv_vm_prefix` - Set to a specific prefix. Defaults to `sno` which produces vms with hostnames sno00001, sno00002, ... snoXXXXX
+- `hypervisor_nic_interface_idx` - Defaults to `1` and corresponds to Network 1 in the scalelab. The index is used to lookup which nic name will be bridged for the VMs.
 
 The default VM resource configuration is:
 
-* 8 vCPUs
-* 18Gi Memory
-* 120G Disk
+- 8 vCPUs
+- 18Gi Memory
+- 120G Disk
 
 The number of vms per hypervisor type depends largely on if there are extra disks with the default resource configuration. The count of vms per machine type is hard-coded in the `vars/lab.yml` file. If you want to customize the count adjust the value per the machine type as desired in the `vars/lab.yml`.
 
@@ -46,10 +47,10 @@ vi ansible/vars/hv.yml
 
 Pay close attention to these vars:
 
-* `lab` - Likely `scalelab` as that is the only lab this has been setup and tested in.
-* `setup_hv_vm_dhcp` - Set to true if dnsmasq should be configured on each hypervisor to hand out static addresses to each vm
-* `base_dns_name` - If you set this for your hub cluster, then set it identically here
-* `controlplane_network` - If you adjusted this for the hub cluster, make sure it matches for the hypervisors
+- `lab` - Likely `scalelab` as that is the only lab this has been setup and tested in.
+- `setup_hv_vm_dhcp` - Set to true if dnsmasq should be configured on each hypervisor to hand out static addresses to each vm
+- `base_dns_name` - If you set this for your hub cluster, then set it identically here
+- `controlplane_network` - If you adjusted this for the hub cluster, make sure it matches for the hypervisors
 
 Run hv-setup playbook
 
@@ -70,11 +71,11 @@ vi ansible/vars/network-impairments.yml
 
 Make sure to set/review the following vars:
 
-* `install_tc` - toggles installing traffic control
-* `apply_egress_impairments` and `apply_ingress_impairments` - toggles out-going or incoming traffic impairments
-* `egress_delay` and `ingress_delay` - latency for egress/ingress in milliseconds
-* `egress_packet_loss` and `ingress_packet_loss` - packet loss in percent (Example `0.01` for 0.01%)
-* `egress_bandwidth` and `ingress_bandwidth` - bandwidth in kilobits (Example `100000` which is 100000kbps or 100Mbps)
+- `install_tc` - toggles installing traffic control
+- `apply_egress_impairments` and `apply_ingress_impairments` - toggles out-going or incoming traffic impairments
+- `egress_delay` and `ingress_delay` - latency for egress/ingress in milliseconds
+- `egress_packet_loss` and `ingress_packet_loss` - packet loss in percent (Example `0.01` for 0.01%)
+- `egress_bandwidth` and `ingress_bandwidth` - bandwidth in kilobits (Example `100000` which is 100000kbps or 100Mbps)
 
 Apply impairments:
 
@@ -101,11 +102,11 @@ vi ansible/vars/hv.yml
 
 The following vars apply to the manifests which are generated for deploying OCP clusters from ACM/MCE using the VMs as "emulated BareMetal Nodes":
 
-* `ssh_public_key_file` - Sets the permitted ssh key to ssh into the node
-* `setup_hv_vm_dhcp` - Leaves the nmstateconfig portion out of the manifests
-* `hv_vm_manifest_type` - Determines which kind of manifest(s) the playbook will generate, choose from `sno`, `jumbo`, and `multicluster`
-* `hv_vm_manifest_acm_cr` - Set to true if ACM CRs are desired to be generated with the manifests
-* `multicluster_count` - If `hv_vm_manifest_type: multicluster`, then this determines the number of cluster manifests to generate. It will include `multicluster_node_count` count of vms in each cluster manifest. Be careful not to exceed the entire count of vms
+- `ssh_public_key_file` - Sets the permitted ssh key to ssh into the node
+- `setup_hv_vm_dhcp` - Leaves the nmstateconfig portion out of the manifests
+- `hv_vm_manifest_type` - Determines which kind of manifest(s) the playbook will generate, choose from `sno`, `jumbo`, and `multicluster`
+- `hv_vm_manifest_acm_cr` - Set to true if ACM CRs are desired to be generated with the manifests
+- `multicluster_count` - If `hv_vm_manifest_type: multicluster`, then this determines the number of cluster manifests to generate. It will include `multicluster_node_count` count of vms in each cluster manifest. Be careful not to exceed the entire count of vms
 
 Run create vms:
 

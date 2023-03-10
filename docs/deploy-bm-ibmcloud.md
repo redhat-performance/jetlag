@@ -8,13 +8,13 @@ Once your machines are delivered, login to the ibmcloud cli using the cut and pa
 
 ```console
 $ ibmcloud sl hardware list
-id        hostname     domain                    public_ip        private_ip    datacenter   status   
-960237    jetlag-bm0   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
-1165601   jetlag-bm1   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
-1112925   jetlag-bm2   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
-1163781   jetlag-bm3   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
-1165519   jetlag-bm4   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE   
-1117051   jetlag-bm5   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE  
+id        hostname     domain                    public_ip        private_ip    datacenter   status
+960237    jetlag-bm0   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
+1165601   jetlag-bm1   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
+1112925   jetlag-bm2   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
+1163781   jetlag-bm3   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
+1165519   jetlag-bm4   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
+1117051   jetlag-bm5   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
 ```
 
 ## Clone Jetlag
@@ -37,7 +37,7 @@ Resolving deltas: 100% (704/704), done.
 
 Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
 
-Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+Recommended: run ansible inside virtual environment: `source bootstrap.sh`
 
 Set your pull secret file `pull_secret.txt` in the base directory of the cloned jetlag repo. The contents should resemble this json:
 
@@ -95,8 +95,8 @@ Next, identify your dns servers for your hardware by sshing to the expected bast
 
 ```yaml
 dns_servers:
-- X.X.X.X
-- Y.Y.Y.Y
+  - X.X.X.X
+  - Y.Y.Y.Y
 ```
 
 Set `base_dns_name` to the expected base dns name, for example `base_dns_name: performance-scale.cloud`
@@ -105,7 +105,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 ### OCP node vars
 
-For the OCP nodes it might be necessary to adjust the `private_network_prefix`.  Check your hardware's subnet to determine the prefix.
+For the OCP nodes it might be necessary to adjust the `private_network_prefix`. Check your hardware's subnet to determine the prefix.
 
 While inspecting the subnet at cloud.ibm.com, determine two free addresses in the subnet to be used as api and ingress addresses. Provide those addresses in `controlplane_network_api` and `controlplane_network_ingress` as required.
 
@@ -160,13 +160,13 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 bastion_public_interface: bond1
 
 bastion_private_interfaces:
-- bond0
-- int0
-- int2
+  - bond0
+  - int0
+  - int2
 
 dns_servers:
-- X.X.X.X
-- Y.Y.Y.Y
+  - X.X.X.X
+  - Y.Y.Y.Y
 
 base_dns_name: performance-scale.cloud
 
@@ -195,9 +195,9 @@ controlplane_network_ingress: X.X.X.4
 bastion_hardware_id: bs_id
 
 controlplane_hardware_ids:
-- node1_id
-- node2_id
-- node3_id
+  - node1_id
+  - node2_id
+  - node3_id
 ```
 
 ## Run playbooks
@@ -205,6 +205,7 @@ controlplane_hardware_ids:
 ### Prerequisite
 
 1. Bastion: update public key in authorized_keys
+
 ```
 $ ssh-keygen
 $ cd .ssh
@@ -222,7 +223,7 @@ Run the ibmcloud create inventory playbook
 
 The `ibmcloud-create-inventory.yml` playbook will create an inventory file `ansible/inventory/ibmcloud.local` from the ibmcloud cli data and the vars file.
 
-** For custom master/worker node name: replace first parameter in ibmcloud.local file under [controlplane] and [worker] sections   
+\*\* For custom master/worker node name: replace first parameter in ibmcloud.local file under [controlplane] and [worker] sections
 
 The inventory file should resemble the [sample one provided](../ansible/inventory/ibmcloud-inventory-bm.sample).
 

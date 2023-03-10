@@ -17,7 +17,8 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
+    body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string\
+      \ }}"
   register: get_install_config
 
 - name: Get host ids
@@ -36,7 +37,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: { "config": "{{ lookup('template', 'controlplane.ign.j2') | to_json }}" }
+    body: {"config": "{{ lookup('template', 'controlplane.ign.j2') | to_json }}"}
   with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'master') | list }}"
   when: (controlplane_etcd_on_nvme or controlplane_localstorage_configuration)
 
@@ -47,7 +48,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: { "config": "{{ lookup('template', 'worker.ign.j2') | to_json }}" }
+    body: {"config": "{{ lookup('template', 'worker.ign.j2') | to_json }}"}
   with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'worker') | list }}"
   when: worker_localstorage_configuration
 
@@ -58,7 +59,7 @@
     status_code: [202]
     return_content: true
     body_format: json
-    body: { }
+    body: {}
 
 - name: Set initial loop variables
   set_fact:

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-host_fqdn=$( hostname --long )
-cert_c="US"               # Country Name (C, 2 letter code)
-cert_s="North Carolina"   # Certificate State (S)
-cert_l="Raleigh"          # Certificate Locality (L)
-cert_o="RedHat"           # Certificate Organization (O)
-cert_ou=""                # Certificate Organizational Unit (OU)
-cert_cn="${host_fqdn}"    # Certificate Common Name (CN)
+host_fqdn=$(hostname --long)
+cert_c="US"             # Country Name (C, 2 letter code)
+cert_s="North Carolina" # Certificate State (S)
+cert_l="Raleigh"        # Certificate Locality (L)
+cert_o="RedHat"         # Certificate Organization (O)
+cert_ou=""              # Certificate Organizational Unit (OU)
+cert_cn="${host_fqdn}"  # Certificate Common Name (CN)
 
 openssl req \
     -newkey rsa:4096 \

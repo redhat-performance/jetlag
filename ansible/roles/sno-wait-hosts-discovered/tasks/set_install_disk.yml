@@ -20,21 +20,6 @@
     status_code: [201]
     return_content: true
     body_format: json
-    body: {
-        "disks_selected_config": [
-          {
-            "id": "{{ sno_host_id }}",
-            "disks_config": [
-              {
-                "id": "{{ sno_install_disk }}",
-                "role": "install"
-              },
-              {
-                "id": "{{ current_install_disk }}",
-                "role": "none"
-              }
-            ]
-          }
-        ]
-    }
+    body: {"disks_selected_config": [{"id": "{{ sno_host_id }}", "disks_config": [{"id": "{{ sno_install_disk }}", "role": "install"}, {"id": "{{ current_install_disk\
+                \ }}", "role": "none"}]}]}
   when: current_install_disk != sno_install_disk

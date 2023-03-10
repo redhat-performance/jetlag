@@ -3,6 +3,7 @@
 _**Table of Contents**_
 
 <!-- TOC -->
+
 - [Bastion - Accessing services](#bastion---accessing-services)
 - [Bastion - Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
 - [Bastion - Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
@@ -18,16 +19,17 @@ _**Table of Contents**_
 
 Several services are run on the bastion in order to automate the tasks that jetlag performs. You can access them via the following ports:
 
-* On-prem assisted-installer GUI - 8080
-* On-prem assisted-installer API - 8090
-* On-prem assisted-image-service - 8888
-* HTTP server - 8081
-* Container Registry (When disconnected) - 5000
-* HAProxy (When disconnected) - 6443, 443, 80
-* Gogs - Self-hosted Git (Disconnected and setup_gogs=true) - 10881 (http), 10022 (git)
-* Dnsmasq - 53
+- On-prem assisted-installer GUI - 8080
+- On-prem assisted-installer API - 8090
+- On-prem assisted-image-service - 8888
+- HTTP server - 8081
+- Container Registry (When disconnected) - 5000
+- HAProxy (When disconnected) - 6443, 443, 80
+- Gogs - Self-hosted Git (Disconnected and setup_gogs=true) - 10881 (http), 10022 (git)
+- Dnsmasq - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
+
 ```
 AI Gui - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8080/
 AI API - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/
@@ -35,6 +37,7 @@ HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
 ```
 
 Example accessing the disconnected registry and listing repositories:
+
 ```console
 [root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -190,6 +193,7 @@ The permissions of the ipmi/bmc user are likely that of operator and not adminis
 How to verify that ipmi privilege set to administrator level permissions
 
 1. SMCIPMITool:
+
 ```console
 [root@jetlag-bm0 ~]# SMCIPMITool x.x.x.x root xxxxxxxxx user list
 Maximum number of Users          : 10
@@ -205,6 +209,7 @@ Count of currently enabled Users : 8
        2 | ADMIN           | Administrator      | Yes
        3 | root            | Administrator      | Yes
 ```
+
 Machine `y.y.y.y` has the correct permissions.
 
 2. ipmitool:

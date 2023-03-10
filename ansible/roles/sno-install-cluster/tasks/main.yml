@@ -17,7 +17,8 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
+    body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string\
+      \ }}"
   register: get_install_config
   loop: "{{ ai_cluster_ids | dict2items  }}"
 
@@ -39,7 +40,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: { "config": "{{ lookup('template', 'sno.ign.j2') | to_json }}" }
+    body: {"config": "{{ lookup('template', 'sno.ign.j2') | to_json }}"}
   with_items: "{{ get_hosts | json_query('results[*].json') }}"
   when: sno_localstorage_configuration
 
@@ -50,7 +51,7 @@
     status_code: [202]
     return_content: true
     body_format: json
-    body: { }
+    body: {}
   loop: "{{ ai_cluster_ids | dict2items  }}"
 
 - name: Set initial loop variables

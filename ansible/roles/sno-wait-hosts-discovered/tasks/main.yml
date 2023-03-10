@@ -25,15 +25,7 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: {
-        "hosts_names": [
-          {
-            id: "{{ item.json.hosts[0].id  }}",
-            hostname: "{{ item.item }}",
-            role: "master"
-          }
-        ]
-    }
+    body: {"hosts_names": [{id: "{{ item.json.hosts[0].id  }}", hostname: "{{ item.item }}", role: "master"}]}
   with_items: "{{ cluster.results }}"
   no_log: true
   when: (public_vlan | default(false) | bool) or (lab in cloud_labs) or (use_disconnected_registry | default(false))
@@ -45,24 +37,10 @@
     status_code: [201]
     return_content: true
     body_format: json
-    body: {
-        "cluster_network_cidr": "{{ cluster_network_cidr }}",
-        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-        "service_network_cidr": "{{ service_network_cidr }}",
-        "cluster_networks":  [
-           {
-             "cidr": "{{ cluster_network_cidr }}",
-             "cluster_id": "{{ ai_cluster_ids[item].cluster_id }}",
-             "host_prefix": "{{ cluster_network_host_prefix }}"
-           }
-         ],
-         "service_networks":  [
-           {
-             "cidr": "{{ service_network_cidr }}",
-             "cluster_id": "{{ ai_cluster_ids[item].cluster_id }}",
-           }
-         ]
-    }
+    body: {"cluster_network_cidr": "{{ cluster_network_cidr }}", "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}", "service_network_cidr": "{{\
+        \ service_network_cidr }}", "cluster_networks": [{"cidr": "{{ cluster_network_cidr }}", "cluster_id": "{{ ai_cluster_ids[item].cluster_id }}", "host_prefix": "{{\
+            \ cluster_network_host_prefix }}"}], "service_networks": [{"cidr": "{{ service_network_cidr }}", "cluster_id": "{{ ai_cluster_ids[item].cluster_id\
+            \ }}"}]}
   with_items: "{{ ai_cluster_ids }}"
 
 - name: Wait for cluster(s) to be ready
@@ -80,7 +58,7 @@
 - name: Set install disk per SNO cluster
   include_tasks: set_install_disk.yml
   with_items:
-    - "{{ cluster.results }}"
+  - "{{ cluster.results }}"
   loop_control:
     loop_var: sno_cluster
 

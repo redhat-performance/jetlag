@@ -29,4 +29,3 @@
     baseuri: "{{ hostvars[item.requested_hostname]['bmc_address'] }}"
     username: "{{ hostvars[item.requested_hostname]['bmc_user'] }}"
     password: "{{ hostvars[item.requested_hostname]['bmc_password'] }}"
-
