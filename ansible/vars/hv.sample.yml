@@ -13,7 +13,11 @@ setup_hv_vm_dhcp: false
 
 hv_vm_generate_manifests: true
 
-# Types: sno, jumbo, multicluster
+# Types: sno, compact, standard, jumbo
+# sno = 1 node per cluster
+# compact = 3 nodes per cluster
+# standard = 5 nodes or more per cluster (3 master, X worker)
+# jumbo = all vms for the one cluster
 hv_vm_manifest_type: sno
 
 # The cluster imageset used in the manifests
@@ -22,10 +26,11 @@ cluster_image_set: openshift-4.12.1
 # Include ACM CRs in the manifests
 hv_vm_manifest_acm_cr: false
 
-# If hv_vm_manifest_type is set to multicluster, use these vars to adjust the count and size of clusters
-# Careful not to exceed the count of your VMs, EX 4 * 60 means you must have 240 vms
-multicluster_count: 4
-multicluster_node_count: 60
+# If hv_vm_manifest_type is set to compact or standard, use these vars to adjust the count of clusters and size of standard clusters
+# Careful not to exceed the count of your VMs - (5 * 3) + (10 * 6) = 75 VMs
+compact_cluster_count: 5
+standard_cluster_count: 10
+standard_cluster_node_count: 6
 
 # Retrieves the disconnected pull-secret instead of below pull-secret
 use_disconnected_registry: false

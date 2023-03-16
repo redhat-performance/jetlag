@@ -26,7 +26,7 @@ spec:
 {% endif %}
     clusterNetwork:
     - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
-      hostPrefix: {{  hostvars[inventory_hostname]['network_prefix']  }}
+      hostPrefix: {{ sno_cluster_network_host_prefix }}
     machineNetwork:
     - cidr: {{ hostvars[inventory_hostname]['machine_network'] }}
     serviceNetwork:
@@ -83,8 +83,6 @@ spec:
 {% endif %}
           dns-resolver:
             config:
-              # search:
-              # - clus2.t5g.lab.eng.bos.redhat.com
               server:
               - {{ hostvars[inventory_hostname]['hv_ip'] }}
           routes:

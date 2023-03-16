@@ -103,9 +103,10 @@ The following vars apply to the manifests which are generated for deploying OCP 
 
 * `ssh_public_key_file` - Sets the permitted ssh key to ssh into the node
 * `setup_hv_vm_dhcp` - Leaves the nmstateconfig portion out of the manifests
-* `hv_vm_manifest_type` - Determines which kind of manifest(s) the playbook will generate, choose from `sno`, `jumbo`, and `multicluster`
+* `hv_vm_manifest_type` - Determines which kind of manifest(s) the playbook will generate, choose from `sno`, `compact`, `standard`, and `jumbo`
 * `hv_vm_manifest_acm_cr` - Set to true if ACM CRs are desired to be generated with the manifests
-* `multicluster_count` - If `hv_vm_manifest_type: multicluster`, then this determines the number of cluster manifests to generate. It will include `multicluster_node_count` count of vms in each cluster manifest. Be careful not to exceed the entire count of vms
+* `compact_cluster_count` - If `hv_vm_manifest_type: compact`, then this determines the number of compact cluster siteconfigs to generate. Each compact cluster consists of 3 vms, be careful not to exceed the entire count of vms.
+* `standard_cluster_count` - If `hv_vm_manifest_type: standard`, then this determines the number of standard cluster siteconfigs to generate. It will include `standard_cluster_node_count` count of vms in each standard cluster siteconfig. Be careful not to exceed the entire count of vms.
 
 Run create vms:
 
@@ -125,9 +126,9 @@ Run delete vms:
 ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-delete.yml
 ```
 
-## Manifests
+## Manifests and Siteconfigs
 
-When you create vms, depending upon what `hv_vm_manifest_type`, you will find pre-generated manifests to either deploy SNOs or traditional OCP clusters using ACM/MCE. Those manifests are located in:
+When you create vms, depending upon what `hv_vm_manifest_type`, you will find pre-generated manifests to either deploy SNOs or traditional OCP clusters using ACM/MCE. Those manifests and siteconfigs are located in:
 
 ```console
 # ls -lh /root/hv-vm/
@@ -141,14 +142,18 @@ total 456K
 As expected, cluster type of `jumbo` includes just one yaml file with all the manifests to create the jumbo cluster.
 
 ```console
-(.ansible) [root@f31-h05-000-r640 jetlag]# ls -lh /root/hv-vm/multicluster/manifests/
+(.ansible) [root@f31-h05-000-r640 jetlag]# ls -lh /root/hv-vm/compact/siteconfigs/
 total 400K
--rw-r--r--. 1 root root 97K Jul 22 19:30 multicluster-00001.yml
--rw-r--r--. 1 root root 97K Jul 22 19:30 multicluster-00002.yml
--rw-r--r--. 1 root root 97K Jul 22 19:30 multicluster-00003.yml
--rw-r--r--. 1 root root 97K Jul 22 19:30 multicluster-00004.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00001-resources.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00001-siteconfig.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00002-resources.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00002-siteconfig.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00003-resources.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00003-siteconfig.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00004-resources.yml
+-rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00004-siteconfig.yml
 ```
 
-Multicluster manifests is a manifest per cluster consisting of `multicluster_node_count` number of nodes.
+Compact type generates a siteconfig per cluster consisting of exactly `3` nodes. Standard type generates siteconfigs consisting of `standard_cluster_node_count` number of nodes.
 
 SNO manifests are a directory per manifest since each SNO is a single node with several CRs.

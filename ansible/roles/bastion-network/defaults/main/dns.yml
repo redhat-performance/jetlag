@@ -34,4 +34,5 @@ etc_hosts_ingress_routes:
 
 # Default number of additional dns entries to add in the event we have hypervisor machines with VMs.
 # Ignore if you are not doing anything with hypervisor machines and VMs
-multicluster_count: 4
+compact_cluster_dns_count: 4000
+standard_cluster_dns_count: 4000
