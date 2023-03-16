@@ -10,10 +10,26 @@
   - /opt/gogs/gogs
   - /opt/gogs/gogs/conf
 
+- name: Set fact for ipv6
+  set_fact:
+    ipv6: "{{controlplane_network | ansible.utils.ipv6}}"
+
 - name: Configure podman network
   template:
     src: 88-podman6-bridge.conflist
     dest: /etc/cni/net.d/88-podman6-bridge.conflist
+  when: ipv6
+
+- name: Set podman network IPv6
+  set_fact:
+    podman_network: podman6
+  when: ipv6
+
+- name: Set podman network IPv4
+  set_fact:
+    podman_network: podman
+  when: ipv6 == False
+
 
 - name: Configure gogs app.ini
   template:
@@ -23,7 +39,7 @@
 - name: Create gogs pod
   containers.podman.podman_pod:
     name: gogs
-    network: podman6
+    network: "{{ podman_network }}"
     ports:
     - "10022:22"
     - "{{ gogs_ipv6_port }}:3000"
@@ -33,7 +49,7 @@
 - name: Ensure gogs pod is up
   containers.podman.podman_pod:
     name: gogs
-    network: podman6
+    network: "{{ podman_network }}"
     ports:
     - "10022:22"
     - "{{ gogs_ipv6_port }}:3000"
