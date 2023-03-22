@@ -1,0 +1,27 @@
+---
+# The siteconfig resources
+#
+# 200-bmc-secret
+# 400-image-pull-secret
+#
+{% for vm in range(((item - 1) * compact_cluster_node_count), (item * compact_cluster_node_count), 1) %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ groups['hv_vm'][vm] }}-bmc-secret
+  namespace: compact-{{ '%05d' | format(item) }}
+type: Opaque
+data:
+  password: {{ bmc_password_base64 }}
+  username: {{ bmc_username_base64 }}
+{% endfor %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assisted-deployment-pull-secret
+  namespace: compact-{{ '%05d' | format(item) }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ pull_secret }}
