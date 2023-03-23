@@ -4,7 +4,9 @@
 # 200-bmc-secret
 # 400-image-pull-secret
 #
-{% for vm in range(((item - 1) * standard_cluster_node_count), (item * standard_cluster_node_count), 1) %}
+{% set offset = sno_cluster_count + (compact_cluster_count * 3) %}
+# "{{ (((item - 1) * standard_cluster_node_count) + offset) }} until {{ ((item * standard_cluster_node_count) - 1 + offset) }}"
+{% for vm in range(((item - 1) * standard_cluster_node_count) + offset, (item * standard_cluster_node_count) + offset, 1) %}
 ---
 apiVersion: v1
 kind: Secret
