@@ -17,6 +17,37 @@
     when:
     - hv_vm_generate_manifests
     - hv_vm_manifest_type == "sno"
+  post_tasks:
+  - name: Create new inventory group with list of SNOs for mixed manifest types
+    delegate_to: "{{ groups['bastion'][0] }}"
+    run_once: true
+    add_host:
+      name: "{{ item }}"
+      group: hv_vm_snos
+      ansible_host: "{{ hostvars[item].ansible_host }}"
+      hv_ip: "{{ hostvars[item].hv_ip }}"
+      ip: "{{ hostvars[item].ip }}"
+      cpus: "{{ hostvars[item].cpus }}"
+      memory: "{{ hostvars[item].memory }}"
+      disk_size: "{{ hostvars[item].disk_size }}"
+      vnc_port: "{{ hostvars[item].vnc_port }}"
+      mac_address: "{{ hostvars[item].mac_address }}"
+      domain_uuid: "{{ hostvars[item].domain_uuid }}"
+    when:
+    - hv_vm_generate_manifests
+    - hv_vm_manifest_type == "mixed"
+    loop: "{{ groups['hv_vm'][:sno_cluster_count] }}"
+
+- name: Create SNO manifests and siteconfigs
+  hosts: hv_vm_snos
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
+  - role: hv-vm-manifests-sno
+    when:
+    - hv_vm_generate_manifests
+    - hv_vm_manifest_type == "mixed"
 
 - name: Create compact/standard/jumbo cluster manifests
   hosts: bastion
@@ -27,11 +58,11 @@
   - role: hv-vm-manifests-compact
     when:
     - hv_vm_generate_manifests
-    - hv_vm_manifest_type == "compact"
+    - hv_vm_manifest_type == "compact" or hv_vm_manifest_type == "mixed"
   - role: hv-vm-manifests-standard
     when:
     - hv_vm_generate_manifests
-    - hv_vm_manifest_type == "standard"
+    - hv_vm_manifest_type == "standard" or hv_vm_manifest_type == "mixed"
   - role: hv-vm-manifests-jumbo
     when:
     - hv_vm_generate_manifests
