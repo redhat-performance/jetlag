@@ -16,11 +16,11 @@ _**Table of Contents**_
 - Scalelab:
   - [Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
   - [Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
-- General lab issues and how to go about them
+- Lab issues and how to go about them
   - [Boot mode](#lab---boot-mode)
   - [Boot order](#lab---boot-order)
-  - [Lab network pre-configuration](#lab---lab-network-configuration)
-  - [From an ipv4 to ipv6 cluster and vice-versa](#lab---ipv4-ipv6)
+  - [Lab network pre-configuration](#lab---network-pre-configuration)
+  - [From an ipv4 to ipv6 cluster and vice-versa](#lab---ipv4-to-ipv6-cluster)
 <!-- /TOC -->
 
 ## Bastion - Accessing services
@@ -125,6 +125,19 @@ Substitute the user/password/hostname to perform the reset on a desired host. No
 
 If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
+```
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
+```
+
+Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
+
+Note that with badfish this is a one time operation, i.e., the boot order after a rebuild/reboot will return to the original value.
+
+Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for SCALE vs ALIAS lab.
+The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
+
 ```console
 [user@fedora badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
 - INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
@@ -135,9 +148,6 @@ If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebui
 - POLLING: [------------------->] 100% - Host state: On
 - INFO     - Command passed to On server, code return is 204.
 ```
-
-Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
-
 ## Scalelab - Upgrade RHEL to 8.6
 
 On the bastion machine:
@@ -235,7 +245,7 @@ This is caused by having an older BIOS version. The older BIOS version simply do
 
 When set to ignore the error, Jetlag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
 
-## Boot mode
+## Lab - Boot mode
 
 In the ALIAS lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of bm or SNO cluster types. In the SCALE lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
 
@@ -258,26 +268,12 @@ Other things to look at:
 If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order). 
 Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file. For an SNO installation I simply moved from the given by default :1000::01 to :3000::07.
 
-## Boot order
-
-The simplest way to correct the boot order is using badfish as:
-
-```
-badfish -H mgmt-<fqdn> -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
-badfish -H mgmt-<fqdn> -u user -p password -i config/idrac_interfaces.yml --check-boot
-badfish -H mgmt-<fqdn> -u user -p password -i config/idrac_interfaces.yml --power-cycle
-```
-Note that with badfish this is a one time operation, i.e., the boot order after a rebuild/reboot will return to the original value.
-
-Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for SCALE vs ALIAS lab.
-The values in *config/idrac_interfaces.yml* are for the SCALE lab.
-
-## Lab network pre-configuration
+## Lab - Network pre-configuration
 
 You may receive machines from the lab team with some pre-assigned IP addresses, e.g., 198.xx.
-Before the OCP install and any change in the boot order, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh* to be on the safe side.
+Before the OCP install and any boot order changes, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh* to be on the safe side.
 
-## From an ipv4 to ipv6 cluster and vice-versa
+## Lab - Ipv4 to ipv6 cluster
 
 When moving from an ipv4 cluster installation to ipv6 and vice-versa, instead of rebuilding machines use *nmcli* to deactivate ipv6. For example: 
 
