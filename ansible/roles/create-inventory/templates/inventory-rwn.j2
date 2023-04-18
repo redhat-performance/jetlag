@@ -12,9 +12,9 @@ bmc_password={{ bmc_password }}
 [controlplane]
 # Network mac is the intended mac address of the private network to use for this cluster
 # Lab mac corresponds to the lab dhcp network, we disable the lab network for this type of cluster
-{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} network_mac={{ controlplane0_network_mac }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(5) }} vendor={{ controlplane0_vendor }}
-{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} network_mac={{ controlplane1_network_mac }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(6) }} vendor={{ controlplane1_vendor }}
-{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} network_mac={{ controlplane2_network_mac }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(7) }} vendor={{ controlplane2_vendor }}
+{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} network_mac={{ controlplane0_network_mac }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(5) }} vendor={{ controlplane0_vendor }} install_disk={{ control_plane_install_disk }}
+{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} network_mac={{ controlplane1_network_mac }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(6) }} vendor={{ controlplane1_vendor }} install_disk={{ control_plane_install_disk }}
+{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} network_mac={{ controlplane2_network_mac }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(7) }} vendor={{ controlplane2_vendor }} install_disk={{ control_plane_install_disk }}
 
 [controlplane:vars]
 role=master
@@ -39,7 +39,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 # rwn node.  In the lab case, we use vlans to separate each rwn node and allow the bastion machine
 # to route traffic between the control-plane nodes and the remote worker nodes
 {% for remoteworker in ocpinventory_rwn_nodes %}
-{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vendor={{ hw_vendor[(remoteworker.pm_addr.split('.')[0]).split('-')[-1]] }}
+{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vendor={{ hw_vendor[(remoteworker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ remoteworker_install_disk }}
 {% endfor %}
 
 [remoteworker:vars]
