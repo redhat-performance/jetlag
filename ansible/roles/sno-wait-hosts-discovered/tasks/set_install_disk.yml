@@ -11,7 +11,7 @@
 #   loop:
 #     - "Host ID: {{ sno_host_id }}"
 #     - "Current Install Disk: {{ current_install_disk }}"
-#     - "Future Install Disk: {{ sno_install_disk }}"
+#     - "Future Install Disk: {{ hostvars[sno_cluster.json.hosts[0].requested_hostname].install_disk }}"
 
 - name: Adjust selected install disk
   uri:
@@ -26,7 +26,7 @@
             "id": "{{ sno_host_id }}",
             "disks_config": [
               {
-                "id": "{{ sno_install_disk }}",
+                "id": "{{ hostvars[sno_cluster.json.hosts[0].requested_hostname].install_disk }}",
                 "role": "install"
               },
               {
@@ -37,4 +37,4 @@
           }
         ]
     }
-  when: current_install_disk != sno_install_disk
+  when: current_install_disk != hostvars[sno_cluster.json.hosts[0].requested_hostname].install_disk
