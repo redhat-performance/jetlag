@@ -92,3 +92,11 @@
   - "{{ assisted_installer_ui_image }}"
   - "{{ assisted_service_image }}"
   - "{{ assisted_postgres_image }}"
+
+- name: Mirror support-tools for toolbox (sosreport)
+  shell: |
+    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt registry.redhat.io/rhel8/support-tools {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/rhel8/support-tools --keep-manifest-list --continue-on-error=true
+  register: result
+  until: not result.failed
+  retries: 3
+  delay: 1

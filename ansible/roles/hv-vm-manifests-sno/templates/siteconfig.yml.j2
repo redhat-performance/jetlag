@@ -12,14 +12,13 @@ spec:
   sshPublicKey: {{ lookup('file', ssh_public_key_file) }}
   clusters:
   - clusterName: {{ inventory_hostname }}
-    clusterType: "sno"
-    clusterProfile: "du"
+    networkType: "OVNKubernetes"
     clusterLabels:
-      group-sno-du: 'true'
-      group-du-sno: ''
       common: 'true'
+      group-du-sno: ''
       name: {{ inventory_hostname }}
       sites: {{ inventory_hostname }}
+      vendor: OpenShift
 {% if siteconfig_observability %}
       observability: enabled
 {% else %}
@@ -27,15 +26,23 @@ spec:
 {% endif %}
     clusterNetwork:
     - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
-      hostPrefix: {{  hostvars[inventory_hostname]['network_prefix']  }}
+      hostPrefix: {{ sno_cluster_network_host_prefix }}
     machineNetwork:
     - cidr: {{ hostvars[inventory_hostname]['machine_network'] }}
     serviceNetwork:
     - {{ "fd02::/112" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
     additionalNTPSources:
     - {{ hostvars[inventory_hostname]['hv_ip'] }}
+    crTemplates:
+{% if siteconfig_baremetalhost_override_converged_flow %}
+      BareMetalHost: "BareMetalHostOverride.yaml"
+{% endif %}
+      KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
     nodes:
     - hostName: "{{ inventory_hostname }}"
+{% if siteconfig_ironic_inspect %}
+      ironicInspect: enabled
+{% endif %}
       bmcAddress: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
       bmcCredentialsName:
         name: {{ inventory_hostname }}-bmc-secret
@@ -57,7 +64,6 @@ spec:
           - name: eno1
             type: ethernet
             state: up
-            macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
 {% if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4 %}
             ipv4:
               enabled: true
@@ -77,8 +83,6 @@ spec:
 {% endif %}
           dns-resolver:
             config:
-              # search:
-              # - clus2.t5g.lab.eng.bos.redhat.com
               server:
               - {{ hostvars[inventory_hostname]['hv_ip'] }}
           routes:

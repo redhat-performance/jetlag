@@ -6,3 +6,4 @@ assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 
 bm_control_plane_install_disk: /dev/sda
+bm_worker_install_disk: /dev/sda

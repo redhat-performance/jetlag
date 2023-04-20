@@ -31,6 +31,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Hardware | BM  | RWN | SNO |
 | -------- | --- | --- | --- |
 | 740xd    | No  | No  | Yes |
+| Dell r750| Yes | No  | Yes |
 
 **Scale Lab**
 
@@ -40,6 +41,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Dell r640          | Yes | Yes | Yes |
 | Dell fc640         | Yes | No  | Yes |
 | Supermicro 1029p   | Yes | Yes | No  |
+| Supermicro 1029U   | No  | No  | Yes |
 | Supermicro 5039ms  | Yes | No  | Yes |
 
 **IBMcloud**
@@ -89,14 +91,14 @@ For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.
 
 Pre-reqs for Supermicro hardware:
 
-* [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo root and renamed `smcipmitool.tar.gz`
+* [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo, renamed to `smcipmitool.tar.gz`, and placed under `ansible/`
 
 ## Cluster Deployment Usage
 
 There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:
 
 * `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
-* `pull_secret.txt` - Your OCP pull secret
+* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com](https://console.redhat.com/)
 * `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
@@ -118,7 +120,14 @@ Make sure to set/review the following vars:
 * `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
 * More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name.
 
-Set your pull-secret in `pull_secret.txt` in repo base directory.
+Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
+
+```console
+[user@fedora jetlag]$ cat pull_secret.txt
+{
+  "auths": {
+...
+```
 
 Run create-inventory playbook
 
@@ -157,7 +166,9 @@ ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
 
 * [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
-* [Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
+* [Deploy Single Node OpenShift (SNO) clusters via jetlag quickstart guide](docs/deploy-sno-quickstart.md)
+* [Deploy Single Node OpenShift (SNO) clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
+
 
 ## Tips and Troubleshooting
 

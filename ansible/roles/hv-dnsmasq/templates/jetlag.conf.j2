@@ -25,11 +25,17 @@ address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
 address=/jumbocluster00/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
 address=/api.jumbocluster00.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
 address=/apps.jumbocluster00.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-3) }}
-# multicluster DNS
-{% for cluster in range(1, multicluster_count + 1, 1)  %}
-address=/multicluster-{{ '%05x' | format(cluster) }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }}
-address=/api.multicluster-{{ '%05x' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }}
-address=/apps.multicluster-{{ '%05x' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}
+# Standard cluster DNS ({{ standard_cluster_dns_count }} Entries)
+{% for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
+address=/standard-{{ '%05d' | format(cluster) }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }}
+address=/api.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }}
+address=/apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}
+{% endfor %}
+# Compact cluster DNS ({{ compact_cluster_dns_count }} Entries)
+{% for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
+address=/compact-{{ '%05d' | format(cluster) }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }}
+address=/api.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }}
+address=/apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}
 {% endfor %}
 {% endif %}
 

@@ -96,12 +96,12 @@
 
 - name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
   when: use_disconnected_registry | default(false)
 
 - name: Apply olm-mirror catalogSource on disconnected clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_tag }}/catalogSource.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
   when: use_disconnected_registry | default(false)
 
 - name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store

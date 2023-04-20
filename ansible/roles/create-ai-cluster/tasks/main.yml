@@ -73,6 +73,9 @@
   - file_name: rhacm-iscp.yml
     template_name: rhacm-icsp.yml
     enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
+  - file_name: 99-disconnected-dns-workaround.yml
+    template_name: 99-disconnected-dns-workaround.yml
+    enabled: "{{ use_disconnected_registry }}"
 
 - name: RWN - Get OpenShift versions to obtain coredns image
   uri:

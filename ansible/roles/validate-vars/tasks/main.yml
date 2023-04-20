@@ -43,13 +43,13 @@
 
 - name: Check if the required number of nodes exist for sno
   fail:
-    msg: "Insufficient number of nodes in your allocation for bm/rwn"
+    msg: "Insufficient number of nodes in your allocation for number of SNOs to be deployed"
   when: (allocation_node_count is defined and cluster_type == "sno") and (sno_node_count | int   > allocation_node_count | int  - 1)
 
-- name: Check if networktype is of list type and has only one value for BM/RWN
+- name: Check if networktype is either "OVNKubernetes" or "OpenShiftSDN"
   fail:
-    msg: "networktype is of list type but can have only one value for Bm/RWN clusters"
-  when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype is not iterable or networktype is string or networktype is mapping or networktype|length > 1)
+    msg: "networktype can only be OVNKubernetes or OpenShiftSDN for BM/RWN clusters"
+  when: (cluster_type == "bm" or cluster_type == "rwn") and (networktype not in bm_network_types)
 
 - name: Validate Red Hat lab vars
   when: lab in rh_labs
@@ -67,12 +67,17 @@
       msg: "Invalid cluster_type selected - {{ cluster_type }} Select from {{ ibmcloud_cluster_types }}"
     when: cluster_type not in ibmcloud_cluster_types
 
+- name: Check if PAO install is enabled when du_profile is enabled and OCP version is 4.9 or 4.10
+  fail:
+    msg: "set install_performance_addon_operator to true"
+  when: (cluster_type == "sno") and (openshift_version == "4.9" or openshift_version == "4.10") and (not install_performance_addon_operator | default(false) | bool) and (du_profile | default(false) | bool)
+
 - name: Check reserved_cpus var is set
   fail:
     msg: "reserved_cpus is unset"
-  when: (cluster_type == "sno") and (install_performance_addon_operator | default(false) | bool) and reserved_cpus is undefined
+  when: (cluster_type == "sno") and (du_profile | default(false) | bool) and reserved_cpus is undefined
 
 - name: Check isolated_cpus var is set
   fail:
     msg: "isolated_cpus is unset"
-  when: (cluster_type == "sno") and (install_performance_addon_operator | default(false) | bool) and isolated_cpus is undefined
+  when: (cluster_type == "sno") and (du_profile | default(false) | bool) and isolated_cpus is undefined

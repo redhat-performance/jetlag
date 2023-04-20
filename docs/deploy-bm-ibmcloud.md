@@ -37,9 +37,12 @@ Resolving deltas: 100% (704/704), done.
 
 Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
 
-Set your pull secret file `pull_secret.txt` in the root directory. The contents should resemble this json:
+Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+
+Set your pull secret file `pull_secret.txt` in the base directory of the cloned jetlag repo. The contents should resemble this json:
 
 ```
+[user@fedora jetlag]$ cat pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -77,15 +80,10 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
-Change `ocp_release_image` to the required image if the default (4.10.24) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.10`), then change `openshift_version` accordingly.
+Change `ocp_release_image` to the required image if the default (4.12.10) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.12`), then change `openshift_version` accordingly.
 
-Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
-
-```yaml
-networktype:
-  - OVNKubernetes
-```
+Only change `networktype` if you need to test something other than `OVNKubernetes`
 
 Set `ssh_private_key_file` and `ssh_public_key_file` to the file location of the ssh key files to access your ibmcloud bare metal servers.
 
@@ -140,17 +138,18 @@ sno_node_count:
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.10.24-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.10-x86_64
 
-# This should just match the above release image version (Ex: 4.10)
-openshift_version: "4.10"
+# This should just match the above release image version (Ex: 4.12)
+openshift_version: "4.12"
 
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
-networktype:
-  - OVNKubernetes
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
+# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
+# [user@fedora jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -192,9 +191,27 @@ controlplane_network_ingress: X.X.X.4
 # Extra vars
 ################################################################################
 # Append override vars below
+# Optional: Add IBM hardware id  [$ ibmcloud sl hardware list]
+bastion_hardware_id: bs_id
+
+controlplane_hardware_ids:
+- node1_id
+- node2_id
+- node3_id
 ```
 
 ## Run playbooks
+
+### Prerequisite
+
+1. Bastion: update public key in authorized_keys
+```
+$ ssh-keygen
+$ cd .ssh
+$ echo id_rsa.pub >> authorized_keys
+```
+
+2. Open IBM cloud case 'Set Privilege Level to ADMINISTRATOR for IPMI' for all machines.
 
 Run the ibmcloud create inventory playbook
 
@@ -204,6 +221,8 @@ Run the ibmcloud create inventory playbook
 ```
 
 The `ibmcloud-create-inventory.yml` playbook will create an inventory file `ansible/inventory/ibmcloud.local` from the ibmcloud cli data and the vars file.
+
+** For custom master/worker node name: replace first parameter in ibmcloud.local file under [controlplane] and [worker] sections   
 
 The inventory file should resemble the [sample one provided](../ansible/inventory/ibmcloud-inventory-bm.sample).
 

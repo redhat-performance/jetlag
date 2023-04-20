@@ -20,5 +20,9 @@ metadata:
 spec:
   channel: "{{ ocp_channel }}"
   name: performance-addon-operator
+{% if use_disconnected_registry | default(false) %}
+  source: {{ operator_index_name }}
+{% else %}
   source: redhat-operators
+{% endif %}
   sourceNamespace: openshift-marketplace

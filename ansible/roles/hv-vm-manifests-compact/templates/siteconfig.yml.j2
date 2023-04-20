@@ -1,0 +1,103 @@
+---
+apiVersion: ran.openshift.io/v1
+kind: SiteConfig
+metadata:
+  name: compact-{{ '%05d' | format(item) }}
+  namespace: compact-{{ '%05d' | format(item) }}
+spec:
+  baseDomain: {{ hostvars[groups['hv_vm'][((item - 1) * compact_cluster_node_count)]]['base_domain'] }}
+  pullSecretRef:
+    name: "assisted-deployment-pull-secret"
+  clusterImageSetNameRef: {{ cluster_image_set }}
+  sshPublicKey: {{ lookup('file', ssh_public_key_file) }}
+  clusters:
+  - clusterName: compact-{{ '%05d' | format(item) }}
+    networkType: "OVNKubernetes"
+    clusterLabels:
+      common: 'true'
+      group-du-3node: ''
+      name: compact-{{ '%05d' | format(item) }}
+      sites: compact-{{ '%05d' | format(item) }}
+      vendor: OpenShift
+{% if siteconfig_observability %}
+      observability: enabled
+{% else %}
+      observability: disabled
+{% endif %}
+    clusterNetwork:
+    - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][((item - 1) * compact_cluster_node_count)]]['hv_ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
+      hostPrefix: {{ compact_cluster_network_host_prefix }}
+    apiVIP: {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((item + compact_cluster_offset) * -2) }}
+    ingressVIP: {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((item + compact_cluster_offset) * -2) - 1) }}
+    machineNetwork:
+    - cidr: {{  hostvars[groups['hv_vm'][((item - 1) * compact_cluster_node_count)]]['machine_network'] }}
+    serviceNetwork:
+    - {{ "fd02::/112" if hostvars[groups['hv_vm'][((item - 1) * compact_cluster_node_count)]]['hv_ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
+    additionalNTPSources:
+    - {{ hostvars[groups['hv_vm'][((item - 1) * compact_cluster_node_count)]]['hv_ip'] }}
+    crTemplates:
+{% if siteconfig_baremetalhost_override_converged_flow %}
+      BareMetalHost: "BareMetalHostOverride.yaml"
+{% endif %}
+      KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
+    nodes:
+# "{{ (((item - 1) * compact_cluster_node_count) + sno_cluster_count) }} until {{ ((item * compact_cluster_node_count) - 1 + sno_cluster_count) }}"
+{% for vm in range(((item - 1) * compact_cluster_node_count) + sno_cluster_count, (item * compact_cluster_node_count) + sno_cluster_count, 1) %}
+    - hostName: "{{ groups['hv_vm'][vm] }}"
+      # role: "master"
+{% if siteconfig_ironic_inspect %}
+      ironicInspect: enabled
+{% endif %}
+{% if hostvars[groups['hv_vm'][vm]]['hv_ip'] | ansible.utils.ipv6 %}
+      bmcAddress: redfish-virtualmedia+http://[{{ hostvars[groups['hv_vm'][vm]]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[groups['hv_vm'][vm]]['domain_uuid'] }}
+{% else %}
+      bmcAddress: redfish-virtualmedia+http://{{ hostvars[groups['hv_vm'][vm]]['hv_ip'] }}:9000/redfish/v1/Systems/{{ hostvars[groups['hv_vm'][vm]]['domain_uuid'] }}
+{% endif %}
+      bmcCredentialsName:
+        name: {{ groups['hv_vm'][vm] }}-bmc-secret
+      bootMACAddress: {{ hostvars[groups['hv_vm'][vm]]['mac_address'] }}
+      bootMode: "UEFI"
+      # rootDeviceHints:
+      #   hctl: '0:0:0:0'
+{% if siteconfig_enable_cpuset %}
+      cpuset: "{{ siteconfig_cpuset }}"
+{% else %}
+      # cpuset: "{{ siteconfig_cpuset }}"
+{% endif %}
+      nodeNetwork:
+        interfaces:
+        - name: eno1
+          macAddress: {{ hostvars[groups['hv_vm'][vm]]['mac_address'] }}
+        config:
+          interfaces:
+          - name: eno1
+            type: ethernet
+            state: up
+{% if hostvars[groups['hv_vm'][vm]]['hv_ip'] | ansible.utils.ipv4 %}
+            ipv4:
+              enabled: true
+              address:
+              - ip: "{{ hostvars[groups['hv_vm'][vm]]['ip'] }}"
+                prefix-length: {{ hostvars[groups['hv_vm'][vm]]['network_prefix'] }}
+            ipv6:
+              enabled: false
+{% else %}
+            ipv4:
+              enabled: false
+            ipv6:
+              enabled: true
+              address:
+              - ip: "{{ hostvars[groups['hv_vm'][vm]]['ip'] }}"
+                prefix-length: {{ hostvars[groups['hv_vm'][vm]]['network_prefix'] }}
+{% endif %}
+          dns-resolver:
+            config:
+              server:
+              - {{ hostvars[groups['hv_vm'][vm]]['hv_ip'] }}
+          routes:
+            config:
+            - destination: {{ "::/0" if hostvars[groups['hv_vm'][vm]]['hv_ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
+              next-hop-interface: eno1
+              next-hop-address: {{ hostvars[groups['hv_vm'][vm]]['gateway'] }}
+              table-id: 254
+{% endfor %}

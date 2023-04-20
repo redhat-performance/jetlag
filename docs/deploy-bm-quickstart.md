@@ -28,9 +28,12 @@ Resolving deltas: 100% (704/704), done.
 
 Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
 
-Set your pull secret file `pull_secret.txt` in the root directory. The contents should resemble this json:
+Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+
+Set your pull secret file `pull_secret.txt` in the base directory of the cloned jetlag repo. The contents should resemble this json:
 
 ```
+[user@fedora jetlag]$ cat pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -70,14 +73,10 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` if you desire to limit the number of worker nodes from your scale lab allocation.
 
-Change `ocp_release_image` to the desired image if the default (4.10.24) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.10`), then change `openshift_version` accordingly.
+Change `ocp_release_image` to the desired image if the default (4.12.10) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.12`), then change `openshift_version` accordingly.
 
-Remove a network type under the `networktype` list, for example if you want `OVNKubernetes` network type, leave just that entry:
-```yaml
-networktype:
-  - OVNKubernetes
-```
+Only change `networktype` if you need to test something other than `OVNKubernetes`
 
 For the ssh keys we have a chicken before the egg problem in that our bastion machine won't be defined or ensure that keys are created until after we run `create-inventory.yml` and `setup-bastion.yml` playbooks. We will revisit that a little bit later.
 
@@ -95,6 +94,11 @@ Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com
 * `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
 
 You may have to ssh to your intended bastion machine and view the network interface names to ensure the correct nic name is picked here.
+
+Here you can see a network diagram for the bare metal cluster on Dell r640 with 3 workers and 3 master nodes:
+
+![BM Cluster](img/bm_cluster.png)
+
 
 For example if your bastion is ...
 
@@ -116,6 +120,12 @@ bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
 ```
 
+Dell r750 (on ALIAS lab)
+```yaml
+bastion_lab_interface: eno8303
+bastion_controlplane_interface: ens3f0
+```
+
 Supermicro 1029p
 ```yaml
 bastion_lab_interface: eno1
@@ -130,7 +140,8 @@ bastion_controlplane_interface: enp1s0f0
 
 For the guide we set our values for the Supermicro 1029p.
 
-** If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
+** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
+See [tips and vars](https://github.com/redhat-performance/jetlag/blob/main/docs/tips-and-vars.md#Other-Networks) for more information
 
 ### OCP node vars
 
@@ -153,6 +164,11 @@ controlplane_lab_interface: eno1np0
 Dell r650
 ```yaml
 controlplane_lab_interface: eno12399np0
+```
+
+Dell r750 (on ALIAS lab)
+```yaml
+controlplane_lab_interface: eno8303
 ```
 
 Supermicro 1029p
@@ -192,7 +208,7 @@ fix_metal3_provisioningosdownloadurl: true
 
 Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
 
-The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all containers off the bastion and rerun the `setup-bastion.yml` playbook.
+The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all running podman containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
 ## Review all.yml
 
@@ -225,19 +241,21 @@ sno_node_count:
 public_vlan: false
 
 # Versions are controlled by this release image. If you want to change images
-# you must rerun the setup-bastion step in order to setup your bastion's
-# assisted-installer to the version you desire
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.10.24-x86_64
+# you must stop and rm all assisted-installer containers on the bastion and rerun
+# the setup-bastion step in order to setup your bastion's assisted-installer to
+# the version you specified
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.10-x86_64
 
-# This should just match the above release image version (Ex: 4.10)
-openshift_version: "4.10"
+# This should just match the above release image version (Ex: 4.12)
+openshift_version: "4.12"
 
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
-networktype:
-  - OVNKubernetes
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
+# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
+# [user@fedora jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -253,6 +271,9 @@ bastion_controlplane_interface: ens2f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
+# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
+setup_gogs: false
+
 # Use in conjunction with ipv6 based clusters
 use_disconnected_registry: false
 
@@ -260,12 +281,11 @@ use_disconnected_registry: false
 # OCP node vars
 ################################################################################
 # Network configuration for all bm cluster and rwn control-plane nodes
-# Network configuration for public VLAN based sno cluster_type deployment
 controlplane_lab_interface: eno1
 
 # Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr: 10.1.60.0/25
-controlplane_pub_network_gateway: 10.1.60.126
+controlplane_pub_network_cidr:
+controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
@@ -386,7 +406,7 @@ Finally run the `bm-deploy.yml` playbook ...
 ...
 ```
 
-A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f16-h11-000-1029p.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f16-h11-000-1029p.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
