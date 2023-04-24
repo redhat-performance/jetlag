@@ -254,7 +254,7 @@ badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute Boot
 ```
 
 
-Symptoms to look for: The OCP installation will successfully write the RHEL CoreOS image to the node and boot it up, and the node will also be discovered by the bastion. In the virtual console of the management interface, when the image is written to the node and booted up, you can see a banner indicating *virtual media*. However, the steps that follow this step, where the OCP installation happens, will fail with a jetlag retry timeout with an error similar to:
+Symptoms to look for: The OCP installation will successfully write the RHEL CoreOS image to the node and boot it up, where the node will be discovered by the bastion. In the virtual console of the management interface during the booting step, you can see a banner indicating *virtual media*. However, the following steps, where the OCP installation happens, will fail with a jetlag retry timeout with an error similar to:
 
 ```
 Expected the host to boot from disk, but it booted the installation image - please reboot and fix boot order to boot from disk ...
@@ -262,20 +262,20 @@ Expected the host to boot from disk, but it booted the installation image - plea
 
 Other things to look at:
 
-1) Check the disk name (default in jetlag is sda, but it could be sdb, sdl, etc.), depending on how the machine's storage disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
+1) Check the disk name (default in jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
 
-2) Did the machine boot the virtual media (look on idrac for Dell machines)?
+2) Did the machine boot the virtual media (management interface, i.e., idrac for Dell machines)?
 If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order). 
-Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file. For an SNO installation I simply moved from the given by default :1000::01 to :3000::07.
+Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
 
 ## Lab - Network pre-configuration
 
 You may receive machines from the lab team with some pre-assigned IP addresses, e.g., 198.xx.
-Before the OCP install and any boot order changes, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh* to be on the safe side.
+Before the OCP install and any boot order changes, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh*.
 
 ## Lab - Ipv4 to ipv6 cluster
 
-When moving from an ipv4 cluster installation to ipv6 and vice-versa, instead of rebuilding machines use *nmcli* to deactivate ipv6. For example: 
+When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6: 
 
 ```
   nmcli c modify ens6f0 ipv6.method "disabled"
