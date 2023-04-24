@@ -6,7 +6,7 @@
 #   loop:
 #     - "Host ID: {{ bm_node.id }}"
 #     - "Current Install Disk: {{ bm_node.installation_disk_path }}"
-#     - "Future Install Disk: {{ bm_control_plane_install_disk }}"
+#     - "Future Install Disk: {{ hostvars[bm_node.requested_hostname].install_disk }}"
 
 - name: Adjust selected install disk
   uri:
@@ -21,7 +21,7 @@
             "id": "{{ bm_node.id }}",
             "disks_config": [
               {
-                "id": "{{ set_to_disk }}",
+                "id": "{{ hostvars[bm_node.requested_hostname].install_disk }}",
                 "role": "install"
               },
               {
@@ -32,4 +32,4 @@
           }
         ]
     }
-  when: bm_node.installation_disk_path != set_to_disk
+  when: bm_node.installation_disk_path != hostvars[bm_node.requested_hostname].install_disk
