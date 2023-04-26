@@ -3,15 +3,24 @@
 _**Table of Contents**_
 
 <!-- TOC -->
-- [Bastion - Accessing services](#bastion---accessing-services)
-- [Bastion - Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
-- [Bastion - Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
-- [Dell - Reset BMC / iDrac](#dell---reset-bmc--idrac)
-- [Scalelab - Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
-- [Scalelab - Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
-- [SuperMicro - Reset BMC / Resolving redfish connection error](#supermicro---reset-bmc--resolving-redfish-connection-error)
-- [Supermicro - Missing Administrator IPMI privileges](#supermicro---missing-administrator-ipmi-privileges)
-- [Supermicro - Failure of TASK SuperMicro Set Boot](#supermicro---failure-of-task-supermicro-set-boot)
+- Bastion:
+  - [Accessing services](#bastion---accessing-services)
+  - [Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
+  - [Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
+- Dell:
+  - [Reset BMC / iDrac](#dell---reset-bmc--idrac)
+- Supermicro:
+  - [Reset BMC / Resolving redfish connection error](#supermicro---reset-bmc--resolving-redfish-connection-error)
+  - [Missing Administrator IPMI privileges](#supermicro---missing-administrator-ipmi-privileges)
+  - [Failure of TASK SuperMicro Set Boot](#supermicro---failure-of-task-supermicro-set-boot)
+- Scalelab:
+  - [Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
+  - [Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
+- Lab issues and how to go about them
+  - [Boot mode](#lab---boot-mode)
+  - [Boot order](#lab---boot-order)
+  - [Lab network pre-configuration](#lab---network-pre-configuration)
+  - [From an ipv4 to ipv6 cluster and vice-versa](#lab---ipv4-to-ipv6-cluster)
 <!-- /TOC -->
 
 ## Bastion - Accessing services
@@ -116,6 +125,19 @@ Substitute the user/password/hostname to perform the reset on a desired host. No
 
 If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
+```
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
+```
+
+Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
+
+Note that with badfish this is a one time operation, i.e., the boot order after a rebuild/reboot will return to the original value.
+
+Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for SCALE vs ALIAS lab.
+The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
+
 ```console
 [user@fedora badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
 - INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
@@ -126,9 +148,6 @@ If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebui
 - POLLING: [------------------->] 100% - Host state: On
 - INFO     - Command passed to On server, code return is 204.
 ```
-
-Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
-
 ## Scalelab - Upgrade RHEL to 8.6
 
 On the bastion machine:
@@ -155,10 +174,10 @@ In some cases, issues during a deployment can be the result of a bmc issue. To r
 ipmitool -I lanplus -H mgmt-computer.example.com -U user -P password mc reset cold
 ```
 
-The following example errors can be corrected after resetting the bmc of the problematic machines.
+The following example errors can be corrected after resetting the bmc of the machines.
 
 ```console
-TASK [boot-iso : SuperMicro - Mount ISO] *****************************************************************************************************************************************************
+TASK [boot-iso : SuperMicro - Mount ISO] *****************************************************************************************
 Tuesday 05 October 2021  12:20:23 -0500 (0:00:01.256)       0:01:10.117 *******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x root xxxxxxxxx wsiso mount \"http://x.x.x.x:8081\" /iso/discovery.iso\n", "delta": "0:00:00.903331", "end": "2021-10-05 12:20:24.841290", "msg": "non-zero return code", "rc": 204, "start": "2021-10-05 12:20:23.937959", "stderr": "", "stderr_lines": [], "stdout": "An ISO file already mounted. Please umount ISO first", "stdout_lines": ["An ISO file already mounted. Please umount ISO first"]}
 ```
@@ -197,6 +216,7 @@ Count of currently enabled Users : 8
  User ID | User Name       | Privilege Level    | Enable
  ------- | -----------     | ---------------    | ------
        3 | root            | Operator           | Yes
+
 [root@jetlag-bm0 ~]# SMCIPMITool y.y.y.y root yyyyyyyy user list
 Maximum number of Users          : 10
 Count of currently enabled Users : 8
@@ -224,3 +244,45 @@ The property Boot is not in the list of valid properties for the resource.
 This is caused by having an older BIOS version. The older BIOS version simply does not support the command.
 
 When set to ignore the error, Jetlag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
+
+## Lab - Boot mode
+
+In the ALIAS lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of bm or SNO cluster types. In the SCALE lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
+
+```
+badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute BootMode --value Uefi
+```
+
+
+Symptoms to look for: The OCP installation will successfully write the RHEL CoreOS image to the node and boot it up, where the node will be discovered by the bastion. In the virtual console of the management interface during the booting step, you can see a banner indicating *virtual media*. However, the following steps, where the OCP installation happens, will fail with a jetlag retry timeout with an error similar to:
+
+```
+Expected the host to boot from disk, but it booted the installation image - please reboot and fix boot order to boot from disk ...
+```
+
+Other things to look at:
+
+1) Check the disk name (default in jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
+
+2) Did the machine boot the virtual media (management interface, i.e., idrac for Dell machines)?
+If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order). 
+Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
+
+## Lab - Network pre-configuration
+
+You may receive machines from the lab team with some pre-assigned IP addresses, e.g., 198.xx.
+Before the OCP install and any boot order changes, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh*.
+
+## Lab - Ipv4 to ipv6 cluster
+
+When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6: 
+
+```
+  nmcli c modify ens6f0 ipv6.method "disabled"
+  nmcli c show ens6f0 
+  nmcli c show
+  sysctl -p /etc/sysctl.d/ipv6.conf
+  vi /etc/sysctl.conf
+  sysctl -p /etc/sysctl.d/ipv6.conf
+  reboot
+```
