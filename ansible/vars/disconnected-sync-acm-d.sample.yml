@@ -1,22 +1,22 @@
 ---
 # Sample disconnected-sync-acm-d vars file
 
-acm_snapshot: 2.6.0-DOWNSTREAM-2022-07-28-23-21-09
+acm_snapshot: 2.8.0-DOWNSTREAM-2023-04-25-22-18-13
 
 # Temporary fix to pull the correct image for this testing
 # ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator
-# ztp_site_generator_image: quay.io/melserng/ztp-site-generator
 # ztp_site_generator_image_tag: 4.11.0
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
-ztp_site_generator_image_tag: v4.12.1-1
+ztp_site_generator_image_tag: v4.13.0-42
 
 # TALO - Topology Aware Lifecycle Operator used with DU profile
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
-cluster_group_upgrades_operator_image_tag: 4.12.0
+cluster_group_upgrades_operator_image_tag: 4.13.0
 cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
-cluster_group_upgrades_operator_precache_image_tag: 4.12.0
+cluster_group_upgrades_operator_precache_image_tag: 4.13.0
 cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-group-upgrades-operator-recovery
-cluster_group_upgrades_operator_recovery_image_tag: 4.12.0
+cluster_group_upgrades_operator_recovery_image_tag: 4.13.0
+origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy:4.12
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 
 minio_image: quay.io/minio/minio
