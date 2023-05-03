@@ -184,6 +184,10 @@ bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
 ```
 
+Here you can see a network diagram for the bare metal cluster on Dell r650 with 3 workers and 3 master nodes:
+
+![BM Cluster](img/bm_cluster.png)
+
 Double check your nic names with your actual bastion machine.
 
 ** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
