@@ -15,7 +15,10 @@
   - validate-vars
   - bastion-install
   - bastion-network
-  - bastion-dnsmasq
+  - role: bastion-dnsmasq
+    when: not setup_coredns
+  - role: bastion-coredns
+    when: setup_coredns
   - bastion-http
   - bastion-ocp-version
   - role: bastion-disconnected-registry
