@@ -26,7 +26,7 @@
   - name: Download the acm mapping file from github
     get_url:
       force: true
-      url: "https://raw.githubusercontent.com/stolostron/deploy/master/mirror/{{ acm_snapshot }}.txt"
+      url: "https://raw.githubusercontent.com/stolostron/deploy/master/mirror/{{ rhacm_build }}.txt"
       dest: "{{ disconnected_sync_path }}/acm/mapping.txt"
 
   - name: Replacements in acm downloaded mapping file
@@ -45,7 +45,7 @@
   block:
   - name: Copy acm-custom-registry to disconnected registry
     shell: |
-      skopeo copy --authfile {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt --all docker://quay.io:443/acm-d/acm-custom-registry:{{ acm_snapshot }} docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/acm-custom-registry:{{ acm_snapshot }}
+      skopeo copy --authfile {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt --all docker://quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/acm-d/acm-custom-registry:{{ rhacm_build }}
 
   - name: Copy acm-operator-bundle to disconnected registry
     shell: |
@@ -53,7 +53,7 @@
 
   - name: Generate acm container image mapping.txt
     shell: |
-      oc adm catalog mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt quay.io:443/acm-d/acm-custom-registry:{{ acm_snapshot }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }} --manifests-only --to-manifests={{ disconnected_sync_path }}/acm/
+      oc adm catalog mirror -a {{ disconnected_sync_path }}/pull-secret-disconnected.acm_d.txt quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }} --manifests-only --to-manifests={{ disconnected_sync_path }}/acm/
 
   - name: Replacements in acm mapping file
     replace:
