@@ -12,7 +12,7 @@
 # than the api expects a string (and not actual json)
 - name: Apply install-config overrides
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/install-config"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/install-config"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -22,7 +22,7 @@
 
 - name: Get host ids
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts"
     method: GET
     body_format: json
     status_code: [200]
@@ -31,7 +31,7 @@
 
 - name: Apply controlplane host ignition config overrides
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}/ignition"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ item.id }}/ignition"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -42,7 +42,7 @@
 
 - name: Apply worker host ignition config overrides
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}/ignition"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts//{{ item.id }}/ignition"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -53,7 +53,7 @@
 
 - name: Install cluster
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/actions/install"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/actions/install"
     method: POST
     status_code: [202]
     return_content: true

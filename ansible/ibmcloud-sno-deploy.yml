@@ -17,7 +17,7 @@
   roles:
   - validate-vars
   - ibmcloud-sno-create-ai-cluster
-  - ibmcloud-sno-generate-discovery-iso
+  - sno-generate-discovery-iso
   - role: boot-iso
     vars:
       inventory_group: sno

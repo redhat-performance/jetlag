@@ -34,7 +34,7 @@ Several services are run on the bastion in order to automate the tasks that jetl
 * Container Registry (When disconnected) - 5000
 * HAProxy (When disconnected) - 6443, 443, 80
 * Gogs - Self-hosted Git (Disconnected and setup_gogs=true) - 10881 (http), 10022 (git)
-* Dnsmasq - 53
+* Dnsmasq / Coredns - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
 ```
@@ -265,7 +265,7 @@ Other things to look at:
 1) Check the disk name (default in jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
 
 2) Did the machine boot the virtual media (management interface, i.e., idrac for Dell machines)?
-If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order). 
+If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order).
 Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
 
 ## Lab - Network pre-configuration
@@ -275,11 +275,11 @@ Before the OCP install and any boot order changes, ssh on the machines to nuke t
 
 ## Lab - Ipv4 to ipv6 cluster
 
-When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6: 
+When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6:
 
 ```
   nmcli c modify ens6f0 ipv6.method "disabled"
-  nmcli c show ens6f0 
+  nmcli c show ens6f0
   nmcli c show
   sysctl -p /etc/sysctl.d/ipv6.conf
   vi /etc/sysctl.conf
