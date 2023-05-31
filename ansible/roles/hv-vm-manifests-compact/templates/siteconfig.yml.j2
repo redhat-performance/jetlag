@@ -47,6 +47,8 @@ spec:
       # role: "master"
 {% if siteconfig_ironic_inspect %}
       ironicInspect: enabled
+{% else %}
+      ironicInspect: disabled
 {% endif %}
 {% if hostvars[groups['hv_vm'][vm]]['hv_ip'] | ansible.utils.ipv6 %}
       bmcAddress: redfish-virtualmedia+http://[{{ hostvars[groups['hv_vm'][vm]]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[groups['hv_vm'][vm]]['domain_uuid'] }}
