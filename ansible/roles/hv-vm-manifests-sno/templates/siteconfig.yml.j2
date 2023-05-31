@@ -42,6 +42,8 @@ spec:
     - hostName: "{{ inventory_hostname }}"
 {% if siteconfig_ironic_inspect %}
       ironicInspect: enabled
+{% else %}
+      ironicInspect: disabled
 {% endif %}
       bmcAddress: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
       bmcCredentialsName:
