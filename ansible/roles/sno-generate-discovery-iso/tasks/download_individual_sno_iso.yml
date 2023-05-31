@@ -1,0 +1,22 @@
+---
+# Download an individual sno discovery iso
+
+- name: Get infra-env image-url
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_cluster_ids[item].infraenv_id }}/downloads/image-url"
+    method: Get
+    body_format: json
+    status_code: [200]
+    return_content: true
+  register: infraenv_image_url
+
+- name: Download discovery ISO
+  get_url:
+    url: "{{ infraenv_image_url.json.url }}"
+    dest: "{{ http_store_path }}/data/{{ item }}.iso"
+
+- name: Symlink discovery ISO into iso directory
+  ansible.builtin.file:
+    src: ../{{ item }}.iso
+    dest: "{{ http_store_path }}/data/iso/{{ item }}.iso"
+    state: link

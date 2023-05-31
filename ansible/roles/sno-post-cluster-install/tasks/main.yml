@@ -42,13 +42,13 @@
 
 - name: Get credentials (kubeconfig) from installed cluster(s)
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/files?file_name=kubeconfig"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ item.value.cluster_id }}/downloads/credentials?file_name=kubeconfig"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig"
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Get credentials (kubeadmin-password) from installed cluster(s)
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/files?file_name=kubeadmin-password"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ item.value.cluster_id }}/downloads/credentials?file_name=kubeadmin-password"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeadmin-password"
   loop: "{{ ai_cluster_ids | dict2items }}"
 
