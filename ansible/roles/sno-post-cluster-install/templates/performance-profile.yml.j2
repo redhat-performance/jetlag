@@ -14,6 +14,9 @@ spec:
   additionalKernelArgs:
   - rcupdate.rcu_normal_after_boot=0
   - efi=runtime
+{% if openshift_version == "4.12" or openshift_version == "4.13" %}
+  - module_blacklist=irdma
+{% endif %}
 {% endif %}
   cpu:
     # Temp. workaround for RT kernel bugs that consume too much
@@ -26,7 +29,7 @@ spec:
    pages:
    - size: "1G"
      count: {{ hugepages_count }}
-     node: 0
+     node: {{ node }}
 {% endif %}
   net:
     userLevelNetworking: true
