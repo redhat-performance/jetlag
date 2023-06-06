@@ -44,6 +44,7 @@
   shell: |
     {{ ocp_version_path }}/oc version -o json | jq -r .releaseClientVersion
   register: ocp_version_display_name
+  failed_when: ocp_version_display_name.stderr != ''
 
 - name: Identify current shell
   set_fact:
