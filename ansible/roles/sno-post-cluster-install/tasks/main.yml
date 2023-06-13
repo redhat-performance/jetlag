@@ -55,6 +55,10 @@
 - name: Apply a label to the worker node(s)
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc label no --all --overwrite jetlag=true
+  register: jetlag_label
+  retries: 120
+  delay: 2
+  until: not jetlag_label.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Add kube-burner sa
@@ -103,6 +107,19 @@
 - name: Disable Network Diagnostics - Apply CR
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/DisableSnoNetworkDiag.yaml
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
+- name: Reduce Monitoring Footprint - Place ReduceMonitoringFootprint CR
+  template:
+    src: ReduceMonitoringFootprint.yaml
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yaml"
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
+- name: Reduce Monitoring Footprint - Apply CR
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yaml
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
@@ -155,6 +172,19 @@
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
+- name: Register the CONFIG name reported in "oc get mcp"
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.configuration.name'
+  register: config_name
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile and openshift_version == "4.13"
+
+- name: Print the CONFIG name, null if empty
+  debug:
+    msg: "{{ item.stdout }}"
+  loop: "{{ config_name.results }}"
+  when: du_profile and openshift_version == "4.13"
+
 - name: Wait until MachineConfigPools are updating
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $4}'
@@ -164,16 +194,33 @@
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
+  ignore_errors: yes
 
-- name: Wait until MachineConfigPools are updated
+- name: Wait until MachineConfigPools are updating/updated
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $3}'
   register: result
   delay: 10
-  retries: 180
+  retries: 360
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
+
+- name: Wait until MachineConfigPools get a CONFIG
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o custom-columns=CONFIG:.status.configuration.name --no-headers
+  register: config_name
+  delay: 10
+  retries: 360
+  until: ("rendered" in config_name.stdout)
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile and openshift_version == "4.13"
+
+- name: Print the latest CONFIG name
+  debug:
+    msg: "{{ item.stdout }}"
+  loop: "{{ config_name.results }}"
+  when: du_profile and openshift_version == "4.13"
 
 - name: Apply the TunedPerformancePatch
   shell: |
@@ -193,14 +240,14 @@
   retries: 120
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
+  when: du_profile and openshift_version != "4.13"
 
 - name: Wait until MachineConfigPools are updated
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $3}'
   register: result
   delay: 10
-  retries: 180
+  retries: 360
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile

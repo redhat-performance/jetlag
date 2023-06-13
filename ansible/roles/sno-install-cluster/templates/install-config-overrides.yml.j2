@@ -1,3 +1,10 @@
+{% if openshift_version == "4.13" and du_profile %}
+capabilities:
+  baselineCapabilitySet: None
+  additionalEnabledCapabilities:
+  - marketplace
+  - NodeTuning
+{% endif %}
 {% if use_disconnected_registry | default(false) %}
 imageContentSources:
 - mirrors:

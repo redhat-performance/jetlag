@@ -34,9 +34,14 @@ As a result, the following machine configuration files will be added to the clus
 * 01-container-mount-ns-and-kubelet-conf-master.yaml 
 * 03-sctp-machine-config-master.yaml
 * 04-accelerated-container-startup-master.yaml
+* 05-kdump-config-master (when kdump is enabled)
+* 99-crio-disable-wipe-master
 * 99-master-workload-partitioning.yml
+* enable-crun-master.yaml
 
-In addition to this, Network Diagnostics will be disabled, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
+When deploying DU profile on OCP 4.13 or higher, composable openshift feature will automatically be deployed and as a result, all unnecessary optional Cluster Operators will not be deployed.
+
+In addition to this, Network Diagnostics will be disabled, monitoring footprint will be reduced, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
 
 Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
 
@@ -99,15 +104,9 @@ isolated_cpus: 2-47,50-95
 
 #Optional vars
 
-# If you want to install real-time kernel:
-kernel_rt: true
-
 # Number of hugepages of size 1G to be allocated on the SNO
 hugepages_count: 16
 
-# Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
-topology_manager_policy: best-effort
-```
 #### Tuned Performance Patch
 
 After performance-profile is applied, the standard TunedPerformancePatch used for SNO DUs will also be applied post SNO install if DU profile is enabled.
