@@ -10,13 +10,16 @@ metadata:
       {"maxPods": {{ kubelet_config_max_pods }}}
 {% endif %}
 spec:
-{% if kernel_rt %}
   additionalKernelArgs:
+{% if openshift_version == "4.9" %}
+  - idle=poll
+{% endif %}
   - rcupdate.rcu_normal_after_boot=0
+{% if not openshift_version in ["4.9","4.10"] %}
   - efi=runtime
+{% endif %}
 {% if openshift_version == "4.12" or openshift_version == "4.13" %}
   - module_blacklist=irdma
-{% endif %}
 {% endif %}
   cpu:
     # Temp. workaround for RT kernel bugs that consume too much
@@ -31,8 +34,10 @@ spec:
      count: {{ hugepages_count }}
      node: {{ node }}
 {% endif %}
+{% if openshift_version == "4.9" %}
   net:
     userLevelNetworking: true
+{% endif %}
   # for 3 node converged master/worker and SNO clusters we use the masters as a selector
   nodeSelector:
     node-role.kubernetes.io/master: ""
@@ -42,15 +47,16 @@ spec:
   # nodeSelector:
     # Pay attention to the node label, create MCP accordingly
     #node-role.kubernetes.io/worker-cnf: ""
-{% if topology_manager_policy is defined %}
   numa:
-   topologyPolicy: "{{ topology_manager_policy }}"
-{% endif %}
-{% if kernel_rt %}
-    # For CU should be false
+   topologyPolicy: "restricted"
+  # To use the standard (non-realtime) kernel, set enabled to false
   realTimeKernel:
     enabled: true
-{% else %}
-  realTimeKernel:
-    enabled: false
-{% endif %}
+  # workloadHints:
+    # WorkloadHints defines the set of upper level flags for different type of workloads.
+    # See https://github.com/openshift/cluster-node-tuning-operator/blob/master/docs/performanceprofile/performance_profile.md#workloadhints
+    # for detailed descriptions of each item.
+    # The configuration below is set for a low latency, performance mode.
+    # realTime: true
+    # highPowerConsumption: false
+    # perPodPowerManagement: false
