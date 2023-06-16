@@ -98,6 +98,3 @@
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
-  - file_name: rhacm-iscp.yml
-    template_name: rhacm-icsp.yml
-    enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
