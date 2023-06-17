@@ -12,5 +12,5 @@ yq_url: https://github.com/mikefarah/yq/releases/download/v4.17.2/yq_linux_amd64
 bastion_install_tc_reboot: false
 
 # promdump
-promdump_url: https://github.com/ihcsim/promdump/releases/download/v0.2.3/kubectl-promdump-linux-amd64-v0.2.3.tar.gz
+promdump_url: https://github.com/ihcsim/promdump/releases/download/v0.2.5/kubectl-promdump-linux-amd64-v0.2.5.tar.gz
 promdump_tarball: /tmp/kubectl-promdump-linux-amd64.tar.gz
