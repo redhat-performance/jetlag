@@ -21,7 +21,7 @@ spec:
 {% else %}
   installPlanApproval: Automatic
 {% endif %}
-{% if use_disconnected_registry | default(false) %}
+{% if use_bastion_registry | default(false) %}
   source: {{ operator_index_name }}
 {% else %}
   source: redhat-operators

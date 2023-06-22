@@ -1,0 +1,18 @@
+---
+# Sync ACM downstream container images into bastion registry to allow an ACM
+# downstream build to be installed from a bastion registry.
+#
+# Prior to use, set `pull_secret.acm_d.txt` in base repo directory
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud03.local ansible/sync-acm-d.yml
+#
+
+- name: Sync ACM downstream container images into bastion registry
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/sync-acm-d.yml
+  roles:
+  - sync-acm-d

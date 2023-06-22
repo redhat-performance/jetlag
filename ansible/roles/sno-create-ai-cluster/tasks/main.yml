@@ -1,22 +1,22 @@
 ---
 # sno-create-ai-cluster tasks
 
-- name: Obtain pull-secret for disconnected
+- name: Obtain pull-secret for bastion registry
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   register: slurped_pull_secret
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Set pull-secret for disconnected
+- name: Set pull-secret for bastion registry
   set_fact:
     pull_secret: "{{ slurped_pull_secret.content | b64decode }}"
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Obtain registry certificate disconnected
+- name: Obtain registry certificate bastion registry
   slurp:
     src: "{{ registry_path }}/certs/domain.crt"
   register: mirror_cert
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
 - name: Create each SNO and infra-env
   include_tasks: create_individual_sno.yml
@@ -31,11 +31,11 @@
   when:
   - public_vlan | bool
 
-- name: set machine network cidr when using disconnected registry
+- name: set machine network cidr when using bastion registry
   set_fact:
     machine_network_cidr: "{{ controlplane_network | ipaddr('network/prefix') }}"
   when:
-  - use_disconnected_registry
+  - use_bastion_registry
 
 - block:
   - name: Set machine network

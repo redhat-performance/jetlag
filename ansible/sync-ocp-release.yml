@@ -1,0 +1,20 @@
+---
+# Sync an OCP release to the bastion registry. This simplifies adding a new
+# release that could be different from the original release that was synced to
+# the bastion registry during the initial bastion setup.
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud03.local ansible/sync-ocp-release.yml
+#
+
+- name: Sync OCP release container images into bastion registry
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/sync-ocp-release.yml
+  roles:
+  - role: bastion-ocp-version
+    vars:
+      setup_bastion: false
+  - sync-ocp-release

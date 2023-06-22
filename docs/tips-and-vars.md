@@ -6,7 +6,7 @@ _**Table of Contents**_
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
-- [Add/delete contents to the disconnected registry](#Add/delete-contents-to-the-disconnected-registry)
+- [Add/delete contents to the bastion registry](#Add/delete-contents-to-the-bastion-registry)
 - [Using Other Network Interfaces](#Other-Networks)
 <!-- /TOC -->
 
@@ -31,7 +31,7 @@ isolated_cpus: 2-39,42-79
 ```
 
 As a result, the following machine configuration files will be added to the cluster during SNO install:
-* 01-container-mount-ns-and-kubelet-conf-master.yaml 
+* 01-container-mount-ns-and-kubelet-conf-master.yaml
 * 03-sctp-machine-config-master.yaml
 * 04-accelerated-container-startup-master.yaml
 * 05-kdump-config-master (when kdump is enabled)
@@ -110,7 +110,7 @@ hugepages_count: 16
 #### Tuned Performance Patch
 
 After performance-profile is applied, the standard TunedPerformancePatch used for SNO DUs will also be applied post SNO install if DU profile is enabled.
-This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10. 
+This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10.
 Further changes applied can be found in the template 'tunedPerformancePatch.yml.j2' under sno-post-cluster-install templates.
 
 #### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
@@ -150,9 +150,9 @@ When worikng with OCP development builds/nightly releases, it might be required 
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
-## Add/delete contents to the disconnected registry
-There might be use-cases when you want to add and delete images to/from the disconnected registry. For example, for the single stack IPv6 disconnect deployment, you deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjuction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the local registry.
-For example, this policy will map images on quay.io/XXX/client-server to the disconnected registry on perf176b, the bastion of this IPv6 disconnect cluster.
+## Add/delete contents to the bastion registry
+There might be use-cases when you want to add and delete images to/from the bastion registry. For example, for the single stack IPv6 disconnect deployment, you deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjunction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the local registry.
+For example, this policy will map images on quay.io/XXX/client-server to the bastion registry on perf176b, the bastion of this IPv6 disconnect cluster.
 ```yaml
 apiVersion: operator.openshift.io/v1alpha1
 kind: ImageContentSourcePolicy
@@ -165,9 +165,9 @@ spec:
     source: quay.io/XXX/client-server
 ```
 
-For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
+For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's bastion registry.
 ```yaml
-oc image mirror -a /opt/registry/pull-secret-disconnected.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
+oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
 Once the image has succesfully mirrored onto the disconnect registry, your deployment will be able to create the container.
 
@@ -176,7 +176,7 @@ For image deletion, use the Docker V2 REST API to delete the object. Note that t
 ```yaml
 ### script
 #!/bin/bash
-registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
+registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b bastion registry
 name='XXX/client-server'
 auth='-u username:passwd'
 
@@ -192,7 +192,7 @@ function rm_XXX_tag {
 ```
 
 ## Other Networks
-If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`. 
+If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
 2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
@@ -204,7 +204,7 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 * Network 5 = `controlplane_network_interface_idx: 4`
 ```
 3. Since the desired NIC in this exampls,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
-4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`. 
+4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`.
 ```
 ################################################################################
 # Extra vars

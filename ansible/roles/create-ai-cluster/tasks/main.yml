@@ -1,22 +1,22 @@
 ---
 # create-ai-cluster tasks
 
-- name: Obtain pull-secret for disconnected
+- name: Obtain pull-secret for bastion registry
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   register: slurped_pull_secret
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Set pull-secret for disconnected
+- name: Set pull-secret for bastion registry
   set_fact:
     pull_secret: "{{ slurped_pull_secret.content | b64decode }}"
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Obtain registry certificate disconnected
+- name: Obtain bastion registry certificate
   slurp:
     src: "{{ registry_path }}/certs/domain.crt"
   register: mirror_cert
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
 - name: Set empty static network configuration
   set_fact:
@@ -54,7 +54,7 @@
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}"
+        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}"
     }
   register: create_cluster_return
 
@@ -71,7 +71,7 @@
     return_content: true
     body: {
         "name": "{{ cluster_name }}",
-        "additional_ntp_sources": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}",
+        "additional_ntp_sources": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
         "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "static_network_config": "{{ static_network_config }}",
@@ -85,7 +85,7 @@
   set_fact:
     ai_infraenv_id: "{{ create_infra_env_return.json.id }}"
 
-- name: Patch infra-env for disconnected with ignition config overrides
+- name: Patch infra-env for bastion registry with ignition config overrides
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
     method: PATCH
@@ -95,7 +95,7 @@
     body: {
         "ignition_config_override": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}",
     }
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
 - name: Add entries in /etc/hosts
   blockinfile:
@@ -131,9 +131,9 @@
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
-  - file_name: 99-disconnected-dns-workaround.yml
-    template_name: 99-disconnected-dns-workaround.yml
-    enabled: "{{ use_disconnected_registry }}"
+  - file_name: 99-bastion-dns-workaround.yml
+    template_name: 99-bastion-dns-workaround.yml
+    enabled: "{{ use_bastion_registry }}"
 
 - name: RWN - Get OpenShift versions to obtain coredns image
   uri:

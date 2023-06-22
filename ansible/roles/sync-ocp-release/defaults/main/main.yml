@@ -1,0 +1,6 @@
+---
+# sync-ocp-release default vars
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+registry_host: "{{ groups['bastion'][0] }}"
+registry_port: 5000
