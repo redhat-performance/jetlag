@@ -64,30 +64,50 @@
 - name: Add kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create sa kubeburner
+  register: kubeburner_sa
+  retries: 120
+  delay: 2
+  until: not kubeburner_sa.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Add cluster-admin role to kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
+  register: kubeburner_role
+  retries: 120
+  delay: 2
+  until: not kubeburner_role.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Disable default OperatorHub sources on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+  register: operator_hub_disable
+  retries: 120
+  delay: 2
+  until: not operator_hub_disable.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: use_disconnected_registry | default(false)
 
 - name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
+  register: icsp_apply
+  retries: 120
+  delay: 2
+  until: not icsp_apply.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: use_disconnected_registry | default(false)
 
 - name: Apply olm-mirror catalogSource on disconnected clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
+  register: catsource_apply
+  retries: 120
+  delay: 2
+  until: not catsource_apply.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: use_disconnected_registry | default(false)
 
@@ -95,6 +115,10 @@
   when: setup_network_attachment_definition
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/net-attach-def/network-attachment-definition.yml
+  register: net_att_def
+  retries: 120
+  delay: 2
+  until: not net_att_def.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Disable Network Diagnostics - Place DisableSnoNetworkDiag CR
@@ -108,6 +132,10 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/DisableSnoNetworkDiag.yaml
   loop: "{{ ai_cluster_ids | dict2items }}"
+  register: netdiag_disable
+  retries: 120
+  delay: 2
+  until: not netdiag_disable.failed
   when: du_profile
 
 - name: Reduce Monitoring Footprint - Place ReduceMonitoringFootprint CR
@@ -120,6 +148,10 @@
 - name: Reduce Monitoring Footprint - Apply CR
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yaml
+  register: monitoring_footprint
+  retries: 120
+  delay: 2
+  until: not monitoring_footprint.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
