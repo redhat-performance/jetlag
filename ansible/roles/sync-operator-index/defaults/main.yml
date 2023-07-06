@@ -1,11 +1,11 @@
 ---
-# disconnected-sync-operator-index default vars
+# sync-operator-index default vars
 
 # This will be your bastion machine (if you run setup-bastion playbook)
-disconnected_registry_host: "{{ groups['bastion'][0] }}"
-disconnected_registry_port: 5000
+registry_host: "{{ groups['bastion'][0] }}"
+registry_port: 5000
 
-disconnected_sync_path: /opt/registry/sync
+sync_path: /opt/registry/sync
 
 registry_path: /opt/registry
 
@@ -17,7 +17,7 @@ operator_index_name: redhat-operator-index
 # operator_index_tag represents the destination operator tag on the installed cluster (actual image tags can be found in the operator_index_container_image value under operators_to_sync)
 operator_index_tag: v4.12
 
-# These defaults match ACM/ZTP testing (4.12 SNO with 4.12 Operators). For SNO DU profile defaults, refer ansible/vars/disconnected-sync-acm-d.sample.yml
+# These defaults match ACM/ZTP testing (4.12 SNO with 4.12 Operators). For SNO DU profile defaults, refer ansible/vars/sync-acm-d.sample.yml
 operators_to_sync:
 - name: redhat-operators
   operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.12

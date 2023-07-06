@@ -1,5 +1,5 @@
 ---
-# Sample disconnected-sync-ocp-release vars file
+# Sample sync-ocp-release vars file
 
 ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.16-x86_64
 

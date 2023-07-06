@@ -23,9 +23,9 @@
   - bastion-ocp-version
   - role: bastion-disconnected-registry
     when: use_disconnected_registry
-  - role: disconnected-sync-operator-index
+  - role: sync-operator-index
     when: use_disconnected_registry
-  - role: disconnected-sync-ocp-release
+  - role: sync-ocp-release
     when: use_disconnected_registry
   - bastion-assisted-installer
   - role: bastion-gogs
