@@ -1,7 +1,7 @@
 all.yml
-disconnected-sync-acm-d.yml
-disconnected-sync-ocp-release.yml
-disconnected-sync-operator-index.yml
+sync-acm-d.yml
+sync-ocp-release.yml
+sync-operator-index.yml
 hv.yml
 ibmcloud.yml
 network-impairments.yml

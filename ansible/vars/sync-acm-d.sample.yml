@@ -1,5 +1,5 @@
 ---
-# Sample disconnected-sync-acm-d vars file
+# Sample sync-acm-d vars file
 
 rhacm_build: 2.8.0-DOWNSTREAM-2023-04-25-22-18-13
 
