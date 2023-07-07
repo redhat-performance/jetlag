@@ -50,4 +50,4 @@
 
 - name: Mirror {{ operator_index_name }} images
   shell: |
-    oc adm catalog mirror {{ registry_host }}:{{ registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }} {{ registry_host }}:{{ registry_port }} -a {{ registry_path }}/pull-secret-disconnected.txt --to-manifests={{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}
+    oc adm catalog mirror {{ registry_host }}:{{ registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }} {{ registry_host }}:{{ registry_port }} -a {{ registry_path }}/pull-secret-bastion.txt --to-manifests={{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}

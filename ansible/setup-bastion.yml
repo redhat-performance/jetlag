@@ -21,14 +21,14 @@
     when: setup_coredns
   - bastion-http
   - bastion-ocp-version
-  - role: bastion-disconnected-registry
-    when: use_disconnected_registry
+  - role: bastion-registry
+    when: setup_bastion_registry
   - role: sync-operator-index
-    when: use_disconnected_registry
+    when: setup_bastion_registry
   - role: sync-ocp-release
-    when: use_disconnected_registry
+    when: setup_bastion_registry
   - bastion-assisted-installer
   - role: bastion-gogs
-    when: setup_gogs
+    when: setup_bastion_gogs
   - role: bastion-disconnected-haproxy
     when: use_disconnected_registry

@@ -54,8 +54,11 @@ bastion_controlplane_interface: ens1f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
-# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
-setup_gogs: false
+# Sets up Gogs a self-hosted git service on the bastion
+setup_bastion_gogs: false
+
+# Set to enable and sync container images into a container image registry on the bastion
+setup_bastion_registry: false
 
 # Use in conjunction with ipv6 based clusters
 use_disconnected_registry: false

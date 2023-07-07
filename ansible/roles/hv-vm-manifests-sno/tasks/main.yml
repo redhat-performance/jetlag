@@ -15,7 +15,7 @@
 
 - name: Obtain pull-secret for disconnected
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   delegate_to: "{{ groups['bastion'][0] }}"
   run_once: true
   register: slurped_pull_secret

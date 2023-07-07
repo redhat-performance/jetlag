@@ -12,7 +12,7 @@
 
 - name: Obtain pull-secret for disconnected
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   register: slurped_pull_secret
   when: use_disconnected_registry
 
