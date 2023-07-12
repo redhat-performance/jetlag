@@ -167,7 +167,7 @@ spec:
 
 For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
 ```yaml
-oc image mirror -a /opt/registry/pull-secret-disconnected.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
+oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
 Once the image has succesfully mirrored onto the disconnect registry, your deployment will be able to create the container.
 

@@ -33,7 +33,7 @@ Several services are run on the bastion in order to automate the tasks that jetl
 * HTTP server - 8081
 * Container Registry (When disconnected) - 5000
 * HAProxy (When disconnected) - 6443, 443, 80
-* Gogs - Self-hosted Git (Disconnected and setup_gogs=true) - 10881 (http), 10022 (git)
+* Gogs - Self-hosted Git (Disconnected and setup_bastion_gogs=true) - 10881 (http), 10022 (git)
 * Dnsmasq / Coredns - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
@@ -97,7 +97,7 @@ drwxr-xr-x. 2 root root   22 Jul 20 02:27 auth
 drwxr-xr-x. 2 root root   42 Jul 20 02:27 certs
 drwxr-xr-x. 3 root root   20 Jul 20 02:27 data
 -rwxr--r--. 1 root root  714 Jul 20 02:27 generate-cert.sh
--rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-disconnected.txt
+-rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-bastion.txt
 -rw-r--r--. 1 root root 2.9K Jul 20 02:27 pull-secret.txt
 drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 [root@f16-h11-000-1029p registry]# du -sh *
@@ -105,7 +105,7 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 8.0K    certs
 27G     data
 4.0K    generate-cert.sh
-4.0K    pull-secret-disconnected.txt
+4.0K    pull-secret-bastion.txt
 4.0K    pull-secret.txt
 48K     sync-acm-d
 [root@f16-h11-000-1029p registry]# rm -rf data/docker/

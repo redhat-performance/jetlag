@@ -1,5 +1,5 @@
 ---
-# bastion-disconnected-registry tasks
+# bastion-registry tasks
 
 - name: Create directories for bastion registry server
   file:
@@ -34,22 +34,22 @@
 
 - name: Create registry pod
   containers.podman.podman_pod:
-    name: ocpdiscon-registry
+    name: registry
     network: host
     state: started
 
 # On a reboot "started" state does not start an exited pod (why..idk)
 - name: Ensure registry pod is up
   containers.podman.podman_pod:
-    name: ocpdiscon-registry
+    name: registry
     network: host
     state: restarted
 
 - name: Create registry container
   containers.podman.podman_container:
-    pod: ocpdiscon-registry
+    pod: registry
     network: host
-    name: registry
+    name: bastion-registry
     image: "{{ registry_container_image }}"
     env:
       REGISTRY_AUTH: htpasswd
@@ -71,19 +71,19 @@
     content: "{{ pull_secret }}"
     dest: "{{ registry_path }}/pull-secret.txt"
 
-- name: Add disconnected registry to pull-secret
+- name: Add bastion registry to pull-secret
   shell: |
     b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
-    AUTHSTRING="{\"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
-    jq -c ".auths += $AUTHSTRING" < {{ registry_path }}/pull-secret.txt > {{ registry_path }}/pull-secret-disconnected.txt
+    AUTHSTRING="{\"{{ registry_host }}:{{ registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
+    jq -c ".auths += $AUTHSTRING" < {{ registry_path }}/pull-secret.txt > {{ registry_path }}/pull-secret-bastion.txt
 
-- name: Log in to the disconnected registry to allow pushing images
+- name: Log in to the bastion registry to allow pushing images
   shell: |
-    skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}
+    skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ registry_host }}:{{ registry_port }}
 
 - name: Mirror edge-infrastructure images
   shell: |
-    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt {{ item }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure/{{ item.split("/")[-1] }}
+    oc image mirror -a {{ registry_path }}/pull-secret-bastion.txt {{ item }} {{ registry_host }}:{{ registry_port }}/edge-infrastructure/{{ item.split("/")[-1] }}
   with_items:
   - "{{ assisted_image_service_image }}"
   - "{{ assisted_installer_image }}"
@@ -95,7 +95,7 @@
 
 - name: Mirror support-tools for toolbox (sosreport)
   shell: |
-    oc image mirror -a {{ registry_path }}/pull-secret-disconnected.txt registry.redhat.io/rhel8/support-tools {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/rhel8/support-tools --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ registry_path }}/pull-secret-bastion.txt registry.redhat.io/rhel8/support-tools {{ registry_host }}:{{ registry_port }}/rhel8/support-tools --keep-manifest-list --continue-on-error=true
   register: result
   until: not result.failed
   retries: 3
