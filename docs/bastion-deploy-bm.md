@@ -215,7 +215,7 @@ No extra vars are needed for an ipv4 bare metal cluster.
 
 If you want to deploy a disconnected ipv6 cluster then the following vars need to be set.
 
-Change `setup_bastion_registry` to `setup_bastion_registry: true` and `use_disconnected_registry` to `use_disconnected_registry: true` under "Bastion node vars"
+Change `setup_bastion_registry` to `setup_bastion_registry: true` and `use_bastion_registry` to `use_bastion_registry: true` under "Bastion node vars"
 
 Append the following "override" vars in "Extra vars"
 
@@ -300,7 +300,7 @@ setup_bastion_gogs: false
 setup_bastion_registry: false
 
 # Use in conjunction with ipv6 based clusters
-use_disconnected_registry: false
+use_bastion_registry: false
 
 ################################################################################
 # OCP node vars

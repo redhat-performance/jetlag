@@ -61,7 +61,7 @@ setup_bastion_gogs: false
 setup_bastion_registry: false
 
 # Use in conjunction with ipv6 based clusters
-use_disconnected_registry: false
+use_bastion_registry: false
 
 ################################################################################
 # OCP node vars

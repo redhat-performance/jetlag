@@ -48,10 +48,10 @@ spec:
           value: minio
         - name: MINIO_SECRET_KEY
           value: minio123
-{% if not use_disconnected_registry | default(false) %}
+{% if not use_bastion_registry | default(false) %}
         image: quay.io/minio/minio:{{ minio_image_tag }}
 {% else %}
-        image: {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/minio/minio:{{ minio_image_tag }}
+        image: {{ registry_host }}:{{ registry_port }}/minio/minio:{{ minio_image_tag }}
 {% endif %}
         name: minio
         ports:

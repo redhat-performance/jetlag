@@ -13,20 +13,20 @@
   - "{{ hv_vm_manifests_directory }}/sno/manifests"
   - "{{ hv_vm_manifests_directory }}/sno/siteconfigs"
 
-- name: Obtain pull-secret for disconnected
+- name: Obtain pull-secret for bastion registry
   slurp:
     src: "{{ registry_path }}/pull-secret-bastion.txt"
   delegate_to: "{{ groups['bastion'][0] }}"
   run_once: true
   register: slurped_pull_secret
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Set pull-secret for disconnected
+- name: Set pull-secret for bastion registry
   set_fact:
     pull_secret: "{{ slurped_pull_secret.content }}"
   delegate_to: "{{ groups['bastion'][0] }}"
   run_once: true
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
 - name: Create directories per SNO for hv-vm manifests on bastion
   file:
