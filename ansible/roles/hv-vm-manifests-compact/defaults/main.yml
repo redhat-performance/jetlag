@@ -30,3 +30,6 @@ siteconfig_ironic_inspect: false
 
 # Used to enable observability in siteconfigs
 siteconfig_observability: false
+
+# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
+siteconfig_staticpod_fix: false
