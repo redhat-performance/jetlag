@@ -31,4 +31,4 @@
   - role: bastion-gogs
     when: setup_bastion_gogs
   - role: bastion-disconnected-haproxy
-    when: use_disconnected_registry
+    when: use_bastion_registry

@@ -6,7 +6,7 @@ _**Table of Contents**_
 - Bastion:
   - [Accessing services](#bastion---accessing-services)
   - [Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
-  - [Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
+  - [Clean all container images from bastion registry](#bastion---clean-all-container-images-from-bastion-registry)
 - Dell:
   - [Reset BMC / iDrac](#dell---reset-bmc--idrac)
 - Supermicro:
@@ -31,9 +31,9 @@ Several services are run on the bastion in order to automate the tasks that jetl
 * On-prem assisted-installer API - 8090
 * On-prem assisted-image-service - 8888
 * HTTP server - 8081
-* Container Registry (When disconnected) - 5000
+* Container Registry (When setup_bastion_registry=true) - 5000
 * HAProxy (When disconnected) - 6443, 443, 80
-* Gogs - Self-hosted Git (Disconnected and setup_bastion_gogs=true) - 10881 (http), 10022 (git)
+* Gogs - Self-hosted Git (When setup_bastion_gogs=true) - 10881 (http), 10022 (git)
 * Dnsmasq / Coredns - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
@@ -43,7 +43,7 @@ AI API - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/
 HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
 ```
 
-Example accessing the disconnected registry and listing repositories:
+Example accessing the bastion registry and listing repositories:
 ```console
 [root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -80,7 +80,7 @@ podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{pr
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
 
-## Bastion - Clean all container images from disconnected registry
+## Bastion - Clean all container images from bastion registry
 
 If you are planning a redeploy with new versions and new container images it may make sense to clean all the old container images to start fresh. First [clean the pods and containers off the bastion following this](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines). Then remove the directory containing the images.
 

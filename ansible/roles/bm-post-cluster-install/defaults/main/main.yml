@@ -10,8 +10,8 @@ http_store_host: "{{ groups['bastion'][0] }}"
 http_store_port: 8081
 
 # This will be your bastion machine (if you run setup-bastion playbook)
-disconnected_registry_host: "{{ groups['bastion'][0] }}"
-disconnected_registry_port: 5000
+registry_host: "{{ groups['bastion'][0] }}"
+registry_port: 5000
 
 # Deploy performance-dashboards
 setup_performance_dashboards: false
@@ -25,7 +25,7 @@ setup_openshift_gitops_ztp: false
 # ZTP gitops requires this version of the gitops operator
 gitops_starting_csv: openshift-gitops-operator.v1.5.4
 
-# Enable with disconnected in order to download image to bastion and serve via
+# Enable with bastion registry in order to download image to bastion and serve via
 # bastion http_store such that metal3 pods run
 fix_metal3_provisioningosdownloadurl: false
 

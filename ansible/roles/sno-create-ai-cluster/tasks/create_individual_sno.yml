@@ -12,7 +12,7 @@
       mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
   when:
   - lab in rh_labs
-  - use_disconnected_registry
+  - use_bastion_registry
 
 - name: Assemble controlplane static network config
   set_fact:
@@ -21,13 +21,13 @@
       mac_interface_map: "{{ lookup('template', 'ibmcloud_mac_interface_map.json.j2')  }}"
   when:
   - lab in rh_labs
-  - use_disconnected_registry
+  - use_bastion_registry
 
 - name: Add {{ item }} ip config
   set_fact:
     static_network_config: "{{ static_network_config + [ item_network_config ] }}"
   when:
-  - use_disconnected_registry
+  - use_bastion_registry
 
 - name: Create SNO cluster
   uri:
@@ -46,7 +46,7 @@
         "service_network_cidr": "{{ service_network_cidr }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}"
+        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}"
     }
   register: create_cluster_return
 
@@ -64,7 +64,7 @@
     return_content: true
     body: {
         "name": "{{ hostvars[item].inventory_hostname }}",
-        "additional_ntp_sources": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}",
+        "additional_ntp_sources": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
         "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "image_type": "full-iso",
@@ -77,7 +77,7 @@
   set_fact:
     ai_infraenv_id: "{{ create_infra_env_return.json.id }}"
 
-- name: Patch infra-env for disconnected with ignition config overrides
+- name: Patch infra-env for bastion registry with ignition config overrides
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
     method: PATCH
@@ -88,7 +88,7 @@
         "static_network_config": "{{ static_network_config }}",
         "ignition_config_override": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}",
     }
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
 - name: Append cluster ids
   set_fact:
