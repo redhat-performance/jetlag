@@ -1,5 +1,10 @@
 networking:
   networkType: {{ networktype }}
+{% if enable_fips | default(false) %}
+fips: true
+{% else %}
+fips: false
+{% endif %}
 {% if use_bastion_registry | default(false) %}
 imageContentSources:
 - mirrors:

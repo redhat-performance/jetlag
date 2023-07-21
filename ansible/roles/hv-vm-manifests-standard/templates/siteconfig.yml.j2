@@ -13,6 +13,9 @@ spec:
   clusters:
   - clusterName: standard-{{ '%05d' | format(item) }}
     networkType: "OVNKubernetes"
+{% if siteconfig_fips %}
+    installConfigOverrides: '{ "fips": true }'
+{% endif %}
     clusterLabels:
       common: 'true'
       group-du-standard: ''
