@@ -35,6 +35,9 @@ openshift_version: "4.12"
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
 
+# Enable FIPs
+enable_fips: false
+
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:

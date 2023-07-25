@@ -13,6 +13,9 @@ spec:
   clusters:
   - clusterName: {{ inventory_hostname }}
     networkType: "OVNKubernetes"
+{% if siteconfig_fips %}
+    installConfigOverrides: '{ "fips": true }'
+{% endif %}
     clusterLabels:
       common: 'true'
       group-du-sno: ''
