@@ -83,7 +83,8 @@
         "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
         "ingress_vip": "{{ controlplane_network_ingress }}",
-        "api_vip": "{{ controlplane_network_api }}"
+        "api_vip": "{{ controlplane_network_api }}",
+        "network_type": "{{ networktype }}"
     }
 
 - name: Wait for cluster to be ready
