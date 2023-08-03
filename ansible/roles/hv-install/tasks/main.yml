@@ -50,11 +50,19 @@
     enabled: true
     name: chronyd
 
+- name: Check ssh_public_key_file content
+  command: cat "{{ ssh_public_key_file }}"
+  register: tmp_ssh_pubkey
+  changed_when: false
+
 - name: Copying the public key to the root user's authorized_keys
-  copy:
-    src: "{{ ssh_public_key_file }}"
-    dest: /root/.ssh/authorized_keys
-    mode: 0600
+  lineinfile:
+    path: /root/.ssh/authorized_keys
+    line: "{{ item }}"
+    insertafter: "{{ (item.0 == '@')|ternary('EOF', omit) }}"
+    insertbefore: "{{ (item.0 != '@')|ternary('^@.*$', omit)}}"
+    firstmatch: true
+  loop: "{{ tmp_ssh_pubkey.stdout_lines }}"
 
 - name: Start and enable KSM
   systemd:
