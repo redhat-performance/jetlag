@@ -78,6 +78,8 @@ controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
+# Note: these cannot be commented out or bm-deploy will fail
+#       You will need to knowledge of actual interface names.
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
 
