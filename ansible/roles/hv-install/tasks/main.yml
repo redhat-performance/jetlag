@@ -4,12 +4,12 @@
 - name: Install packages
   dnf:
     name:
-      - "@virt"
-      - virt-install
-      - virt-viewer
-      - gcc
-      - python3-devel
-      - libvirt-devel
+    - "@virt"
+    - virt-install
+    - virt-viewer
+    - gcc
+    - python3-devel
+    - libvirt-devel
     state: present
     update_cache: true
     disable_gpg_check: yes
@@ -19,10 +19,10 @@
     name: "{{ item.name }}"
     version: "{{ item.version }}"
   loop:
-    - name: libvirt-python
-      version: 6.0.0
-    - name: sushy-tools
-      version: 0.16.0
+  - name: libvirt-python
+    version: 6.0.0
+  - name: sushy-tools
+    version: 0.16.0
 
 - name: Setup chronyd
   template:
