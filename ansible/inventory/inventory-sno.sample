@@ -29,8 +29,8 @@ bmc_password=password
 
 [sno]
 # Single Node OpenShift Clusters
-sno-0 bmc_address=mgmt-sno-0.example.com boot_iso=sno-0.iso ip_address=10.0.0.1 vendor=Dell lab_mac=00:4e:01:3d:e6:9e network_mac=40:a6:b7:00:63:61
-sno-1 bmc_address=mgmt-sno-1.example.com boot_iso=sno-1.iso ip_address=10.0.0.2 vendor=Dell lab_mac=00:4e:01:3d:e6:ab network_mac=40:a6:b7:00:53:81
+sno-0 bmc_address=mgmt-sno-0.example.com boot_iso=sno-0.iso ip_address=10.0.0.1 vendor=Dell lab_mac=00:4e:01:3d:e6:9e network_mac=40:a6:b7:00:63:61 install_disk=/dev/sda
+sno-1 bmc_address=mgmt-sno-1.example.com boot_iso=sno-1.iso ip_address=10.0.0.2 vendor=Dell lab_mac=00:4e:01:3d:e6:ab network_mac=40:a6:b7:00:53:81 install_disk=/dev/sda
 
 [sno:vars]
 bmc_user=quads

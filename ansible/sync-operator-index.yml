@@ -1,0 +1,15 @@
+---
+# Sync an specific operator index to the bastion/mirror registry.
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud03.local ansible/sync-operator-index.yml
+#
+
+- name: Sync operator index and container images into bastion registry
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/sync-operator-index.yml
+  roles:
+  - sync-operator-index

@@ -27,13 +27,16 @@ public_vlan: false
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.1-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.16-x86_64
 
 # This should just match the above release image version (Ex: 4.12)
 openshift_version: "4.12"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
+
+# Enable FIPs
+enable_fips: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
@@ -54,11 +57,14 @@ bastion_controlplane_interface: ens1f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
-# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
-setup_gogs: false
+# Sets up Gogs a self-hosted git service on the bastion
+setup_bastion_gogs: false
+
+# Set to enable and sync container images into a container image registry on the bastion
+setup_bastion_registry: false
 
 # Use in conjunction with ipv6 based clusters
-use_disconnected_registry: false
+use_bastion_registry: false
 
 ################################################################################
 # OCP node vars
@@ -72,6 +78,8 @@ controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
+# Note: these cannot be commented out or bm-deploy will fail
+#       You will need to knowledge of actual interface names.
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
 

@@ -1,10 +1,15 @@
 #!/bin/bash
 # Jetlag controlplane-setup-lvm.sh
+echo "Cleaning vg_ls and /dev/disk/by-partlabel/LS"
 for vg in $(vgs -o name --noheadings | grep "vg_ls") ; do vgremove -y $vg ; done
-for pv in $(pvs -o name --noheadings | grep "{{ controlplane_localstorage_device }}") ; do pvremove -y $pv ; done
+pvremove /dev/disk/by-partlabel/LS
 echo "Setting up LVM for local-storage"
 vgcreate vg_ls /dev/disk/by-partlabel/LS -f
 lvcreate -l 99%VG -T vg_ls/lv_tp_ls
 {% for i in range(controlplane_localstorage_lv_count) %}
 lvcreate -V {{ controlplane_localstorage_lv_size }} -T vg_ls/lv_tp_ls -n lv_cp_tv{{ '%02d' % i }}
 {% endfor %}
+{% if localvolume2_configuration %}
+echo "Cleaning {{ localvolume2_device }}"
+wipefs --all --force {{ localvolume2_device }}
+{% endif %}

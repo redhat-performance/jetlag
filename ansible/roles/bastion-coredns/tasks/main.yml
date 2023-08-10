@@ -1,0 +1,51 @@
+---
+# bastion-coredns tasks
+
+- name: Stop and disable dnsmasq
+  systemd:
+    state: stopped
+    enabled: false
+    name: dnsmasq
+
+- name: Create coredns directory
+  file:
+    path: /etc/coredns
+    state: directory
+
+- name: Configure Coredns / NetworkManager
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: Corefile.j2
+    dest: /etc/coredns/Corefile
+  - src: 99-jetlag-dns.conf
+    dest: /etc/NetworkManager/conf.d/99-jetlag-dns.conf
+  - src: resolv.conf.j2
+    dest: /etc/resolv.conf
+
+- name: Create coredns.service file
+  copy:
+    dest: /usr/lib/systemd/system/coredns.service
+    content: |
+      [Unit]
+      Description=CoreDNS DNS server
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/local/bin/coredns -conf=/etc/coredns/Corefile
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Restart NetworkManager
+  systemd:
+    state: restarted
+    name: NetworkManager
+
+- name: Start and enable coredns
+  systemd:
+    daemon_reload: true
+    state: restarted
+    enabled: true
+    name: coredns

@@ -61,33 +61,30 @@ Versions:
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Update to RHEL 8.6
+Update to RHEL 8.7
 ```console
-[root@f31-h05-000-r640]# ./update-latest-rhel-release.sh 8.6
-[root@f31-h05-000-r640]# dnf update -y
-[root@f31-h05-000-r640]# reboot
+[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.2 (Ootpa)
+
+[root@xxx-xxx-xxx-r640 ~]# ./update-latest-rhel-release.sh 8.7
+...
+[root@xxx-xxx-xxx-r640 ~]# dnf update -y
+...
+[root@xxx-xxx-xxx-r640 ~]# reboot
+...
+[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.7 (Ootpa)
 ```
 
 Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
-[root@f31-h05-000-r640 jetlag]# source bootstrap.sh
+[root@xxx-xxx-xxx-r640 jetlag]# source bootstrap.sh
 ...
-(.ansible) [root@f31-h05-000-r640 jetlag]#
-```
-
-Installing Ansible via python3
-
-```console
-$ python3 -m venv .ansible       # Create a virtualenv if one does not already exist
-$ source .ansible/bin/activate   # Activate the virtual environment
-$ pip3 install --upgrade pip     # Ensure pip is updated
-$ pip3 install ansible netaddr   # Install the lastest version of ansible and netaddr library
-$ ansible-galaxy collection install ansible.utils
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]#
 ```
 
 For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
-
 
 Pre-reqs for Supermicro hardware:
 
@@ -104,8 +101,8 @@ There are three main files to configure and one is generated but might have to b
 Start by editing the vars
 
 ```console
-cp ansible/vars/all.sample.yml ansible/vars/all.yml
-vi ansible/vars/all.yml
+[root@xxx-xxx-xxx-r640 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+[root@xxx-xxx-xxx-r640 jetlag]# vi ansible/vars/all.yml
 ```
 
 Make sure to set/review the following vars:
@@ -123,7 +120,7 @@ Make sure to set/review the following vars:
 Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 
 ```console
-[user@fedora jetlag]$ cat pull_secret.txt
+[root@xxx-xxx-xxx-r640 jetlag]# cat pull_secret.txt
 {
   "auths": {
 ...
@@ -132,13 +129,13 @@ Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 Run create-inventory playbook
 
 ```console
-ansible-playbook ansible/create-inventory.yml
+[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook ansible/create-inventory.yml
 ```
 
 Run setup-bastion playbook
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
+[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ```
 
 Run deploy for either bm/rwn/sno playbook with inventory created by create-inventory playbook
@@ -146,25 +143,25 @@ Run deploy for either bm/rwn/sno playbook with inventory created by create-inven
 Bare Metal Cluster:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
+[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
 ```
 See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for BM install related issues
 
 Remote Worker Node Cluster:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/rwn-deploy.yml
+[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
 ```
 
 Single Node OpenShift:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
+[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ```
 
 ## Quickstart guides
 
-* [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
+* [Deploy a Bare Metal cluster via jetlag from a Scale Lab Bastion Machine quickstart](docs/bastion-deploy-bm.md)
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag quickstart guide](docs/deploy-sno-quickstart.md)
 * [Deploy Single Node OpenShift (SNO) clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)

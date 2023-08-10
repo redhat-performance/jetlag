@@ -6,11 +6,11 @@
 #   loop:
 #     - "Host ID: {{ bm_node.id }}"
 #     - "Current Install Disk: {{ bm_node.installation_disk_path }}"
-#     - "Future Install Disk: {{ bm_control_plane_install_disk }}"
+#     - "Future Install Disk: {{ hostvars[bm_node.requested_hostname].install_disk }}"
 
-- name: Adjust selected install disk
+- name: Adjust non-by-path selected install disk
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ bm_node.id }}"
     method: PATCH
     status_code: [201]
     return_content: true
@@ -18,18 +18,44 @@
     body: {
         "disks_selected_config": [
           {
-            "id": "{{ bm_node.id }}",
-            "disks_config": [
-              {
-                "id": "{{ set_to_disk }}",
-                "role": "install"
-              },
-              {
-                "id": "{{ bm_node.installation_disk_path }}",
-                "role": "none"
-              }
-            ]
+            "id": "{{ hostvars[bm_node.requested_hostname].install_disk }}",
+            "role": "install"
+          },
+          {
+            "id": "{{ bm_node.installation_disk_path }}",
+            "role": "none"
           }
         ]
     }
-  when: bm_node.installation_disk_path != set_to_disk
+  when:
+  - bm_node.installation_disk_path != hostvars[bm_node.requested_hostname].install_disk
+  - '"by-path" not in hostvars[bm_node.requested_hostname].install_disk'
+
+- name: Get by-path disk id
+  set_fact:
+    new_disk_id: "{{ (bm_node.inventory | from_json | json_query(query) | first).id }}"
+  vars:
+    query: "disks[?by_path=='{{ hostvars[bm_node.requested_hostname].install_disk }}']"
+  when: '"by-path" in hostvars[bm_node.requested_hostname].install_disk'
+
+- name: Adjust by-path selected install disk
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ bm_node.id }}"
+    method: PATCH
+    status_code: [201]
+    return_content: true
+    body_format: json
+    body: {
+        "disks_selected_config": [
+          {
+            "id": "{{ new_disk_id }}",
+            "role": "install"
+          },
+          {
+            "id": "{{ bm_node.installation_disk_path }}",
+            "role": "none"
+          }
+        ]
+    }
+  when:
+  - '"by-path" in hostvars[bm_node.requested_hostname].install_disk'

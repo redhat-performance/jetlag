@@ -24,6 +24,20 @@
   - name: sushy-tools
     version: 0.16.0
 
+- name: Get coredns
+  get_url:
+    validate_certs: false
+    force: true
+    url: https://github.com/coredns/coredns/releases/download/v1.10.1/coredns_1.10.1_linux_amd64.tgz
+    dest: /root/coredns_1.10.1_linux_amd64.tgz
+
+- name: Untar coredns
+  unarchive:
+    src: /root/coredns_1.10.1_linux_amd64.tgz
+    dest: /usr/local/bin
+    remote_src: yes
+    mode: 0700
+
 - name: Setup chronyd
   template:
     src: chrony.conf.j2
@@ -42,3 +56,15 @@
     user: root
     state: present
     key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
+
+- name: Start and enable KSM
+  systemd:
+    state: started
+    enabled: true
+    name: ksm
+
+- name: Start and enable KSMtuned
+  systemd:
+    state: started
+    enabled: true
+    name: ksmtuned

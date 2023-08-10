@@ -1,71 +1,56 @@
 ---
 # sno-create-ai-cluster tasks
 
-- name: Obtain pull-secret for disconnected
+- name: Obtain pull-secret for bastion registry
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   register: slurped_pull_secret
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Set pull-secret for disconnected
+- name: Set pull-secret for bastion registry
   set_fact:
     pull_secret: "{{ slurped_pull_secret.content | b64decode }}"
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Create SNO cluster
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
-    method: POST
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: {
-        "name": "{{ hostvars[item].inventory_hostname }}",
-        "openshift_version": "{{ openshift_version }}",
-        "high_availability_mode": "None",
-        "base_dns_domain": "{{ base_dns_name }}",
-        "cluster_network_cidr": "{{ cluster_network_cidr }}",
-        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-        "service_network_cidr": "{{ service_network_cidr }}",
-        "pull_secret": "{{ pull_secret | to_json }}",
-        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}"
-    }
+- name: Obtain bastion registry certificate
+  slurp:
+    src: "{{ registry_path }}/certs/domain.crt"
+  register: mirror_cert
+  when: use_bastion_registry
+
+- name: Create each SNO and infra-env
+  include_tasks: create_individual_sno.yml
   loop: "{{ groups['sno'][:sno_node_count|int] }}"
-  register: create_cluster_return
 
-- name: Populate cluster ids
-  when: cluster_type == "sno"
-  set_fact:
-    ai_cluster_ids: "{{ ai_cluster_ids|default({}) | combine( {item.item: {'cluster_name': item.item, 'cluster_id': item.json.id} } ) }}"
-  loop: "{{ create_cluster_return.results }}"
+# - debug:
+#     msg: "{{ ai_cluster_ids }}"
 
 - name: set machine network cidr for public vlan
   set_fact:
     machine_network_cidr: "{{ controlplane_pub_network_cidr }}"
   when:
-    - public_vlan | bool
+  - public_vlan | bool
 
-- name: set machine network cidr when using disconnected registry
+- name: set machine network cidr when using bastion registry
   set_fact:
     machine_network_cidr: "{{ controlplane_network | ipaddr('network/prefix') }}"
   when:
-    - use_disconnected_registry
+  - use_bastion_registry
 
 - block:
-    - name: Set machine network
-      set_fact:
-        machine_network: "{{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }}"
+  - name: Set machine network
+    set_fact:
+      machine_network: "{{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }}"
 
-    - name: Set machine network CIDR
-      set_fact:
-        machine_network_cidr: "{{ machine_network | ipaddr('network/prefix') }}"
+  - name: Set machine network CIDR
+    set_fact:
+      machine_network_cidr: "{{ machine_network | ipaddr('network/prefix') }}"
   when:
-    - ( machine_network_cidr is not defined ) or ( not machine_network_cidr )
+  - ( machine_network_cidr is not defined ) or ( not machine_network_cidr )
 
 - name: Update machine CIDR
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -96,7 +81,9 @@
   systemd:
     state: restarted
     name: dnsmasq
-  when: controlplane_bastion_as_dns
+  when:
+  - controlplane_bastion_as_dns
+  - not setup_coredns
 
 - name: Include custom manifests
   include_tasks: 01_manifest_task.yml

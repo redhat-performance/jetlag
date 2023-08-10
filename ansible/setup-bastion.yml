@@ -15,17 +15,20 @@
   - validate-vars
   - bastion-install
   - bastion-network
-  - bastion-dnsmasq
+  - role: bastion-dnsmasq
+    when: not setup_coredns
+  - role: bastion-coredns
+    when: setup_coredns
   - bastion-http
   - bastion-ocp-version
-  - role: bastion-disconnected-registry
-    when: use_disconnected_registry
-  - role: disconnected-sync-operator-index
-    when: use_disconnected_registry
-  - role: disconnected-sync-ocp-release
-    when: use_disconnected_registry
+  - role: bastion-registry
+    when: setup_bastion_registry
+  - role: sync-operator-index
+    when: setup_bastion_registry
+  - role: sync-ocp-release
+    when: setup_bastion_registry
   - bastion-assisted-installer
   - role: bastion-gogs
-    when: setup_gogs
+    when: setup_bastion_gogs
   - role: bastion-disconnected-haproxy
-    when: use_disconnected_registry
+    when: use_bastion_registry
