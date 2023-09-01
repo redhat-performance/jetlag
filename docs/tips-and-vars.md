@@ -8,6 +8,7 @@ _**Table of Contents**_
 - [Updating the OCP version](#updating-the-ocp-version)
 - [Add/delete contents to the bastion registry](#Add/delete-contents-to-the-bastion-registry)
 - [Using Other Network Interfaces](#Other-Networks)
+- [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
 <!-- /TOC -->
 
 ## Override lab ocpinventory json file
@@ -214,3 +215,48 @@ controlplane_network_interface_idx: 2
 ```
 ### Alternative method
 In case you are bringing your own lab, set `controlplane_network_interface` to the desired name, eg. `controlplane_network_interface: ens2f0`.
+
+## Configuring NVMe install and etcd disks
+
+If you require the install disk or etcd disk to be on a specific drive,
+they can be specified directly through the vars file `all.yml`.
+
+To ensure the drive will be correctly mapped at each boot,
+we will locate the `/dev/disk/by-path` link to each drive.
+
+```
+# Locate names of the drives identified on your system
+$ lsblk | grep nvme
+nvme3n1     259:0    0   1.5T  0 disk
+nvme2n1     259:1    0   1.5T  0 disk
+nvme1n1     259:2    0   1.5T  0 disk
+nvme0n1     259:3    0   1.5T  0 disk
+
+# Find the corresponding disk/by-path link
+$ ls -l /dev/disk/by-path/ | grep nvme
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b1:00.0-nvme-1 -> ../../nvme0n1
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b2:00.0-nvme-1 -> ../../nvme1n1
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b3:00.0-nvme-1 -> ../../nvme2n1
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b4:00.0-nvme-1 -> ../../nvme3n1
+```
+
+Add these values to your extra vars section in the `all.yml` file.
+
+In this case we are installing on all NVMe drives,
+and will have configured our hosts for UEFI boot.
+
+`ansible/vars/all.yml`
+```yaml
+################################################################################
+# Extra vars
+################################################################################
+
+# Install disks
+# sno_install_disk: /dev/disk/by-path/...
+control_plane_install_disk: /dev/disk/by-path/pci-0000:b1:00.0-nvme-1
+worker_install_disk: /dev/disk/by-path/pci-0000:b1:00.0-nvme-1
+
+# Control plane etcd deployed on NVMe
+controlplane_nvme_device: /dev/disk/by-path/pci-0000:b2:00.0-nvme-1
+controlplane_etcd_on_nvme: true
+```
