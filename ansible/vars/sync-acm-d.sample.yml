@@ -11,11 +11,11 @@ ztp_site_generator_image_tag: v4.13.0-42
 
 # TALO - Topology Aware Lifecycle Operator used with DU profile
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
-cluster_group_upgrades_operator_image_tag: 4.13.0
+cluster_group_upgrades_operator_image_tag: 4.14.0
 cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
-cluster_group_upgrades_operator_precache_image_tag: 4.13.0
+cluster_group_upgrades_operator_precache_image_tag: 4.14.0
 cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-group-upgrades-operator-recovery
-cluster_group_upgrades_operator_recovery_image_tag: 4.13.0
+cluster_group_upgrades_operator_recovery_image_tag: 4.14.0
 origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy:4.12
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 
