@@ -22,6 +22,9 @@ bmc_password_base64: "{{ 'password' | b64encode }}"
 siteconfig_enable_cpuset: false
 siteconfig_cpuset: "0-3"
 
+# Enable fips via installConfigOverrides
+siteconfig_fips: false
+
 # Used in conjuntion with converged flow
 siteconfig_baremetalhost_override_converged_flow: false
 
@@ -30,3 +33,6 @@ siteconfig_ironic_inspect: false
 
 # Used to enable observability in siteconfigs
 siteconfig_observability: false
+
+# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
+siteconfig_staticpod_fix: false

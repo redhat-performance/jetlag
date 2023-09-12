@@ -43,6 +43,7 @@
     src: chrony.conf.j2
     dest: /etc/chrony.conf
     backup: true
+    mode: "0644"
 
 - name: Ensure chronyd is running with new configuration
   systemd:
@@ -51,7 +52,19 @@
     name: chronyd
 
 - name: Copying the public key to the root user's authorized_keys
-  copy:
-    src: "{{ ssh_public_key_file }}"
-    dest: /root/.ssh/authorized_keys
-    mode: 0600
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', '{{ ssh_public_key_file }}') }}"
+
+- name: Start and enable KSM
+  systemd:
+    state: started
+    enabled: true
+    name: ksm
+
+- name: Start and enable KSMtuned
+  systemd:
+    state: started
+    enabled: true
+    name: ksmtuned

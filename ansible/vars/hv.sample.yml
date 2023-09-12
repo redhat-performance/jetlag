@@ -44,7 +44,7 @@ cluster_image_set: openshift-4.12.16
 # Include ACM CRs in the manifests
 hv_vm_manifest_acm_cr: false
 
-# Retrieves the disconnected pull-secret instead of below pull-secret
-use_disconnected_registry: false
-# Provide pull-secret for non-disconnected manifests
+# Retrieves the bastion pull-secret instead of below pull-secret
+use_bastion_registry: false
+# Provide pull-secret for connected manifests
 pull_secret: "{{ lookup('file', '../pull_secret.txt') | b64encode }}"

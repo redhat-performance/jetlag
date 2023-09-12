@@ -19,8 +19,14 @@ siteconfig_cpuset: "0-3"
 # Used in conjuntion with converged flow
 siteconfig_baremetalhost_override_converged_flow: false
 
+# Enable fips via installConfigOverrides
+siteconfig_fips: false
+
 # Used with 4.12 SNOs when converged flow is enabled
 siteconfig_ironic_inspect: false
 
 # Used to enable observability in siteconfigs
 siteconfig_observability: false
+
+# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
+siteconfig_staticpod_fix: false

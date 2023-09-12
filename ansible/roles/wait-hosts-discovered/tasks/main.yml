@@ -13,7 +13,7 @@
 
 - name: Wait up to 40 min for nodes to be discovered
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -24,7 +24,7 @@
 
 - name: Wait up to 5 minutes until hosts no longer in discovering status
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ item.id }}"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -36,7 +36,7 @@
 
 - name: Get cluster data for host and role setting
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -45,13 +45,13 @@
 - name: Set hostname and role for discovered hosts
   include_tasks: set_hostname_role.yml
   with_items:
-    - "{{ cluster.json.hosts }}"
+  - "{{ cluster.json.hosts }}"
   loop_control:
     loop_var: discovered_host
 
 - name: Patch cluster network settings
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: PATCH
     status_code: [201]
     return_content: true
@@ -74,7 +74,7 @@
 
 - name: Patch cluster ingress/api vip addresses
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: PATCH
     status_code: [201]
     return_content: true
@@ -83,13 +83,13 @@
         "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
         "ingress_vip": "{{ controlplane_network_ingress }}",
-        "api_vip": "{{ controlplane_network_api }}"
+        "api_vip": "{{ controlplane_network_api }}",
+        "network_type": "{{ networktype }}"
     }
-
 
 - name: Wait for cluster to be ready
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -112,7 +112,7 @@
 
 - name: Wait for cluster to be ready for install
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true

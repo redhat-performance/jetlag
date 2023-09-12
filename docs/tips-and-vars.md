@@ -6,8 +6,9 @@ _**Table of Contents**_
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
-- [Add/delete contents to the disconnected registry](#Add/delete-contents-to-the-disconnected-registry)
+- [Add/delete contents to the bastion registry](#Add/delete-contents-to-the-bastion-registry)
 - [Using Other Network Interfaces](#Other-Networks)
+- [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
 <!-- /TOC -->
 
 ## Override lab ocpinventory json file
@@ -31,12 +32,17 @@ isolated_cpus: 2-39,42-79
 ```
 
 As a result, the following machine configuration files will be added to the cluster during SNO install:
-* 01-container-mount-ns-and-kubelet-conf-master.yaml 
+* 01-container-mount-ns-and-kubelet-conf-master.yaml
 * 03-sctp-machine-config-master.yaml
 * 04-accelerated-container-startup-master.yaml
+* 05-kdump-config-master (when kdump is enabled)
+* 99-crio-disable-wipe-master
 * 99-master-workload-partitioning.yml
+* enable-crun-master.yaml
 
-In addition to this, Network Diagnostics will be disabled, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
+When deploying DU profile on OCP 4.13 or higher, composable openshift feature will automatically be deployed and as a result, all unnecessary optional Cluster Operators will not be deployed.
+
+In addition to this, Network Diagnostics will be disabled, monitoring footprint will be reduced, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
 
 Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
 
@@ -99,19 +105,13 @@ isolated_cpus: 2-47,50-95
 
 #Optional vars
 
-# If you want to install real-time kernel:
-kernel_rt: true
-
 # Number of hugepages of size 1G to be allocated on the SNO
 hugepages_count: 16
 
-# Kubelet Topology Manager Policy of the performance profile to be created. [Valid values: single-numa-node, best-effort, restricted] (default "restricted")
-topology_manager_policy: best-effort
-```
 #### Tuned Performance Patch
 
 After performance-profile is applied, the standard TunedPerformancePatch used for SNO DUs will also be applied post SNO install if DU profile is enabled.
-This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10. 
+This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10.
 Further changes applied can be found in the template 'tunedPerformancePatch.yml.j2' under sno-post-cluster-install templates.
 
 #### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
@@ -151,9 +151,9 @@ When worikng with OCP development builds/nightly releases, it might be required 
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
-## Add/delete contents to the disconnected registry
-There might be use-cases when you want to add and delete images to/from the disconnected registry. For example, for the single stack IPv6 disconnect deployment, you deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjuction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the local registry.
-For example, this policy will map images on quay.io/XXX/client-server to the disconnected registry on perf176b, the bastion of this IPv6 disconnect cluster.
+## Add/delete contents to the bastion registry
+There might be use-cases when you want to add and delete images to/from the bastion registry. For example, for the single stack IPv6 disconnected deployment, the deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjunction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the bastion/mirror registry.
+For example, this policy will map images on quay.io/XXX/client-server to the mirror registry on perf176b, the bastion of this IPv6 disconnected cluster.
 ```yaml
 apiVersion: operator.openshift.io/v1alpha1
 kind: ImageContentSourcePolicy
@@ -168,9 +168,9 @@ spec:
 
 For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
 ```yaml
-oc image mirror -a /opt/registry/pull-secret-disconnected.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
+oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
-Once the image has succesfully mirrored onto the disconnect registry, your deployment will be able to create the container.
+Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
 
 For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
 
@@ -193,7 +193,7 @@ function rm_XXX_tag {
 ```
 
 ## Other Networks
-If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`. 
+If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
 2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
@@ -205,7 +205,7 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 * Network 5 = `controlplane_network_interface_idx: 4`
 ```
 3. Since the desired NIC in this exampls,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
-4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`. 
+4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`.
 ```
 ################################################################################
 # Extra vars
@@ -215,3 +215,48 @@ controlplane_network_interface_idx: 2
 ```
 ### Alternative method
 In case you are bringing your own lab, set `controlplane_network_interface` to the desired name, eg. `controlplane_network_interface: ens2f0`.
+
+## Configuring NVMe install and etcd disks
+
+If you require the install disk or etcd disk to be on a specific drive,
+they can be specified directly through the vars file `all.yml`.
+
+To ensure the drive will be correctly mapped at each boot,
+we will locate the `/dev/disk/by-path` link to each drive.
+
+```
+# Locate names of the drives identified on your system
+$ lsblk | grep nvme
+nvme3n1     259:0    0   1.5T  0 disk
+nvme2n1     259:1    0   1.5T  0 disk
+nvme1n1     259:2    0   1.5T  0 disk
+nvme0n1     259:3    0   1.5T  0 disk
+
+# Find the corresponding disk/by-path link
+$ ls -l /dev/disk/by-path/ | grep nvme
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b1:00.0-nvme-1 -> ../../nvme0n1
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b2:00.0-nvme-1 -> ../../nvme1n1
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b3:00.0-nvme-1 -> ../../nvme2n1
+lrwxrwxrwx. 1 root root  13 Aug 21 17:34 pci-0000:b4:00.0-nvme-1 -> ../../nvme3n1
+```
+
+Add these values to your extra vars section in the `all.yml` file.
+
+In this case we are installing on all NVMe drives,
+and will have configured our hosts for UEFI boot.
+
+`ansible/vars/all.yml`
+```yaml
+################################################################################
+# Extra vars
+################################################################################
+
+# Install disks
+# sno_install_disk: /dev/disk/by-path/...
+control_plane_install_disk: /dev/disk/by-path/pci-0000:b1:00.0-nvme-1
+worker_install_disk: /dev/disk/by-path/pci-0000:b1:00.0-nvme-1
+
+# Control plane etcd deployed on NVMe
+controlplane_nvme_device: /dev/disk/by-path/pci-0000:b2:00.0-nvme-1
+controlplane_etcd_on_nvme: true
+```

@@ -13,11 +13,11 @@ net_attach_def_name: net1
 net_attach_def_interface: bond0
 net_attach_def_range: 192.168.0.0/16
 
-# Performance-addon-operator vars_files
+# Performance-addon-operator and du profile vars
 install_performance_addon_operator: false
-kernel_rt: false
 hugepages_count: 16
+node: 0
 isolated_cpus: 2-47,50-95
-topology_manager_policy: restricted
 
 du_profile: false
+

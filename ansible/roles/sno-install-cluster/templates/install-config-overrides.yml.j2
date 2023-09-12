@@ -1,13 +1,25 @@
-{% if use_disconnected_registry | default(false) %}
+{% if openshift_version == "4.13" and du_profile %}
+capabilities:
+  baselineCapabilitySet: None
+  additionalEnabledCapabilities:
+  - marketplace
+  - NodeTuning
+{% endif %}
+{% if enable_fips | default(false) %}
+fips: true
+{% else %}
+fips: false
+{% endif %}
+{% if use_bastion_registry | default(false) %}
 imageContentSources:
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
+  - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-release
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
+  - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure
+  - {{ registry_host }}:{{ registry_port }}/edge-infrastructure
   source: quay.io/edge-infrastructure
 additionalTrustBundle: |
   {{ mirror_cert.content | b64decode | indent(width=2) }}

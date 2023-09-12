@@ -11,16 +11,16 @@
   - "{{ hv_vm_manifests_directory }}/standard/manifests"
   - "{{ hv_vm_manifests_directory }}/standard/siteconfigs"
 
-- name: Obtain pull-secret for disconnected
+- name: Obtain pull-secret for bastion registry
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   register: slurped_pull_secret
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Set pull-secret for disconnected
+- name: Set pull-secret for bastion registry
   set_fact:
     pull_secret: "{{ slurped_pull_secret.content }}"
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
 - name: Fast create directory for each cluster
   shell: |

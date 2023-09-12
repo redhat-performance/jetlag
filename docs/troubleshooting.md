@@ -6,7 +6,7 @@ _**Table of Contents**_
 - Bastion:
   - [Accessing services](#bastion---accessing-services)
   - [Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
-  - [Clean all container images from disconnected registry](#bastion---clean-all-container-images-from-disconnected-registry)
+  - [Clean all container images from bastion registry](#bastion---clean-all-container-images-from-bastion-registry)
 - Dell:
   - [Reset BMC / iDrac](#dell---reset-bmc--idrac)
 - Supermicro:
@@ -31,10 +31,10 @@ Several services are run on the bastion in order to automate the tasks that jetl
 * On-prem assisted-installer API - 8090
 * On-prem assisted-image-service - 8888
 * HTTP server - 8081
-* Container Registry (When disconnected) - 5000
+* Container Registry (When setup_bastion_registry=true) - 5000
 * HAProxy (When disconnected) - 6443, 443, 80
-* Gogs - Self-hosted Git (Disconnected and setup_gogs=true) - 10881 (http), 10022 (git)
-* Dnsmasq - 53
+* Gogs - Self-hosted Git (When setup_bastion_gogs=true) - 10881 (http), 10022 (git)
+* Dnsmasq / Coredns - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
 ```
@@ -43,7 +43,7 @@ AI API - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/
 HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
 ```
 
-Example accessing the disconnected registry and listing repositories:
+Example accessing the bastion registry and listing repositories:
 ```console
 [root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -80,7 +80,7 @@ podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{pr
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
 
-## Bastion - Clean all container images from disconnected registry
+## Bastion - Clean all container images from bastion registry
 
 If you are planning a redeploy with new versions and new container images it may make sense to clean all the old container images to start fresh. First [clean the pods and containers off the bastion following this](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines). Then remove the directory containing the images.
 
@@ -97,7 +97,7 @@ drwxr-xr-x. 2 root root   22 Jul 20 02:27 auth
 drwxr-xr-x. 2 root root   42 Jul 20 02:27 certs
 drwxr-xr-x. 3 root root   20 Jul 20 02:27 data
 -rwxr--r--. 1 root root  714 Jul 20 02:27 generate-cert.sh
--rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-disconnected.txt
+-rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-bastion.txt
 -rw-r--r--. 1 root root 2.9K Jul 20 02:27 pull-secret.txt
 drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 [root@f16-h11-000-1029p registry]# du -sh *
@@ -105,7 +105,7 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 8.0K    certs
 27G     data
 4.0K    generate-cert.sh
-4.0K    pull-secret-disconnected.txt
+4.0K    pull-secret-bastion.txt
 4.0K    pull-secret.txt
 48K     sync-acm-d
 [root@f16-h11-000-1029p registry]# rm -rf data/docker/
@@ -265,7 +265,7 @@ Other things to look at:
 1) Check the disk name (default in jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
 
 2) Did the machine boot the virtual media (management interface, i.e., idrac for Dell machines)?
-If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order). 
+If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order).
 Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
 
 ## Lab - Network pre-configuration
@@ -275,11 +275,11 @@ Before the OCP install and any boot order changes, ssh on the machines to nuke t
 
 ## Lab - Ipv4 to ipv6 cluster
 
-When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6: 
+When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6:
 
 ```
   nmcli c modify ens6f0 ipv6.method "disabled"
-  nmcli c show ens6f0 
+  nmcli c show ens6f0
   nmcli c show
   sysctl -p /etc/sysctl.d/ipv6.conf
   vi /etc/sysctl.conf
