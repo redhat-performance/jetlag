@@ -38,5 +38,5 @@
     - "{{ http_store_path }}/data:/var/www/html"
     - "{{ http_store_path }}/conf:/etc/httpd/conf"
     name: httpd
-    image: quay.io/repository/centos7/httpd-24-centos7
+    image: quay.io/centos7/httpd-24-centos7
     state: started
