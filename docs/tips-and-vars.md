@@ -16,7 +16,7 @@ _**Table of Contents**_
 Current jetlag lab use selects machines for roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You may have to create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
 
 ```yaml
-ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
+ocp_inventory_override: http://wiki.subdomain.example.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
 ```
 ## DU Profile for SNOs
 
@@ -196,7 +196,7 @@ function rm_XXX_tag {
 If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
-2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
+2. Look for your server model number in [your labs wiki page](http://docs.subdomain.example.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
 ```
 * Network 1 = `controlplane_network_interface_idx: 0`
 * Network 2 = `controlplane_network_interface_idx: 1`

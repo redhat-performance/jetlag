@@ -38,14 +38,14 @@ Several services are run on the bastion in order to automate the tasks that jetl
 
 Examples, change the FQDN to your bastion machine and open in your browser
 ```
-AI Gui - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8080/
-AI API - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/
-HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
+AI Gui - http://xxx-h11-000-1029p.subdomain.example.com:8080/
+AI API - http://xxx-h11-000-1029p.subdomain.example.com:8090/
+HTTP Server - http://xxx-h11-000-1029p.subdomain.example.com:8081/
 ```
 
 Example accessing the bastion registry and listing repositories:
 ```console
-[root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
+[root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://xxx-h11-000-1029p.subdomain.example.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   532  100   532    0     0    104      0  0:00:05  0:00:05 --:--:--   120

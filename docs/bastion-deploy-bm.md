@@ -15,19 +15,19 @@ _**Table of Contents**_
 
 ## Bastion setup
 
-1. Obtain your first machine from the allocation from the [scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
+1. Obtain your first machine from the allocation from the [scale lab wiki](http://wiki.subdomain.example.com/). You should have the URL if you were given an allocation in your environment.
 2. Copy your ssh keys to the designated bastion machine
 
 ```console
-[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.subdomain.example.com
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
-root@xxx-h01-000-r650.example.redhat.com's password:
+Warning: Permanently added 'xxx-h01-000-r650.subdomain.example.com,x.x.x.x' (ECDSA) to the list of known hosts.
+root@xxx-h01-000-r650.subdomain.example.com's password:
 
 Number of key(s) added: 2
 
-Now try logging into the machine, with:   "ssh 'root@xxx-h01-000-r650.example.redhat.com'"
+Now try logging into the machine, with:   "ssh 'root@xxx-h01-000-r650.subdomain.example.com'"
 and check to make sure that only the key(s) you wanted were added.
 [user@fedora ~]$
 ```
@@ -35,7 +35,7 @@ and check to make sure that only the key(s) you wanted were added.
 3. Update the version of RHEL that came on the bastion machine and reboot
 
 ```console
-[user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
+[user@fedora ~]$ ssh root@xxx-h01-000-r650.subdomain.example.com
 ...
 [root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 (Ootpa)
@@ -59,10 +59,10 @@ Dependencies resolved.
 ...
 Complete!
 [root@xxx-h01-000-r650 ~]# reboot
-Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed by remote host.
-Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed.
+Connection to xxx-h01-000-r650.subdomain.example.com closed by remote host.
+Connection to xxx-h01-000-r650.subdomain.example.com closed.
 ...
-[user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
+[user@fedora ~]$ ssh root@xxx-h01-000-r650.subdomain.example.com
 ...
 [root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.7 (Ootpa)
@@ -88,7 +88,7 @@ Enter same passphrase again:
 Your identification has been saved in /root/.ssh/id_rsa.
 Your public key has been saved in /root/.ssh/id_rsa.pub.
 The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-h01-000-r650.rdu2.scalelab.redhat.com
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-h01-000-r650.subdomain.example.com
 The key's randomart image is:
 +---[RSA 3072]----+
 ...
@@ -342,16 +342,16 @@ allocation_node_count=16
 supermicro_nodes=False
 
 [bastion]
-xxx-h01-000-r650.rdu2.scalelab.redhat.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.rdu2.scalelab.redhat.com
+xxx-h01-000-r650.subdomain.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.subdomain.example.com
 
 [bastion:vars]
 bmc_user=quads
 bmc_password=XXXXXXX
 
 [controlplane]
-xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
-xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
-xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
+xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.subdomain.example.com network_mac=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
+xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.subdomain.example.com network_mac=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
+xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.subdomain.example.com network_mac=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
 
 [controlplane:vars]
 role=master
@@ -418,7 +418,7 @@ Finally run the `bm-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.subdomain.example.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 

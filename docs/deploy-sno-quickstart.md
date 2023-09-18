@@ -86,7 +86,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
+Using the chart provided by the [scale lab here](http://docs.subdomain.example.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
 * `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
@@ -316,7 +316,7 @@ allocation_node_count=6
 supermicro_nodes=True
 
 [bastion]
-f12-h05-000-1029u.rdu2.scalelab.redhat.com ansible_ssh_user=root bmc_address=mgmt-f12-h05-000-1029u.rdu2.scalelab.redhat.com
+xxx-h05-000-1029u.subdomain.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h05-000-1029u.subdomain.example.com
 
 [bastion:vars]
 bmc_user=quads
@@ -342,7 +342,7 @@ bmc_password=xxxx
 
 [sno]
 # Single Node OpenShift Clusters
-f12-h06-000-1029u bmc_address=mgmt-f12-h06-000-1029u.rdu2.scalelab.redhat.com boot_iso=f12-h06-000-1029u.iso ip_address=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e network_mac=00:25:90:5f:5f:5b
+xxx-h06-000-1029u bmc_address=mgmt-xxx-h06-000-1029u.subdomain.example.com boot_iso=xxx-h06-000-1029u.iso ip_address=192.168.1.1 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e network_mac=00:25:90:5f:5f:5b
 
 [sno:vars]
 bmc_user=quads
@@ -375,8 +375,8 @@ Next run the `setup-bastion.yml` playbook ...
 We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
-[user@fedora jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
-Warning: Permanently added 'f12-h05-000-1029u.rdu2.scalelab.redhat.com,10.1.43.101' (ECDSA) to the list of known hosts.
+[user@fedora jetlag]$ scp root@xxx-h05-000-1029u.subdomain.example.com:/root/.ssh/id_rsa.pub .
+Warning: Permanently added 'xxx-h05-000-1029u.subdomain.example.com,10.1.43.101' (ECDSA) to the list of known hosts.
 id_rsa.pub                                                                                100%  554    22.6KB/s   00:00
 ```
 
@@ -389,7 +389,7 @@ Finally run the `sno-deploy.yml` playbook ...
 ...
 ```
 
-A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h05-000-1029u.subdomain.example.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 
