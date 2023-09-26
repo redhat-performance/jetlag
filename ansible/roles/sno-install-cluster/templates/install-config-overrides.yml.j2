@@ -1,4 +1,4 @@
-{% if openshift_version == "4.13" and du_profile %}
+{% if openshift_version in ["4.13","4.14"] and du_profile %}
 capabilities:
   baselineCapabilitySet: None
   additionalEnabledCapabilities:

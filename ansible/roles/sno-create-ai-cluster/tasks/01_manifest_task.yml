@@ -21,9 +21,6 @@
   - file_name: 03-sctp-machine-config-master.yaml
     template_name: 03-sctp-machine-config-master.yaml
     enabled: "{{ du_profile }}"
-  - file_name: 04-accelerated-container-startup-master.yaml
-    template_name: 04-accelerated-container-startup-master.yaml
-    enabled: "{{ du_profile }}"
   - file_name: 99-crio-disable-wipe-master.yaml
     template_name: 99-crio-disable-wipe-master.yaml
     enabled: "{{ du_profile }}"
@@ -31,7 +28,25 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version == "4.13" and du_profile
+  when: openshift_version not in ["4.13", "4.14"] and du_profile
+  with_items:
+  - file_name: 04-accelerated-container-startup-master.yaml
+    template_name: 04-accelerated-container-startup-master.yaml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version == "4.14" and du_profile
+  with_items:
+  - file_name: 08-set-rcu-normal-master.yaml
+    template_name: 08-set-rcu-normal-master.yaml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version in ["4.13", "4.14"] and du_profile
   with_items:
   - file_name: 05-kdump-config-master.yaml
     template_name: 05-kdump-config-master.yaml

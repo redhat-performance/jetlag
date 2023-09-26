@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,5 +10,9 @@ data:
       enabled: false
     alertmanagerMain:
       enabled: false
+{% if openshift_version == "4.14" %}
+    telemeterClient:
+      enabled: false
+{% endif %}
     prometheusK8s:
        retention: 24h
