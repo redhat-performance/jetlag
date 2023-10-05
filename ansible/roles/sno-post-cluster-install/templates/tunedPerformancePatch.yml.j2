@@ -25,7 +25,7 @@ spec:
         kernel.timer_migration=1
         [scheduler]
         group.ice-ptp=0:f:10:*:ice-ptp.*
-{% if openshift_version == "4.13" %}
+{% if openshift_version in ["4.13","4.14"] %}
         group.ice-gnss=0:f:10:*:ice-gnss.*
 {% endif %}
         [service]
