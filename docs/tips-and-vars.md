@@ -2,14 +2,43 @@
 
 _**Table of Contents**_
 <!-- TOC -->
+- [Network interface to vars table](#network-interface-to-vars-table)
 - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
-- [Add/delete contents to the bastion registry](#Add/delete-contents-to-the-bastion-registry)
-- [Using Other Network Interfaces](#Other-Networks)
+- [Add/delete contents to the bastion registry](#add-delete-contents-to-the-bastion-registry)
+- [Using other network interfaces](#using-other-network-interfaces)
 - [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
 <!-- /TOC -->
+
+
+## Network interface to vars table
+
+Values here reflect the default (Network 1 which maps to `controlplane_network_interface_idx: 0`). See this [section](#using-other-network-interfaces) to generate the proper inventory for a different network.
+
+**Scale Lab**
+
+| Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
+| ------------------ | --------------------- | ------------------------------ | -------------------------- |
+| Dell r650          | eno12399np0           | ens1f0                         | eno12399np0                |
+| Dell r640          | eno1np0               | ens1f0                         | eno1np0                    |
+| Dell fc640         | eno1                  | eno2                           | eno1                       |
+| Supermicro 1029p   | eno1                  | ens2f0                         | eno1                       |
+| Supermicro 5039ms  | enp2s0f0              | enp1s0f0                       | enp2s0f0                   |
+
+Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces).
+
+
+**Alias Lab**
+
+| Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
+| ------------------ | --------------------- | ------------------------------ | -------------------------- |
+| Dell r750          | eno8303               | ens3f0                         | eno8303                    |
+| Dell r740xd        | eno3                  | eno1                           | eno1np0                    |
+
+Alias lab chart is available [here](http://wiki.alias.bos.scalelab.redhat.com/faq/#Is_network_traffic_isolated).
+
 
 ## Override lab ocpinventory json file
 
@@ -107,6 +136,7 @@ isolated_cpus: 2-47,50-95
 
 # Number of hugepages of size 1G to be allocated on the SNO
 hugepages_count: 16
+```
 
 #### Tuned Performance Patch
 
@@ -192,7 +222,8 @@ function rm_XXX_tag {
 }
 ```
 
-## Other Networks
+## Using other network interfaces
+
 If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
@@ -213,6 +244,7 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 # Append override vars below
 controlplane_network_interface_idx: 2
 ```
+
 ### Alternative method
 In case you are bringing your own lab, set `controlplane_network_interface` to the desired name, eg. `controlplane_network_interface: ens2f0`.
 
