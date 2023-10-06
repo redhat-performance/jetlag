@@ -30,7 +30,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 | Hardware | BM  | RWN | SNO |
 | -------- | --- | --- | --- |
-| 740xd    | No  | No  | Yes |
+| 740xd    | Yes | No  | Yes |
 | Dell r750| Yes | No  | Yes |
 
 **Scale Lab**
@@ -92,7 +92,7 @@ Pre-reqs for Supermicro hardware:
 
 ## Cluster Deployment Usage
 
-There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:
+There are three main files to configure. The inventory file is generated but might have to be edited for specific scenario/hardware usage:
 
 * `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
 * `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com](https://console.redhat.com/)
@@ -111,11 +111,11 @@ Make sure to set/review the following vars:
 * `lab_cloud` - the cloud within the lab environment (Example: `cloud42`)
 * `cluster_type` - either `bm`, `rwn`, or `sno` for the respective cluster layout
 * `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
-* `public_vlan` - applies to sno cluster_types, set to be `true` only for public routable vlan deployment
+* `sno_node_count` - applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
+* `bastion_lab_interface` - set to the bastion machine's lab accessible interface
+* `bastion_controlplane_interface` - set to the interface in which the bastion will be networked to the deployed ocp cluster
 * `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
-* `controlplane_pub_network_cidr` and `controlplane_pub_network_gateway` - only required for public routable vlan based sno deployment to input lab public routable vlan network and gateway
-* `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
-* More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name.
+* More customization such as cluster_network and service_network can be supported as extra vars, check each ansible roles default vars file for variable names and options
 
 Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 

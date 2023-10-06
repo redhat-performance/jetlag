@@ -15,7 +15,7 @@ _**Table of Contents**_
   - [Failure of TASK SuperMicro Set Boot](#supermicro---failure-of-task-supermicro-set-boot)
 - Scalelab:
   - [Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
-  - [Upgrade RHEL to 8.6](#scalelab---upgrade-rhel-to-86)
+  - [Upgrade RHEL](#scalelab---upgrade-rhel)
 - Lab issues and how to go about them
   - [Boot mode](#lab---boot-mode)
   - [Boot order](#lab---boot-order)
@@ -148,17 +148,17 @@ The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
 - POLLING: [------------------->] 100% - Host state: On
 - INFO     - Command passed to On server, code return is 204.
 ```
-## Scalelab - Upgrade RHEL to 8.6
+## Scalelab - Upgrade RHEL
 
 On the bastion machine:
 
 ```console
-[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.6
-Changing repository from 8.2 to 8.6
+[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.7
+Changing repository from 8.2 to 8.7
 Cleaning dnf repo cache..
 
 -------------------------
-Run dnf update to upgrade to RHEL 8.6
+Run dnf update to upgrade to RHEL 8.7
 
 [root@f16-h21-000-1029p ~]# dnf update -y
 ...

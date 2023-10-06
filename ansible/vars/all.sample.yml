@@ -35,7 +35,7 @@ openshift_version: "4.12"
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
 
-# Enable FIPs
+# Enables FIPs security standard
 enable_fips: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
