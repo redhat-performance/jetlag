@@ -58,6 +58,7 @@ Versions:
 
 * Ansible 4.10+ (core >= 2.11.12) (on machine running jetlag playbooks)
 * ibmcloud cli => 2.0.1 (IBMcloud environments)
+* ibmcloud plugin install sl (IBMcloud environments)
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
