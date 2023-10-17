@@ -22,11 +22,12 @@ operators_to_sync:
   - local-storage-operator
   - ptp-operator
   - sriov-network-operator
-#  - openshift-gitops-operator
-#  - openshift-special-resource-operator
-#  - redhat-oadp-operator
-#  - topology-aware-lifecycle-manager
-#  - volsync-product
+#   - ansible-automation-platform-operator
+#   - openshift-gitops-operator
+#   - openshift-special-resource-operator
+#   - redhat-oadp-operator
+#   - topology-aware-lifecycle-manager
+#   - volsync-product
 - name: certified-operators
   operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.12
   operators:

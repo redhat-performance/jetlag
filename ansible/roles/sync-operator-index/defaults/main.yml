@@ -26,6 +26,7 @@ operators_to_sync:
   - local-storage-operator
   - ptp-operator
   - sriov-network-operator
+  - ansible-automation-platform-operator
   - openshift-gitops-operator
   - openshift-special-resource-operator
   - redhat-oadp-operator
