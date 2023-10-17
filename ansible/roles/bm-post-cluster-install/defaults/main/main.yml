@@ -16,6 +16,10 @@ registry_port: 5000
 # Deploy performance-dashboards
 setup_performance_dashboards: false
 
+# Deploy ansible-automation-platform operator
+setup_ansible_automation_platform: false
+aap_channel: stable-2.4-cluster-scoped
+
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
 gitops_channel: stable

@@ -16,6 +16,12 @@ imageContentSources:
 - mirrors:
   - {{ registry_host }}:{{ registry_port }}/edge-infrastructure
   source: quay.io/edge-infrastructure
+- mirrors:
+  - {{ registry_host }}:{{ registry_port }}/ansible-automation-platform
+  source: registry.redhat.io/ansible-automation-platform
+- mirrors:
+  - {{ registry_host }}:{{ registry_port }}/ansible-automation-platform-24
+  source: registry.redhat.io/ansible-automation-platform-24
 additionalTrustBundle: |
   {{ mirror_cert.content | b64decode | indent(width=2) }}
 {% endif %}
