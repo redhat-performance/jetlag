@@ -96,7 +96,7 @@ Pre-reqs for Supermicro hardware:
 There are three main files to configure. The inventory file is generated but might have to be edited for specific scenario/hardware usage:
 
 * `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
-* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com](https://console.redhat.com/)
+* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
 * `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
