@@ -122,7 +122,7 @@ Receiving objects: 100% (4510/4510), 831.98 KiB | 21.33 MiB/s, done.
 Resolving deltas: 100% (2450/2450), done.
 ```
 
-7. Download your pull_secret.txt from [console.redhat.com](https://console.redhat.com/) and place it in the root directory of jetlag
+7. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of jetlag
 
 ```console
 [root@xxx-h01-000-r650 jetlag]# cat pull_secret.txt
