@@ -96,7 +96,7 @@
 
 - name: Mirror origin-kube-rbac-proxy image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ origin_kube_rbac_proxy_image }} {{ registry_host }}:{{ registry_port }}/openshift/origin-kube-rbac-proxy:4.12 --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ origin_kube_rbac_proxy_image }}:{{ origin_kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift/origin-kube-rbac-proxy:{{ origin_kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror kube-rbac-proxy image
   shell: |
