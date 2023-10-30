@@ -51,6 +51,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Supermicro E5-2620       | Yes | Yes |
 | Lenovo ThinkSystem SR630 | Yes | Yes |
 
+For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
 
 ## Prerequisites
 
@@ -85,8 +86,6 @@ Installing Ansible via bootstrap (requires python3-pip)
 (.ansible) [root@xxx-xxx-xxx-r640 jetlag]#
 ```
 
-For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
-
 Pre-reqs for Supermicro hardware:
 
 * [SMCIPMITool](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI) downloaded to jetlag repo, renamed to `smcipmitool.tar.gz`, and placed under `ansible/`
@@ -102,8 +101,8 @@ There are three main files to configure. The inventory file is generated but mig
 Start by editing the vars
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
-[root@xxx-xxx-xxx-r640 jetlag]# vi ansible/vars/all.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# vi ansible/vars/all.yml
 ```
 
 Make sure to set/review the following vars:
@@ -121,7 +120,7 @@ Make sure to set/review the following vars:
 Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# cat pull_secret.txt
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat pull_secret.txt
 {
   "auths": {
 ...
@@ -130,13 +129,13 @@ Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 Run create-inventory playbook
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook ansible/create-inventory.yml
 ```
 
 Run setup-bastion playbook
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ```
 
 Run deploy for either bm/rwn/sno playbook with inventory created by create-inventory playbook
@@ -144,20 +143,20 @@ Run deploy for either bm/rwn/sno playbook with inventory created by create-inven
 Bare Metal Cluster:
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
 ```
 See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for BM install related issues
 
 Remote Worker Node Cluster:
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
 ```
 
 Single Node OpenShift:
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ```
 
 ## Quickstart guides
