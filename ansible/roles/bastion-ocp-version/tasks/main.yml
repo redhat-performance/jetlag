@@ -40,8 +40,16 @@
     dest: /usr/local/bin/kubectl
   when: setup_bastion | default(true)
 
+# Prevents errors when attempting to get the display/release name/version and the cluster
+# auth-ed by the config is inaccessible
+- name: Remove existing /root/.kube/config
+  file:
+    path: /root/.kube/config
+    state: absent
+
 - name: Get display/release name/version
   shell: |
+    unset KUBECONFIG
     {{ ocp_version_path }}/oc version -o json | jq -r .releaseClientVersion
   register: ocp_version_display_name
   failed_when: ocp_version_display_name.stderr != ''
