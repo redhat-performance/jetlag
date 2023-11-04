@@ -19,6 +19,11 @@ setup_performance_dashboards: false
 # Deploy ansible-automation-platform operator
 setup_ansible_automation_platform: false
 aap_channel: stable-2.4-cluster-scoped
+aap_enable_overrides: false
+# MAX_CONCURRENT_RECONCILES_ANSIBLEJOB_TOWER_ANSIBLE_COM
+aap_override_max_concurrent_ajt: 10
+# MAX_CONCURRENT_RECONCILES_ANSIBLEWORKFLOW_TOWER_ANSIBLE_COM
+aap_override_max_concurrent_awt: 10
 
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
