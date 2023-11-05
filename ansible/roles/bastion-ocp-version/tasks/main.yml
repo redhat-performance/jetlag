@@ -23,7 +23,7 @@
   shell: |
     cd {{ ocp_version_path }}
     rm -rf openshift-install-linux-*.tar.gz openshift-client-linux-*.tar.gz
-    oc.latest adm release extract --tools {{ ocp_release_image }}
+    REGISTRY_AUTH_FILE="/root/.docker/config.json" oc.latest adm release extract --tools {{ ocp_release_image }}
     tar -xvf openshift-install-linux-*.tar.gz openshift-install
     tar -xvf openshift-client-linux-*.tar.gz oc kubectl
 
