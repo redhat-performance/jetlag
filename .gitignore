@@ -5,4 +5,14 @@ kubeconfig
 id_rsa
 id_rsa.pub
 *.csv
+
+# IntelliJ project files
+.idea
+*.iws
+*.ipr
+*.iml
+out
+gen
 .idea/
+.idea/workspace.xml
+
