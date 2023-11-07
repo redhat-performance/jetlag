@@ -1,0 +1,38 @@
+---
+# hv-vm-manifests-compact default vars
+
+hv_vm_manifests_directory: /root/hv-vm
+
+# 64 is a prefix for ipv6, 24 would work for ipv4
+compact_cluster_network_host_prefix: 64
+
+# Compact clusters are 3 nodes
+compact_cluster_node_count: 3
+
+# DNS for compact clusters are offset by 4000 from the end of the ipv6 subnet
+compact_cluster_offset: 4000
+
+registry_path: /opt/registry
+
+# Used with bmc-secret
+bmc_username_base64: "{{ 'redhat' | b64encode }}"
+bmc_password_base64: "{{ 'password' | b64encode }}"
+
+# Used in conjunction with including the PerformanceProfile in the DU profile
+siteconfig_enable_cpuset: false
+siteconfig_cpuset: "0-3"
+
+# Enable fips via installConfigOverrides
+siteconfig_fips: false
+
+# Used in conjuntion with converged flow
+siteconfig_baremetalhost_override_converged_flow: false
+
+# Used with 4.12 when converged flow is enabled
+siteconfig_ironic_inspect: false
+
+# Used to enable observability in siteconfigs
+siteconfig_observability: false
+
+# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
+siteconfig_staticpod_fix: false

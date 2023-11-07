@@ -12,9 +12,9 @@ bmc_password={{ bmc_password }}
 [controlplane]
 # Network mac is the intended mac address of the private network to use for this cluster
 # Lab mac corresponds to the lab dhcp network, we disable the lab network for this type of cluster
-{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} network_mac={{ controlplane0_network_mac }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(5) }} vendor={{ controlplane0_vendor }}
-{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} network_mac={{ controlplane1_network_mac }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(6) }} vendor={{ controlplane1_vendor }}
-{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} network_mac={{ controlplane2_network_mac }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(7) }} vendor={{ controlplane2_vendor }}
+{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} network_mac={{ controlplane0_network_mac }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(5) }} vendor={{ controlplane0_vendor }} install_disk={{ control_plane_install_disk }}
+{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} network_mac={{ controlplane1_network_mac }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(6) }} vendor={{ controlplane1_vendor }} install_disk={{ control_plane_install_disk }}
+{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} network_mac={{ controlplane2_network_mac }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(7) }} vendor={{ controlplane2_vendor }} install_disk={{ control_plane_install_disk }}
 
 [controlplane:vars]
 role=master
@@ -39,7 +39,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 # rwn node.  In the lab case, we use vlans to separate each rwn node and allow the bastion machine
 # to route traffic between the control-plane nodes and the remote worker nodes
 {% for remoteworker in ocpinventory_rwn_nodes %}
-{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vendor={{ hw_vendor[(remoteworker.pm_addr.split('.')[0]).split('-')[-1]] }}
+{{ remoteworker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ remoteworker.pm_addr }} network_mac={{ remoteworker.mac[rwn_network_interface_idx] }} network_interface={{ rwn_network_interface }} vlan={{ rwn_vlan_start + loop.index - 1 }} ip={{ rwn_network_start | ipmath(loop.index * 4 - 2) }} gateway={{ rwn_network_start | ipmath(loop.index * 4 - 3) }} vendor={{ hw_vendor[(remoteworker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ remoteworker_install_disk }}
 {% endfor %}
 
 [remoteworker:vars]
@@ -76,14 +76,12 @@ network_prefix={{ controlplane_network_prefix }}
 {% for hv in ocpinventory_hv_nodes %}
 {% set hv_loop = loop %}
 {% for vm in range(hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]]['default']) %}
-{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location=/var/lib/libvirt/images{% if hv_vm_bandwidth_limit %} bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}{% endif %}
-
+{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location=/var/lib/libvirt/images bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}
 {% set ctr.vm = ctr.vm + 1 %}
 {% endfor %}
 {% if hv.disk2_enable %}
 {% for vm in range(hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hv.disk2_device]) %}
-{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index + hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]]['default'] }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location={{ disk2_mount_path }}/libvirt/images{% if hv_vm_bandwidth_limit %} bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}{% endif %}
-
+{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index + hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]]['default'] }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location={{ disk2_mount_path }}/libvirt/images bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}
 {% set ctr.vm = ctr.vm + 1 %}
 {% endfor %}
 {% endif %}
@@ -97,6 +95,7 @@ base_domain={{ base_dns_name }}
 machine_network={{ controlplane_network }}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
+bw_limit={{ hv_vm_bandwidth_limit }}
 {% else %}
 [hv]
 # Set `hv_inventory: true` to populate

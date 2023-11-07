@@ -1,0 +1,34 @@
+---
+# Jetlag storage related vars
+
+# Note for OCP 4.13 the symbolic link for disks will likely not work as disks can change symbolic links over reboots.
+# It is instead recommended to identify each node's WWID and use that with the path for /dev/disk/by-id/...
+# Example /dev/disk/by-id/wwn-0x5002538e015790e7
+# Also note to do this correctly you will need to modify the output of the create-inventory playbook. Edit and adjust
+# each machine's install_disk= to have the by-id reference instead of the symbolic reference
+# See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/managing_file_systems/index#device-identifiers_assembly_overview-of-persistent-naming-attributes
+
+# Default install disks for bm/rwn
+control_plane_install_disk: /dev/sda
+worker_install_disk: /dev/sda
+remoteworker_install_disk: /dev/sda
+
+# Default install disk for sno
+sno_install_disk: /dev/sda
+
+controlplane_etcd_on_nvme: false
+controlplane_nvme_device: /dev/nvme0n1
+controlplane_localstorage_configuration: false
+controlplane_localstorage_device: /dev/sdb
+controlplane_localstorage_lv_count: 10
+controlplane_localstorage_lv_size: 100G
+
+worker_localstorage_configuration: false
+worker_localstorage_device: /dev/nvme0n1
+worker_localstorage_lv_count: 10
+worker_localstorage_lv_size: 100G
+
+prometheus_retention_period: 15d
+
+localvolume2_configuration: false
+localvolume2_device: /dev/sdc

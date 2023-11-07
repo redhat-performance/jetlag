@@ -13,12 +13,19 @@
     msg: "Pull secret appears unset"
   when: pull_secret is not defined
 
+- name: Check for RHEL/Centos (Bastion Validation)
+  fail:
+    msg: "Expecting RHEL or Centos for a Bastion OS"
+  when:
+  - ansible_distribution is defined
+  - (ansible_distribution|lower != "redhat" and ansible_distribution|lower != "centos")
+
 - name: Check for RHEL 8.6 (Bastion Validation)
   fail:
     msg: "Upgrade to RHEL 8.6 for podman host network support"
   when:
   - ansible_distribution is defined
-  - (ansible_distribution|lower != "redhat" and ansible_distribution|lower != "centos") or ansible_distribution_version|float < 8.6
+  - (ansible_distribution|lower == "redhat" and ansible_distribution_version|float < 8.6)
 
 - name: Set worker_node_count if undefined or empty (bm/rwn)
   set_fact:

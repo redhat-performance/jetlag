@@ -150,17 +150,21 @@
         - --strip-components=1
   when: supermicro_nodes | default(true)
 
-- name: Get OpenShift clients, opm, kube-burner, grpcurl, and yq
+- name: Get CoreDNS, OpenShift clients, opm, kube-burner, grpcurl, and yq
   get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
+  - url: "{{ coredns_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
   - url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ openshift_client_url }}/latest/oc-mirror.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
+  - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
@@ -192,14 +196,16 @@
   - src: "{{ bastion_cluster_config_dir }}/kubectl"
     dest: /usr/local/bin/kubectl.latest
 
-- name: Untar opm, kube-burner and grpcurl client
+- name: Untar coredns, opm, kube-burner and grpcurl client
   unarchive:
     src: "{{ item }}"
     dest: /usr/local/bin
     remote_src: yes
     mode: 0700
   loop:
+  - "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
   - "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 

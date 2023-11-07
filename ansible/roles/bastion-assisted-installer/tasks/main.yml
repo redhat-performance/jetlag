@@ -2,52 +2,52 @@
 # bastion-assisted-installer tasks
 
 # Read the version json off the bastion machine
-- name: Obtain ocp_version data for assisted-installer without disconnected registry
+- name: Obtain ocp_version data for assisted-installer without bastion registry
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_openshift_version.json"
   register: slurped_ai_ocp_version
-  when: not (use_disconnected_registry | default(false))
+  when: not (use_bastion_registry | default(false))
 
-- name: Obtain os_images data for assisted-installer without disconnected registry
+- name: Obtain os_images data for assisted-installer without bastion registry
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_os_images.json"
   register: slurped_ai_os_images
-  when: not (use_disconnected_registry | default(false))
+  when: not (use_bastion_registry | default(false))
 
-- name: Obtain release_images data for assisted-installer without disconnected registry
+- name: Obtain release_images data for assisted-installer without bastion registry
   slurp:
     src: "{{ ocp_version_path }}/assisted_service_release_images.json"
   register: slurped_ai_release_images
-  when: not (use_disconnected_registry | default(false))
+  when: not (use_bastion_registry | default(false))
 
-- name: Obtain ocp_version data for assisted-installer with disconnected registry
+- name: Obtain ocp_version data for assisted-installer with bastion registry
   slurp:
-    src: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
-  register: slurped_ai_ocp_version_disconnected
-  when: use_disconnected_registry | default(false)
+    src: "{{ ocp_version_path }}/assisted_service_openshift_version-bastion.json"
+  register: slurped_ai_ocp_version_bastion
+  when: use_bastion_registry | default(false)
 
-- name: Obtain os_images data for assisted-installer with disconnected registry
+- name: Obtain os_images data for assisted-installer with bastion registry
   slurp:
-    src: "{{ ocp_version_path }}/assisted_service_os_images-disconnected.json"
-  register: slurped_ai_os_images_disconnected
-  when: use_disconnected_registry | default(false)
+    src: "{{ ocp_version_path }}/assisted_service_os_images-bastion.json"
+  register: slurped_ai_os_images_bastion
+  when: use_bastion_registry | default(false)
 
-- name: Obtain release_images data for assisted-installer with disconnected registry
+- name: Obtain release_images data for assisted-installer with bastion registry
   slurp:
-    src: "{{ ocp_version_path }}/assisted_service_release_images-disconnected.json"
-  register: slurped_ai_release_images_disconnected
-  when: use_disconnected_registry | default(false)
+    src: "{{ ocp_version_path }}/assisted_service_release_images-bastion.json"
+  register: slurped_ai_release_images_bastion
+  when: use_bastion_registry | default(false)
 
 - name: Ensure bastion machine is logged in to inspect image digest
   shell: |
-    skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ disconnected_registry_host }}:{{ disconnected_registry_port }}
-  when: use_disconnected_registry | default(false)
+    skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ registry_host }}:{{ registry_port }}
+  when: use_bastion_registry | default(false)
 
 - name: Determine digest for assisted-installer-controller image
   shell: |
-    skopeo inspect docker://{{ disconnected_registry_host }}:{{ disconnected_registry_port }}{{ assisted_installer_controller_image | replace('quay.io','') }} | jq -r .Digest
+    skopeo inspect docker://{{ registry_host }}:{{ registry_port }}{{ assisted_installer_controller_image | replace('quay.io','') }} | jq -r .Digest
   register: assisted_installer_controller_image_digest
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
 - name: Create directories for bastion assisted-installer
   file:

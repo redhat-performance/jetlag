@@ -1,0 +1,38 @@
+---
+# sync-operator-index default vars
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+registry_host: "{{ groups['bastion'][0] }}"
+registry_port: 5000
+
+sync_path: /opt/registry/sync
+
+registry_path: /opt/registry
+
+# Creates one index with operators from multiple container images
+
+# operator_index_name represents the destination operator index for the single catalog source (can contain images from multiple Red Hat provided operator catalogs eg.redhat-operators, certified-operators, based on the vars set below under operators_to_sync list)
+operator_index_name: redhat-operator-index
+
+# operator_index_tag represents the destination operator tag on the installed cluster (actual image tags can be found in the operator_index_container_image value under operators_to_sync)
+operator_index_tag: v4.13
+
+# These defaults match ACM/ZTP testing (4.13 SNO with 4.13 Operators). For SNO DU profile defaults, refer ansible/vars/sync-operator-index.sample.yml
+operators_to_sync:
+- name: redhat-operators
+  operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.13
+  operators:
+  - cluster-logging
+  - local-storage-operator
+  - ptp-operator
+  - sriov-network-operator
+  - ansible-automation-platform-operator
+  - openshift-gitops-operator
+  - openshift-special-resource-operator
+  - redhat-oadp-operator
+  - topology-aware-lifecycle-manager
+  - volsync-product
+#- name: certified-operators
+#  operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.13
+#  operators:
+#  - sriov-fec

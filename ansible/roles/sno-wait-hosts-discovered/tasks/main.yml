@@ -3,7 +3,7 @@
 
 - name: Wait for each cluster's node to be discovered
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -20,27 +20,22 @@
 
 - name: Set hostname
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item.item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_cluster_ids[item.item].infraenv_id }}/hosts/{{ item.json.hosts[0].id }}"
     method: PATCH
     body_format: json
     status_code: [201]
     return_content: true
     body: {
-        "hosts_names": [
-          {
-            id: "{{ item.json.hosts[0].id  }}",
-            hostname: "{{ item.item }}",
-            role: "master"
-          }
-        ]
+        "host_name": "{{ item.item }}",
+        "host_role": "master"
     }
   with_items: "{{ cluster.results }}"
   no_log: true
-  when: (public_vlan | default(false) | bool) or (lab in cloud_labs) or (use_disconnected_registry | default(false))
+  when: (public_vlan | default(false) | bool) or (lab in cloud_labs) or (use_bastion_registry | default(false))
 
 - name: Patch cluster network settings
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: PATCH
     status_code: [201]
     return_content: true
@@ -67,7 +62,7 @@
 
 - name: Wait for cluster(s) to be ready
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -80,13 +75,13 @@
 - name: Set install disk per SNO cluster
   include_tasks: set_install_disk.yml
   with_items:
-    - "{{ cluster.results }}"
+  - "{{ cluster.results }}"
   loop_control:
     loop_var: sno_cluster
 
 - name: Wait for cluster(s) to be ready for install
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: GET
     status_code: [200, 201]
     return_content: true

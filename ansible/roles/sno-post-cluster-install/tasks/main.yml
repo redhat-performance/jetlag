@@ -42,55 +42,83 @@
 
 - name: Get credentials (kubeconfig) from installed cluster(s)
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/files?file_name=kubeconfig"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ item.value.cluster_id }}/downloads/credentials?file_name=kubeconfig"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig"
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Get credentials (kubeadmin-password) from installed cluster(s)
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ item.value.cluster_id }}/downloads/files?file_name=kubeadmin-password"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ item.value.cluster_id }}/downloads/credentials?file_name=kubeadmin-password"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeadmin-password"
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Apply a label to the worker node(s)
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc label no --all --overwrite jetlag=true
+  register: jetlag_label
+  retries: 120
+  delay: 2
+  until: not jetlag_label.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Add kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create sa kubeburner
+  register: kubeburner_sa
+  retries: 120
+  delay: 2
+  until: not kubeburner_sa.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Add cluster-admin role to kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
+  register: kubeburner_role
+  retries: 120
+  delay: 2
+  until: not kubeburner_role.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
-- name: Disable default OperatorHub sources on disconnected clusters
+- name: Disable default OperatorHub sources on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+  register: operator_hub_disable
+  retries: 120
+  delay: 2
+  until: not operator_hub_disable.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
-- name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
+- name: Apply olm-mirror imageContentSourcePolicy on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
+  register: icsp_apply
+  retries: 120
+  delay: 2
+  until: not icsp_apply.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
-- name: Apply olm-mirror catalogSource on disconnected clusters
+- name: Apply olm-mirror catalogSource on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
+  register: catsource_apply
+  retries: 120
+  delay: 2
+  until: not catsource_apply.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
 - name: Setup NetworkAttachmentDefinition for 2nd pod network (macvlan type only)
   when: setup_network_attachment_definition
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/net-attach-def/network-attachment-definition.yml
+  register: net_att_def
+  retries: 120
+  delay: 2
+  until: not net_att_def.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Disable Network Diagnostics - Place DisableSnoNetworkDiag CR
@@ -103,6 +131,27 @@
 - name: Disable Network Diagnostics - Apply CR
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/DisableSnoNetworkDiag.yaml
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  register: netdiag_disable
+  retries: 120
+  delay: 2
+  until: not netdiag_disable.failed
+  when: du_profile
+
+- name: Reduce Monitoring Footprint - Place ReduceMonitoringFootprint CR
+  template:
+    src: ReduceMonitoringFootprint.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yml"
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile
+
+- name: Reduce Monitoring Footprint - Apply CR
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yaml
+  register: monitoring_footprint
+  retries: 120
+  delay: 2
+  until: not monitoring_footprint.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
@@ -155,6 +204,19 @@
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
 
+- name: Register the CONFIG name reported in "oc get mcp"
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.configuration.name'
+  register: config_name
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile and openshift_version == "4.13"
+
+- name: Print the CONFIG name, null if empty
+  debug:
+    msg: "{{ item.stdout }}"
+  loop: "{{ config_name.results }}"
+  when: du_profile and openshift_version == "4.13"
+
 - name: Wait until MachineConfigPools are updating
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $4}'
@@ -164,16 +226,33 @@
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
+  ignore_errors: yes
 
-- name: Wait until MachineConfigPools are updated
+- name: Wait until MachineConfigPools are updating/updated
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $3}'
   register: result
   delay: 10
-  retries: 180
+  retries: 360
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile
+
+- name: Wait until MachineConfigPools get a CONFIG
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o custom-columns=CONFIG:.status.configuration.name --no-headers
+  register: config_name
+  delay: 10
+  retries: 360
+  until: ("rendered" in config_name.stdout)
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: du_profile and openshift_version == "4.13"
+
+- name: Print the latest CONFIG name
+  debug:
+    msg: "{{ item.stdout }}"
+  loop: "{{ config_name.results }}"
+  when: du_profile and openshift_version == "4.13"
 
 - name: Apply the TunedPerformancePatch
   shell: |
@@ -193,14 +272,14 @@
   retries: 120
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
+  when: du_profile and openshift_version != "4.13"
 
 - name: Wait until MachineConfigPools are updated
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp --no-headers master | awk '{print $3}'
   register: result
   delay: 10
-  retries: 180
+  retries: 360
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
   when: du_profile

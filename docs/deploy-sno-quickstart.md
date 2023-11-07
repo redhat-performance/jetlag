@@ -73,8 +73,8 @@ Change `cluster_type` to `cluster_type: sno`
 
 Change `sno_node_count` to the number of SNOs that should be provisioned. For example `sno_node_count: 1`
 
-Change `ocp_release_image` to the desired image if the default (4.12.1) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.12`), then change `openshift_version` accordingly.
+Change `ocp_release_image` to the desired image if the default (4.13.17) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.13`), then change `openshift_version` accordingly.
 
 For the ssh keys we have a chicken before the egg problem in that our bastion machine won't be defined or ensure that keys are created until after we run `create-inventory.yml` and `setup-bastion.yml` playbooks. We will revisit that a little bit later.
 
@@ -189,7 +189,7 @@ No extra vars are needed for an ipv4 SNO cluster.
 
 If you want to deploy a disconnected ipv6 cluster then the following vars need to be set.
 
-Change `use_disconnected_registry` to `use_disconnected_registry: true` under "Bastion node vars"
+Change `setup_bastion_registry` to `setup_bastion_registry: true` and `use_bastion_registry` to `use_bastion_registry: true` under "Bastion node vars"
 
 Append the following "override" vars in "Extra vars"
 
@@ -240,10 +240,10 @@ public_vlan: false
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.12.1-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.13.17-x86_64
 
-# This should just match the above release image version (Ex: 4.12)
-openshift_version: "4.12"
+# This should just match the above release image version (Ex: 4.13)
+openshift_version: "4.13"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
@@ -267,11 +267,14 @@ bastion_controlplane_interface: ens2f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
-# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
-setup_gogs: false
+# Sets up Gogs a self-hosted git service on the bastion
+setup_bastion_gogs: false
+
+# Set to enable and sync container images into a container image registry on the bastion
+setup_bastion_registry: false
 
 # Use in conjunction with ipv6 based clusters
-use_disconnected_registry: false
+use_bastion_registry: false
 
 ################################################################################
 # OCP node vars

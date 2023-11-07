@@ -30,7 +30,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 | Hardware | BM  | RWN | SNO |
 | -------- | --- | --- | --- |
-| 740xd    | No  | No  | Yes |
+| 740xd    | Yes | No  | Yes |
 | Dell r750| Yes | No  | Yes |
 
 **Scale Lab**
@@ -51,6 +51,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Supermicro E5-2620       | Yes | Yes |
 | Lenovo ThinkSystem SR630 | Yes | Yes |
 
+For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
 
 ## Prerequisites
 
@@ -58,36 +59,32 @@ Versions:
 
 * Ansible 4.10+ (core >= 2.11.12) (on machine running jetlag playbooks)
 * ibmcloud cli => 2.0.1 (IBMcloud environments)
+* ibmcloud plugin install sl (IBMcloud environments)
 * RHEL 8.6 / Rocky 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Update to RHEL 8.6
+Update to RHEL 8.7
 ```console
-[root@f31-h05-000-r640]# ./update-latest-rhel-release.sh 8.6
-[root@f31-h05-000-r640]# dnf update -y
-[root@f31-h05-000-r640]# reboot
+[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.2 (Ootpa)
+
+[root@xxx-xxx-xxx-r640 ~]# ./update-latest-rhel-release.sh 8.7
+...
+[root@xxx-xxx-xxx-r640 ~]# dnf update -y
+...
+[root@xxx-xxx-xxx-r640 ~]# reboot
+...
+[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.7 (Ootpa)
 ```
 
 Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
-[root@f31-h05-000-r640 jetlag]# source bootstrap.sh
+[root@xxx-xxx-xxx-r640 jetlag]# source bootstrap.sh
 ...
-(.ansible) [root@f31-h05-000-r640 jetlag]#
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]#
 ```
-
-Installing Ansible via python3
-
-```console
-$ python3 -m venv .ansible       # Create a virtualenv if one does not already exist
-$ source .ansible/bin/activate   # Activate the virtual environment
-$ pip3 install --upgrade pip     # Ensure pip is updated
-$ pip3 install ansible netaddr   # Install the lastest version of ansible and netaddr library
-$ ansible-galaxy collection install ansible.utils
-```
-
-For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](docs/order-hardware-ibmcloud.md) in [docs](docs) directory.
-
 
 Pre-reqs for Supermicro hardware:
 
@@ -95,17 +92,17 @@ Pre-reqs for Supermicro hardware:
 
 ## Cluster Deployment Usage
 
-There are three main files to configure and one is generated but might have to be edited for specific desired scenario/hardware usage:
+There are three main files to configure. The inventory file is generated but might have to be edited for specific scenario/hardware usage:
 
 * `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
-* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com](https://console.redhat.com/)
+* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
 * `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
 
 ```console
-cp ansible/vars/all.sample.yml ansible/vars/all.yml
-vi ansible/vars/all.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# vi ansible/vars/all.yml
 ```
 
 Make sure to set/review the following vars:
@@ -114,16 +111,16 @@ Make sure to set/review the following vars:
 * `lab_cloud` - the cloud within the lab environment (Example: `cloud42`)
 * `cluster_type` - either `bm`, `rwn`, or `sno` for the respective cluster layout
 * `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
-* `public_vlan` - applies to sno cluster_types, set to be `true` only for public routable vlan deployment
+* `sno_node_count` - applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
+* `bastion_lab_interface` - set to the bastion machine's lab accessible interface
+* `bastion_controlplane_interface` - set to the interface in which the bastion will be networked to the deployed ocp cluster
 * `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
-* `controlplane_pub_network_cidr` and `controlplane_pub_network_gateway` - only required for public routable vlan based sno deployment to input lab public routable vlan network and gateway
-* `rwn_lab_interface` - applies only to rwn cluster type and should map to the nodes interface in which the lab provides dhcp to
-* More customization like cluster_network, service_network, rwn_vlan and rwn_networks can be supported as extra vars, check default files for variable name.
+* More customization such as cluster_network and service_network can be supported as extra vars, check each ansible roles default vars file for variable names and options
 
 Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 
 ```console
-[user@fedora jetlag]$ cat pull_secret.txt
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat pull_secret.txt
 {
   "auths": {
 ...
@@ -132,13 +129,13 @@ Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 Run create-inventory playbook
 
 ```console
-ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook ansible/create-inventory.yml
 ```
 
 Run setup-bastion playbook
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ```
 
 Run deploy for either bm/rwn/sno playbook with inventory created by create-inventory playbook
@@ -146,25 +143,25 @@ Run deploy for either bm/rwn/sno playbook with inventory created by create-inven
 Bare Metal Cluster:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
 ```
 See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for BM install related issues
 
 Remote Worker Node Cluster:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/rwn-deploy.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
 ```
 
 Single Node OpenShift:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/sno-deploy.yml
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ```
 
 ## Quickstart guides
 
-* [Deploy a Bare Metal cluster via jetlag quickstart guide](docs/deploy-bm-quickstart.md)
+* [Deploy a Bare Metal cluster via jetlag from a Scale Lab Bastion Machine quickstart](docs/bastion-deploy-bm.md)
 * [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag quickstart guide](docs/deploy-sno-quickstart.md)
 * [Deploy Single Node OpenShift (SNO) clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
