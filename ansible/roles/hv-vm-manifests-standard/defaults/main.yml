@@ -19,6 +19,9 @@ siteconfig_cpuset: "0-3"
 # Used in conjuntion with converged flow
 siteconfig_baremetalhost_override_converged_flow: false
 
+# Exclude manifests to sync time once via chronyd
+siteconfig_exclude_sync_time_once: false
+
 # Enable fips via installConfigOverrides
 siteconfig_fips: false
 
