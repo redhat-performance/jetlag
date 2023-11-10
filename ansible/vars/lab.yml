@@ -10,6 +10,9 @@ rh_labs:
 - alias
 - scalelab
 
+byol_labs:
+- byol
+
 labs:
   alias:
     dns:

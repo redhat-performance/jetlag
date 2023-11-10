@@ -35,8 +35,8 @@
     pod: http-store
     network: host
     volume:
-    - "{{ http_store_path }}/data:/var/www/html"
-    - "{{ http_store_path }}/conf:/etc/httpd/conf"
+    - "{{ http_store_path }}/data:/var/www/html:Z"
+    - "{{ http_store_path }}/conf:/etc/httpd/conf:Z"
     name: httpd
     image: quay.io/centos7/httpd-24-centos7
     state: started
