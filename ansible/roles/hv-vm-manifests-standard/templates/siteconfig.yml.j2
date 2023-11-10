@@ -13,6 +13,13 @@ spec:
   clusters:
   - clusterName: standard-{{ '%05d' | format(item) }}
     networkType: "OVNKubernetes"
+{% if siteconfig_exclude_sync_time_once %}
+    extraManifests:
+      filter:
+        exclude:
+        - 99-sync-time-once-master.yaml
+        - 99-sync-time-once-worker.yaml
+{% endif %}
 {% if siteconfig_fips %}
     installConfigOverrides: '{ "fips": true }'
 {% endif %}
