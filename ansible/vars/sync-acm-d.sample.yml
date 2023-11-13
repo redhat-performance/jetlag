@@ -3,13 +3,15 @@
 
 rhacm_build: 2.8.0-DOWNSTREAM-2023-04-25-22-18-13
 
-# Temporary fix to pull the correct image for this testing
 # ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator
 # ztp_site_generator_image_tag: 4.11.0
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
 ztp_site_generator_image_tag: v4.13.0-42
 
-# TALO - Topology Aware Lifecycle Operator used with DU profile
+rhacm_policy_generator_image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel8
+rhacm_policy_generator_image_tag: v2.7
+
+# TALM - Topology Aware Lifecycle Manager used with DU profile
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
 cluster_group_upgrades_operator_image_tag: 4.14.0
 cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
