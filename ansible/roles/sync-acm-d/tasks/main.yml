@@ -82,6 +82,10 @@
   shell: |
     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ ztp_site_generator_image }}:{{ ztp_site_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/ztp-site-generator:{{ ztp_site_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
+- name: Mirror rhacm policy generator image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/multicluster-operators-subscription-rhel8:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+
 - name: Mirror cluster-group-upgrades-operator image
   shell: |
     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_image }}:{{ cluster_group_upgrades_operator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator:{{ cluster_group_upgrades_operator_image_tag }} --keep-manifest-list --continue-on-error=true
