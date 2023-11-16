@@ -14,8 +14,10 @@ spec:
   - clusterName: compact-{{ '%05d' | format(item) }}
     networkType: "OVNKubernetes"
 {% if siteconfig_exclude_sync_time_once %}
+    extraManifestPath: extra-manifests
     extraManifests:
       filter:
+        inclusionDefault: include
         exclude:
         - 99-sync-time-once-master.yaml
         - 99-sync-time-once-worker.yaml
