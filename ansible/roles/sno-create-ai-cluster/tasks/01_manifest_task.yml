@@ -12,9 +12,6 @@
   - file_name: 06-kdump-master.yaml
     template_name: 06-kdump-master.yaml
     enabled: "{{ kdump_master_config }}"
-  - file_name: 99-master-workload-partitioning.yml
-    template_name: 99-master-workload-partitioning.yml
-    enabled: "{{ du_profile }}"
   - file_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
     template_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
     enabled: "{{ du_profile }}"
@@ -23,6 +20,15 @@
     enabled: "{{ du_profile }}"
   - file_name: 99-crio-disable-wipe-master.yaml
     template_name: 99-crio-disable-wipe-master.yaml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version not in ["4.14"] and du_profile
+  with_items:
+  - file_name: 99-master-workload-partitioning.yml
+    template_name: 99-master-workload-partitioning.yml
     enabled: "{{ du_profile }}"
 
 - include_role:
