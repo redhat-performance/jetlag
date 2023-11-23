@@ -1,17 +1,15 @@
 # Deploy a Bare Metal cluster via jetlag from a non-standard lab, BYOL (Bring Your Own Lab), quickstart
 
-Assuming you received a set of machines, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide, the systems will be Dell r660s and r670s all with RHEL 9.2 installed. The recommended way to use jetlag is directly off a bastion machine.
+Assuming you received a set of machines, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide, the systems will be Dell r660s and r760s with RHEL 9.2 installed. In a BYOL, due to the non-standard interface names and NIC PCI slots, we have to craft jetlag's inventory file by hand. In other words, if the machine types are not homogeneous, then you will have to manually edit the inventory file to correct any NIC names. Therefore, we recommend to group machines wisely to be the cluster's control-plane and worker nodes.
 
-In a BYOL, due to the non-standard interface names and NIC PCI slots, we have to craft jetlag's inventory file by hand.
-
-The bastion machine needs 2 interfaces:
+The recommended way to use jetlag is directly off a bastion machine, where the bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
 - The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
 
 The cluster machines need (at least) 1 interface:
 - The control-plane interface, from which other cluster nodes are accessed. 
 
-Since each node's NIC is on a L2 network, we can choose whichever L2 network to use as the control-plane network. 
+Since each node's NIC is on a L2 network, we can choose whichever L2 network is available as the control-plane network. 
 
 
 _**Table of Contents**_
@@ -109,12 +107,7 @@ Collecting pip
 
 7. Subsequent bastion setup attempts
 
-If you wish to install a different OCP version after having prepared your bastion, [clean up](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#bastion---clean-all-container-services--podman-pods) all running pods and rerun the `setup-bastion.yml` playbook:
-
-```console
-podman kill -a
-podman rm -a
-```
+If you wish to install a different OCP version after having prepared your bastion, [clean up](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#bastion---clean-all-container-services--podman-pods) all running pods and rerun the `setup-bastion.yml` playbook.
 
 
 
@@ -175,8 +168,6 @@ controlplane_lab_interface: eno8303
 controlplane_network_interface: eno12399
 ```
 
-** If your machine types are not homogeneous, then you will have to manually edit the inventory file to correct any NIC names.
-
 ### Extra vars
 
 No extra vars are needed for an ipv4 bare metal cluster.
@@ -188,7 +179,6 @@ The `all.yml` vars file and the `byol.yml` inventory file following this section
 The `ansible/vars/all.yml` now resembles ..
 
 ```yaml
----
 ---
 # Sample vars file
 ################################################################################
@@ -288,9 +278,10 @@ Choose wisely which server for which role: bastion, masters and workers. Make su
 - Record the names and MACs of their L3 network NIC to be used for the inventory.
 - Choose the control-plane NICs, the L2 NIC interface.
 - Record the interface names and MACs of the chosen control-plane interfaces.
-- Make sure you have root access to the bms, i.e., idrac for Dell. In the example below the bmc_user and bmc_password are set to root and password.
+- The correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks, e.g., pulling images from quay.io when `jetlag` has already touched `/etc/resolv.conf`, will fail.
+- Make sure you have root access to the bmc, i.e., idrac for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
 
-Now, copy the inventory file and edit it with the above info manually for your lab:
+Now, copy the inventory file and edit it with the above info manually from your lab:
 
 ```
 # Create inventory playbook will generate this for you much easier
@@ -349,8 +340,6 @@ dns2=<DNS network_mac>
 ```
 You can see the real example file for the above inventory [here](https://github.com/redhat-performance/jetlag/blob/main/ansible/inventory/inventory-bm-byol.sample).
 
-Note that the correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks towards the end, e.g., pulling images from quay.io, when jetlag has already touched `/etc/resolv.conf`, will fail.
-
 Next run the `setup-bastion.yml` playbook ...
 
 ```console
@@ -383,9 +372,9 @@ worker-1          Ready    worker                 39m   v1.27.6+f67aeb3
 
 ## Appendix - Troubleshooting, etc.:
 
-There are a few peculiarities that need to be mentioned to the user with a non-standard lab allocation and/or different versions of software, e.g., RHEL, we are used to more standardised labs:
+There are a few peculiarities that need to be mentioned to the user with a non-standard lab allocation and/or different versions of software, e.g., RHEL, we are used to more standardised labs.
 
-In jetlab, we divide the cluster installation process in two phases: (1) Setup the bastion machine and (2) the actual OCP installation.
+In `jetlag`, we divide the cluster installation process in two phases: (1) Setup the bastion machine and (2) the actual OCP installation.
 
 ### (1) Setup-bastion:
 - For `jetlag` to be able to copy, change the boot order, and boot the machines from the RHCOS image, the user needs to have writing access to the bmc, i.e., in the case of Dell machines it is idrac.
