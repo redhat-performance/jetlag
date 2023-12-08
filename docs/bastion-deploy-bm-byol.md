@@ -383,15 +383,6 @@ In `jetlag`, we divide the cluster installation process in two phases: (1) Setup
 
 - The task ''Stop and disable iptables'' failed because `dnf install iptables-services` and `systemctl start` needed to be done.
 
-- While `setup-bastion` can successfully finish, some pods did not come up showing "permission denied". In [blog](https://www.redhat.com/sysadmin/container-permission-denied-errors) SELinux seemed to be the cause when containers mount a writable volume, as starting the container manually (without mounting the volume) worked. The direct fix to this issue is appending the ":Z" flag at the end (instead of touching SELinux in general) in a few locations in `jetlag`:
-    - In `ansible/roles/bastion-assisted-installer/tasks/main.yml`:
-       - `/opt/assisted-service/data/postgresql:/var/lib/pgsql:Z`
-       - `/opt/assisted-service/nginx-ui.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf:Z`
-       - `/etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem:Z`
-    - In `ansible/roles/bastion-http/tasks/main.yml`:
-       - `{{ http_store_path }}/data:/var/www/html:Z`
-       - `{{ http_store_path }}/conf:/etc/httpd/conf:Z`
-
 ### (2) BM-Deploy:
 - The task "DELL - Insert Virtual Media" may fail. Silencing `firewalld` and `iptables` fixed it.
 

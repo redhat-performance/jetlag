@@ -63,7 +63,7 @@
   containers.podman.podman_container:
     pod: gogs
     volume:
-    - /opt/gogs:/data
+    - /opt/gogs:/data:Z
     name: gogs-service
     image: "{{ gogs_image }}"
     state: started

@@ -37,7 +37,7 @@
     executable: pip3
 
 - name: Scale / Alias lab bastion tasks
-  when: lab in rh_labs or lab not in byol_labs
+  when: lab in rh_labs
   block:
   - name: Clean lab interfaces
     shell: |

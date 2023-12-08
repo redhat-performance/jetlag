@@ -61,9 +61,9 @@
       REGISTRY_COMPATIBILITY_SCHEMA1_ENABLED: true
       REGISTRY_STORAGE_DELETE_ENABLED: true
     volume:
-    - "{{ registry_path }}/data:/var/lib/registry"
-    - "{{ registry_path }}/auth:/auth"
-    - "{{ registry_path }}/certs:/certs"
+    - "{{ registry_path }}/data:/var/lib/registry:Z"
+    - "{{ registry_path }}/auth:/auth:Z"
+    - "{{ registry_path }}/certs:/certs:Z"
     state: started
 
 - name: Template out pull-secret
