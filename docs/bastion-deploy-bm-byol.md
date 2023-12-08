@@ -356,7 +356,7 @@ Finally run the `bm-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080`), opening the consoles via the bmc, i.e., idrac for Dell, of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080/clusters`), opening the consoles via the bmc, i.e., idrac for Dell, of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
@@ -395,9 +395,12 @@ In `jetlag`, we divide the cluster installation process in two phases: (1) Setup
 ### (2) BM-Deploy:
 - The task "DELL - Insert Virtual Media" may fail. Silencing `firewalld` and `iptables` fixed it.
 
-- The task "Wait up to 40 min for nodes to be discovered" is the last most important step, make sure that the *boot order* (via the *boot type*) is correct: 
-  - Check the virtual console in the bmc, i.e., idrac for Dell, if the machines are booting correctly. 
-  - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. `jetlag` will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. In other words, check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.yml` above.
+- The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As workaround, one can set the machines to boot from the .iso via the virtual console.
+
+- The task "Wait up to 40 min for nodes to be discovered" is the last most important step. Make sure that the *boot order* (via the *boot type*) is correct: 
+  - Check the virtual console in the bmc, i.e., idrac for Dell, if the machines are booting correctly from the .iso image. 
+  - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. `jetlag` will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.yml` above.
+  - If the machines boot from the .iso image, but they cannot reach the bastion, it is most likely a networking issue, i.e. double check L2 and L3 NIC interfaces again.
      - [badfish](https://github.com/redhat-performance/badfish) could be used, however, it is limited to use only FQDN, and we also do not have the configuration for Del R660 and R760 in the interface config file yet.
 
 - In the assistant installer GUI, under cluster events, if you observe any *permission denied* error, it is related to the SELinux issue pointed out previously. If you however notice an issue related to *wrong booted device*, make sure to observe in your virtual console in the bmc, if the machines booted from the disk, and if the boot order contains the disk option. This is a classic boot order issue. The steps in the assistant installer are that the control-plane nodes will boot from the disk to be configured, and then join the control-plane "nominated" as the bootstrap node (this happens around 45-47% of the installation) to continue with the installation of the worker nodes.
