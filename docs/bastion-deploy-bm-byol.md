@@ -1,6 +1,8 @@
 # Deploy a Bare Metal cluster via jetlag from a non-standard lab, BYOL (Bring Your Own Lab), quickstart
 
-Assuming you received a set of machines, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide, the systems will be Dell r660s and r760s with RHEL 9.2 installed. In a BYOL, due to the non-standard interface names and NIC PCI slots, we have to craft jetlag's inventory file by hand. In other words, if the machine types are not homogeneous, then you will have to manually edit the inventory file to correct any NIC names. Therefore, we recommend to group machines wisely to be the cluster's control-plane and worker nodes.
+Assuming that you receive a set of machines to install OCP, this guide walks you through getting a bare-metal cluster installed on this allocation. For the purposes of the guide, the machines used are Dell r660s and r760s running RHEL 9.2. In a BYOL (or with any non-homogeneous allocation containing machines of different models) due to the non-standard interface names and NIC PCI slots, you must craft jetlag's inventory file by hand. 
+
+In other words, the `create-inventory` playbook is not used with BYOL. You must instead create your own inventory file manually, which means gathering information regarding the machines such as NIC names and MAC addresses. Therefore, thinking about simplifying this step, we recommend to group machines of same/similar models wisely to be the cluster's control-plane and worker nodes.
 
 The recommended way to use jetlag is directly off a bastion machine, where the bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
@@ -9,8 +11,9 @@ The recommended way to use jetlag is directly off a bastion machine, where the b
 The cluster machines need (at least) 1 interface:
 - The control-plane interface, from which other cluster nodes are accessed. 
 
-Since each node's NIC is on a L2 network, we can choose whichever L2 network is available as the control-plane network. 
+Since each node's NIC is on a L2 network, we can choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
 
+![BM BYOL Cluster](img/byol_cluster.png)
 
 _**Table of Contents**_
 
@@ -26,13 +29,11 @@ _**Table of Contents**_
 
 ## Bastion setup
 
-Sometimes your bastion may have undesirable settings such as `firewalld` or `iptables` with rules in place. These are recommended to be fixed, e.g., `firewalld` can be silenced and `iptables` cleaned.
+Sometimes your bastion may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
 
 1. Select your bastion machine from the allocation 
 
 2. Install some additional tools to help after reboot
-
-Also, make sure RHEL has repositories added and an active subscription, since `jetlag` will require some packages: `dnsmasq`, `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
 
 ```console
 [root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
@@ -105,12 +106,6 @@ Collecting pip
 (.ansible) [root@xxx-r660 jetlag]#
 ```
 
-7. Subsequent bastion setup attempts
-
-If you wish to install a different OCP version after having prepared your bastion, [clean up](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#bastion---clean-all-container-services--podman-pods) all running pods and rerun the `setup-bastion.yml` playbook.
-
-
-
 
 ## Create your custom vars all.yml
 
@@ -142,12 +137,12 @@ Only change `networktype` if you need to test something other than `OVNKubernete
 
 Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
-The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
+In case of BYOL, the lab itself determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
 * `bastion_lab_interface` should be the L2 NIC interface
 * `bastion_controlplane_interface` should be the L3 network NIC interface
 
-For Dell r660 set those vars to the following
+For Dell r660 from this guide, set those vars to the following:
 
 ```yaml
 bastion_lab_interface: eno8303
@@ -161,7 +156,7 @@ The system type determines the values of `controlplane_lab_interface`. Note that
 * `controlplane_lab_interface` should be the L2 NIC interface
 * `controlplane_network_interface` should be the L3 network NIC interface
 
-For Dell r660 set those vars to the following
+For Dell r660 from this guide, set those vars to the following:
 
 ```yaml
 controlplane_lab_interface: eno8303
@@ -172,11 +167,11 @@ controlplane_network_interface: eno12399
 
 No extra vars are needed for an ipv4 bare metal cluster.
 
-The `all.yml` vars file and the `byol.yml` inventory file following this section only reflect that of an ipv4 connected install. 
+Note that the `all.yml` and the `byol.local` inventory file following this section, only reflect that of an ipv4 connected install. 
 
 ## Review vars all.yml
 
-The `ansible/vars/all.yml` now resembles ..
+The `ansible/vars/all.yml` now resembles ...
 
 ```yaml
 ---
@@ -281,7 +276,7 @@ Choose wisely which server for which role: bastion, masters and workers. Make su
 - The correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks, e.g., pulling images from quay.io when `jetlag` has already touched `/etc/resolv.conf`, will fail.
 - Make sure you have root access to the bmc, i.e., idrac for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
 
-Now, copy the inventory file and edit it with the above info manually from your lab:
+Now, create the `/ansible/inventory/byol.local` inventory file and edit it with the info from above manually from your lab:
 
 ```
 # Create inventory playbook will generate this for you much easier
@@ -356,11 +351,12 @@ Finally run the `bm-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080/clusters`), opening the consoles via the bmc, i.e., idrac for Dell, of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot, or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080/clusters`), opening the consoles via the bmc, i.e., idrac for Dell, of each machine, and once the machines are booted, you can directly connect to them and tail log files.
 
-If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
+If everything goes well, you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
 ```console
+(.ansible) [root@xxx-r660]# export KUBECONFIG=/root/bm/kubeconfig
 (.ansible) [root@xxx-r660]# oc get no
 NAME              STATUS   ROLES                  AGE   VERSION
 control-plane-0   Ready    control-plane,master   36m   v1.27.6+f67aeb3
@@ -372,26 +368,31 @@ worker-1          Ready    worker                 39m   v1.27.6+f67aeb3
 
 ## Appendix - Troubleshooting, etc.:
 
-There are a few peculiarities that need to be mentioned to the user with a non-standard lab allocation and/or different versions of software, e.g., RHEL, we are used to more standardised labs.
+There are a few peculiarities that need to be mentioned for a non-standard lab allocation and/or different versions of software, e.g., RHEL:
 
 In `jetlag`, we divide the cluster installation process in two phases: (1) Setup the bastion machine and (2) the actual OCP installation.
 
-### (1) Setup-bastion:
-- For `jetlag` to be able to copy, change the boot order, and boot the machines from the RHCOS image, the user needs to have writing access to the bmc, i.e., in the case of Dell machines it is idrac.
+### (1) Setup bastion:
+- Make sure that the base operating system (in the case of this guide it was RHEL 9.2) in your bastion machine has repositories added and an active subscription, since `jetlag` requires some packages, such as: `dnsmasq`, `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
+
+- Sometimes the setup bastion process may fail, because it is not able to have connectivity between the assisted-service API and the target cluster machines. Check for `firewalld` or `iptables` with rules in place that prevent traffic between these machines. A quick test that fixes the problem is to silence and/or disable `firewalld` and clean `iptables` rules.
+
+- For `jetlag` to be able to copy, change the boot order, and boot the machines from the RHCOS image, the user needs to have writing access to the bmc, i.e., idrac in the case of Dell machines.
 
 - The installation disks on the machines could vary from SATA/SAS to NVME, and therefore the `/dev/disk/by-path` IDs will vary. 
 
-- The task ''Stop and disable iptables'' failed because `dnf install iptables-services` and `systemctl start` needed to be done.
+- The task ''Stop and disable iptables'' can fail because `dnf install iptables-services` and `systemctl start` need to be done.
 
 ### (2) BM-Deploy:
-- The task "DELL - Insert Virtual Media" may fail. Silencing `firewalld` and `iptables` fixed it.
+- The task "Dell - Insert Virtual Media" may fail. Silencing `firewalld` and `iptables` fixed it.
 
-- The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As workaround, one can set the machines to boot from the .iso via the virtual console.
+- The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines, where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As a workaround, one can set the machines to boot from the .iso, via the virtual console.
 
 - The task "Wait up to 40 min for nodes to be discovered" is the last most important step. Make sure that the *boot order* (via the *boot type*) is correct: 
   - Check the virtual console in the bmc, i.e., idrac for Dell, if the machines are booting correctly from the .iso image. 
-  - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. `jetlag` will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.yml` above.
+
+  - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. `jetlag` will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.local` above.
   - If the machines boot from the .iso image, but they cannot reach the bastion, it is most likely a networking issue, i.e. double check L2 and L3 NIC interfaces again.
-     - [badfish](https://github.com/redhat-performance/badfish) could be used, however, it is limited to use only FQDN, and we also do not have the configuration for Del R660 and R760 in the interface config file yet.
+     - [badfish](https://github.com/redhat-performance/badfish) could be used for this purpose, however, it is limited to use only FQDN, and, by the time of writing, the configuration for Del R660 and R760 in the interface config file was missing.
 
 - In the assistant installer GUI, under cluster events, if you observe any *permission denied* error, it is related to the SELinux issue pointed out previously. If you however notice an issue related to *wrong booted device*, make sure to observe in your virtual console in the bmc, if the machines booted from the disk, and if the boot order contains the disk option. This is a classic boot order issue. The steps in the assistant installer are that the control-plane nodes will boot from the disk to be configured, and then join the control-plane "nominated" as the bootstrap node (this happens around 45-47% of the installation) to continue with the installation of the worker nodes.

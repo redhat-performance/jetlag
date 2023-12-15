@@ -9,8 +9,6 @@ cloud_labs:
 rh_labs:
 - alias
 - scalelab
-
-byol_labs:
 - byol
 
 labs:
