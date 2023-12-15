@@ -2,7 +2,7 @@
 
 Assuming that you receive a set of machines to install OCP, this guide walks you through getting a bare-metal cluster installed on this allocation. For the purposes of the guide, the machines used are Dell r660s and r760s running RHEL 9.2. In a BYOL (or with any non-homogeneous allocation containing machines of different models) due to the non-standard interface names and NIC PCI slots, you must craft jetlag's inventory file by hand. 
 
-In other words, the `create-inventory` playbook is not used with BYOL. You must instead create your own inventory file manually, which means gathering information regarding the machines such as NIC names and MAC addresses. Therefore, thinking about simplifying this step, we recommend to group machines of same/similar models wisely to be the cluster's control-plane and worker nodes.
+In other words, the `create-inventory` playbook is not used with BYOL. You must instead create your own inventory file manually, which means gathering information regarding the machines such as NIC names and MAC addresses. Therefore, thinking about simplifying this step, it is recommended to group machines of same/similar models wisely to be the cluster's control-plane and worker nodes.
 
 The recommended way to use jetlag is directly off a bastion machine, where the bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
@@ -11,7 +11,7 @@ The recommended way to use jetlag is directly off a bastion machine, where the b
 The cluster machines need (at least) 1 interface:
 - The control-plane interface, from which other cluster nodes are accessed. 
 
-Since each node's NIC is on a L2 network, we can choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
+Since each node's NIC is on a L2 network, choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
 
 ![BM BYOL Cluster](img/byol_cluster.png)
 
@@ -29,9 +29,9 @@ _**Table of Contents**_
 
 ## Bastion setup
 
-Sometimes your bastion may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
+Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
 
-1. Select your bastion machine from the allocation 
+1. Select the bastion machine from the allocation 
 
 2. Install some additional tools to help after reboot
 
@@ -109,7 +109,7 @@ Collecting pip
 
 ## Create your custom vars all.yml
 
-Copy the vars file and edit it to create the inventory with your lab info:
+Copy the vars file and edit it to create the inventory with your BYOL lab info:
 
 ```console
 (.ansible) [root@xxx-r660 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
@@ -124,9 +124,9 @@ Change `lab_cloud` to `lab_cloud: na`
 
 Change `cluster_type` to `cluster_type: bm`
 
-Set `worker_node_count` it must be correct, we set it to `2` in our case. However, if you desire to limit the number of worker nodes from your scale lab allocation. Set it to `0` if you want a 3 node compact cluster.
+Set `worker_node_count` it must be correct, in this guide it is set to `2`. However, if you desire to limit the number of worker nodes. Set it to `0`, if you want a 3 node compact cluster.
 
-Set `sno_node_count` it must be correct, we set it to `0` in our case.
+Set `sno_node_count` it must be correct, in this guide it is set it to `0`.
 
 Change `ocp_release_image` to the desired image if the default (4.13.1) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.14`), then change `openshift_version` accordingly.
@@ -151,7 +151,7 @@ bastion_controlplane_interface: ens1f0
 
 ### OCP node vars
 
-The system type determines the values of `controlplane_lab_interface`. Note that in our crafted file, we added manually the following variable `controlplane_network_interface`.
+The system type determines the values of `controlplane_lab_interface`. Note that in the crafted file, the following variable was manually added: `controlplane_network_interface`.
 
 * `controlplane_lab_interface` should be the L2 NIC interface
 * `controlplane_network_interface` should be the L3 network NIC interface
@@ -276,7 +276,7 @@ Choose wisely which server for which role: bastion, masters and workers. Make su
 - The correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks, e.g., pulling images from quay.io when `jetlag` has already touched `/etc/resolv.conf`, will fail.
 - Make sure you have root access to the bmc, i.e., idrac for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
 
-Now, create the `/ansible/inventory/byol.local` inventory file and edit it with the info from above manually from your lab:
+Now, create the `/ansible/inventory/byol.local` inventory file and edit it with the info from above manually from your BYOL lab:
 
 ```
 # Create inventory playbook will generate this for you much easier
@@ -351,7 +351,7 @@ Finally run the `bm-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor your first deployment to see if anything hangs on boot, or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080/clusters`), opening the consoles via the bmc, i.e., idrac for Dell, of each machine, and once the machines are booted, you can directly connect to them and tail log files.
+It is suggested to monitor the first deployment to see if anything hangs on boot, or if the virtual media is incorrect according to the bmc. You can monitor the deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080/clusters`), opening the consoles via the bmc, i.e., idrac for Dell, of each machine, and once the machines are booted, you can directly connect to them and tail log files.
 
 If everything goes well, you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
@@ -370,10 +370,10 @@ worker-1          Ready    worker                 39m   v1.27.6+f67aeb3
 
 There are a few peculiarities that need to be mentioned for a non-standard lab allocation and/or different versions of software, e.g., RHEL:
 
-In `jetlag`, we divide the cluster installation process in two phases: (1) Setup the bastion machine and (2) the actual OCP installation.
+In `jetlag`, the cluster installation process is divided into two phases: (1) Setup the bastion machine and (2) the actual OCP installation.
 
 ### (1) Setup bastion:
-- Make sure that the base operating system (in the case of this guide it was RHEL 9.2) in your bastion machine has repositories added and an active subscription, since `jetlag` requires some packages, such as: `dnsmasq`, `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
+- Make sure that the base operating system (in the case of this guide it was RHEL 9.2) in the bastion machine has repositories added and an active subscription, since `jetlag` requires some packages, such as: `dnsmasq`, `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
 
 - Sometimes the setup bastion process may fail, because it is not able to have connectivity between the assisted-service API and the target cluster machines. Check for `firewalld` or `iptables` with rules in place that prevent traffic between these machines. A quick test that fixes the problem is to silence and/or disable `firewalld` and clean `iptables` rules.
 
@@ -395,4 +395,4 @@ In `jetlag`, we divide the cluster installation process in two phases: (1) Setup
   - If the machines boot from the .iso image, but they cannot reach the bastion, it is most likely a networking issue, i.e. double check L2 and L3 NIC interfaces again.
      - [badfish](https://github.com/redhat-performance/badfish) could be used for this purpose, however, it is limited to use only FQDN, and, by the time of writing, the configuration for Del R660 and R760 in the interface config file was missing.
 
-- In the assistant installer GUI, under cluster events, if you observe any *permission denied* error, it is related to the SELinux issue pointed out previously. If you however notice an issue related to *wrong booted device*, make sure to observe in your virtual console in the bmc, if the machines booted from the disk, and if the boot order contains the disk option. This is a classic boot order issue. The steps in the assistant installer are that the control-plane nodes will boot from the disk to be configured, and then join the control-plane "nominated" as the bootstrap node (this happens around 45-47% of the installation) to continue with the installation of the worker nodes.
+- In the assistant installer GUI, under cluster events, if you observe any *permission denied* error, it is related to the SELinux issue pointed out previously. If you however notice an issue related to *wrong booted device*, make sure to observe in the virtual console in the bmc, if the machines booted from the disk, and if the boot order contains the disk option. This is a classic boot order issue. The steps in the assistant installer are that the control-plane nodes will boot from the disk to be configured, and then join the control-plane "nominated" as the bootstrap node (this happens around 45-47% of the installation) to continue with the installation of the worker nodes.
