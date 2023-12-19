@@ -4,7 +4,7 @@ Assuming that you receive a set of machines to install OCP, this guide walks you
 
 In other words, the `create-inventory` playbook is not used with BYOL. You must instead create your own inventory file manually, which means gathering information regarding the machines such as NIC names and MAC addresses. Therefore, thinking about simplifying this step, it is recommended to group machines of same/similar models wisely to be the cluster's control-plane and worker nodes.
 
-The recommended way to use jetlag is directly off a bastion machine, where the bastion machine needs 2 interfaces:
+The bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
 - The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
 
@@ -31,7 +31,7 @@ _**Table of Contents**_
 
 Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
 
-1. Select the bastion machine from the allocation 
+1. Select the bastion machine from the allocation. The preferred way to run jetlag is directly off a bastion machine.
 
 2. Install some additional tools to help after reboot
 
