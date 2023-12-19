@@ -8,7 +8,7 @@ The bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
 - The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
 
-The cluster machines need (at least) 1 interface:
+The cluster machines need a minimum of 1 online private interface:
 - The control-plane interface, from which other cluster nodes are accessed. 
 
 Since each node's NIC is on a L2 network, choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
