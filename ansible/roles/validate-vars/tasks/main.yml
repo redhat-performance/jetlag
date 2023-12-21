@@ -3,7 +3,7 @@
 
 - name: Validate lab
   fail:
-    msg: "Invalid lab selected('{{ lab }}') Select from {{ rh_labs }} and {{ cloud_labs }} "
+    msg: "Invalid lab selected('{{ lab }}') Select from {{ rh_labs }} and {{ cloud_labs }}"
   when:
   - lab not in rh_labs
   - lab not in cloud_labs
