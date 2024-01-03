@@ -1,11 +1,12 @@
 ---
 # Jetlag storage related vars
 
-# Note for OCP 4.13 the symbolic link for disks will likely not work as disks can change symbolic links over reboots.
-# It is instead recommended to identify each node's WWID and use that with the path for /dev/disk/by-id/...
-# Example /dev/disk/by-id/wwn-0x5002538e015790e7
-# Also note to do this correctly you will need to modify the output of the create-inventory playbook. Edit and adjust
-# each machine's install_disk= to have the by-id reference instead of the symbolic reference
+# Note for OCP 4.13 and newer releases the symbolic link for disks may not work on multidisk systems as disks can change
+# symbolic links over reboots. Instead it is recommended to identify the by-path for each system type you have or by-id
+# for each individual system.
+# Examples "/dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0" and "/dev/disk/by-id/wwn-0x5002538e015790e7"
+# If your machines are not homogeous per role then you may need to modify the output of the create-inventory playbook.
+# Edit and adjust each machine's install_disk= to have the by-path/by-id reference instead of the symbolic reference
 # See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/managing_file_systems/index#device-identifiers_assembly_overview-of-persistent-naming-attributes
 
 # Default install disks for bm/rwn

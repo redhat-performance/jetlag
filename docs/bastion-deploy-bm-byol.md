@@ -1,6 +1,6 @@
 # Deploy a Bare Metal cluster via jetlag from a non-standard lab, BYOL (Bring Your Own Lab), quickstart
 
-Assuming that you receive a set of machines to install OCP, this guide walks you through getting a bare-metal cluster installed on this allocation. For the purposes of the guide, the machines used are Dell r660s and r760s running RHEL 9.2. In a BYOL (or with any non-homogeneous allocation containing machines of different models) due to the non-standard interface names and NIC PCI slots, you must craft jetlag's inventory file by hand. 
+Assuming that you receive a set of machines to install OCP, this guide walks you through getting a bare-metal cluster installed on this allocation. For the purposes of the guide, the machines used are Dell r660s and r760s running RHEL 9.2. In a BYOL (or with any non-homogeneous allocation containing machines of different models) due to the non-standard interface names and NIC PCI slots, you must craft jetlag's inventory file by hand.
 
 In other words, the `create-inventory` playbook is not used with BYOL. You must instead create your own inventory file manually, which means gathering information regarding the machines such as NIC names and MAC addresses. Therefore, thinking about simplifying this step, it is recommended to group machines of same/similar models wisely to be the cluster's control-plane and worker nodes.
 
@@ -9,7 +9,7 @@ The bastion machine needs 2 interfaces:
 - The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
 
 The cluster machines need a minimum of 1 online private interface:
-- The control-plane interface, from which other cluster nodes are accessed. 
+- The control-plane interface, from which other cluster nodes are accessed.
 
 Since each node's NIC is on a L2 network, choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
 
@@ -128,7 +128,7 @@ Set `worker_node_count` it must be correct, in this guide it is set to `2`. Howe
 
 Set `sno_node_count` it must be correct, in this guide it is set it to `0`.
 
-Change `ocp_release_image` to the desired image if the default (4.13.1) is not the desired version.
+Change `ocp_release_image` to the desired image if the default (4.14.7) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.14`), then change `openshift_version` accordingly.
 
 Only change `networktype` if you need to test something other than `OVNKubernetes`
@@ -167,7 +167,7 @@ controlplane_network_interface: eno12399
 
 No extra vars are needed for an ipv4 bare metal cluster.
 
-Note that the `all.yml` and the `byol.local` inventory file following this section, only reflect that of an ipv4 connected install. 
+Note that the `all.yml` and the `byol.local` inventory file following this section, only reflect that of an ipv4 connected install.
 
 ## Review vars all.yml
 
@@ -203,9 +203,9 @@ public_vlan: false
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.14.1-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.14.7-x86_64
 
-# This should just match the above release image version (Ex: 4.13)
+# This should just match the above release image version (Ex: 4.14)
 openshift_version: "4.14"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
@@ -317,7 +317,7 @@ role=worker
 boot_iso=discovery.iso
 bmc_user=root
 bmc_password=password
-lab_interface=<lab_mac interface name> 
+lab_interface=<lab_mac interface name>
 network_interface=<anything>
 network_prefix=24
 gateway=198.18.10.1
@@ -379,7 +379,7 @@ In `jetlag`, the cluster installation process is divided into two phases: (1) Se
 
 - For `jetlag` to be able to copy, change the boot order, and boot the machines from the RHCOS image, the user needs to have writing access to the bmc, i.e., idrac in the case of Dell machines.
 
-- The installation disks on the machines could vary from SATA/SAS to NVME, and therefore the `/dev/disk/by-path` IDs will vary. 
+- The installation disks on the machines could vary from SATA/SAS to NVME, and therefore the `/dev/disk/by-path` IDs will vary.
 
 - The task ''Stop and disable iptables'' can fail because `dnf install iptables-services` and `systemctl start` need to be done.
 
@@ -388,8 +388,8 @@ In `jetlag`, the cluster installation process is divided into two phases: (1) Se
 
 - The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines, where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As a workaround, one can set the machines to boot from the .iso, via the virtual console.
 
-- The task "Wait up to 40 min for nodes to be discovered" is the last most important step. Make sure that the *boot order* (via the *boot type*) is correct: 
-  - Check the virtual console in the bmc, i.e., idrac for Dell, if the machines are booting correctly from the .iso image. 
+- The task "Wait up to 40 min for nodes to be discovered" is the last most important step. Make sure that the *boot order* (via the *boot type*) is correct:
+  - Check the virtual console in the bmc, i.e., idrac for Dell, if the machines are booting correctly from the .iso image.
 
   - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. `jetlag` will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.local` above.
   - If the machines boot from the .iso image, but they cannot reach the bastion, it is most likely a networking issue, i.e. double check L2 and L3 NIC interfaces again.
