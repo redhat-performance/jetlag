@@ -1,6 +1,6 @@
 ---
 # Sample sync-ocp-release vars file
 
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.13.17-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.14.7-x86_64
 
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"

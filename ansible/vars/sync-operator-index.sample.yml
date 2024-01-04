@@ -11,12 +11,12 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 operator_index_name: redhat-operator-index
 
 # operator_index_tag represents the destination operator tag on the installed cluster (actual image tags can be found in the operator_index_container_image value under operators_to_sync)
-operator_index_tag: v4.13
+operator_index_tag: v4.14
 
 # All of the following operators apply as part of DU profile, sync-operator-index makes all the required DU operators available through a single catalog source
 operators_to_sync:
 - name: redhat-operators
-  operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.13
+  operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.14
   operators:
   - cluster-logging
   - local-storage-operator
@@ -29,7 +29,7 @@ operators_to_sync:
 #   - topology-aware-lifecycle-manager
 #   - volsync-product
 - name: certified-operators
-  operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.13
+  operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.14
   operators:
   - sriov-fec
 

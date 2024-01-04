@@ -39,7 +39,7 @@ standard_cluster_count: 0
 standard_cluster_node_count: 5
 
 # The cluster imageset used in the manifests
-cluster_image_set: openshift-4.13.17
+cluster_image_set: openshift-4.14.7
 
 # Include ACM CRs in the manifests
 hv_vm_manifest_acm_cr: false
