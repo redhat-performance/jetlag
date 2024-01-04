@@ -147,7 +147,7 @@
 
 - name: Reduce Monitoring Footprint - Apply CR
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yml
   register: monitoring_footprint
   retries: 120
   delay: 2
