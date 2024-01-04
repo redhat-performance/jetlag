@@ -25,7 +25,7 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version not in ["4.14"] and du_profile
+  when: openshift_version in ["4.9", "4.10", "4.11", "4.12", "4.13"]
   with_items:
   - file_name: 99-master-workload-partitioning.yml
     template_name: 99-master-workload-partitioning.yml
@@ -34,7 +34,7 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version not in ["4.13", "4.14"] and du_profile
+  when: openshift_version in ["4.9", "4.10", "4.11", "4.12"]
   with_items:
   - file_name: 04-accelerated-container-startup-master.yaml
     template_name: 04-accelerated-container-startup-master.yaml
@@ -43,7 +43,7 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version == "4.14" and du_profile
+  when: openshift_version == "4.14"
   with_items:
   - file_name: 08-set-rcu-normal-master.yaml
     template_name: 08-set-rcu-normal-master.yaml
@@ -52,7 +52,7 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version in ["4.13", "4.14"] and du_profile
+  when: openshift_version in ["4.13", "4.14"]
   with_items:
   - file_name: 05-kdump-config-master.yaml
     template_name: 05-kdump-config-master.yaml
