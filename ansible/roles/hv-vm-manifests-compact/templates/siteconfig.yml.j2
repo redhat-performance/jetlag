@@ -52,6 +52,15 @@ spec:
       BareMetalHost: "BareMetalHostOverride.yaml"
 {% endif %}
       KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
+{% if siteconfig_map_site_data %}
+    siteConfigMap:
+      name: site-compact-{{ '%05d' | format(item) }}
+      data:
+        sitekey1: "sitevalue1"
+        sitekey2: "sitevalue2"
+        sitekey3: "sitevalue3"
+        sitekey4: "sitevalue4"
+{% endif %}
     nodes:
 # "{{ (((item - 1) * compact_cluster_node_count) + sno_cluster_count) }} until {{ ((item * compact_cluster_node_count) - 1 + sno_cluster_count) }}"
 {% for vm in range(((item - 1) * compact_cluster_node_count) + sno_cluster_count, (item * compact_cluster_node_count) + sno_cluster_count, 1) %}

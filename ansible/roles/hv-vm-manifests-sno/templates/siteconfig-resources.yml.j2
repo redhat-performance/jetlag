@@ -22,3 +22,18 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ pull_secret }}
+{% if siteconfig_resource_site_data %}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # annotations:
+  #   argocd.argoproj.io/sync-wave: "2"
+  name: site-{{ inventory_hostname }}
+  namespace: {{ inventory_hostname }}
+data:
+  sitekey1: "sitevalue1"
+  sitekey2: "sitevalue2"
+  sitekey3: "sitevalue3"
+  sitekey4: "sitevalue4"
+{% endif %}

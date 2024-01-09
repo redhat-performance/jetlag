@@ -52,6 +52,15 @@ spec:
       BareMetalHost: "BareMetalHostOverride.yaml"
 {% endif %}
       KlusterletAddonConfig: "KlusterletAddonConfigOverride.yaml"
+{% if siteconfig_map_site_data %}
+    siteConfigMap:
+      name: site-standard-{{ '%05d' | format(item) }}
+      data:
+        sitekey1: "sitevalue1"
+        sitekey2: "sitevalue2"
+        sitekey3: "sitevalue3"
+        sitekey4: "sitevalue4"
+{% endif %}
     nodes:
 {% set offset = sno_cluster_count + (compact_cluster_count * 3) %}
 # "{{ (((item - 1) * standard_cluster_node_count) + offset) }} until {{ ((item * standard_cluster_node_count) - 1 + offset) }}"

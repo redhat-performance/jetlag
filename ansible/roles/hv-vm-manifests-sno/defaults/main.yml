@@ -25,11 +25,17 @@ siteconfig_exclude_sync_time_once: false
 # Enable fips via installConfigOverrides
 siteconfig_fips: false
 
-# Used with 4.12 SNOs when converged flow is enabled
-siteconfig_ironic_inspect: false
+# Used when converged flow is enabled
+siteconfig_ironic_inspect: true
+
+# One or the other, not both enabled as they each create the same configmap
+# One creates the configmap from data within the siteconfig (4.15 ZTP Site Generate required) as the other creates the
+# configmap from siteconfig-resource yaml data
+siteconfig_map_site_data: false
+siteconfig_resource_site_data: false
 
 # Used to enable observability in siteconfigs
-siteconfig_observability: false
+siteconfig_observability: true
 
 # Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
 siteconfig_staticpod_fix: false
