@@ -1,5 +1,9 @@
 ---
+{% if siteconfig_map_site_data %}
+apiVersion: ran.openshift.io/v2
+{% else %}
 apiVersion: ran.openshift.io/v1
+{% endif %}
 kind: SiteConfig
 metadata:
   name: {{ inventory_hostname }}
@@ -53,6 +57,7 @@ spec:
 {% if siteconfig_map_site_data %}
     siteConfigMap:
       name: site-{{ inventory_hostname }}
+      namespace: {{ inventory_hostname }}
       data:
         sitekey1: "sitevalue1"
         sitekey2: "sitevalue2"

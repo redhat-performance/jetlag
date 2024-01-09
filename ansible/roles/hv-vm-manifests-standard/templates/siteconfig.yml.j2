@@ -1,5 +1,9 @@
 ---
+{% if siteconfig_map_site_data %}
+apiVersion: ran.openshift.io/v2
+{% else %}
 apiVersion: ran.openshift.io/v1
+{% endif %}
 kind: SiteConfig
 metadata:
   name: standard-{{ '%05d' | format(item) }}
@@ -55,6 +59,7 @@ spec:
 {% if siteconfig_map_site_data %}
     siteConfigMap:
       name: site-standard-{{ '%05d' | format(item) }}
+      namespace: standard-{{ '%05d' | format(item) }}
       data:
         sitekey1: "sitevalue1"
         sitekey2: "sitevalue2"
