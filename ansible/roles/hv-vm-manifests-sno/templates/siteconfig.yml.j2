@@ -57,7 +57,7 @@ spec:
 {% if siteconfig_map_site_data %}
     siteConfigMap:
       name: site-{{ inventory_hostname }}
-      namespace: {{ inventory_hostname }}
+      namespace: {{ siteconfig_site_data_namespace }}
       data:
         sitekey1: "sitevalue1"
         sitekey2: "sitevalue2"

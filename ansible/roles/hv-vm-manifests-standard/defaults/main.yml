@@ -33,6 +33,8 @@ siteconfig_ironic_inspect: true
 # configmap from siteconfig-resource yaml data
 siteconfig_map_site_data: false
 siteconfig_resource_site_data: false
+# Place the site specific configmap data in this namespace
+siteconfig_site_data_namespace: ztp-group
 
 # Used to enable observability in siteconfigs
 siteconfig_observability: true
