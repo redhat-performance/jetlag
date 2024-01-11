@@ -59,7 +59,7 @@ spec:
 {% if siteconfig_map_site_data %}
     siteConfigMap:
       name: site-compact-{{ '%05d' | format(item) }}
-      namespace: compact-{{ '%05d' | format(item) }}
+      namespace: {{ siteconfig_site_data_namespace }}
       data:
         sitekey1: "sitevalue1"
         sitekey2: "sitevalue2"
