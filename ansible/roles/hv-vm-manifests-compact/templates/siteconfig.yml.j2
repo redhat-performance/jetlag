@@ -17,8 +17,8 @@ spec:
   clusters:
   - clusterName: compact-{{ '%05d' | format(item) }}
     networkType: "OVNKubernetes"
-{% if siteconfig_exclude_sync_time_once %}
     extraManifestPath: extra-manifests
+{% if siteconfig_exclude_sync_time_once %}
     extraManifests:
       filter:
         inclusionDefault: include
