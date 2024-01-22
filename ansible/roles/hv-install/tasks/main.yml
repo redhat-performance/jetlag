@@ -10,6 +10,7 @@
     - gcc
     - python3-devel
     - libvirt-devel
+    - rsync
     state: present
     update_cache: true
     disable_gpg_check: yes
