@@ -9,6 +9,7 @@ _**Table of Contents**_
   - [Clean all container images from bastion registry](#bastion---clean-all-container-images-from-bastion-registry)
 - Dell:
   - [Reset BMC / iDrac](#dell---reset-bmc--idrac)
+  - [Unable Mount Virtual Media](#dell---unable-mount-virtual-media)
 - Supermicro:
   - [Reset BMC / Resolving redfish connection error](#supermicro---reset-bmc--resolving-redfish-connection-error)
   - [Missing Administrator IPMI privileges](#supermicro---missing-administrator-ipmi-privileges)
@@ -120,6 +121,11 @@ sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example
 ```
 
 Substitute the user/password/hostname to perform the reset on a desired host. Note it will take a few minutes before the BMC will become available again.
+
+## Dell - Unable Mount Virtual Media
+
+In some cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual Console Plug-in Type being set as eHTML5 instead of HTML5. 
+To change this, navigate to Configuration -> Virtual Console -> Plug-in Type and select HTML5 instead of eHTML5.
 
 ## Scalelab - Fix boot order of machines
 
