@@ -26,8 +26,16 @@ spec:
         - 99-sync-time-once-master.yaml
         - 99-sync-time-once-worker.yaml
 {% endif %}
+{% if siteconfig_du_sno_install_config_overrides == "4.12" %}
+    installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\" ] }}"
+{% elif siteconfig_du_sno_install_config_overrides in ["4.13", "4.14"] %}
+    installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
+{% elif siteconfig_du_sno_install_config_overrides == "4.15" %}
+    installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"marketplace\", \"NodeTuning\" ] }}"
+{% else %}
 {% if siteconfig_fips %}
     installConfigOverrides: '{ "fips": true }'
+{% endif %}
 {% endif %}
     clusterLabels:
       common: 'true'
