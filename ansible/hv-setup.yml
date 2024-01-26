@@ -9,8 +9,8 @@
 - name: Setup hypervisors to host VMs
   hosts: hv
   vars_files:
-  - vars/hv.yml
   - vars/lab.yml
+  - vars/hv.yml
   roles:
   - name: install-tc
     when: install_tc

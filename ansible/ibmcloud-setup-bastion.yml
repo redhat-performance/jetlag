@@ -9,8 +9,8 @@
 - name: Setup an ibmcloud bastion machine
   hosts: bastion
   vars_files:
-  - vars/ibmcloud.yml
   - vars/lab.yml
+  - vars/ibmcloud.yml
   vars:
     assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
     bastion_controlplane_ip: "{{ hostvars[inventory_hostname]['private_address'] }}"

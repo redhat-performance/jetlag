@@ -10,8 +10,8 @@
 - name: Create 3 node cluster with assisted installer and join remote worker nodes
   hosts: bastion
   vars_files:
-  - vars/all.yml
   - vars/lab.yml
+  - vars/all.yml
   roles:
   - validate-vars
   - create-ai-cluster
