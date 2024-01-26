@@ -9,8 +9,8 @@
 - name: Creates a bare metal cluster with the assisted-installer
   hosts: bastion
   vars_files:
-  - vars/all.yml
   - vars/lab.yml
+  - vars/all.yml
   roles:
   - validate-vars
   - create-ai-cluster

@@ -9,8 +9,8 @@
 - name: Create SNO cluster(s)
   hosts: bastion
   vars_files:
-  - vars/all.yml
   - vars/lab.yml
+  - vars/all.yml
   roles:
   - validate-vars
   - sno-create-ai-cluster
