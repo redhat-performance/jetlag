@@ -32,7 +32,7 @@ metadata:
   name: standard-{{ '%05d' | format(item) }}
   namespace: standard-{{ '%05d' | format(item) }}
 spec:
-  baseDomain: {{ hostvars[groups['hv_vm'][0]]['base_domain'] }}
+  baseDomain: {{ hostvars[groups['hv_vm'][((item - 1) * standard_cluster_node_count)]]['base_domain'] }}
   clusterInstallRef:
     group: extensions.hive.openshift.io
     kind: AgentClusterInstall
@@ -63,12 +63,12 @@ spec:
   ingressVIP: {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (item * -2) - 1) }}
   networking:
     clusterNetwork:
-      - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][0]]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
+      - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][((item - 1) * standard_cluster_node_count)]]['hv_ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
         hostPrefix: {{ standard_cluster_network_host_prefix }}
     machineNetwork:
-      - cidr: {{ hostvars[groups['hv_vm'][0]]['machine_network'] }}
+      - cidr: {{  hostvars[groups['hv_vm'][((item - 1) * standard_cluster_node_count)]]['machine_network'] }}
     serviceNetwork:
-      - {{ "fd02::/112" if hostvars[groups['hv_vm'][0]]['ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
+      - {{ "fd02::/112" if hostvars[groups['hv_vm'][((item - 1) * standard_cluster_node_count)]]['hv_ip'] | ansible.utils.ipv6 else "172.30.0.0/16" }}
   provisionRequirements:
     controlPlaneAgents: 3
     workerAgents: {{ standard_cluster_node_count - 3 }}
@@ -101,7 +101,7 @@ spec:
   policyController:
     enabled: true
   searchCollector:
-    enabled: false
+    enabled: {{  manifest_searchcollector_enabled }}
 ---
 apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
@@ -110,7 +110,11 @@ metadata:
   labels:
     name: standard-{{ '%05d' | format(item) }}
     vendor: OpenShift
+{% if manifest_observability %}
+    observability: enabled
+{% else %}
     observability: disabled
+{% endif %}
     common: "true"
     group-du-standard: ""
 spec:
@@ -124,7 +128,7 @@ metadata:
   namespace: standard-{{ '%05d' | format(item) }}
 spec:
   additionalNTPSources:
-  - {{ hostvars[groups['hv_vm'][0]]['gateway'] }}
+  - {{ hostvars[groups['hv_vm'][((item - 1) * standard_cluster_node_count)]]['hv_ip'] }}
   clusterRef:
     name: standard-{{ '%05d' | format(item) }}
     namespace: standard-{{ '%05d' | format(item) }}
@@ -164,6 +168,13 @@ metadata:
   annotations:
     inspect.metal3.io: disabled
     bmac.agent-install.openshift.io/hostname: "{{ groups['hv_vm'][vm] }}"
+{% if 'role' in hostvars[groups['hv_vm'][vm]] %}
+{% if hostvars[groups['hv_vm'][vm]]['role'] == "master" %}
+    bmac.agent-install.openshift.io/role: "master"
+{% elif hostvars[groups['hv_vm'][vm]]['role'] == "infra" %}
+    bmac.agent-install.openshift.io.node-label.node-role.kubernetes.io/infra: ""
+{% endif %}
+{% endif %}
   labels:
     infraenvs.agent-install.openshift.io: "standard-{{ '%05d' | format(item) }}"
 spec:

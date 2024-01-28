@@ -41,3 +41,7 @@ siteconfig_observability: true
 
 # Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
 siteconfig_staticpod_fix: false
+
+# Standard cluster manifest features
+manifest_observability: true
+manifest_searchcollector_enabled: true
