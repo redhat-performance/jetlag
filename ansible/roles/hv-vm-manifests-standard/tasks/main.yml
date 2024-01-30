@@ -28,12 +28,17 @@
     mkdir -p {{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}
     {% endfor %}
 
-# Commented out because not currently tested
-# - name: Template a manifest per cluster
-#   template:
-#     src: manifest.yml.j2
-#     dest: "{{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}/manifest.yml"
-#   loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
+- name: Template complete manifests per cluster
+  template:
+    src: manifest.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}/manifest.yml"
+  loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
+
+- name: Template acm managedcluster manifests per cluster
+  template:
+    src: managedcluster.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}/managedcluster.yml"
+  loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
 
 - name: Template a siteconfig per cluster
   template:

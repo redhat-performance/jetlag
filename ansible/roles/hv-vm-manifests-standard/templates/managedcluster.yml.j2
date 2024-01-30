@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: standard-{{ '%05d' | format(item) }}
+  labels:
+    name: standard-{{ '%05d' | format(item) }}
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: standard-{{ '%05d' | format(item) }}
+  labels:
+    name: standard-{{ '%05d' | format(item) }}
+    vendor: OpenShift
+{% if manifest_observability %}
+    observability: enabled
+{% else %}
+    observability: disabled
+{% endif %}
+    common: "true"
+    group-du-standard: ""
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: standard-{{ '%05d' | format(item) }}
+  namespace: standard-{{ '%05d' | format(item) }}
+spec:
+  clusterName: standard-{{ '%05d' | format(item) }}
+  clusterNamespace: standard-{{ '%05d' | format(item) }}
+  clusterLabels:
+    cloud: auto-detect
+    vendor: auto-detect
+  applicationManager:
+    enabled: false
+  certPolicyController:
+    enabled: false
+  iamPolicyController:
+    enabled: false
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: {{ manifest_searchcollector_enabled }}
