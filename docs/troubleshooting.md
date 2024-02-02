@@ -7,6 +7,7 @@ _**Table of Contents**_
   - [Accessing services](#bastion---accessing-services)
   - [Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
   - [Clean all container images from bastion registry](#bastion---clean-all-container-images-from-bastion-registry)
+  - [Nodes are not being detected due to network issue](#bastion---nodes-are-not-being-detected-due-to-network-issue)
 - Dell:
   - [Reset BMC / iDrac](#dell---reset-bmc--idrac)
 - Supermicro:
@@ -78,6 +79,19 @@ Clean **all** containers (on your bastion machine):
 podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
 ```
 
+OR
+
+Clean only the containers that related to Jetlag:
+
+```console
+podman stop $(podman ps -q --filter "pod=assisted-service") 
+podman rm $(podman ps -a -q --filter "pod=assisted-service")
+podman stop $(podman ps -q --filter "pod=http-store")
+podman rm $(podman ps -a -q --filter "pod=http-store")
+podman pod rm assisted-service
+podman pod rm http-store
+```
+
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
 
 ## Bastion - Clean all container images from bastion registry
@@ -110,6 +124,15 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 48K     sync-acm-d
 [root@f16-h11-000-1029p registry]# rm -rf data/docker/
 ```
+
+## Bastion - Nodes are not being detected due to network issue
+
+If nodes are not being detected due to a network issue, run the following command on the bastion server:
+
+```console
+iptables -t nat -A POSTROUTING -o bond1 -j MASQUERADE
+```
+** This command must be run after each bastion server reboot
 
 ## Dell - Reset BMC / iDrac
 
