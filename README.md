@@ -41,7 +41,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Dell r640          | Yes | Yes | Yes |
 | Dell fc640         | Yes | No  | Yes |
 | Supermicro 1029p   | Yes | Yes | No  |
-| Supermicro 1029U   | No  | No  | Yes |
+| Supermicro 1029U   | Yes | No  | Yes |
 | Supermicro 5039ms  | Yes | No  | Yes |
 
 **IBMcloud**
