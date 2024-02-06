@@ -292,3 +292,16 @@ worker_install_disk: /dev/disk/by-path/pci-0000:b1:00.0-nvme-1
 controlplane_nvme_device: /dev/disk/by-path/pci-0000:b2:00.0-nvme-1
 controlplane_etcd_on_nvme: true
 ```
+
+**Note:** The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.  
+If your OpenShift version is based on RHEL9 (4.13+), you should install RHEL9 on the nodes
+first to ensure the paths are correct.  
+eg: `/dev/sda` - Seen on Supermicro 1029U
+```
+RHEL8:
+lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
+
+RHEL9:
+lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
+lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <---- Use this one
+```
