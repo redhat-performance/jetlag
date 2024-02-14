@@ -17,6 +17,8 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
+  - src: Corefile.hosts.j2
+    dest: /etc/coredns/Corefile.hosts
   - src: Corefile.j2
     dest: /etc/coredns/Corefile
   - src: 99-jetlag-dns.conf
