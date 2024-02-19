@@ -1,7 +1,7 @@
 # Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart
 
 To deploy a bare metal OpenShift cluster, order 6 machines from the [IBM bare metal server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm).
-For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](../docs/order-hardware-ibmcloud.md) in [docs](../docs) directory.
+For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](order-hardware-ibmcloud.md) in [docs](../docs) directory.
 The machines used to test this are of Server profile E5-2620 in DAL10 datacenter with automatic port redundancy. One machine will become the bastion, 3 machines will become control-plane nodes, and the remaining 2 nodes will be worker nodes. Ensure that you order either CentOS or RHEL machines with a new enough version (8.6) otherwise podman will not have host networking functionality. The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. The other machines can have a public ip address but it is not currently in use with this deployment method.
 
 Once your machines are delivered, login to the ibmcloud cli using the cut and paste link from the cloud portal. You should be able to list the machines from your local machine, for example:
@@ -33,11 +33,16 @@ Resolving deltas: 100% (704/704), done.
 [user@fedora ~]$ cd jetlag
 ```
 
-## Review Prerequisites and set pull-secret
+## Prerequisites
 
-Review the Ansible prerequisites on the [README](https://github.com/redhat-performance/jetlag#prerequisites).
+Source bootstrap to install/setup Ansible
 
-Recommended: run ansible inside virtual environment: ```source bootstrap.sh```
+```console
+[user@fedora jetlag]$ source bootstrap.sh
+Collecting pip
+...
+(.ansible) [user@fedora jetlag]$
+```
 
 Set your pull secret file `pull_secret.txt` in the base directory of the cloned jetlag repo. The contents should resemble this json:
 

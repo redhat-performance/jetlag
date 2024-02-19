@@ -8,7 +8,7 @@ Three separate layouts of clusters can be deployed:
 * RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
 * SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
-Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
+Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer service and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. The worker node count can also be 0 such that your bare metal cluster is a compact 3 node cluster with schedulable control-plane nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
 
 _**Table of Contents**_
 
@@ -24,7 +24,7 @@ _**Table of Contents**_
 
 ## Tested Labs/Hardware
 
-The listed hardware has been used for cluster deployments successfully. Potentially other hardware has been tested but just not documented here.
+The listed hardware has been used for cluster deployments successfully. Potentially other hardware has been tested but not documented here.
 
 **Alias Lab**
 
@@ -60,22 +60,23 @@ Versions:
 * Ansible 4.10+ (core >= 2.11.12) (on machine running jetlag playbooks)
 * ibmcloud cli => 2.0.1 (IBMcloud environments)
 * ibmcloud plugin install sl (IBMcloud environments)
-* RHEL 8.6 / Rocky 8.6 (Bastion)
+* RHEL >= 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Update to RHEL 8.7
+Update to RHEL 8.9
+
 ```console
 [root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 (Ootpa)
 
-[root@xxx-xxx-xxx-r640 ~]# ./update-latest-rhel-release.sh 8.7
+[root@xxx-xxx-xxx-r640 ~]# ./update-latest-rhel-release.sh 8.9
 ...
 [root@xxx-xxx-xxx-r640 ~]# dnf update -y
 ...
 [root@xxx-xxx-xxx-r640 ~]# reboot
 ...
 [root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.7 (Ootpa)
+Red Hat Enterprise Linux release 8.9 (Ootpa)
 ```
 
 Installing Ansible via bootstrap (requires python3-pip)
@@ -157,6 +158,30 @@ Single Node OpenShift:
 
 ```console
 (.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+```
+
+Interact with your cluster from your bastion machine:
+
+```console
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# oc get no
+NAME               STATUS   ROLES                         AGE    VERSION
+xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
+xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
+xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat /root/bm/kubeadmin-password
+xxxxx-xxxxx-xxxxx-xxxxx
+```
+
+And for SNO
+
+```console
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# export KUBECONFIG=/root/sno/xxx-h02-000-r650/kubeconfig
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# oc get no
+NAME      STATUS   ROLES                         AGE   VERSION
+xxx-h02-000-r650   Ready    control-plane,master,worker   30h   v1.28.6+0fb4726
+(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat /root/sno/xxx-h02-000-r650/kubeadmin-password
+xxxxx-xxxxx-xxxxx-xxxxx
 ```
 
 ## Quickstart guides
