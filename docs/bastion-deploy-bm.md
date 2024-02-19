@@ -32,7 +32,7 @@ and check to make sure that only the key(s) you wanted were added.
 [user@fedora ~]$
 ```
 
-3. Update the version of RHEL that came on the bastion machine and reboot
+3. Update the version of RHEL on the bastion machine and reboot
 
 ```console
 [user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
@@ -40,19 +40,19 @@ and check to make sure that only the key(s) you wanted were added.
 [root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 (Ootpa)
 
-[root@xxx-h01-000-r650 ~]# ./update-latest-rhel-release.sh 8.7
-Changing repository from 8.2 to 8.7
+[root@xxx-h01-000-r650 ~]# ./update-latest-rhel-release.sh 8.9
+Changing repository from 8.2 to 8.9
 Cleaning dnf repo cache..
 
 -------------------------
-Run dnf update to upgrade to RHEL 8.7
+Run dnf update to upgrade to RHEL 8.9
 
 [root@xxx-h01-000-r650 ~]# dnf update -y
 Updating Subscription Management repositories.
 Unable to read consumer identity
 This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-rhel87 AppStream                                                                                                                                              245 MB/s | 7.8 MB     00:00    
-rhel87 BaseOS                                                                                                                                                 119 MB/s | 2.4 MB     00:00    
+rhel89 AppStream                                                                                                                                              245 MB/s | 7.8 MB     00:00    
+rhel89 BaseOS                                                                                                                                                 119 MB/s | 2.4 MB     00:00    
 Extra Packages for Enterprise Linux 8 - x86_64                                                                                                                 14 MB/s |  14 MB     00:00    
 Last metadata expiration check: 0:00:01 ago on Tue 02 May 2023 06:58:15 PM UTC.
 Dependencies resolved.
@@ -65,10 +65,10 @@ Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed.
 [user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
 ...
 [root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.7 (Ootpa)
+Red Hat Enterprise Linux release 8.9 (Ootpa)
 ```
 
-4. Install some additional tools to help after reboot
+4. Install additional tools to help after reboot
 
 ```console
 [root@xxx-h01-000-r650 ~]# dnf install tmux git python3-pip sshpass -y
@@ -77,7 +77,7 @@ Updating Subscription Management repositories.
 Complete!
 ```
 
-5. Setup ssh keys on the bastion and copy to itself to permit local ansible interactions
+5. Setup ssh keys on the bastion to permit local ansible interactions
 
 ```console
 [root@xxx-h01-000-r650 ~]# ssh-keygen
@@ -159,9 +159,9 @@ Change `lab_cloud` to `lab_cloud: cloud99`
 
 Change `cluster_type` to `cluster_type: bm`
 
-Set `worker_node_count` if you desire to limit the number of worker nodes from your scale lab allocation. Set it to `0` if you want a 3 node compact cluster.
+Set `worker_node_count` to limit the number of worker nodes from your scale lab allocation. Set it to `0` if you want a 3 node compact cluster.
 
-Change `ocp_release_image` to the desired image if the default (4.14.7) is not the desired version.
+Change `ocp_release_image` to the intended image if the default (4.14.7) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.14`), then change `openshift_version` accordingly.
 
 Only change `networktype` if you need to test something other than `OVNKubernetes`
@@ -190,12 +190,12 @@ Here you can see a network diagram for the bare metal cluster on Dell r650 with 
 
 Double check your nic names with your actual bastion machine.
 
-** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
-See [tips and vars](https://github.com/redhat-performance/jetlag/blob/main/docs/tips-and-vars.md#Other-Networks) for more information
+** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append additional overrides to the extra vars portion of the all.yml vars file.
+See [tips and vars](tips-and-vars.md#using-other-network-interfaces) for more information
 
 ### OCP node vars
 
-The same chart provided by the scale lab for the bastion machine, is used to identify the nic names for `controlplane_lab_interface`.
+The same chart provided by the scale lab for the bastion machine, is used to identify the nic name for `controlplane_lab_interface`.
 
 * `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
 
@@ -420,7 +420,7 @@ Finally run the `bm-deploy.yml` playbook ...
 
 It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
-If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
+If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
 
 ```console
 (.ansible) [root@xxx-h01-000-r650 ~]# export KUBECONFIG=/root/bm/kubeconfig
@@ -429,4 +429,6 @@ NAME               STATUS   ROLES                         AGE    VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
 xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
 xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
+(.ansible) [root@xxx-h01-000-r650 jetlag]# cat /root/bm/kubeadmin-password
+xxxxx-xxxxx-xxxxx-xxxxx
 ```

@@ -124,7 +124,7 @@ Substitute the user/password/hostname to perform the reset on a desired host. No
 
 ## Dell - Unable Mount Virtual Media
 
-In some cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual Console Plug-in Type being set as eHTML5 instead of HTML5. 
+In some cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual Console Plug-in Type being set as eHTML5 instead of HTML5.
 To change this, navigate to Configuration -> Virtual Console -> Plug-in Type and select HTML5 instead of eHTML5.
 
 ## Scalelab - Fix boot order of machines
@@ -159,12 +159,12 @@ The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
 On the bastion machine:
 
 ```console
-[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.7
-Changing repository from 8.2 to 8.7
+[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.9
+Changing repository from 8.2 to 8.9
 Cleaning dnf repo cache..
 
 -------------------------
-Run dnf update to upgrade to RHEL 8.7
+Run dnf update to upgrade to RHEL 8.9
 
 [root@f16-h21-000-1029p ~]# dnf update -y
 ...

@@ -363,7 +363,7 @@ dns2=10.1.36.2
 # Unused
 ```
 
-** If your bastion machine is not running RHEL 8.6, you will have to upgrade following [this short procedure](troubleshooting.md#upgrade-rhel-to-86-in-scalelab).
+** If your bastion machine is not running RHEL 8.6 or newer, you will have to upgrade following [this short procedure](troubleshooting.md#scalelab---upgrade-rhel).
 
 Next run the `setup-bastion.yml` playbook ...
 
