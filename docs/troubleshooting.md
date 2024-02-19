@@ -3,28 +3,69 @@
 _**Table of Contents**_
 
 <!-- TOC -->
-- Bastion:
-  - [Accessing services](#bastion---accessing-services)
-  - [Clean all container services / podman pods](#bastion---clean-all-container-services--podman-pods)
-  - [Clean all container images from bastion registry](#bastion---clean-all-container-images-from-bastion-registry)
-- Dell:
-  - [Reset BMC / iDrac](#dell---reset-bmc--idrac)
-  - [Unable Mount Virtual Media](#dell---unable-mount-virtual-media)
-- Supermicro:
-  - [Reset BMC / Resolving redfish connection error](#supermicro---reset-bmc--resolving-redfish-connection-error)
-  - [Missing Administrator IPMI privileges](#supermicro---missing-administrator-ipmi-privileges)
-  - [Failure of TASK SuperMicro Set Boot](#supermicro---failure-of-task-supermicro-set-boot)
-- Scalelab:
-  - [Fix boot order of machines](#scalelab---fix-boot-order-of-machines)
-  - [Upgrade RHEL](#scalelab---upgrade-rhel)
-- Lab issues and how to go about them
-  - [Boot mode](#lab---boot-mode)
-  - [Boot order](#lab---boot-order)
-  - [Lab network pre-configuration](#lab---network-pre-configuration)
-  - [From an ipv4 to ipv6 cluster and vice-versa](#lab---ipv4-to-ipv6-cluster)
+- [Common Issues](#common-issues)
+  - [Running Jetlag after Jetski](#running-jetlag-after-jetski)
+  - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
+  - [Intermittent failures by repos or container registry](#intermittent-failures-by-repos-or-container-registry)
+  - [Root disk too small on bastion](#root-disk-too-small-on-bastion)
+- [Bastion](#bastion)
+  - [Accessing services](#accessing-services)
+  - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
+  - [Clean all container images from bastion registry](#clean-all-container-images-from-bastion-registry)
+  - [ipv4 to ipv6 deployed cluster and vice-versa](#ipv4-to-ipv6-deployed-cluster)
+- [Generic Hardware](#generic-hardware)
+  - [Minimum Supported Firmware Versions](#minimum-supported-firmware-versions)
+- [Dell](#dell)
+  - [Reset BMC / iDrac](#reset-bmc--idrac)
+  - [Unable Mount Virtual Media](#unable-mount-virtual-media)
+- [Supermicro](#supermicro)
+  - [Reset BMC / Resolving redfish connection error](#reset-bmc--resolving-redfish-connection-error)
+  - [Missing Administrator IPMI privileges](#missing-administrator-ipmi-privileges)
+  - [Failure of TASK SuperMicro Set Boot](#failure-of-task-supermicro-set-boot)
+- [Generic Lab](#generic-lab)
+  - [Boot mode](#boot-mode)
+  - [Lab network pre-configuration](#network-pre-configuration)
+- [Scalelab](#scalelab)
+  - [Fix boot order of machines](#fix-boot-order-of-machines)
+  - [Upgrade RHEL](#upgrade-rhel)
 <!-- /TOC -->
 
-## Bastion - Accessing services
+# Common Issues
+
+## Running Jetlag after Jetski
+
+If Jetlag is ran after attempting an installation with Jetski, there are several configuration items that are known to conflict and prevents successful install:
+
+* Polluted dnsmasq configuration and dns services (depending on if jetlag was ran dnsmasq or coredns via jetlag)
+* The Jetski configured virtual bridge network could cause additional networking headaches preventing successful install
+
+That may not be all of the conflicts, thus the preferred method to remediate this situation is to cleanly rebuild the RHEL OS running on the bastion machine for Jetlag.
+
+## Failed on Wait up to 40 min for nodes to be discovered
+
+If the playbook failed on the task [Wait up to 40 min for nodes to be discovered](https://github.com/redhat-performance/jetlag/blob/main/ansible/roles/wait-hosts-discovered/tasks/main.yml#L14) then open the assisted-installer gui page (http://$BASTION:8080) and see if any of the cluster's machines were discovered. If the intended cluster is a multi-node OpenShift cluster and zero nodes were discovered, then likely there is an issue with the network setup. The next step would be to confirm if the machines are reachable over the intended network using (ping and ssh). If they are not, then reconfirm the correct values for the following vars:
+
+```
+bastion_lab_interface
+bastion_controlplane_interface
+controlplane_lab_interface
+```
+
+If the machines are reachable, but never registered with the assisted-installer, then check if the assisted-installer-agent container image was pulled and running. You can inspect journal logs to see if this occurred. Possible failures or misconfiguration preventing progress here could be incorrect dns, bad pull-secret, or NAT on bastion is incorrect and not forwarding traffic.
+
+If some nodes correctly registered but some did not, then the missing nodes need to be individually diagnosed. On a missing node, check if the bmc actually mounted the virtual media. Typically the machine just requires a bmc reset due to not booting virtual media which is described in below sections. Another possibility includes non-functional hardware and thus the machine does not boot into the discovery image.
+
+## Intermittent failures by repos or container registry
+
+Since Jetlag has external dependencies on repos available by your machines as well as container images hosted in a container registry, it is possible that an intermittent failure, service outage, or network failure can cause a failed deployment. Check that your machines have working repository server configurations and that container registries in use are not experiencing an outage.  For example quay and Red Hat repos provide a public status check [status.redhat.com](https://status.redhat.com/)
+
+## Root disk too small on bastion
+
+For disconnected environments, the bastion machine will serve all OCP, operator and additional container images from its local disconnected registry. Some machines in the lab have been found to have root disks which are on the order of only 70G and can easily fill with 1 or 2 OCP releases synced. If the bastion is one of those machines, relocate `/opt` to a separate larger disk so the machines does not run out of space on the root disk.
+
+# Bastion
+
+## Accessing services
 
 Several services are run on the bastion in order to automate the tasks that jetlag performs. You can access them via the following ports:
 
@@ -69,11 +110,11 @@ Example accessing the bastion registry and listing repositories:
 }
 ```
 
-## Bastion - Clean all container services / podman pods
+## Clean all container services / podman pods
 
-In the event you believe your running containers on the bastion have incorrect data or you are deploying a new OCP version and need to remove the containers in order to rerun the `setup-bastion.yml` playbook.
+In the event your bastion's running containers have incorrect data or you are deploying a new OCP version and need to remove the containers in order to rerun the `setup-bastion.yml` playbook.
 
-Clean **all** containers (on your bastion machine):
+Clean **all** containers (on bastion machine):
 
 ```console
 podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
@@ -81,7 +122,7 @@ podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{pr
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
 
-## Bastion - Clean all container images from bastion registry
+## Clean all container images from bastion registry
 
 If you are planning a redeploy with new versions and new container images it may make sense to clean all the old container images to start fresh. First [clean the pods and containers off the bastion following this](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines). Then remove the directory containing the images.
 
@@ -112,7 +153,29 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 [root@f16-h11-000-1029p registry]# rm -rf data/docker/
 ```
 
-## Dell - Reset BMC / iDrac
+## Ipv4 to ipv6 deployed cluster
+
+When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding the bastion with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6:
+
+```console
+# nmcli c modify ens6f0 ipv6.method "disabled"
+# nmcli c show ens6f0
+# nmcli c show
+# sysctl -p /etc/sysctl.d/ipv6.conf
+# vi /etc/sysctl.conf
+# sysctl -p /etc/sysctl.d/ipv6.conf
+# reboot
+```
+
+# Generic Hardware
+
+## Minimum Supported Firmware Versions
+
+Review the [OpenShift documentation to understand what minimum firmware versions are required](https://docs.openshift.com/container-platform/4.14/installing/installing_bare_metal_ipi/ipi-install-prerequisites.html#ipi-install-firmware-requirements-for-installing-with-virtual-media_ipi-install-prerequisites) for HP and Dell hardware  based clusters to be deployed via Redfish virtual media.
+
+# Dell
+
+## Reset BMC / iDrac
 
 In some cases the Dell idrac might need to be reset per host. This can be done with the following command:
 
@@ -122,57 +185,14 @@ sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example
 
 Substitute the user/password/hostname to perform the reset on a desired host. Note it will take a few minutes before the BMC will become available again.
 
-## Dell - Unable Mount Virtual Media
+## Unable Mount Virtual Media
 
 In some cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual Console Plug-in Type being set as eHTML5 instead of HTML5.
 To change this, navigate to Configuration -> Virtual Console -> Plug-in Type and select HTML5 instead of eHTML5.
 
-## Scalelab - Fix boot order of machines
+# Supermicro
 
-If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
-
-```
-badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
-badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
-badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
-```
-
-Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
-
-Note that with badfish this is a one time operation, i.e., the boot order after a rebuild/reboot will return to the original value.
-
-Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for SCALE vs ALIAS lab.
-The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
-
-```console
-[user@fedora badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
-- INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
-- INFO     - PATCH command passed to update boot order.
-- INFO     - POST command passed to create target config job.
-- INFO     - Command passed to ForceOff server, code return is 204.
-- INFO     - Polling for host state: Not Down
-- POLLING: [------------------->] 100% - Host state: On
-- INFO     - Command passed to On server, code return is 204.
-```
-## Scalelab - Upgrade RHEL
-
-On the bastion machine:
-
-```console
-[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.9
-Changing repository from 8.2 to 8.9
-Cleaning dnf repo cache..
-
--------------------------
-Run dnf update to upgrade to RHEL 8.9
-
-[root@f16-h21-000-1029p ~]# dnf update -y
-...
-```
-
-Reboot afterwards and start from the `create-inventory.yml` playbook.
-
-## SuperMicro - Reset BMC / Resolving redfish connection error
+## Reset BMC / Resolving redfish connection error
 
 In some cases, issues during a deployment can be the result of a bmc issue. To reset a Supermicro bmc use `ipmitool` with the following example:
 
@@ -192,7 +212,7 @@ fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x ro
 Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The read operation timed out'"
 ```
 
-## Supermicro - Missing Administrator IPMI privileges
+## Missing Administrator IPMI privileges
 
 Error: The node product key needs to be activated for this device
 
@@ -210,7 +230,7 @@ Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
 ```
 
-The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset bmc [here](#supermicro---reset-bmc--resolving-redfish-connection-error).
+The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset bmc [here](#reset-bmc--resolving-redfish-connection-error).
 
 How to verify that ipmi privilege set to administrator level permissions
 
@@ -241,7 +261,7 @@ Machine `y.y.y.y` has the correct permissions.
 
 Expected result: Chassis Power is on
 
-## Supermicro - Failure of TASK SuperMicro Set Boot
+## Failure of TASK Supermicro Set Boot
 
 ```
 The property Boot is not in the list of valid properties for the resource.
@@ -251,14 +271,15 @@ This is caused by having an older BIOS version. The older BIOS version simply do
 
 When set to ignore the error, Jetlag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
 
-## Lab - Boot mode
+# Generic Lab
 
-In the ALIAS lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of bm or SNO cluster types. In the SCALE lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
+## Boot mode
+
+In the ALIAS lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of BM or SNO cluster types. In the SCALE lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
 
 ```
 badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute BootMode --value Uefi
 ```
-
 
 Symptoms to look for: The OCP installation will successfully write the RHEL CoreOS image to the node and boot it up, where the node will be discovered by the bastion. In the virtual console of the management interface during the booting step, you can see a banner indicating *virtual media*. However, the following steps, where the OCP installation happens, will fail with a jetlag retry timeout with an error similar to:
 
@@ -271,24 +292,58 @@ Other things to look at:
 1) Check the disk name (default in jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
 
 2) Did the machine boot the virtual media (management interface, i.e., idrac for Dell machines)?
-If the virtual media did not boot, it is most likely a *boot order* issue that is explained [here](#lab---boot-order).
+If the virtual media did not boot, it is most likely a *boot order* issue.
 Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
 
-## Lab - Network pre-configuration
+## Network pre-configuration
 
 You may receive machines from the lab team with some pre-assigned IP addresses, e.g., 198.xx.
 Before the OCP install and any boot order changes, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh*.
 
-## Lab - Ipv4 to ipv6 cluster
 
-When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding machines with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6:
+# Scalelab
+
+## Fix boot order of machines
+
+If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
 ```
-  nmcli c modify ens6f0 ipv6.method "disabled"
-  nmcli c show ens6f0
-  nmcli c show
-  sysctl -p /etc/sysctl.d/ipv6.conf
-  vi /etc/sysctl.conf
-  sysctl -p /etc/sysctl.d/ipv6.conf
-  reboot
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
+badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
 ```
+
+Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
+
+Note that with badfish this is a one time operation, i.e., the boot order after a rebuild/reboot will return to the original value.
+
+Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for SCALE vs ALIAS lab.
+The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
+
+```console
+[user@fedora badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
+- INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
+- INFO     - PATCH command passed to update boot order.
+- INFO     - POST command passed to create target config job.
+- INFO     - Command passed to ForceOff server, code return is 204.
+- INFO     - Polling for host state: Not Down
+- POLLING: [------------------->] 100% - Host state: On
+- INFO     - Command passed to On server, code return is 204.
+```
+## Upgrade RHEL
+
+On the bastion machine:
+
+```console
+[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.9
+Changing repository from 8.2 to 8.9
+Cleaning dnf repo cache..
+
+-------------------------
+Run dnf update to upgrade to RHEL 8.9
+
+[root@f16-h21-000-1029p ~]# dnf update -y
+...
+```
+
+Reboot afterwards and start from the `create-inventory.yml` playbook.
