@@ -17,6 +17,7 @@
     - httpd-tools
     - ipmitool
     - iproute-tc
+    - iptables-services
     - jq
     - make
     - net-tools
