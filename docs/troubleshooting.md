@@ -12,6 +12,7 @@ _**Table of Contents**_
   - [Failed on Wait for cluster to be ready](#failed-on-wait-for-cluster-to-be-ready)
   - [Failed on Adjust by-path selected install disk](#failed-on-adjust-by-path-selected-install-disk)
   - [Failed on Insert Virtual Media](#failed-on-insert-virtual-media)
+  - [Discovery ISO password for debugging](#discovery-iso-password-for-debugging)
 - [Bastion](#bastion)
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
@@ -273,6 +274,16 @@ Object value modified successfully
 racadm>>set iDRAC.VirtualMedia.Attached Attached
 [Key=iDRAC.Embedded.1#VirtualMedia.1]
 Object value modified successfully
+```
+
+## Discovery ISO password for debugging
+
+If you need to debug a host, you can setup a default password for `core` 
+by setting `discovery_iso_password` in `vars/all.yml`. The ISO will be modified
+via the [documented assisted-service method](https://github.com/openshift/assisted-service/blob/master/docs/set-discovery-password.md):
+
+```yaml
+discovery_iso_password: <PASS>
 ```
 
 # Bastion
