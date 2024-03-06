@@ -16,7 +16,11 @@ LABEL operators.operatorframework.io.index.configs.v1=/configs
 {% else %}
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
+{% if operator_index_tag in ["v4.15"] %}
+FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:{{ operator_index_tag }}
+{% else %}
 FROM registry.redhat.io/openshift4/ose-operator-registry:{{ operator_index_tag }}
+{% endif %}
 
 # Configure the entrypoint and command
 ENTRYPOINT ["/bin/opm"]
