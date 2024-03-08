@@ -20,7 +20,7 @@
       network_yaml: "{{ lookup('template', 'ibmcloud_nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'ibmcloud_mac_interface_map.json.j2')  }}"
   when:
-  - lab in rh_labs
+  - lab in cloud_labs
   - use_bastion_registry
 
 - name: Add {{ item }} ip config

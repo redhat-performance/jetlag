@@ -10,7 +10,7 @@ data:
       enabled: false
     alertmanagerMain:
       enabled: false
-{% if openshift_version == "4.14" %}
+{% if openshift_version is version('4.14', ">=") %}
     telemeterClient:
       enabled: false
 {% endif %}

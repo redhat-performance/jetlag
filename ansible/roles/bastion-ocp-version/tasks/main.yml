@@ -14,16 +14,6 @@
     content: "{{ pull_secret }}"
     dest: "/root/.docker/config.json"
 
-- name: RHEL version rhel9 check
-  set_fact:
-    rhel_version: "rhel9"
-  when: ansible_facts['distribution_version'] is version('9.0', '>=')
-
-- name: RHEL version rhel8 check
-  set_fact:
-    rhel_version: "rhel8"
-  when: ansible_facts['distribution_version'] is version('8.9', '<=')
-
 - name: Create directory for bastion ocp-version data
   file:
     path: "{{ ocp_version_path }}"

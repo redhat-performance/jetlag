@@ -85,8 +85,8 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
-Change `ocp_release_image` to the required image if the default (4.14.7) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.14`), then change `openshift_version` accordingly.
+Change `ocp_release_image` to the required image if the default (4.15.2) is not the desired version.
+If you change `ocp_release_image` to a different major version (Ex `4.15`), then change `openshift_version` accordingly.
 
 Only change `networktype` if you need to test something other than `OVNKubernetes`
 
@@ -143,10 +143,10 @@ sno_node_count:
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
 # the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.14.7-x86_64
+ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.15.2-x86_64
 
-# This should just match the above release image version (Ex: 4.14)
-openshift_version: "4.14"
+# This should just match the above release image version (Ex: 4.15)
+openshift_version: "4.15"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes

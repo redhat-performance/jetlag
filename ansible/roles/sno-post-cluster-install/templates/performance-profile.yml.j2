@@ -15,13 +15,13 @@ spec:
   - idle=poll
 {% endif %}
   - rcupdate.rcu_normal_after_boot=0
-{% if not openshift_version in ["4.9","4.10"] %}
+{% if openshift_version is version('4.11', ">=") %}
   - efi=runtime
 {% endif %}
-{% if not openshift_version in ["4.9","4.10","4.11"] %}
+{% if openshift_version is version('4.12', ">=") %}
   - module_blacklist=irdma
 {% endif %}
-{% if openshift_version in ["4.13","4.14"] %}
+{% if openshift_version is version('4.13', ">=") %}
   - "vfio_pci.enable_sriov=1"
   - "vfio_pci.disable_idle_d3=1"
 {% endif %}
@@ -56,7 +56,7 @@ spec:
   # To use the standard (non-realtime) kernel, set enabled to false
   realTimeKernel:
     enabled: true
-{% if openshift_version == "4.14" %}
+{% if openshift_version in ["4.14","4.15"] %}
   workloadHints:
     # WorkloadHints defines the set of upper level flags for different type of workloads.
     # See https://github.com/openshift/cluster-node-tuning-operator/blob/master/docs/performanceprofile/performance_profile.md#workloadhints
