@@ -162,8 +162,6 @@
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
-  - url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - url: "{{ openshift_client_url }}/latest/oc-mirror.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
@@ -174,6 +172,28 @@
     dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
   - url: "{{ yq_url }}"
     dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
+
+- name: Get rhel8 opm
+  get_url:
+    validate_certs: false
+    force: true
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+  with_items:
+  -  url: "{{ openshift_client_url }}/latest-4.14/opm-linux.tar.gz"
+     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  when: rhel_version == "rhel8"
+
+- name: Get rhel9 opm
+  get_url:
+    validate_certs: false
+    force: true
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+  with_items:
+  -  url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
+     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  when: rhel_version == "rhel9"
 
 # We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
 # likely not the actual version of the intended cluster, those specific clients

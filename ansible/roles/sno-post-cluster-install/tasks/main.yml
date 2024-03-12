@@ -89,7 +89,23 @@
   delay: 2
   until: not operator_hub_disable.failed
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: use_bastion_registry | default(false)
+  when: 
+    - use_bastion_registry | default(false)
+    - openshift_version is version('4.14', "<=") 
+    - du_profile
+
+- name: Create openshift-marketplace namespace for ocp 4.15 and higher releases
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create ns openshift-marketplace
+  register: marketplace_ns
+  retries: 120
+  delay: 2
+  until: not marketplace_ns.failed
+  loop: "{{ ai_cluster_ids | dict2items }}"
+  when: 
+    - use_bastion_registry | default(false)
+    - openshift_version is version('4.15', ">=")
+    - du_profile
 
 - name: Apply olm-mirror imageContentSourcePolicy on bastion registry clusters
   shell: |
@@ -209,13 +225,13 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.configuration.name'
   register: config_name
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile and openshift_version == "4.13"
+  when: du_profile and openshift_version is version('4.13', ">=")  
 
 - name: Print the CONFIG name, null if empty
   debug:
     msg: "{{ item.stdout }}"
   loop: "{{ config_name.results }}"
-  when: du_profile and openshift_version == "4.13"
+  when: du_profile and openshift_version is version('4.13', ">=")
 
 - name: Wait until MachineConfigPools are updating
   shell: |
@@ -246,13 +262,13 @@
   retries: 360
   until: ("rendered" in config_name.stdout)
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile and openshift_version == "4.13"
+  when: du_profile and openshift_version is version('4.13', ">=")
 
 - name: Print the latest CONFIG name
   debug:
     msg: "{{ item.stdout }}"
   loop: "{{ config_name.results }}"
-  when: du_profile and openshift_version == "4.13"
+  when: du_profile and openshift_version is version('4.13', ">=")
 
 - name: Apply the TunedPerformancePatch
   shell: |
@@ -272,7 +288,7 @@
   retries: 120
   until: result.stdout == "True"
   loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile and openshift_version != "4.13"
+  when: du_profile and openshift_version is version('4.12', "<=")
 
 - name: Wait until MachineConfigPools are updated
   shell: |

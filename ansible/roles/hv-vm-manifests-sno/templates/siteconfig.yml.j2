@@ -31,7 +31,7 @@ spec:
 {% elif siteconfig_du_sno_install_config_overrides in ["4.13", "4.14"] %}
     installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
 {% elif siteconfig_du_sno_install_config_overrides == "4.15" %}
-    installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"marketplace\", \"NodeTuning\" ] }}"
+    installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"NodeTuning\" ] }}"
 {% else %}
 {% if siteconfig_fips %}
     installConfigOverrides: '{ "fips": true }'
