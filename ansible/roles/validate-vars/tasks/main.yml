@@ -17,25 +17,15 @@
   fail:
     msg: "Expecting RHEL or Centos for a Bastion OS"
   when:
-  - ansible_distribution is defined
-  - (ansible_distribution|lower != "redhat" and ansible_distribution|lower != "centos")
+  - ansible_facts['distribution'] is defined
+  - (ansible_facts['distribution']|lower != "redhat" and ansible_facts['distribution']|lower != "centos")
 
 - name: Check for RHEL 8.6 (Bastion Validation)
   fail:
     msg: "Upgrade to RHEL 8.6 for podman host network support"
   when:
-  - ansible_distribution is defined
-  - (ansible_distribution|lower == "redhat" and ansible_distribution_version|float < 8.6)
-
-- name: RHEL version rhel9 check
-  set_fact:
-    rhel_version: "rhel9"
-  when: ansible_facts['distribution_version'] is version('9.0', '>=')
-
-- name: RHEL version rhel8 check
-  set_fact:
-    rhel_version: "rhel8"
-  when: ansible_facts['distribution_version'] is version('9.0', '<')
+  - ansible_facts['distribution'] is defined
+  - (ansible_facts['distribution']|lower == "redhat" and ansible_facts['distribution_version'] is version('8.6', '<'))
 
 - name: Set worker_node_count if undefined or empty (bm/rwn)
   set_fact:
