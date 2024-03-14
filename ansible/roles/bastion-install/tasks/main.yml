@@ -182,7 +182,7 @@
   with_items:
   -  url: "{{ openshift_client_url }}/latest-4.14/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
-  when: rhel_version == "rhel8"
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
 
 - name: Get rhel9 opm
   get_url:
@@ -193,7 +193,7 @@
   with_items:
   -  url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
-  when: rhel_version == "rhel9"
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
 
 # We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
 # likely not the actual version of the intended cluster, those specific clients
