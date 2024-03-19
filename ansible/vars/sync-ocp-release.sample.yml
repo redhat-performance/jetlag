@@ -3,4 +3,7 @@
 
 ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.15.2-x86_64
 
+# This should just match the above release image version (Ex: 4.15)
+openshift_version: "4.15"
+
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"

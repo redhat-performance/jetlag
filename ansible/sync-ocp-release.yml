@@ -10,7 +10,7 @@
 
 - name: Sync OCP release container images into bastion registry
   hosts: bastion
-  gather_facts: false
+  gather_facts: true
   vars_files:
   - vars/sync-ocp-release.yml
   roles:
