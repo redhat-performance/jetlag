@@ -12,6 +12,7 @@ _**Table of Contents**_
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
   - [Clean all container images from bastion registry](#clean-all-container-images-from-bastion-registry)
+  - [Rebooted Bastion](#rebooted-bastion)
   - [ipv4 to ipv6 deployed cluster and vice-versa](#ipv4-to-ipv6-deployed-cluster)
 - [Generic Hardware](#generic-hardware)
   - [Minimum Supported Firmware Versions](#minimum-supported-firmware-versions)
@@ -124,7 +125,7 @@ When replacing the ocp version, just remove the assisted-installer pod and conta
 
 ## Clean all container images from bastion registry
 
-If you are planning a redeploy with new versions and new container images it may make sense to clean all the old container images to start fresh. First [clean the pods and containers off the bastion following this](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines). Then remove the directory containing the images.
+If you are planning a redeploy with new versions and new container images it may make sense to clean all the old container images to start fresh. First [clean the pods and containers off the bastion following this](troubleshooting.md#clean-all-container-services--podman-pods). Then remove the directory containing the images.
 
 On the bastion machine:
 
@@ -152,6 +153,13 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 48K     sync-acm-d
 [root@f16-h11-000-1029p registry]# rm -rf data/docker/
 ```
+
+## Rebooted Bastion
+
+If the bastion has been rebooted, you may experience ImagePullBackOff on containers and or other issues related to your cluster no longer being able to reach the internet and associated image repositories (Or your disconnected registry). In order to re-establish connectivity and bastion services, do the following:
+
+* [Clean all container services / podman pods](troubleshooting.md#clean-all-container-services--podman-pods)
+* Rerun the setup-bastion.yml playbook
 
 ## Ipv4 to ipv6 deployed cluster
 
