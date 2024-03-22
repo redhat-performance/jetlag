@@ -22,14 +22,15 @@ operators_to_sync:
 - name: redhat-operators
   operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.15
   operators:
-  - cluster-logging
-  - local-storage-operator
-  - ptp-operator
-  - sriov-network-operator
   - ansible-automation-platform-operator
+  - cluster-logging
+  - lifecycle-agent
+  - local-storage-operator
   - openshift-gitops-operator
   - openshift-special-resource-operator
+  - ptp-operator
   - redhat-oadp-operator
+  - sriov-network-operator
   - topology-aware-lifecycle-manager
   - volsync-product
 #- name: certified-operators
