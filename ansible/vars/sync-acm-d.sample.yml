@@ -22,6 +22,11 @@ origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy
 origin_kube_rbac_proxy_image_tag: 4.14
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 
+# Image Based Upgrade Images
+recert_image: quay.io/edge-infrastructure/recert
+recert_image_tag: latest
+
+# Minio provides an S3 storage service for ACM's OBS and s3 storage for OADP
 minio_image: quay.io/minio/minio
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 
