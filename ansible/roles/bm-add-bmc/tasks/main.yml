@@ -1,0 +1,10 @@
+---
+- name: Create directory for BMC configuration items
+  file:
+    path: "{{ bastion_cluster_config_dir }}/bmc"
+    state: directory
+
+- include_tasks: add-bmc-to-bmh.yml
+  with_inventory_hostnames:
+    - controlplane
+    - worker
