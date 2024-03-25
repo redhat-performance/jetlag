@@ -161,7 +161,8 @@ hw_vm_counts:
       default: 3
       nvme0n1: 3
     r750:
-      default: 2
+      default: 4
+      nvme0n1: 23
     r930:
       default: 5
       nvme0n1: 14
