@@ -6,21 +6,58 @@
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
     enabled_pao: "{{ du_profile }}"
-  - file_name: 99-master-kdump.yml
-    template_name: 99-master-kdump.yml
+  - file_name: 06-kdump-master.yaml
+    template_name: 06-kdump-master.yaml
     enabled: "{{ kdump_master_config }}"
-  - file_name: 99-master-workload-partitioning.yml
-    template_name: 99-master-workload-partitioning.yml
-    enabled: "{{ du_profile }}"
   - file_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
     template_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
     enabled: "{{ du_profile }}"
   - file_name: 03-sctp-machine-config-master.yaml
     template_name: 03-sctp-machine-config-master.yaml
     enabled: "{{ du_profile }}"
+  - file_name: 99-crio-disable-wipe-master.yaml
+    template_name: 99-crio-disable-wipe-master.yaml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version is version('4.13', "<=")
+  with_items:
+  - file_name: 99-master-workload-partitioning.yml
+    template_name: 99-master-workload-partitioning.yml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version is version('4.12', "<=")
+  with_items:
   - file_name: 04-accelerated-container-startup-master.yaml
     template_name: 04-accelerated-container-startup-master.yaml
     enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version is version('4.14', ">=")
+  with_items:
+  - file_name: 08-set-rcu-normal-master.yaml
+    template_name: 08-set-rcu-normal-master.yaml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  when: openshift_version is version('4.13', ">=")
+  with_items:
+  - file_name: 05-kdump-config-master.yaml
+    template_name: 05-kdump-config-master.yaml
+    enabled: "{{ kdump_master_config }}"
+  - file_name: enable-crun-master.yaml
+    template_name: enable-crun-master.yaml
+    enabled: "{{ du_profile }}"
+
   vars:
     ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"
     kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"
