@@ -153,12 +153,13 @@
         - --strip-components=1
   when: supermicro_nodes | default(true)
 
-- name: Get CoreDNS, OpenShift clients, opm, kube-burner, grpcurl, and yq
+- name: Get CoreDNS, OpenShift clients, opm, kube-burner, grpcurl, minio client, and yq
   get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
+    mode: "{{ item.mode | default('0644') }}"
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
@@ -170,6 +171,9 @@
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
     dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+  - url: "{{ minio_client_url }}"
+    dest: "/usr/local/bin/mc"
+    mode: "0700"
   - url: "{{ yq_url }}"
     dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
 
