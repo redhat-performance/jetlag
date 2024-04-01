@@ -42,7 +42,7 @@ spec:
       - command:
         - /bin/sh
         - -c
-        - mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && mkdir -p /storage/ibu/velero && minio server /storage
+        - mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && for i in $(seq -f "%05g" 1 4000); do mkdir -p "/storage/vm$i-ibu"; done && minio server /storage
         env:
         - name: MINIO_ACCESS_KEY
           value: minio
