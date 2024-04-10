@@ -4,6 +4,7 @@
 - name: Clean lab interfaces
   shell: |
     /root/clean-interfaces.sh --nuke
+  ignore_errors: true
 
 - name: Restart NetworkManager to remove lab interfaces
   systemd:

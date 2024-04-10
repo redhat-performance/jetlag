@@ -1,7 +1,7 @@
 ---
 # hv-install tasks
 
-- name: Install packages
+- name: Install packages for RHEL8
   dnf:
     name:
     - "@virt"
@@ -14,8 +14,31 @@
     state: present
     update_cache: true
     disable_gpg_check: yes
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
 
-- name: Install python packages
+- name: Install packages for RHEL9
+  dnf:
+    name:
+    - "@virtualization-host-environment"
+    - virt-install
+    - virt-viewer
+    - gcc
+    - python3-devel
+    - python3-libvirt
+    - rsync
+    - ksmtuned
+    state: present
+    update_cache: true
+    disable_gpg_check: yes
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
+
+- name: Install python packages on RHEL9
+  pip:
+    name: sushy-tools
+    version: 1.2.0
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
+
+- name: Install python packages on RHEL8
   pip:
     name: "{{ item.name }}"
     version: "{{ item.version }}"
@@ -24,6 +47,7 @@
     version: 6.0.0
   - name: sushy-tools
     version: 0.16.0
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
 
 - name: Get coredns
   get_url:
