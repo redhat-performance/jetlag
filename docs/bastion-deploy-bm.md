@@ -213,7 +213,7 @@ For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the 
 - control_plane_install_disk
 - worker_install_disk
 
-These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links, stemming from race conditions introduced in newer kernels. The values mentioned [Review vars all.yml](#review-vars-allyml) are pertaining the Scale lab R650 instances, for other instance values and how to find the instance values please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference)
+These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review vars all.yml](#review-vars-allyml) are pertaining the Scale lab R650 instances, for other instance values and how to find the instance values please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference)
 
 
 ### Disconnected and ipv6 vars
