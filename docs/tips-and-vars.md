@@ -305,3 +305,27 @@ RHEL9:
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <---- Use this one
 ```
+
+### Extra vars for by-path disk reference
+**Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to set the extra vars for by-path reference for the installation. Below are the extra vars along with the hardware used.
+
+
+| Hardware           | control_plane_install_disk                      | worker_install_disk                             |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------- |
+| Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
+| Dell r640          | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+
+To find your machine's by-path reference use the following command and choose the install disk
+
+```
+[root@xxx-h06-000-r640 jetlag]# ls -la /dev/disk/by-path/
+total 0
+drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
+drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..
+lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0 -> ../../sda
+lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part1 -> ../../sda1
+lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part2 -> ../../sda2
+lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:1:0 -> ../../sdb
+lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:2:0 -> ../../sdc
+lrwxrwxrwx. 1 root root  13 Apr 11 19:40 pci-0000:d8:00.0-nvme-1 -> ../../nvme0n1
+```
