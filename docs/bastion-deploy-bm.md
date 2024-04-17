@@ -209,7 +209,12 @@ controlplane_lab_interface: eno12399np0
 
 ### Extra vars
 
-No extra vars are needed for an ipv4 bare metal cluster.
+For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables. 
+- control_plane_install_disk
+- worker_install_disk
+
+These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review vars all.yml](#review-vars-allyml) are pertaining the Scale lab R650 instances, for other instance values and how to find the instance values please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference)
+
 
 ### Disconnected and ipv6 vars
 
@@ -321,6 +326,8 @@ rwn_network_interface: ens1f1
 # Extra vars
 ################################################################################
 # Append override vars below
+control_plane_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 
+worker_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 ```
 
 ## Run playbooks
