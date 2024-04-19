@@ -9,6 +9,7 @@
   - /opt/gogs
   - /opt/gogs/gogs
   - /opt/gogs/gogs/conf
+  - /etc/cni/net.d
 
 - name: Set fact for ipv6
   set_fact:
