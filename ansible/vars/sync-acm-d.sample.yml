@@ -1,25 +1,25 @@
 ---
 # Sample sync-acm-d vars file
 
-rhacm_build: 2.9.0-DOWNSTREAM-2023-11-14-18-06-19
+rhacm_build: 2.10.0-DOWNSTREAM-2024-03-14-14-53-38
 
 # ztp_site_generator_image: quay.io/openshift-kni/ztp-site-generator
 # ztp_site_generator_image_tag: 4.11.0
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
-ztp_site_generator_image_tag: v4.14.1
+ztp_site_generator_image_tag: v4.15.0-36
 
 rhacm_policy_generator_image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel8
 rhacm_policy_generator_image_tag: v2.9.0-34
 
 # TALM - Topology Aware Lifecycle Manager used with DU profile
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
-cluster_group_upgrades_operator_image_tag: 4.14.0
+cluster_group_upgrades_operator_image_tag: 4.15.0
 cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
-cluster_group_upgrades_operator_precache_image_tag: 4.14.0
+cluster_group_upgrades_operator_precache_image_tag: 4.15.0
 cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-group-upgrades-operator-recovery
-cluster_group_upgrades_operator_recovery_image_tag: 4.14.0
+cluster_group_upgrades_operator_recovery_image_tag: 4.15.0
 origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy
-origin_kube_rbac_proxy_image_tag: 4.14
+origin_kube_rbac_proxy_image_tag: 4.15
 kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 
 # Image Based Upgrade Images
