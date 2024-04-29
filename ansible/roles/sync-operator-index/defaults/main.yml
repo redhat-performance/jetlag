@@ -17,6 +17,9 @@ operator_index_name: redhat-operator-index
 # operator_index_tag represents the destination operator tag on the installed cluster (actual image tags can be found in the operator_index_container_image value under operators_to_sync)
 operator_index_tag: v4.15
 
+# Tag to be used with the ose-operator-registry container image
+ose_operator_registry_tag: v4.15
+
 # These defaults match ACM/ZTP testing (4.15 SNO with 4.15 Operators). For SNO DU profile defaults, refer ansible/vars/sync-operator-index.sample.yml
 operators_to_sync:
 - name: redhat-operators
