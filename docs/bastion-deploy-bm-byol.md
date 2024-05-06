@@ -151,16 +151,14 @@ bastion_controlplane_interface: ens1f0
 
 ### OCP node vars
 
-The system type determines the values of `controlplane_lab_interface`. Note that in the crafted file, the following variable was manually added: `controlplane_network_interface`.
+The system type determines the value of `controlplane_lab_interface`.
 
 * `controlplane_lab_interface` should be the L2 NIC interface
-* `controlplane_network_interface` should be the L3 network NIC interface
 
-For Dell r660 from this guide, set those vars to the following:
+For Dell r660 from this guide, set this var to the following:
 
 ```yaml
 controlplane_lab_interface: eno8303
-controlplane_network_interface: eno12399
 ```
 
 ### Extra vars
@@ -247,7 +245,6 @@ use_bastion_registry: false
 ################################################################################
 # Network configuration for all bm cluster and rwn control-plane nodes
 controlplane_lab_interface: eno8303
-controlplane_network_interface: eno12399
 
 # Network configuration for public VLAN based sno cluster_type deployment
 controlplane_pub_network_cidr:
@@ -268,7 +265,7 @@ rwn_network_interface: ens1f1
 
 ## Create your custom inventory byol.yml
 
-Choose wisely which server for which role: bastion, masters and workers. Make sure to group machines by, e.g., number of cores, NIC types (and names), etc.              
+Choose wisely which server for which role: bastion, masters and workers. Make sure to group machines by, e.g., number of cores, NIC types (and names), etc.
 
 - Record the names and MACs of their L3 network NIC to be used for the inventory.
 - Choose the control-plane NICs, the L2 NIC interface.
