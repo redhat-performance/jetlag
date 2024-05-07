@@ -9,6 +9,7 @@ address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
 address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
 address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
 
+{% if groups['hv_vm'] is defined and (groups['hv_vm'] | length > 0) %}
 # Jetlag provided DNS for VMs
 {% for vm in groups['hv_vm'] %}
 address=/{{ vm }}/{{ hostvars[vm].ip }}
@@ -16,7 +17,6 @@ address=/api.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
 address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
 {% endfor %}
 
-{% if groups['hv_vm'] | length > 0 %}
 # Jumbo cluster DNS
 address=/jumbocluster00/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
 address=/api.jumbocluster00.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
@@ -35,8 +35,11 @@ address=/apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ host
 {% endfor %}
 {% endif %}
 
-{% for item in groups['sno'] %}
-{% if hostvars[item].ip_address is defined %}
-address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip_address }}
+{% if groups['sno'] is defined and (groups['sno'] | length > 0) %}
+  {%- for item in groups['sno'] %}
+    {%- if hostvars[item].ip_address is defined %}
+      address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip_address }}
+    {%- endif %}
+  {%- endfor %}
 {% endif %}
-{% endfor %}
+
