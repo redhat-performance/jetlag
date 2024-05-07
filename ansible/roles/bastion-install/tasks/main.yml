@@ -160,6 +160,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
     mode: "{{ item.mode | default('0644') }}"
+    checksum: "{{ item.checksum | default(omit) }}"
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
