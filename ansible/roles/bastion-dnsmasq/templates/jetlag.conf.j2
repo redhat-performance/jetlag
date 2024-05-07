@@ -1,4 +1,8 @@
 # Jetlag provided DNS on Bastion
+{% if lab in cloud_labs %}
+except-interface={{ bastion_public_interface }}
+{% endif %}
+
 # Bastion / assisted-installer / http-server / registry / router / dns
 address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
 
