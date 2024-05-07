@@ -25,12 +25,6 @@
 # - debug:
 #     msg: "{{ ai_cluster_ids }}"
 
-- name: set machine network cidr for public vlan
-  set_fact:
-    machine_network_cidr: "{{ controlplane_pub_network_cidr }}"
-  when:
-  - public_vlan | bool
-
 - name: set machine network cidr when using bastion registry
   set_fact:
     machine_network_cidr: "{{ controlplane_network | ipaddr('network/prefix') }}"
@@ -70,9 +64,6 @@
       {% for route in etc_hosts_ingress_routes %}
       {{ hostvars[item].ip_address }} {{ route }}.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
       {% endfor %}
-      {% if public_vlan %}
-      {{ hostvars[item].ip_address }} {{ hostvars[item].inventory_hostname }} # SNO node
-      {%- endif %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
   loop: "{{ groups['sno'][:sno_node_count|int] }}"

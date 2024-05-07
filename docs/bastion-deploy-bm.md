@@ -209,7 +209,7 @@ controlplane_lab_interface: eno12399np0
 
 ### Extra vars
 
-For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables. 
+For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
 - control_plane_install_disk
 - worker_install_disk
 
@@ -261,12 +261,6 @@ worker_node_count: 0
 # Applies to sno clusters
 sno_node_count:
 
-# Lab Network type, applies to sno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
-public_vlan: false
-
 # Versions are controlled by this release image. If you want to change images
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
@@ -313,11 +307,6 @@ use_bastion_registry: false
 # Network configuration for all bm cluster and rwn control-plane nodes
 controlplane_lab_interface: eno12399np0
 
-# Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr:
-controlplane_pub_network_gateway:
-jumbo_mtu: false
-
 # Network only for remote worker nodes
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
@@ -326,7 +315,7 @@ rwn_network_interface: ens1f1
 # Extra vars
 ################################################################################
 # Append override vars below
-control_plane_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 
+control_plane_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 worker_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 ```
 

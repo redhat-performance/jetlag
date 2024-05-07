@@ -4,7 +4,6 @@
   with_items:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
     template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
-    enabled: "{{ public_vlan | bool }}"
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
@@ -25,7 +24,7 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version is version('4.13', "<=")    
+  when: openshift_version is version('4.13', "<=")
   with_items:
   - file_name: 99-master-workload-partitioning.yml
     template_name: 99-master-workload-partitioning.yml
@@ -55,7 +54,7 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version is version('4.13', ">=")  
+  when: openshift_version is version('4.13', ">=")
   with_items:
   - file_name: enable-crun-master.yaml
     template_name: enable-crun-master.yaml

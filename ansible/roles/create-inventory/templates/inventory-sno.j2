@@ -32,8 +32,6 @@ bmc_password={{ bmc_password }}
 {% for sno in ocpinventory_sno_nodes %}
 {%- if use_bastion_registry -%}
 {%-   set ip_address=controlplane_network | ansible.utils.nthhost(loop.index0 + 5) -%}
-{%- elif public_vlan | bool -%}
-{%-   set ip_address=controlplane_pub_network_cidr | ansible.utils.nthhost(loop.index0 + 1) -%}
 {%- else -%}
 {%- set ip_address=(sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip -%}
 {%- endif -%}
@@ -43,15 +41,11 @@ bmc_password={{ bmc_password }}
 [sno:vars]
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
-{% if public_vlan or use_bastion_registry %}
+{% if use_bastion_registry %}
 lab_interface={{ controlplane_lab_interface }}
 network_interface={{ controlplane_network_interface }}
-gateway={{ controlplane_network_gateway }}
-{% endif %}
-{% if public_vlan %}
-network_prefix={{ controlplane_pub_network_cidr | ipaddr('prefix') }}
-{% elif use_bastion_registry %}
 network_prefix={{ controlplane_network | ipaddr('prefix') }}
+gateway={{ controlplane_network_gateway }}
 {% endif %}
 {% if controlplane_bastion_as_dns %}
 dns1={{ bastion_controlplane_ip }}
