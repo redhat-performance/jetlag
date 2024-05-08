@@ -2,12 +2,13 @@
 # bastion-install tasks
 
 - name: Create directory for bastion config
-  file:
+  ansible.builtin.file:
     path: "{{ bastion_cluster_config_dir }}"
     state: directory
+    mode: "0755"
 
 - name: Install packages
-  yum:
+  ansible.builtin.yum:
     name:
     - dnsmasq
     - frr
@@ -30,57 +31,55 @@
     - vim
     state: present
     update_cache: true
-    disable_gpg_check: yes
+    disable_gpg_check: true
 
 - name: Install python
-  pip:
+  ansible.builtin.pip:
     name: python-hpilo
     executable: pip3
 
 - name: Scale / Alias lab bastion tasks
   when:
     - lab in rh_labs
-    - 'not lab == "byol"'
+    - not lab == "byol"
   block:
   - name: Clean lab interfaces
-    shell: |
+    ansible.builtin.shell: |
       /root/clean-interfaces.sh --nuke
 
   - name: Restart NetworkManager to remove lab interfaces
-    systemd:
+    ansible.builtin.systemd:
       state: restarted
       name: NetworkManager
 
-  - name: Check if ssh keys exists
-    stat:
-      path: /root/.ssh/id_rsa
-    register: ssh_key_result
-
   - name: Create ssh key pair
-    shell: |
-      ssh-keygen -q -t rsa -f /root/.ssh/id_rsa -C "" -N ""
-    when: not ssh_key_result.stat.exists
+    ansible.builtin.command:
+      cmd: ssh-keygen -q -t rsa -f {{ ssh_key_path }} -C "" -N ""
+      creates: "{{ ssh_key_path }}"
+    vars:
+       ssh_key_path: /root/.ssh/id_rsa
 
   - name: Setup chronyd
-    template:
+    ansible.builtin.template:
       src: chrony.conf.j2
       dest: /etc/chrony.conf
       backup: true
+      mode: "0644"
 
   - name: Ensure chronyd is running with new configuration
-    systemd:
+    ansible.builtin.systemd:
       state: restarted
       enabled: true
       name: chronyd
 
   - name: Install kernel modules
-    yum:
+    ansible.builtin.yum:
       name:
       - kernel-modules-extra
       - kernel-debug-modules-extra
       state: present
       update_cache: true
-      disable_gpg_check: yes
+      disable_gpg_check: true
     register: kernel_modules_installed
     when: bastion_install_tc_reboot
 
@@ -90,13 +89,13 @@
     - kernel_modules_installed.changed
     block:
     - name: Reboot bastion
-      shell: "sleep 5; reboot now"
+      ansible.builtin.shell: sleep 5; reboot now
       async: 1
       poll: 0
       ignore_errors: true
 
     - name: Wait for machine rebooting
-      wait_for:
+      ansible.builtin.wait_for:
         port: 22
         delay: 2
         state: stopped
@@ -104,30 +103,32 @@
       delegate_to: localhost
 
     - name: Wait for machine to be ready after reboot
-      wait_for_connection:
+      ansible.builtin.wait_for_connection:
         delay: 120
         timeout: 1200
 
+# bastion-install tasks
 - name: IBMcloud bastion install tasks
   when: lab in cloud_labs
   block:
   - name: Copy ssh keys to bastion
-    copy:
+    ansible.builtin.copy:
       content: "{{ item.content }}"
       dest: "{{ item.dest }}"
       mode: "{{ item.mode }}"
     loop:
     - content: "{{ lookup('file', ssh_private_key_file) + '\n' }}"
       dest: /root/.ssh/id_rsa
-      mode: "600"
+      mode: "0600"
     - content: "{{ lookup('file', ssh_public_key_file) }}"
       dest: /root/.ssh/id_rsa.pub
-      mode: "644"
+      mode: "0644"
 
 - name: Supermicro tool tasks
+  when: supermicro_nodes | default(true)
   block:
     - name: Check if SMCIPMITool tar is downloaded
-      stat:
+      ansible.builtin.stat:
         path: "{{ playbook_dir }}/smcipmitool.tar.gz"
       delegate_to: localhost
       register: stat_smcipmitool
@@ -136,68 +137,57 @@
     # and that the bastion machine may not (Ex you copy the smcipmitool tar file
     # to a local lab machine)
     - name: Get SMCIPMITool
-      get_url:
+      ansible.builtin.get_url:
         validate_certs: false
         force: true
         url: "{{ smcipmitool_url }}"
         dest: "{{ playbook_dir }}/smcipmitool.tar.gz"
+        mode: "0644"
       delegate_to: localhost
       when: not stat_smcipmitool.stat.exists
 
     - name: Untar SMCIPMITool
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ playbook_dir }}/smcipmitool.tar.gz"
         dest: /usr/local/bin
-        mode: 0700
+        mode: "0700"
         extra_opts:
-        - --strip-components=1
-  when: supermicro_nodes | default(true)
+          - --strip-components=1
 
 - name: Get CoreDNS, OpenShift clients, opm, kube-burner, grpcurl, minio client, and yq
-  get_url:
+  ansible.builtin.get_url:
     validate_certs: false
-    force: true
-    url: "{{ item.url }}"
-    dest: "{{ item.dest }}"
-    mode: "{{ item.mode | default('0644') }}"
-    checksum: "{{ item.checksum | default(omit) }}"
-  with_items:
-  - url: "{{ coredns_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
-  - url: "{{ openshift_client_url }}/latest/oc-mirror.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
-  - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
-  - url: "{{ kubeburner_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
-  - url: "{{ grpcurl_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
-  - url: "{{ minio_client_url }}"
-    dest: "/usr/local/bin/mc"
-    mode: "0700"
-  - url: "{{ yq_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
+    force: false
+    url: "{{ app.url }}"
+    dest: "{{ app.dest }}"
+    mode: "{{ app.mode | default('0644') }}"
+    checksum: "{{ app.checksum | default(omit) }}"
+  loop: "{{ helper_applications }}"
+  loop_control:
+    loop_var: app
 
 - name: Get rhel8 opm
-  get_url:
+  ansible.builtin.get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
+    mode: "0644"
   with_items:
-  -  url: "{{ openshift_client_url }}/latest-4.14/opm-linux.tar.gz"
-     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ openshift_clients_base_url }}/latest-4.14/opm-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
 - name: Get rhel9 opm
-  get_url:
+  ansible.builtin.get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
+    mode: "0644"
   with_items:
-  -  url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
-     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ openshift_clients_base_url }}/latest/opm-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('9', '==')
 
 # We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
@@ -206,18 +196,18 @@
 # extract the correct oc/kubectl clients for that version. Unfortunately we need
 # an oc client in order to do that so we just use the latest public oc client
 - name: Untar oc/kubectl clients
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}"
-    remote_src: yes
-    mode: 0700
+    remote_src: true
+    mode: "0700"
 
 - name: Copy oc/kubectl clients into a pathed directory
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     remote_src: true
-    mode: 0700
+    mode: "0700"
   loop:
   - src: "{{ bastion_cluster_config_dir }}/oc"
     dest: /usr/local/bin/oc.latest
@@ -225,11 +215,11 @@
     dest: /usr/local/bin/kubectl.latest
 
 - name: Untar coredns, opm, kube-burner and grpcurl client
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ item }}"
     dest: /usr/local/bin
-    remote_src: yes
-    mode: 0700
+    remote_src: true
+    mode: "0700"
   loop:
   - "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
   - "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
@@ -238,32 +228,33 @@
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 
 - name: Untar yq tool
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}"
-    remote_src: yes
-    mode: 0700
+    remote_src: true
+    mode: "0700"
 
 - name: Copy yq tool into a pathed directory
-  copy:
+  ansible.builtin.copy:
     src: "{{ bastion_cluster_config_dir }}/yq_linux_amd64"
     dest: /usr/local/bin/yq
     remote_src: true
-    mode: 0700
+    mode: "0700"
 
 - name: Download promdump
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ promdump_url }}"
     dest: "{{ promdump_tarball }}"
+    mode: "0644"
 
 - name: Untar promdump
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ promdump_tarball }}"
     dest: /usr/local/bin
-    remote_src: yes
+    remote_src: true
 
 - name: Remove promdump tarball
-  file:
+  ansible.builtin.file:
     path: "{{ promdump_tarball }}"
     state: absent
 
