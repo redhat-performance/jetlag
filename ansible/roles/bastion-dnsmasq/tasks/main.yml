@@ -13,6 +13,12 @@
   - src: resolv.conf.j2
     dest: /etc/resolv.conf
 
+- name: Remove line configuring dnsmasq for localhost only
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    regexp: "^interface=lo"
+    line: "#interface=lo"
+
 - name: Restart NetworkManager
   systemd:
     state: restarted

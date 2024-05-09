@@ -5,6 +5,8 @@
   include_role:
     name: sno-create-ai-cluster
     tasks_from: create_individual_sno.yml
+  vars:
+    use_bastion_registry: false
   loop: "{{ groups['sno'][:sno_node_count|int] }}"
 
 # - debug:
