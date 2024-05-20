@@ -265,3 +265,15 @@
   file:
     path: "{{ promdump_tarball }}"
     state: absent
+
+- name: Download Red Hat Crucible
+  ansible.builtin.git:
+    repo: "{{ rh_crucible_url }}"
+    dest: /tmp/crucible
+  environment:
+    GIT_SSL_NO_VERIFY: "False"
+  when: install_rh_crucible
+
+- name: Install Red Hat Crucible
+  command: chdir=/tmp/crucible bash rh-install-crucible.sh
+  when: install_rh_crucible

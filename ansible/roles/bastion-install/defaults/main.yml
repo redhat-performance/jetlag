@@ -8,6 +8,11 @@ minio_client_url: https://dl.min.io/client/mc/release/linux-amd64/mc
 openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
 yq_url: https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64.tar.gz
 
+# Crucible specific vars
+install_rh_crucible: false
+rh_crucible_url: https://github.com/perftool-incubator/crucible
+
+
 # Since the use of tc on the bastion machine is rare and only for remote worker node testing in scale/alias labs, we
 # disable rebooting the bastion machine by default.
 bastion_install_tc_reboot: false
