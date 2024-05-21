@@ -35,9 +35,9 @@ _**Table of Contents**_
 
 ## Running Jetlag after Jetski
 
-If Jetlag is ran after attempting an installation with Jetski, there are several configuration items that are known to conflict and prevents successful install:
+If Jetlag is run after attempting an installation with Jetski, there are several configuration items that are known to conflict and prevent successful install:
 
-* Polluted dnsmasq configuration and dns services (depending on if jetlag was ran dnsmasq or coredns via jetlag)
+* Polluted dnsmasq configuration and dns services (depending on if jetlag ran dnsmasq or coredns)
 * The Jetski configured virtual bridge network could cause additional networking headaches preventing successful install
 
 That may not be all of the conflicts, thus the preferred method to remediate this situation is to cleanly rebuild the RHEL OS running on the bastion machine for Jetlag.
@@ -62,7 +62,7 @@ Since Jetlag has external dependencies on repos available by your machines as we
 
 ## Root disk too small on bastion
 
-For disconnected environments, the bastion machine will serve all OCP, operator and additional container images from its local disconnected registry. Some machines in the lab have been found to have root disks which are on the order of only 70G and can easily fill with 1 or 2 OCP releases synced. If the bastion is one of those machines, relocate `/opt` to a separate larger disk so the machines does not run out of space on the root disk.
+For disconnected environments, the bastion machine will serve all OCP, operator and additional container images from its local disconnected registry. Some machines in the lab have been found to have root disks which are on the order of only 70G and can easily fill with 1 or 2 OCP releases synced. If the bastion is one of those machines, relocate `/opt` to a separate larger disk so the machine does not run out of space on the root disk.
 
 # Bastion
 
@@ -183,9 +183,9 @@ Review the [OpenShift documentation to understand what minimum firmware versions
 
 # Dell
 
-## Reset BMC / iDrac
+## Reset BMC / iDRAC
 
-In some cases the Dell idrac might need to be reset per host. This can be done with the following command:
+In some cases the Dell iDRAC might need to be reset per host. This can be done with the following command:
 
 ```console
 sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example.com "racadm racreset"
@@ -297,11 +297,11 @@ Expected the host to boot from disk, but it booted the installation image - plea
 
 Other things to look at:
 
-1) Check the disk name (default in jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
+1) Check the disk name (default in Jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
 
-2) Did the machine boot the virtual media (management interface, i.e., idrac for Dell machines)?
+2) Did the machine boot the virtual media (management interface, i.e., iDRAC for Dell machines)?
 If the virtual media did not boot, it is most likely a *boot order* issue.
-Three other things to consider, however less common, are: 1) An old firmware that requires an idrac/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
+Three other things to consider, however less common, are: 1) An old firmware that requires an iDRAC/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
 
 ## Network pre-configuration
 

@@ -1,38 +1,10 @@
 # Deploy a Bare Metal cluster via jetlag from a Scale Lab Bastion Machine quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. The recommended way to use jetlag is directly off a bastion machine. Jetlag picks the first machine in an allocation as the bastion. There are [ways to trick jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but are beyond the scope of this quickstart.
+Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. There are [ways to trick jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but are beyond the scope of this quickstart.
 
-_**Table of Contents**_
+Obtain your first machine from the allocation from the [scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
 
-<!-- TOC -->
-- [Bastion setup](#bastion-setup)
-- [Configure vars all.yml](#configure-vars-allyml)
-- [Review vars all.yml](#review-vars-allyml)
-- [Run playbooks](#run-playbooks)
-- [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
-<!-- /TOC -->
-
-
-## Bastion setup
-
-1. Obtain your first machine from the allocation from the [scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
-2. Copy your ssh keys to the designated bastion machine
-
-```console
-[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
-/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-/usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
-root@xxx-h01-000-r650.example.redhat.com's password:
-
-Number of key(s) added: 2
-
-Now try logging into the machine, with:   "ssh 'root@xxx-h01-000-r650.example.redhat.com'"
-and check to make sure that only the key(s) you wanted were added.
-[user@fedora ~]$
-```
-
-3. Update the version of RHEL on the bastion machine and reboot
+Update the version of RHEL on the bastion machine if necessary, and reboot.
 
 ```console
 [user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
@@ -51,9 +23,9 @@ Run dnf update to upgrade to RHEL 8.9
 Updating Subscription Management repositories.
 Unable to read consumer identity
 This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-rhel89 AppStream                                                                                                                                              245 MB/s | 7.8 MB     00:00    
-rhel89 BaseOS                                                                                                                                                 119 MB/s | 2.4 MB     00:00    
-Extra Packages for Enterprise Linux 8 - x86_64                                                                                                                 14 MB/s |  14 MB     00:00    
+rhel89 AppStream                                                                                                                                              245 MB/s | 7.8 MB     00:00
+rhel89 BaseOS                                                                                                                                                 119 MB/s | 2.4 MB     00:00
+Extra Packages for Enterprise Linux 8 - x86_64                                                                                                                 14 MB/s |  14 MB     00:00
 Last metadata expiration check: 0:00:01 ago on Tue 02 May 2023 06:58:15 PM UTC.
 Dependencies resolved.
 ...
@@ -68,19 +40,61 @@ Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed.
 Red Hat Enterprise Linux release 8.9 (Ootpa)
 ```
 
-4. Install additional tools to help after reboot
+_**Table of Contents**_
+
+<!-- TOC -->
+- [Bastion setup](#bastion-setup)
+- [Configure vars all.yml](#configure-vars-allyml)
+- [Review vars all.yml](#review-vars-allyml)
+- [Run playbooks](#run-playbooks)
+- [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
+<!-- /TOC -->
+
+<!-- Bastion setup is duplicated in multiple files and should be kept in sync!
+     - bastion-deploy-bm-byol.md
+     - bastion-bm-ibmcloud.md
+     - deploy-sno-ibmcloud.md
+     - deploy-sno-quickstart.md
+ -->
+## Bastion setup
+
+1. Select the bastion machine from the allocation. You should run Jetlag on the
+bastion machine, to ensure full connectivity and fastest access. By convention
+this is usually the first node of your allocation: for example, the first machine
+listed in your cloud platform's standard inventory display.
+
+2. You can copy your ssh public key to the designated bastion machine to make it easier to
+repeatedly log in from your laptop:
 
 ```console
-[root@xxx-h01-000-r650 ~]# dnf install tmux git python3-pip sshpass -y
+[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
+root@xxx-h01-000-r650.example.redhat.com's password:
+
+Number of key(s) added: 2
+
+# Now try logging into the machine, and confirm that only the expected key(s)
+# were added to ~/.ssh/known_hosts
+[user@fedora ~] ssh root@xxx-h01-000-r650.example.redhat.com
+[user@fedora ~]
+```
+
+3. Install some additional tools to help after reboot
+
+```console
+[root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
 Updating Subscription Management repositories.
 ...
 Complete!
 ```
 
-5. Setup ssh keys on the bastion to permit local ansible interactions
+4. Setup ssh keys for the bastion root account and copy to itself to permit
+local ansible interactions:
 
 ```console
-[root@xxx-h01-000-r650 ~]# ssh-keygen
+[root@xxx-r660 ~]# ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/root/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
@@ -88,12 +102,12 @@ Enter same passphrase again:
 Your identification has been saved in /root/.ssh/id_rsa.
 Your public key has been saved in /root/.ssh/id_rsa.pub.
 The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-h01-000-r650.rdu2.scalelab.redhat.com
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-r660.machine.com
 The key's randomart image is:
 +---[RSA 3072]----+
 ...
 +----[SHA256]-----+
-[root@xxx-h01-000-r650 ~]# ssh-copy-id root@localhost
+[root@xxx-r660 ~]# ssh-copy-id root@localhost
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
@@ -106,13 +120,13 @@ Number of key(s) added: 1
 
 Now try logging into the machine, with:   "ssh 'root@localhost'"
 and check to make sure that only the key(s) you wanted were added.
-[root@xxx-h01-000-r650 ~]#
+[root@xxx-r660 ~]#
 ```
 
-6. Clone jetlag
+5. Clone `jetlag`
 
 ```console
-[root@xxx-h01-000-r650 ~]# git clone https://github.com/redhat-performance/jetlag.git
+[root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
 Cloning into 'jetlag'...
 remote: Enumerating objects: 4510, done.
 remote: Counting objects: 100% (4510/4510), done.
@@ -122,25 +136,53 @@ Receiving objects: 100% (4510/4510), 831.98 KiB | 21.33 MiB/s, done.
 Resolving deltas: 100% (2450/2450), done.
 ```
 
-7. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of jetlag
+The `git clone` command will normally set the local head to the Jetlag repo's
+`main` branch. To set your local head to a different branch or tag (for example,
+a development branch), you can add `-b <name>` to the command.
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
 
 ```console
-[root@xxx-h01-000-r650 jetlag]# cat pull_secret.txt
+[root@xxx-r660 jetlag]# cat pull_secret.txt
 {
   "auths": {
-...
+    "quay.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.redhat.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    }
+  }
+}
 ```
 
-8. Change to jetlag directory, source bootstrap.sh
+7. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
+activate a local virtual Python environment configured with the Jetlag and
+Ansible dependencies.
 
 ```console
-[root@xxx-h01-000-r650 ~]# cd jetlag/
-[root@xxx-h01-000-r650 jetlag]# source bootstrap.sh
+[root@xxx-r660 ~]# cd jetlag/
+[root@xxx-r660 jetlag]# source bootstrap.sh
 Collecting pip
 ...
-(.ansible) [root@xxx-h01-000-r650 jetlag]#
+(.ansible) [root@xxx-r660 jetlag]#
 ```
 
+You can re-enter that virtual environment when you log in to the bastion again
+with:
+
+```console
+[root@xxx-r660 ~]# cd jetlag
+[root@xxx-r660 ~]# source .ansible/bin/activate
+```
+
+<!-- End of duplicated setup text -->
 
 ## Configure vars all.yml
 
@@ -209,12 +251,11 @@ controlplane_lab_interface: eno12399np0
 
 ### Extra vars
 
-For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables. 
+For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
 - control_plane_install_disk
 - worker_install_disk
 
-These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review vars all.yml](#review-vars-allyml) are pertaining the Scale lab R650 instances, for other instance values and how to find the instance values please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference)
-
+These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review vars all.yml](#review-vars-allyml) are correct for the Scale lab R650 instances. Please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference) to determine the correct paths for other instances.
 
 ### Disconnected and ipv6 vars
 
@@ -326,7 +367,7 @@ rwn_network_interface: ens1f1
 # Extra vars
 ################################################################################
 # Append override vars below
-control_plane_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 
+control_plane_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 worker_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 ```
 

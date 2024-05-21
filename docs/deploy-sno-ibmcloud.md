@@ -1,8 +1,149 @@
 # Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart
 
-To deploy Single Node OpenShift (SNO) clusters on IBMcloud hardware you can simply follow the bare metal cluster guide with a few differences. The changes in this guide will apply after [Review ibmcloud.yml](deploy-bm-ibmcloud.md#review-ibmcloudyml) section.
-
 For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](../docs/order-hardware-ibmcloud.md) in [docs](../docs) directory.
+
+_**Table of Contents**_
+
+<!-- TOC -->
+- [Bastion setup](#bastion-setup)
+- [SNO var changes](#sno-var-changes)
+- [Review SNO ibmcloud.yml](#review-sno-ibmcloudyml)
+- [Run playbooks](#run-playbooks)
+<!-- /TOC -->
+
+<!-- Bastion setup is duplicated in multiple files and should be kept in sync!
+     - bastion-deploy-bm-byol.md
+     - bastion-bm-ibmcloud.md
+     - deploy-sno-ibmcloud.md
+     - deploy-sno-quickstart.md
+ -->
+## Bastion setup
+
+1. Select the bastion machine from the allocation. You should run Jetlag on the
+bastion machine, to ensure full connectivity and fastest access. By convention
+this is usually the first node of your allocation: for example, the first machine
+listed in your cloud platform's standard inventory display.
+
+2. You can copy your ssh public key to the designated bastion machine to make it easier to
+repeatedly log in from your laptop:
+
+```console
+[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
+root@xxx-h01-000-r650.example.redhat.com's password:
+
+Number of key(s) added: 2
+
+# Now try logging into the machine, and confirm that only the expected key(s)
+# were added to ~/.ssh/known_hosts
+[user@fedora ~] ssh root@xxx-h01-000-r650.example.redhat.com
+[user@fedora ~]
+```
+
+3. Install some additional tools to help after reboot
+
+```console
+[root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
+Updating Subscription Management repositories.
+...
+Complete!
+```
+
+4. Setup ssh keys for the bastion root account and copy to itself to permit
+local ansible interactions:
+
+```console
+[root@xxx-r660 ~]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-r660.machine.com
+The key's randomart image is:
++---[RSA 3072]----+
+...
++----[SHA256]-----+
+[root@xxx-r660 ~]# ssh-copy-id root@localhost
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
+The authenticity of host 'localhost (127.0.0.1)' can't be established.
+ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+root@localhost's password:
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'root@localhost'"
+and check to make sure that only the key(s) you wanted were added.
+[root@xxx-r660 ~]#
+```
+
+5. Clone `jetlag`
+
+```console
+[root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
+Cloning into 'jetlag'...
+remote: Enumerating objects: 4510, done.
+remote: Counting objects: 100% (4510/4510), done.
+remote: Compressing objects: 100% (1531/1531), done.
+remote: Total 4510 (delta 2450), reused 4384 (delta 2380), pack-reused 0
+Receiving objects: 100% (4510/4510), 831.98 KiB | 21.33 MiB/s, done.
+Resolving deltas: 100% (2450/2450), done.
+```
+
+The `git clone` command will normally set the local head to the Jetlag repo's
+`main` branch. To set your local head to a different branch or tag (for example,
+a development branch), you can add `-b <name>` to the command.
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
+
+```console
+[root@xxx-r660 jetlag]# cat pull_secret.txt
+{
+  "auths": {
+    "quay.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.redhat.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    }
+  }
+}
+```
+
+7. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
+activate a local virtual Python environment configured with the Jetlag and
+Ansible dependencies.
+
+```console
+[root@xxx-r660 ~]# cd jetlag/
+[root@xxx-r660 jetlag]# source bootstrap.sh
+Collecting pip
+...
+(.ansible) [root@xxx-r660 jetlag]#
+```
+
+You can re-enter that virtual environment when you log in to the bastion again
+with:
+
+```console
+[root@xxx-r660 ~]# cd jetlag
+[root@xxx-r660 ~]# source .ansible/bin/activate
+```
+
+<!-- End of duplicated setup text -->
 
 ## SNO var changes
 

@@ -8,6 +8,8 @@ The bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
 - The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
 
+Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
+
 The cluster machines need a minimum of 1 online private interface:
 - The control-plane interface, from which other cluster nodes are accessed.
 
@@ -27,13 +29,38 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 
+<!-- Bastion setup is duplicated in multiple files and should be kept in sync!
+     - bastion-deploy-bm-byol.md
+     - bastion-bm-ibmcloud.md
+     - deploy-sno-ibmcloud.md
+     - deploy-sno-quickstart.md
+ -->
 ## Bastion setup
 
-Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
+1. Select the bastion machine from the allocation. You should run Jetlag on the
+bastion machine, to ensure full connectivity and fastest access. By convention
+this is usually the first node of your allocation: for example, the first machine
+listed in your cloud platform's standard inventory display.
 
-1. Select the bastion machine from the allocation. The preferred way to run jetlag is directly off a bastion machine.
+2. You can copy your ssh public key to the designated bastion machine to make it easier to
+repeatedly log in from your laptop:
 
-2. Install some additional tools to help after reboot
+```console
+[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
+root@xxx-h01-000-r650.example.redhat.com's password:
+
+Number of key(s) added: 2
+
+# Now try logging into the machine, and confirm that only the expected key(s)
+# were added to ~/.ssh/known_hosts
+[user@fedora ~] ssh root@xxx-h01-000-r650.example.redhat.com
+[user@fedora ~]
+```
+
+3. Install some additional tools to help after reboot
 
 ```console
 [root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
@@ -42,7 +69,8 @@ Updating Subscription Management repositories.
 Complete!
 ```
 
-3. Setup ssh keys on the bastion and copy to itself to permit local ansible interactions
+4. Setup ssh keys for the bastion root account and copy to itself to permit
+local ansible interactions:
 
 ```console
 [root@xxx-r660 ~]# ssh-keygen
@@ -74,7 +102,7 @@ and check to make sure that only the key(s) you wanted were added.
 [root@xxx-r660 ~]#
 ```
 
-4. Clone `jetlag`
+5. Clone `jetlag`
 
 ```console
 [root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
@@ -87,16 +115,35 @@ Receiving objects: 100% (4510/4510), 831.98 KiB | 21.33 MiB/s, done.
 Resolving deltas: 100% (2450/2450), done.
 ```
 
-5. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
+The `git clone` command will normally set the local head to the Jetlag repo's
+`main` branch. To set your local head to a different branch or tag (for example,
+a development branch), you can add `-b <name>` to the command.
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
 
 ```console
 [root@xxx-r660 jetlag]# cat pull_secret.txt
 {
   "auths": {
-...
+    "quay.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.redhat.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    }
+  }
+}
 ```
 
-6. Change to `jetlag` directory, and then run `source bootstrap.sh`
+7. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
+activate a local virtual Python environment configured with the Jetlag and
+Ansible dependencies.
 
 ```console
 [root@xxx-r660 ~]# cd jetlag/
@@ -106,6 +153,15 @@ Collecting pip
 (.ansible) [root@xxx-r660 jetlag]#
 ```
 
+You can re-enter that virtual environment when you log in to the bastion again
+with:
+
+```console
+[root@xxx-r660 ~]# cd jetlag
+[root@xxx-r660 ~]# source .ansible/bin/activate
+```
+
+<!-- End of duplicated setup text -->
 
 ## Create your custom vars all.yml
 
@@ -271,7 +327,7 @@ Choose wisely which server for which role: bastion, masters and workers. Make su
 - Choose the control-plane NICs, the L2 NIC interface.
 - Record the interface names and MACs of the chosen control-plane interfaces.
 - The correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks, e.g., pulling images from quay.io when `jetlag` has already touched `/etc/resolv.conf`, will fail.
-- Make sure you have root access to the bmc, i.e., idrac for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
+- Make sure you have root access to the bmc, i.e., iDRAC for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
 
 Now, create the `/ansible/inventory/byol.local` inventory file and edit it with the info from above manually from your BYOL lab:
 

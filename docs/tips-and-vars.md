@@ -42,7 +42,7 @@ Alias lab chart is available [here](http://wiki.alias.bos.scalelab.redhat.com/fa
 
 ## Override lab ocpinventory json file
 
-Current jetlag lab use selects machines for roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You may have to create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
+Current Jetlag lab use selects machines for roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You may have to create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
 
 ```yaml
 ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
@@ -293,9 +293,9 @@ controlplane_nvme_device: /dev/disk/by-path/pci-0000:b2:00.0-nvme-1
 controlplane_etcd_on_nvme: true
 ```
 
-**Note:** The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.  
+**Note:** The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.
 If your OpenShift version is based on RHEL9 (4.13+), you should install RHEL9 on the nodes
-first to ensure the paths are correct.  
+first to ensure the paths are correct.
 eg: `/dev/sda` - Seen on Supermicro 1029U
 ```
 RHEL8:
