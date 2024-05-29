@@ -6,7 +6,7 @@
     host_bmc: "{{ (discovered_host.inventory | from_json).bmc_address }}"
   when: lab in cloud_labs
 
-- name: Identify the host identifing data
+- name: Identify the host identifying data
   set_fact:
     host_interfaces: "{{ (discovered_host.inventory | from_json).interfaces }}"
     host_id: "{{ discovered_host.id }}"

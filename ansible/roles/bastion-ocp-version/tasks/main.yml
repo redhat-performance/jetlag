@@ -67,6 +67,7 @@
     unset KUBECONFIG
     {{ ocp_version_path }}/oc version -o json | jq -r .releaseClientVersion
   register: ocp_version_display_name
+  changed_when: false
   failed_when: ocp_version_display_name.stderr != ''
 
 - name: Identify current shell
@@ -80,16 +81,19 @@
 - name: Get rhcos version
   shell: |
     {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.release
+  changed_when: false
   register: ocp_version_rhcos_version
 
 - name: Get iso disk image location
   shell: |
     {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.iso.disk.location
+  changed_when: false
   register: ocp_version_disk_location
 
 - name: Get rootfs image location
   shell: |
     {{ ocp_version_path }}/openshift-install coreos print-stream-json | jq -r .architectures.x86_64.artifacts.metal.formats.pxe.rootfs.location
+  changed_when: false
   register: ocp_version_rootfs_location
 
 - name: Make directory for image and rootfs for bastion http server

@@ -1,12 +1,38 @@
 ---
 # bastion-install default vars
 
-coredns_url: https://github.com/coredns/coredns/releases/download/v1.10.1/coredns_1.10.1_linux_amd64.tgz
-grpcurl_url: https://github.com/fullstorydev/grpcurl/releases/download/v1.8.1/grpcurl_1.8.1_linux_x86_64.tar.gz
-kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v1.7.6/kube-burner-V1.7.6-linux-arm64.tar.gz
-minio_client_url: https://dl.min.io/client/mc/release/linux-amd64/mc
-openshift_client_url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
-yq_url: https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64.tar.gz
+openshift_clients_base_url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp"
+
+helper_applications:
+  - name: CoreDNS
+    url: https://github.com/coredns/coredns/releases/download/v1.10.1/coredns_1.10.1_linux_amd64.tgz
+    checksum: sha256:98cb60e3358439bbb3e3f7be916fe10c51b1ed94758f53aeb2b4c06156612ff6
+    dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
+  - name: gRPCurl
+    url: https://github.com/fullstorydev/grpcurl/releases/download/v1.8.1/grpcurl_1.8.1_linux_x86_64.tar.gz
+    checksum: sha256:6b6f2ca6536e944b9dfdfa7a50f5afd2f91e87b5606fd744b6a41f55acdfebbb
+    dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+  - name: kube-burner
+    url:  https://github.com/cloud-bulldozer/kube-burner/releases/download/v1.7.6/kube-burner-V1.7.6-linux-arm64.tar.gz
+    checksum: sha256:573b8c141904e458e347ea2bf51c0a0e1765b579f1487e9fb68633dbb7202a0a
+    dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+  - name: yq
+    url: https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64.tar.gz
+    checksum: sha256:355c4780f1db094f9da081ba222b8ba6653061860c4086913e2cde175de94668
+    dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
+  - name: oc-cli
+    url: "{{ openshift_clients_base_url }}/latest/openshift-client-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
+    # checksum: sha256:{{ openshift_clients_base_url }}/latest/sha256sum.txt
+    # Disabled as the file only contain the checksum of the versioned files
+  - name: oc-mirror
+    url: "{{ openshift_clients_base_url }}/latest/oc-mirror.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
+    checksum: sha256:{{ openshift_clients_base_url }}/latest/sha256sum.txt
+  - name: minio client
+    url: https://dl.min.io/client/mc/release/linux-amd64/mc
+    dest: "/usr/local/bin/mc"
+    mode: "0700"
 
 # Crucible specific vars
 install_rh_crucible: false
