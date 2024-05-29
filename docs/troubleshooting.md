@@ -1,4 +1,4 @@
-# Troubleshooting jetlag
+# Troubleshooting Jetlag
 
 _**Table of Contents**_
 
@@ -68,7 +68,7 @@ For disconnected environments, the bastion machine will serve all OCP, operator 
 
 ## Accessing services
 
-Several services are run on the bastion in order to automate the tasks that jetlag performs. You can access them via the following ports:
+Several services are run on the bastion in order to automate the tasks that Jetlag performs. You can access them via the following ports:
 
 * On-prem assisted-installer GUI - 8080
 * On-prem assisted-installer API - 8090
@@ -88,7 +88,7 @@ HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
 
 Example accessing the bastion registry and listing repositories:
 ```console
-[root@f99-h11-000-1029p akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
+[root@<bastion> akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   532  100   532    0     0    104      0  0:00:05  0:00:05 --:--:--   120
@@ -130,9 +130,9 @@ If you are planning a redeploy with new versions and new container images it may
 On the bastion machine:
 
 ```console
-[root@f16-h11-000-1029p ~]# cd /opt/registry
-[root@f16-h11-000-1029p registry]#
-[root@f16-h11-000-1029p registry]# ls -lah
+[root@<bastion> ~]# cd /opt/registry
+[root@<bastion> registry]#
+[root@<bastion> registry]# ls -lah
 total 12K
 drwxr-xr-x. 6 root root  144 Jul 20 12:14 .
 drwxr-xr-x. 6 root root   83 Jul 16 15:01 ..
@@ -143,7 +143,7 @@ drwxr-xr-x. 3 root root   20 Jul 20 02:27 data
 -rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-bastion.txt
 -rw-r--r--. 1 root root 2.9K Jul 20 02:27 pull-secret.txt
 drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
-[root@f16-h11-000-1029p registry]# du -sh *
+[root@<bastion> registry]# du -sh *
 4.0K    auth
 8.0K    certs
 27G     data
@@ -151,7 +151,7 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 4.0K    pull-secret-bastion.txt
 4.0K    pull-secret.txt
 48K     sync-acm-d
-[root@f16-h11-000-1029p registry]# rm -rf data/docker/
+[root@<bastion> registry]# rm -rf data/docker/
 ```
 
 ## Rebooted Bastion
@@ -163,7 +163,7 @@ If the bastion has been rebooted, you may experience ImagePullBackOff on contain
 
 ## Ipv4 to ipv6 deployed cluster
 
-When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding the bastion with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disables ipv6:
+When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding the bastion with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disable ipv6:
 
 ```console
 # nmcli c modify ens6f0 ipv6.method "disabled"
@@ -244,14 +244,14 @@ How to verify that ipmi privilege set to administrator level permissions
 
 1. SMCIPMITool:
 ```console
-[root@jetlag-bm0 ~]# SMCIPMITool x.x.x.x root xxxxxxxxx user list
+[root@<bastion> ~]# SMCIPMITool x.x.x.x root xxxxxxxxx user list
 Maximum number of Users          : 10
 Count of currently enabled Users : 8
  User ID | User Name       | Privilege Level    | Enable
  ------- | -----------     | ---------------    | ------
        3 | root            | Operator           | Yes
 
-[root@jetlag-bm0 ~]# SMCIPMITool y.y.y.y root yyyyyyyy user list
+[root@<bastion> ~]# SMCIPMITool y.y.y.y root yyyyyyyy user list
 Maximum number of Users          : 10
 Count of currently enabled Users : 8
  User ID | User Name       | Privilege Level    | Enable
@@ -264,7 +264,7 @@ Machine `y.y.y.y` has the correct permissions.
 2. ipmitool:
 
 ```console
-[root@hwprov2-bs ~]# ipmitool -I lanplus -L ADMINISTRATOR -H <IPMIADDRESS> -p 623 -U root -P <PASSWORD> power status
+[root@<bastion> ~]# ipmitool -I lanplus -L ADMINISTRATOR -H <IPMIADDRESS> -p 623 -U root -P <PASSWORD> power status
 ```
 
 Expected result: Chassis Power is on
@@ -329,7 +329,7 @@ Also, watch for the output of **--boot-to-type foreman**, because the correct bo
 The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
 
 ```console
-[user@fedora badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
+[user@<local> badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
 - INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
 - INFO     - PATCH command passed to update boot order.
 - INFO     - POST command passed to create target config job.
@@ -343,14 +343,14 @@ The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
 On the bastion machine:
 
 ```console
-[root@f16-h11-000-1029p ~]# ./update-latest-rhel-release.sh 8.9
+[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
 Changing repository from 8.2 to 8.9
 Cleaning dnf repo cache..
 
 -------------------------
 Run dnf update to upgrade to RHEL 8.9
 
-[root@f16-h21-000-1029p ~]# dnf update -y
+[root@<bastion> ~]# dnf update -y
 ...
 ```
 

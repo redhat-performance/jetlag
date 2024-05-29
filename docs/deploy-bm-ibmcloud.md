@@ -1,4 +1,4 @@
-# Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart
+# Deploy a Bare Metal cluster on IBMcloud via Jetlag quickstart
 
 To deploy a bare metal OpenShift cluster, order 6 machines from the [IBM bare metal server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm). For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](order-hardware-ibmcloud.md) in [docs](../docs) directory.
 
@@ -7,7 +7,7 @@ The machines used to test this are of Server profile E5-2620 in DAL10 datacenter
 Once your machines are delivered, login to the ibmcloud cli using the cut and paste link from the cloud portal. You should be able to list the machines from your local machine, for example:
 
 ```console
-$ ibmcloud sl hardware list
+[user@localhost ~]$ ibmcloud sl hardware list
 id        hostname     domain                    public_ip        private_ip    datacenter   status
 960237    jetlag-bm0   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
 1165601   jetlag-bm1   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
@@ -43,24 +43,23 @@ listed in your cloud platform's standard inventory display.
 repeatedly log in from your laptop:
 
 ```console
-[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+[user@<local> ~]$ ssh-copy-id root@<bastion>
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
-root@xxx-h01-000-r650.example.redhat.com's password:
+Warning: Permanently added '<bastion>,x.x.x.x' (ECDSA) to the list of known hosts.
+root@<bastion>'s password:
 
 Number of key(s) added: 2
-
-# Now try logging into the machine, and confirm that only the expected key(s)
-# were added to ~/.ssh/known_hosts
-[user@fedora ~] ssh root@xxx-h01-000-r650.example.redhat.com
-[user@fedora ~]
 ```
+
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
 
 3. Install some additional tools to help after reboot
 
 ```console
-[root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
+[root@<bastion> ~]# dnf install tmux git python3-pip sshpass -y
 Updating Subscription Management repositories.
 ...
 Complete!
@@ -70,7 +69,7 @@ Complete!
 local ansible interactions:
 
 ```console
-[root@xxx-r660 ~]# ssh-keygen
+[root@<bastion> ~]# ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/root/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
@@ -78,12 +77,12 @@ Enter same passphrase again:
 Your identification has been saved in /root/.ssh/id_rsa.
 Your public key has been saved in /root/.ssh/id_rsa.pub.
 The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-r660.machine.com
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@<bastion>
 The key's randomart image is:
 +---[RSA 3072]----+
 ...
 +----[SHA256]-----+
-[root@xxx-r660 ~]# ssh-copy-id root@localhost
+[root@<bastion> ~]# ssh-copy-id root@localhost
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
@@ -94,15 +93,16 @@ root@localhost's password:
 
 Number of key(s) added: 1
 
-Now try logging into the machine, with:   "ssh 'root@localhost'"
-and check to make sure that only the key(s) you wanted were added.
-[root@xxx-r660 ~]#
+Now try logging into the machine and check to make sure that only the key(s) you wanted were added:
+```console
+[root@<bastion> ~] ssh root@localhost
+[root@<bastion> ~]#
 ```
 
-5. Clone `jetlag`
+5. Clone the `jetlag` GitHub repo
 
 ```console
-[root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
+[root@<bastion> ~]# git clone https://github.com/redhat-performance/jetlag.git
 Cloning into 'jetlag'...
 remote: Enumerating objects: 4510, done.
 remote: Counting objects: 100% (4510/4510), done.
@@ -116,10 +116,21 @@ The `git clone` command will normally set the local head to the Jetlag repo's
 `main` branch. To set your local head to a different branch or tag (for example,
 a development branch), you can add `-b <name>` to the command.
 
-6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
+Change your working directory to the repo's `jetlag` directory, which we'll assume
+for subsequent steps:
 
 ```console
-[root@xxx-r660 jetlag]# cat pull_secret.txt
+[root@<bastion> ~] cd jetlag
+[root@<bastion> jetlag]
+```
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local Jetlag repo. You'll find the Pull Secret near the end of the long downloads
+page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
+*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
+filename:
+
+```console
+[root@<bastion> jetlag]# cat >pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -138,35 +149,34 @@ a development branch), you can add `-b <name>` to the command.
 }
 ```
 
-7. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
-activate a local virtual Python environment configured with the Jetlag and
+7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
+This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
 
 ```console
-[root@xxx-r660 ~]# cd jetlag/
-[root@xxx-r660 jetlag]# source bootstrap.sh
+[root@<bastion> jetlag]# source bootstrap.sh
 Collecting pip
 ...
-(.ansible) [root@xxx-r660 jetlag]#
+(.ansible) [root@<bastion> jetlag]#
 ```
 
 You can re-enter that virtual environment when you log in to the bastion again
 with:
 
 ```console
-[root@xxx-r660 ~]# cd jetlag
-[root@xxx-r660 ~]# source .ansible/bin/activate
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]# source .ansible/bin/activate
 ```
 
 <!-- End of duplicated setup text -->
 
-## Configure vars ibmcloud.yml
+## Configure Ansible vars `ibmcloud.yml`
 
 Next copy the vars file so we can edit it.
 
 ```console
-[user@fedora jetlag]$ cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
-[user@fedora jetlag]$ vi ansible/vars/ibmcloud.yml
+[root@<bastion> jetlag]$ cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
+[root@<bastion> jetlag]$ vi ansible/vars/ibmcloud.yml
 ```
 
 ### Lab & cluster infrastructure vars
@@ -198,7 +208,7 @@ dns_servers:
 
 Set `base_dns_name` to the expected base dns name, for example `base_dns_name: performance-scale.cloud`
 
-Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
+Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
 ### OCP node vars
 
@@ -210,7 +220,7 @@ While inspecting the subnet at cloud.ibm.com, determine two free addresses in th
 
 For the purposes of this guide no extra vars are required.
 
-## Review ibmcloud.yml
+## Review `ibmcloud.yml`
 
 The `ansible/vars/ibmcloud.yml` now resembles ..
 
@@ -245,8 +255,8 @@ networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
-# [user@fedora jetlag]$ ls pull_secret.txt
+# Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
+# [user@<bastion> jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -313,7 +323,7 @@ $ echo id_rsa.pub >> authorized_keys
 Run the ibmcloud create inventory playbook
 
 ```console
-[user@fedora jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
+[root@<bastion> jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
 ...
 ```
 
@@ -326,22 +336,22 @@ The inventory file should resemble the [sample one provided](../ansible/inventor
 Next run the `ibmcloud-setup-bastion.yml` playbook ...
 
 ```console
-[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
+[root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
 ...
 ```
 
 Lastly, run the `ibmcloud-bm-deploy.yml` playbook ...
 
 ```console
-[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
+[root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
 ...
 ```
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
 ```console
-[root@jetlag-bm0 ~]# export KUBECONFIG=/root/bm/kubeconfig
-[root@jetlag-bm0 ~]# oc get no
+[root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+[root@<bastion> jetlag]# oc get no
 NAME         STATUS   ROLES    AGE     VERSION
 jetlag-bm1   Ready    master   3h34m   v1.21.1+051ac4f
 jetlag-bm2   Ready    master   3h7m    v1.21.1+051ac4f

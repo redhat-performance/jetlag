@@ -1,4 +1,4 @@
-# Deploy Single Node OpenShift clusters on IBMcloud via jetlag quickstart
+# Deploy Single Node OpenShift clusters on IBMcloud via Jetlag quickstart
 
 For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](../docs/order-hardware-ibmcloud.md) in [docs](../docs) directory.
 
@@ -28,24 +28,24 @@ listed in your cloud platform's standard inventory display.
 repeatedly log in from your laptop:
 
 ```console
-[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+[user@<local> ~]$ ssh-copy-id root@<bastion>
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
-root@xxx-h01-000-r650.example.redhat.com's password:
+Warning: Permanently added '<bastion>,x.x.x.x' (ECDSA) to the list of known hosts.
+root@<bastion>'s password:
 
 Number of key(s) added: 2
 
 # Now try logging into the machine, and confirm that only the expected key(s)
 # were added to ~/.ssh/known_hosts
-[user@fedora ~] ssh root@xxx-h01-000-r650.example.redhat.com
-[user@fedora ~]
+[user@<local> ~] ssh root@<bastion>
+[root@<bastion> ~]
 ```
 
 3. Install some additional tools to help after reboot
 
 ```console
-[root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
+[root@<bastion> ~]# dnf install tmux git python3-pip sshpass -y
 Updating Subscription Management repositories.
 ...
 Complete!
@@ -55,7 +55,7 @@ Complete!
 local ansible interactions:
 
 ```console
-[root@xxx-r660 ~]# ssh-keygen
+[root@<bastion> ~]# ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/root/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
@@ -63,12 +63,12 @@ Enter same passphrase again:
 Your identification has been saved in /root/.ssh/id_rsa.
 Your public key has been saved in /root/.ssh/id_rsa.pub.
 The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-r660.machine.com
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@<bastion>
 The key's randomart image is:
 +---[RSA 3072]----+
 ...
 +----[SHA256]-----+
-[root@xxx-r660 ~]# ssh-copy-id root@localhost
+[root@<bastion> ~]# ssh-copy-id root@localhost
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
@@ -78,16 +78,16 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 root@localhost's password:
 
 Number of key(s) added: 1
-
-Now try logging into the machine, with:   "ssh 'root@localhost'"
-and check to make sure that only the key(s) you wanted were added.
-[root@xxx-r660 ~]#
 ```
 
-5. Clone `jetlag`
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
+
+5. Clone the `jetlag` GitHub repo
 
 ```console
-[root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
+[root@<bastion> ~]# git clone https://github.com/redhat-performance/jetlag.git
 Cloning into 'jetlag'...
 remote: Enumerating objects: 4510, done.
 remote: Counting objects: 100% (4510/4510), done.
@@ -101,10 +101,21 @@ The `git clone` command will normally set the local head to the Jetlag repo's
 `main` branch. To set your local head to a different branch or tag (for example,
 a development branch), you can add `-b <name>` to the command.
 
-6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
+Change your working directory to the repo's `jetlag` directory, which we'll assume
+for subsequent steps:
 
 ```console
-[root@xxx-r660 jetlag]# cat pull_secret.txt
+[root@<bastion> ~] cd jetlag
+[root@<bastion> jetlag]
+```
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local Jetlag repo. You'll find the Pull Secret near the end of the long downloads
+page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
+*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
+filename:
+
+```console
+[root@<bastion> jetlag]# cat >pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -123,29 +134,35 @@ a development branch), you can add `-b <name>` to the command.
 }
 ```
 
-7. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
-activate a local virtual Python environment configured with the Jetlag and
+7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
+This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
 
 ```console
-[root@xxx-r660 ~]# cd jetlag/
-[root@xxx-r660 jetlag]# source bootstrap.sh
+[root@<bastion> jetlag]# source bootstrap.sh
 Collecting pip
 ...
-(.ansible) [root@xxx-r660 jetlag]#
+(.ansible) [root@<bastion> jetlag]#
 ```
 
 You can re-enter that virtual environment when you log in to the bastion again
 with:
 
 ```console
-[root@xxx-r660 ~]# cd jetlag
-[root@xxx-r660 ~]# source .ansible/bin/activate
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]# source .ansible/bin/activate
 ```
 
 <!-- End of duplicated setup text -->
 
-## SNO var changes
+## Configure Ansible vars `ibmcloud.yml`
+
+Next copy the vars file so we can edit it.
+
+```console
+[root@<bastion> jetlag]$ cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
+[root@<bastion> jetlag]$ vi ansible/vars/ibmcloud.yml
+```
 
 Change `cluster_type` to `cluster_type: sno`
 
@@ -155,7 +172,7 @@ Change `private_network_cidr` to the network cidr for the private network of you
 
 Clear out settings for `controlplane_network_api` and `controlplane_network_ingress`
 
-## Review SNO ibmcloud.yml
+## Review SNO `ibmcloud.yml`
 
 The `ansible/vars/ibmcloud.yml` now resembles ..
 
@@ -190,7 +207,7 @@ networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
+# Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
 # [user@fedora jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
@@ -239,7 +256,7 @@ controlplane_network_ingress:
 Run the ibmcloud create inventory playbook
 
 ```console
-[user@fedora jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
+[user@<bastion> jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
 ...
 ```
 
@@ -250,25 +267,25 @@ The inventory file should resemble the [sample one provided](../ansible/inventor
 Next run the `ibmcloud-setup-bastion.yml` playbook ...
 
 ```console
-[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
+[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
 ...
 ```
 
 Finally run the `ibmcloud-sno-deploy.yml` playbook ...
 
 ```console
-[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-sno-deploy.yml
+[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-sno-deploy.yml
 ...
 ```
 
 If everything goes well you should have SNO(s) in about 50-60 minutes. You can interact with the SNOs from the bastion.
 
 ```console
-[root@jetlag-bm0 ~]# cd sno/
-[root@jetlag-bm0 sno]# oc --kubeconfig=jetlag-bm5/kubeconfig get no
+[root@<bastion> jetlag]# cd sno/
+[root@<bastion> sno]# oc --kubeconfig=jetlag-bm5/kubeconfig get no
 NAME         STATUS   ROLES           AGE   VERSION
 jetlag-bm5   Ready    master,worker   48m   v1.21.1+051ac4f
-[root@jetlag-bm0 sno]# oc --kubeconfig=jetlag-bm4/kubeconfig get no
+[root@<bastion> sno]# oc --kubeconfig=jetlag-bm4/kubeconfig get no
 NAME         STATUS   ROLES           AGE   VERSION
 jetlag-bm4   Ready    master,worker   48m   v1.21.1+051ac4f
 

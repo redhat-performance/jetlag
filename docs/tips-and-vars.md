@@ -42,7 +42,7 @@ Alias lab chart is available [here](http://wiki.alias.bos.scalelab.redhat.com/fa
 
 ## Override lab ocpinventory json file
 
-Current Jetlag lab use selects machines for roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You may have to create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
+By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
 
 ```yaml
 ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
@@ -315,10 +315,13 @@ lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <
 | Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640          | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 
-To find your machine's by-path reference use the following command and choose the install disk
+To find your machine's by-path reference use the following command and choose the install disk. (Note, this
+assumes that the bastion hardware configuration is identical: in a heterogeneous cluster you may need to
+execute this command on each host in your deployment, setting the `control_plane_install_disk` and
+`worker_install_disk` paths manually for each host in the inventory file.)
 
 ```
-[root@xxx-h06-000-r640 jetlag]# ls -la /dev/disk/by-path/
+[root@<bastion> jetlag]# ls -la /dev/disk/by-path/
 total 0
 drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
 drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..

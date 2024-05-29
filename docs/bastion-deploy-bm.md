@@ -1,25 +1,26 @@
-# Deploy a Bare Metal cluster via jetlag from a Scale Lab Bastion Machine quickstart
+# Deploy a Bare Metal cluster via Jetlag from a Scale Lab Bastion Machine quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. There are [ways to trick jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but are beyond the scope of this quickstart.
+Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart.
 
-Obtain your first machine from the allocation from the [scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
+Select the host name or IP for the first machine of your allocation from the
+[scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/) as your bastion.
 
 Update the version of RHEL on the bastion machine if necessary, and reboot.
 
 ```console
-[user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
+[user@<local> ~]$ ssh root@<bastion>
 ...
-[root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
+[root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 (Ootpa)
 
-[root@xxx-h01-000-r650 ~]# ./update-latest-rhel-release.sh 8.9
+[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
 Changing repository from 8.2 to 8.9
 Cleaning dnf repo cache..
 
 -------------------------
 Run dnf update to upgrade to RHEL 8.9
 
-[root@xxx-h01-000-r650 ~]# dnf update -y
+[root@<bastion> ~]# dnf update -y
 Updating Subscription Management repositories.
 Unable to read consumer identity
 This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
@@ -30,13 +31,13 @@ Last metadata expiration check: 0:00:01 ago on Tue 02 May 2023 06:58:15 PM UTC.
 Dependencies resolved.
 ...
 Complete!
-[root@xxx-h01-000-r650 ~]# reboot
-Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed by remote host.
-Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed.
+[root@<bastion> ~]# reboot
+Connection to <bastion> closed by remote host.
+Connection to <bastion> closed.
 ...
 [user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
 ...
-[root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
+[root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.9 (Ootpa)
 ```
 
@@ -67,24 +68,23 @@ listed in your cloud platform's standard inventory display.
 repeatedly log in from your laptop:
 
 ```console
-[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+[user@<local> ~]$ ssh-copy-id root@<bastion>
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
-root@xxx-h01-000-r650.example.redhat.com's password:
+Warning: Permanently added '<bastion>,x.x.x.x' (ECDSA) to the list of known hosts.
+root@<bastion>'s password:
 
 Number of key(s) added: 2
-
-# Now try logging into the machine, and confirm that only the expected key(s)
-# were added to ~/.ssh/known_hosts
-[user@fedora ~] ssh root@xxx-h01-000-r650.example.redhat.com
-[user@fedora ~]
 ```
+
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
 
 3. Install some additional tools to help after reboot
 
 ```console
-[root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
+[root@<bastion> ~]# dnf install tmux git python3-pip sshpass -y
 Updating Subscription Management repositories.
 ...
 Complete!
@@ -94,7 +94,7 @@ Complete!
 local ansible interactions:
 
 ```console
-[root@xxx-r660 ~]# ssh-keygen
+[root@<bastion> ~]# ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/root/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
@@ -102,12 +102,12 @@ Enter same passphrase again:
 Your identification has been saved in /root/.ssh/id_rsa.
 Your public key has been saved in /root/.ssh/id_rsa.pub.
 The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-r660.machine.com
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@<bastion>
 The key's randomart image is:
 +---[RSA 3072]----+
 ...
 +----[SHA256]-----+
-[root@xxx-r660 ~]# ssh-copy-id root@localhost
+[root@<bastion> ~]# ssh-copy-id root@localhost
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
@@ -118,15 +118,16 @@ root@localhost's password:
 
 Number of key(s) added: 1
 
-Now try logging into the machine, with:   "ssh 'root@localhost'"
-and check to make sure that only the key(s) you wanted were added.
-[root@xxx-r660 ~]#
+Now try logging into the machine and check to make sure that only the key(s) you wanted were added:
+```console
+[root@<bastion> ~] ssh root@localhost
+[root@<bastion> ~]#
 ```
 
-5. Clone `jetlag`
+5. Clone the `jetlag` GitHub repo
 
 ```console
-[root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
+[root@<bastion> ~]# git clone https://github.com/redhat-performance/jetlag.git
 Cloning into 'jetlag'...
 remote: Enumerating objects: 4510, done.
 remote: Counting objects: 100% (4510/4510), done.
@@ -140,10 +141,21 @@ The `git clone` command will normally set the local head to the Jetlag repo's
 `main` branch. To set your local head to a different branch or tag (for example,
 a development branch), you can add `-b <name>` to the command.
 
-6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
+Change your working directory to the repo's `jetlag` directory, which we'll assume
+for subsequent steps:
 
 ```console
-[root@xxx-r660 jetlag]# cat pull_secret.txt
+[root@<bastion> ~] cd jetlag
+[root@<bastion> jetlag]
+```
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local Jetlag repo. You'll find the Pull Secret near the end of the long downloads
+page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
+*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
+filename:
+
+```console
+[root@<bastion> jetlag]# cat >pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -162,31 +174,30 @@ a development branch), you can add `-b <name>` to the command.
 }
 ```
 
-7. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
-activate a local virtual Python environment configured with the Jetlag and
+7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
+This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
 
 ```console
-[root@xxx-r660 ~]# cd jetlag/
-[root@xxx-r660 jetlag]# source bootstrap.sh
+[root@<bastion> jetlag]# source bootstrap.sh
 Collecting pip
 ...
-(.ansible) [root@xxx-r660 jetlag]#
+(.ansible) [root@<bastion> jetlag]#
 ```
 
 You can re-enter that virtual environment when you log in to the bastion again
 with:
 
 ```console
-[root@xxx-r660 ~]# cd jetlag
-[root@xxx-r660 ~]# source .ansible/bin/activate
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]# source .ansible/bin/activate
 ```
 
 <!-- End of duplicated setup text -->
 
-## Configure vars all.yml
+## Configure Ansible vars in `all.yml`
 
-Copy the vars file and edit it
+Copy the sample vars file and edit it:
 
 ```console
 (.ansible) [root@xxx-h01-000-r650 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
@@ -210,7 +221,7 @@ Only change `networktype` if you need to test something other than `OVNKubernete
 
 ### Bastion node vars
 
-Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
+Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
@@ -232,7 +243,7 @@ Here you can see a network diagram for the bare metal cluster on Dell r650 with 
 
 Double check your nic names with your actual bastion machine.
 
-** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append additional overrides to the extra vars portion of the all.yml vars file.
+** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append additional overrides to the extra vars portion of the `all.yml` vars file.
 See [tips and vars](tips-and-vars.md#using-other-network-interfaces) for more information
 
 ### OCP node vars
@@ -255,7 +266,7 @@ For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the 
 - control_plane_install_disk
 - worker_install_disk
 
-These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review vars all.yml](#review-vars-allyml) are correct for the Scale lab R650 instances. Please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference) to determine the correct paths for other instances.
+These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review `all.yml`](#review-vars-allyml) are correct for the Scale lab R650 instances. Please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference) to determine the correct paths for other instances.
 
 ### Disconnected and ipv6 vars
 
@@ -278,7 +289,7 @@ Oddly enough if you run into any routing issues because of duplicate address det
 
 The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all running podman containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
-## Review vars all.yml
+## Review vars `all.yml`
 
 The `ansible/vars/all.yml` now resembles ..
 
@@ -322,8 +333,8 @@ networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
-# [user@fedora jetlag]$ ls pull_secret.txt
+# Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
+# [user@<bastion> jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -376,7 +387,7 @@ worker_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 Run the create inventory playbook
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/create-inventory.yml
 ...
 ```
 
@@ -453,14 +464,14 @@ dns1=198.18.10.1
 Next run the `setup-bastion.yml` playbook ...
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ...
 ```
 
 Finally run the `bm-deploy.yml` playbook ...
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
 ...
 ```
 
@@ -471,12 +482,12 @@ It is suggested to monitor your first deployment to see if anything hangs on boo
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 ~]# export KUBECONFIG=/root/bm/kubeconfig
-(.ansible) [root@xxx-h01-000-r650 ~]# oc get no
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
 NAME               STATUS   ROLES                         AGE    VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
 xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
 xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
-(.ansible) [root@xxx-h01-000-r650 jetlag]# cat /root/bm/kubeadmin-password
+(.ansible) [root@<bastion> jetlag]# cat /root/bm/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```

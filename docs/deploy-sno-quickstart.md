@@ -19,67 +19,43 @@ _**Table of Contents**_
  -->
 ## Bastion setup
 
-Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
-
 1. Select the bastion machine from the allocation. You should run Jetlag on the
 bastion machine, to ensure full connectivity and fastest access. By convention
 this is usually the first node of your allocation: for example, the first machine
 listed in your cloud platform's standard inventory display.
 
-2. Copy your ssh public key to the designated bastion machine to make it easier to
+2. You can copy your ssh public key to the designated bastion machine to make it easier to
 repeatedly log in from your laptop:
 
 ```console
-[user@fedora ~]$ ssh-copy-id root@xxx-h01-000-r650.example.redhat.com
+[user@<local> ~]$ ssh-copy-id root@<bastion>
 /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
 /usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added 'xxx-h01-000-r650.example.redhat.com,x.x.x.x' (ECDSA) to the list of known hosts.
-root@xxx-h01-000-r650.example.redhat.com's password:
+Warning: Permanently added '<bastion>,x.x.x.x' (ECDSA) to the list of known hosts.
+root@<bastion>'s password:
 
 Number of key(s) added: 2
 
-Now try logging into the machine, with:   "ssh 'root@xxx-h01-000-r650.example.redhat.com'"
-and check to make sure that only the key(s) you wanted were added.
-[user@fedora ~]$
+# Now try logging into the machine, and confirm that only the expected key(s)
+# were added to ~/.ssh/known_hosts
+[user@<local> ~] ssh root@<bastion>
+[root@<bastion> ~]
 ```
 
-3. Update the version of RHEL on the bastion machine and reboot. Making sure that you
-have all patches available for your default RPM repository is always a good idea, unless
-you have specific testing requirements. The mechanism for changing repository may vary
-by your cloud setup, but, for example, the SCALE lab deploys with a script to alter
-the RHEL release repository that might be handy.
-
-Jetlag currently supports RHEL 8.6 and later as well as RHEL 9. Earlier versions of
-RHEL 8 have older components which can cause problems.
+3. Install some additional tools to help after reboot
 
 ```console
-[root@xxx-h01-000-r650 ~]# dnf update -y
-...
-Complete!
-[root@xxx-h01-000-r650 ~]# reboot
-Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed by remote host.
-Connection to xxx-h01-000-r650.rdu2.scalelab.redhat.com closed.
-...
-[user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
-...
-[root@xxx-h01-000-r650 ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.9 (Ootpa)
-```
-
-2. Install some additional tools to help after reboot
-
-```console
-[root@xxx-r660 ~]# dnf install tmux git python3-pip sshpass -y
+[root@<bastion> ~]# dnf install tmux git python3-pip sshpass -y
 Updating Subscription Management repositories.
 ...
 Complete!
 ```
 
-3. Setup ssh keys for the bastion root account and copy to itself to permit
+4. Setup ssh keys for the bastion root account and copy to itself to permit
 local ansible interactions:
 
 ```console
-[root@xxx-r660 ~]# ssh-keygen
+[root@<bastion> ~]# ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/root/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
@@ -87,12 +63,12 @@ Enter same passphrase again:
 Your identification has been saved in /root/.ssh/id_rsa.
 Your public key has been saved in /root/.ssh/id_rsa.pub.
 The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@xxx-r660.machine.com
+SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@<bastion>
 The key's randomart image is:
 +---[RSA 3072]----+
 ...
 +----[SHA256]-----+
-[root@xxx-r660 ~]# ssh-copy-id root@localhost
+[root@<bastion> ~]# ssh-copy-id root@localhost
 /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
 The authenticity of host 'localhost (127.0.0.1)' can't be established.
 ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
@@ -102,16 +78,16 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 root@localhost's password:
 
 Number of key(s) added: 1
-
-Now try logging into the machine, with:   "ssh 'root@localhost'"
-and check to make sure that only the key(s) you wanted were added.
-[root@xxx-r660 ~]#
 ```
 
-4. Clone `jetlag`
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
+
+5. Clone the `jetlag` GitHub repo
 
 ```console
-[root@xxx-r660 ~]# git clone https://github.com/redhat-performance/jetlag.git
+[root@<bastion> ~]# git clone https://github.com/redhat-performance/jetlag.git
 Cloning into 'jetlag'...
 remote: Enumerating objects: 4510, done.
 remote: Counting objects: 100% (4510/4510), done.
@@ -125,10 +101,21 @@ The `git clone` command will normally set the local head to the Jetlag repo's
 `main` branch. To set your local head to a different branch or tag (for example,
 a development branch), you can add `-b <name>` to the command.
 
-5. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of `jetlag`
+Change your working directory to the repo's `jetlag` directory, which we'll assume
+for subsequent steps:
 
 ```console
-[root@xxx-r660 jetlag]# cat pull_secret.txt
+[root@<bastion> ~] cd jetlag
+[root@<bastion> jetlag]
+```
+
+6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local Jetlagrepo. You'll find the Pull Secret near the end of the long downloads
+page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
+*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
+filename:
+
+```console
+[root@<bastion> jetlag]# cat >pull_secret.txt
 {
   "auths": {
     "quay.io": {
@@ -147,35 +134,34 @@ a development branch), you can add `-b <name>` to the command.
 }
 ```
 
-6. Change to `jetlag` directory, and then run `source bootstrap.sh`. This will
-activate a local virtual Python environment configured with the Jetlag and
+7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
+This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
 
 ```console
-[root@xxx-r660 ~]# cd jetlag/
-[root@xxx-r660 jetlag]# source bootstrap.sh
+[root@<bastion> jetlag]# source bootstrap.sh
 Collecting pip
 ...
-(.ansible) [root@xxx-r660 jetlag]#
+(.ansible) [root@<bastion> jetlag]#
 ```
 
 You can re-enter that virtual environment when you log in to the bastion again
 with:
 
 ```console
-[root@xxx-r660 ~]# cd jetlag
-[root@xxx-r660 ~]# source .ansible/bin/activate
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]# source .ansible/bin/activate
 ```
 
 <!-- End of duplicated setup text -->
 
-## all.yml vars file
+## Configure Ansible vars in `all.yml`
 
 Next copy the vars file so we can edit it.
 
 ```console
-[user@fedora jetlag]$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
-[user@fedora jetlag]$ vi ansible/vars/all.yml
+[user@<bastion> jetlag]$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
+[user@<bastion> jetlag]$ vi ansible/vars/all.yml
 ```
 
 ### Lab & cluster infrastructure vars
@@ -197,7 +183,7 @@ For the ssh keys we have a chicken before the egg problem in that our bastion ma
 
 By default, Jetlag will choose the first node in an allocation as the bastion node.
 
-Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
+Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
@@ -321,7 +307,7 @@ Oddly enough if you run into any routing issues because of duplicate address det
 
 The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all running podman containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
-## Review all.yml
+## Review `all.yml`
 
 The `ansible/vars/all.yml` now resembles ..
 
@@ -365,7 +351,7 @@ networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
+# Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
 # [user@fedora jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
@@ -417,7 +403,7 @@ rwn_network_interface: ens1f1
 Run the create inventory playbook
 
 ```console
-[user@fedora jetlag]$ ansible-playbook ansible/create-inventory.yml
+[user@<bastion> jetlag]$ ansible-playbook ansible/create-inventory.yml
 ...
 ```
 
@@ -483,14 +469,14 @@ dns2=10.1.36.2
 Next run the `setup-bastion.yml` playbook ...
 
 ```console
-[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ...
 ```
 
 We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
-[user@fedora jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
+[user@<bastion> jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
 Warning: Permanently added 'f12-h05-000-1029u.rdu2.scalelab.redhat.com,10.1.43.101' (ECDSA) to the list of known hosts.
 id_rsa.pub                                                                                100%  554    22.6KB/s   00:00
 ```
@@ -500,7 +486,7 @@ Then set `ssh_public_key_file: /home/user/jetlag/id_rsa.pub` or to wherever you 
 Finally run the `sno-deploy.yml` playbook ...
 
 ```console
-[user@fedora jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ...
 ```
 
@@ -509,7 +495,7 @@ A typical deployment will require around 60-70 minutes to complete mostly depend
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 
 ```console
-[root@f12-h05-000-1029p ~]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
-[root@f12-h05-000-1029p ~]# oc get no
+[root@<bastion> jetlag]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
+[root@<bastion> jetlag]# oc get no
 ...
 ```

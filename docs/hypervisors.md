@@ -134,7 +134,7 @@ When you create vms, depending upon what `hv_vm_manifest_type`, you will find pr
 # ls -lh /root/hv-vm/
 total 0
 drwxr-xr-x. 3 root root 23 Jul 22 18:34 jumbo
-(.ansible) [root@f31-h05-000-r640 jetlag]# ls -lh /root/hv-vm/jumbo/manifests/
+(.ansible) [root@<bastion> jetlag]# ls -lh /root/hv-vm/jumbo/manifests/
 total 456K
 -rw-r--r--. 1 root root 453K Jul 22 18:51 manifest.yml
 ```
@@ -142,7 +142,7 @@ total 456K
 As expected, cluster type of `jumbo` includes just one yaml file with all the manifests to create the jumbo cluster.
 
 ```console
-(.ansible) [root@f31-h05-000-r640 jetlag]# ls -lh /root/hv-vm/compact/siteconfigs/
+(.ansible) [root@<bastion>jetlag]# ls -lh /root/hv-vm/compact/siteconfigs/
 total 400K
 -rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00001-resources.yml
 -rw-r--r--. 1 root root 97K Jul 22 19:30 compact-00001-siteconfig.yml
