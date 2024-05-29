@@ -175,7 +175,7 @@ When worikng with OCP development builds/nightly releases, it might be required 
 * Execute the command shown below to print out the pull secret:
 
 ```console
-[user@fedora jetlag]$ oc registry login --to=-
+(.ansible) [root@<bastion> jetlag]# oc registry login --to=-
 ```
 * Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
 
@@ -198,7 +198,7 @@ spec:
 
 For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
 ```yaml
-oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
+(.ansible) [root@<bastion> jetlag]# oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
 Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
 
@@ -321,7 +321,7 @@ execute this command on each host in your deployment, setting the `control_plane
 `worker_install_disk` paths manually for each host in the inventory file.)
 
 ```
-[root@<bastion> jetlag]# ls -la /dev/disk/by-path/
+(.ansible) [root@<bastion> jetlag]# ls -la /dev/disk/by-path/
 total 0
 drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
 drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..

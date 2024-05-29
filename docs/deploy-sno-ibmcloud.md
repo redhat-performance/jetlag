@@ -6,8 +6,8 @@ _**Table of Contents**_
 
 <!-- TOC -->
 - [Bastion setup](#bastion-setup)
-- [SNO var changes](#sno-var-changes)
-- [Review SNO ibmcloud.yml](#review-sno-ibmcloudyml)
+- [Configure Ansible vars `ibmcloud.yml`](#configure-ansible-vars-ibmcloudyml)
+- [Review SNO `ibmcloud.yml`](#review-sno-ibmcloudyml)
 - [Run playbooks](#run-playbooks)
 <!-- /TOC -->
 
@@ -134,6 +134,10 @@ filename:
 }
 ```
 
+If you are deploying nightly builds then you will need to add a ci token and an entry for
+`registry.ci.openshift.org`. If you plan on deploying an ACM downstream build be sure to
+include an entry for `quay.io:443`.
+
 7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
 This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
@@ -160,8 +164,8 @@ with:
 Next copy the vars file so we can edit it.
 
 ```console
-[root@<bastion> jetlag]$ cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
-[root@<bastion> jetlag]$ vi ansible/vars/ibmcloud.yml
+(.ansible) [root@<bastion> jetlag]$ cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
+(.ansible) [root@<bastion> jetlag]$ vi ansible/vars/ibmcloud.yml
 ```
 
 Change `cluster_type` to `cluster_type: sno`
@@ -256,7 +260,7 @@ controlplane_network_ingress:
 Run the ibmcloud create inventory playbook
 
 ```console
-[user@<bastion> jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
+(.ansible) [root@<bastion> jetlag]$ ansible-playbook ansible/ibmcloud-create-inventory.yml
 ...
 ```
 
@@ -267,25 +271,25 @@ The inventory file should resemble the [sample one provided](../ansible/inventor
 Next run the `ibmcloud-setup-bastion.yml` playbook ...
 
 ```console
-[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
+(.ansible) [root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-setup-bastion.yml
 ...
 ```
 
 Finally run the `ibmcloud-sno-deploy.yml` playbook ...
 
 ```console
-[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-sno-deploy.yml
+(.ansible) [root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-sno-deploy.yml
 ...
 ```
 
 If everything goes well you should have SNO(s) in about 50-60 minutes. You can interact with the SNOs from the bastion.
 
 ```console
-[root@<bastion> jetlag]# cd sno/
-[root@<bastion> sno]# oc --kubeconfig=jetlag-bm5/kubeconfig get no
+(.ansible) [root@<bastion> jetlag]# cd sno/
+(.ansible) [root@<bastion> sno]# oc --kubeconfig=jetlag-bm5/kubeconfig get no
 NAME         STATUS   ROLES           AGE   VERSION
 jetlag-bm5   Ready    master,worker   48m   v1.21.1+051ac4f
-[root@<bastion> sno]# oc --kubeconfig=jetlag-bm4/kubeconfig get no
+(.ansible) [root@<bastion> sno]# oc --kubeconfig=jetlag-bm4/kubeconfig get no
 NAME         STATUS   ROLES           AGE   VERSION
 jetlag-bm4   Ready    master,worker   48m   v1.21.1+051ac4f
 

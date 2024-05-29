@@ -57,13 +57,13 @@ To get started with IBMcloud shell, refer to https://cloud.ibm.com/docs/cloud-sh
 Once you have successfully logged into the IBMcloud Shell, you should be able to list  your devices using the following command:
 
 ```console
-[user@fedora]$ ibmcloud sl hardware list
+[user@<local>]$ ibmcloud sl hardware list
 ```
 
 Sample output:
 
 ```console
-$ ibmcloud sl hardware list
+[user@<local>]$ ibmcloud sl hardware list
 id        hostname     domain                    public_ip        private_ip    datacenter   status
 960237    jetlag-bm0   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
 1165601   jetlag-bm1   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE

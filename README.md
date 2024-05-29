@@ -10,14 +10,6 @@ Three separate layouts of clusters can be deployed:
 
 Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer service and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. The worker node count can also be 0 such that your bare metal cluster is a compact 3 node cluster with schedulable control-plane nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
 
-We recommend that you set up Jetlag on the bastion machine and run playbooks
-from there. This will give faster access to the machines being configured, and
-it also provides an environment that can easily be shared for debugging if
-necessary. However you can run Jetlag playbooks from a remote host (for example,
-your laptop) as long as you can connect to the bastion machine in your cloud
-allocation.
-
-
 _**Table of Contents**_
 
 <!-- TOC -->
@@ -101,7 +93,16 @@ Pre-reqs for Supermicro hardware:
 
 ## Cluster Deployment Usage
 
-There are three main files to configure. The inventory file is generated but might have to be edited for specific scenario/hardware usage:
+We recommend that you set up Jetlag on the bastion machine and run playbooks
+from there. This will give faster access to the machines being configured, and
+it also provides an environment that can easily be shared for debugging if
+necessary. However you can run Jetlag playbooks from a remote host (for example,
+your laptop) as long as you can connect to the bastion machine in your cloud
+allocation.
+
+There are three main files to configure. The inventory file is generated (for SCALE lab and IBM Cloud),
+but might have to be edited for specific scenario/hardware usage. You can also [manually create a
+"Bring Your Own Lab"](docs/bastion-deploy-bm-byol) inventory file.
 
 * `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
 * `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)

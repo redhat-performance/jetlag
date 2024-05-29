@@ -6,7 +6,7 @@ _**Table of Contents**_
 
 <!-- TOC -->
 - [Bastion setup](#bastion-setup)
-- [all.yml vars file](#allyml-vars-file)
+- [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
 - [Review all.yml](#review-allyml)
 - [Run playbooks](#run-playbooks)
 <!-- /TOC -->
@@ -134,6 +134,10 @@ filename:
 }
 ```
 
+If you are deploying nightly builds then you will need to add a ci token and an entry for
+`registry.ci.openshift.org`. If you plan on deploying an ACM downstream build be sure to
+include an entry for `quay.io:443`.
+
 7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
 This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
@@ -160,8 +164,8 @@ with:
 Next copy the vars file so we can edit it.
 
 ```console
-[user@<bastion> jetlag]$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
-[user@<bastion> jetlag]$ vi ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]$ vi ansible/vars/all.yml
 ```
 
 ### Lab & cluster infrastructure vars
@@ -403,7 +407,7 @@ rwn_network_interface: ens1f1
 Run the create inventory playbook
 
 ```console
-[user@<bastion> jetlag]$ ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@<bastion> jetlag]$ ansible-playbook ansible/create-inventory.yml
 ...
 ```
 
@@ -469,14 +473,14 @@ dns2=10.1.36.2
 Next run the `setup-bastion.yml` playbook ...
 
 ```console
-[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+(.ansible) [root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ...
 ```
 
 We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
-[user@<bastion> jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
+(.ansible) [root@<bastion> jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
 Warning: Permanently added 'f12-h05-000-1029u.rdu2.scalelab.redhat.com,10.1.43.101' (ECDSA) to the list of known hosts.
 id_rsa.pub                                                                                100%  554    22.6KB/s   00:00
 ```
@@ -486,7 +490,7 @@ Then set `ssh_public_key_file: /home/user/jetlag/id_rsa.pub` or to wherever you 
 Finally run the `sno-deploy.yml` playbook ...
 
 ```console
-[user@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+(.ansible) [root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ...
 ```
 
@@ -495,7 +499,7 @@ A typical deployment will require around 60-70 minutes to complete mostly depend
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 
 ```console
-[root@<bastion> jetlag]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
-[root@<bastion> jetlag]# oc get no
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
 ...
 ```

@@ -40,8 +40,8 @@ The hypervisors bridge a network interface that was determined at the `create-in
 After generating an inventory with the `create-inventory.yml` playbook, the hypervisor can be setup. Start by editing the vars
 
 ```console
-cp ansible/vars/hv.sample.yml ansible/vars/hv.yml
-vi ansible/vars/hv.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/hv.sample.yml ansible/vars/hv.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/hv.yml
 ```
 
 Pay close attention to these vars:
@@ -54,7 +54,7 @@ Pay close attention to these vars:
 Run hv-setup playbook
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-setup.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-setup.yml
 ```
 
 ## Hypervisor Network-Impairments
@@ -64,8 +64,8 @@ For testing where network impairments are required, we can apply latency/packet-
 To apply network impairments, first copy the network-impairments sample vars file
 
 ```console
-cp ansible/vars/network-impairments.sample.yml ansible/vars/network-impairments.yml
-vi ansible/vars/network-impairments.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/network-impairments.sample.yml ansible/vars/network-impairments.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/network-impairments.yml
 ```
 
 Make sure to set/review the following vars:
@@ -79,13 +79,13 @@ Make sure to set/review the following vars:
 Apply impairments:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml
 ```
 
 Remove impairments:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml -e 'apply_egress_impairments=false apply_ingress_impairments=false'
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud03.local ansible/hv-network-impairments.yml -e 'apply_egress_impairments=false apply_ingress_impairments=false'
 ```
 
 Note, egress impairments are applied directly to the impaired nic. Ingress impairments are applied to an ifb interface that handles ingress traffic for the impaired nic.
@@ -95,8 +95,8 @@ Note, egress impairments are applied directly to the impaired nic. Ingress impai
 Three playbooks are included to create, delete and replace the vms. All three playbooks depend on the same vars file and it should be copied in the same fashion as previous vars files:
 
 ```console
-cp ansible/vars/hv.sample.yml ansible/vars/hv.yml
-vi ansible/vars/hv.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/hv.sample.yml ansible/vars/hv.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/hv.yml
 ```
 
 The following vars apply to the manifests which are generated for deploying OCP clusters from ACM/MCE using the VMs as "emulated BareMetal Nodes":
@@ -111,19 +111,19 @@ The following vars apply to the manifests which are generated for deploying OCP 
 Run create vms:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-create.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-create.yml
 ```
 
 Run replace vms (Deletes then creates vms):
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-replace.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-replace.yml
 ```
 
 Run delete vms:
 
 ```console
-ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-delete.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-delete.yml
 ```
 
 ## Manifests and Siteconfigs

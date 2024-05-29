@@ -88,7 +88,7 @@ HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
 
 Example accessing the bastion registry and listing repositories:
 ```console
-[root@<bastion> akrzos]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
+(.ansible) [root@<bastion> jetlag]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   532  100   532    0     0    104      0  0:00:05  0:00:05 --:--:--   120
@@ -118,7 +118,7 @@ In the event your bastion's running containers have incorrect data or you are de
 Clean **all** containers (on bastion machine):
 
 ```console
-podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
+(.ansible) [root@<bastion> jetlag]# podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
 ```
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
@@ -130,9 +130,9 @@ If you are planning a redeploy with new versions and new container images it may
 On the bastion machine:
 
 ```console
-[root@<bastion> ~]# cd /opt/registry
-[root@<bastion> registry]#
-[root@<bastion> registry]# ls -lah
+(.ansible) [root@<bastion> jetlag]# cd /opt/registry
+(.ansible) [root@<bastion> registry]#
+(.ansible) [root@<bastion> registry]# ls -lah
 total 12K
 drwxr-xr-x. 6 root root  144 Jul 20 12:14 .
 drwxr-xr-x. 6 root root   83 Jul 16 15:01 ..
@@ -143,7 +143,7 @@ drwxr-xr-x. 3 root root   20 Jul 20 02:27 data
 -rw-r--r--. 1 root root 3.0K Jul 20 20:31 pull-secret-bastion.txt
 -rw-r--r--. 1 root root 2.9K Jul 20 02:27 pull-secret.txt
 drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
-[root@<bastion> registry]# du -sh *
+(.ansible) [root@<bastion> registry]# du -sh *
 4.0K    auth
 8.0K    certs
 27G     data
@@ -151,7 +151,7 @@ drwxr-xr-x. 2 root root  191 Jul 21 12:26 sync-acm-d
 4.0K    pull-secret-bastion.txt
 4.0K    pull-secret.txt
 48K     sync-acm-d
-[root@<bastion> registry]# rm -rf data/docker/
+(.ansible) [root@<bastion> registry]# rm -rf data/docker/
 ```
 
 ## Rebooted Bastion

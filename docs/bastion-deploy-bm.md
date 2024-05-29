@@ -45,7 +45,7 @@ _**Table of Contents**_
 
 <!-- TOC -->
 - [Bastion setup](#bastion-setup)
-- [Configure vars all.yml](#configure-vars-allyml)
+- [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
 - [Review vars all.yml](#review-vars-allyml)
 - [Run playbooks](#run-playbooks)
 - [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
@@ -173,6 +173,10 @@ filename:
   }
 }
 ```
+
+If you are deploying nightly builds then you will need to add a ci token and an entry for
+`registry.ci.openshift.org`. If you plan on deploying an ACM downstream build be sure to
+include an entry for `quay.io:443`.
 
 7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
 This will activate a local virtual Python environment configured with the Jetlag and
