@@ -35,7 +35,7 @@ Complete!
 Connection to <bastion> closed by remote host.
 Connection to <bastion> closed.
 ...
-[user@fedora ~]$ ssh root@xxx-h01-000-r650.example.redhat.com
+[user@<local> ~]$ ssh root@<bastion>
 ...
 [root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.9 (Ootpa)
@@ -149,10 +149,11 @@ for subsequent steps:
 [root@<bastion> jetlag]
 ```
 
-6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local Jetlag repo. You'll find the Pull Secret near the end of the long downloads
-page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
-*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
-filename:
+6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
+the long downloads page, in the section labeled "Tokens". You can either click the "Download" button and then copy the
+downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
+file will download with a hyphen (`-`)), *or* click on the "Copy" button, and then paste into the terminal after typing
+`cat >pull_secret.txt` on the bastion to create the expected filename:
 
 ```console
 [root@<bastion> jetlag]# cat >pull_secret.txt
@@ -338,7 +339,7 @@ networktype: OVNKubernetes
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [user@<bastion> jetlag]$ ls pull_secret.txt
+# [root@<bastion> jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################

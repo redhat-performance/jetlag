@@ -59,6 +59,10 @@ Number of key(s) added: 2
 [root@<bastion> ~]
 ```
 
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
+
 3. Install some additional tools to help after reboot
 
 ```console
@@ -127,10 +131,11 @@ for subsequent steps:
 [root@<bastion> jetlag]
 ```
 
-6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local `jetlag` repo. You'll find the Pull Secret near the end of the long downloads
-page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
-*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
-filename:
+6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
+the long downloads page, in the section labeled "Tokens". You can either click the "Download" button and then copy the
+downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
+file will download with a hyphen (`-`)), *or* click on the "Copy" button, and then paste into the terminal after typing
+`cat >pull_secret.txt` on the bastion to create the expected filename:
 
 ```console
 [root@<bastion> jetlag]# cat >pull_secret.txt
@@ -285,7 +290,7 @@ enable_fips: false
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [user@fedora jetlag]$ ls pull_secret.txt
+# [root@<bastion> jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -425,7 +430,7 @@ If everything goes well, you should have a cluster in about 60-70 minutes. You c
 ```console
 (.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
 (.ansible) [root@<bastion> jetlag]# oc get no
-NAME              TATUS   ROLES                  AGE   VERSION
+NAME              STATUS   ROLES                  AGE   VERSION
 control-plane-0   Ready    control-plane,master   36m   v1.27.6+f67aeb3
 control-plane-1   Ready    control-plane,master   61m   v1.27.6+f67aeb3
 control-plane-2   Ready    control-plane,master   63m   v1.27.6+f67aeb3

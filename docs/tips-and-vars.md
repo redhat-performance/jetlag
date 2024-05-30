@@ -197,14 +197,15 @@ spec:
 ```
 
 For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
-```yaml
+
+```console
 (.ansible) [root@<bastion> jetlag]# oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
 Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
 
 For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
 
-```yaml
+```console
 ### script
 #!/bin/bash
 registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
@@ -227,17 +228,20 @@ function rm_XXX_tag {
 If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
-2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
-```
-* Network 1 = `controlplane_network_interface_idx: 0`
-* Network 2 = `controlplane_network_interface_idx: 1`
-* Network 3 = `controlplane_network_interface_idx: 2`
-* Network 4 = `controlplane_network_interface_idx: 3`
-* Network 5 = `controlplane_network_interface_idx: 4`
-```
+2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping:
+
+| Network | YAML variable |
+| ------- | ------------- |
+| Network 1 | `controlplane_network_interface_idx: 0` |
+| Network 2 | `controlplane_network_interface_idx: 1` |
+| Network 3 | `controlplane_network_interface_idx: 2` |
+| Network 4 | `controlplane_network_interface_idx: 3` |
+| Network 5 | `controlplane_network_interface_idx: 4` |
+
 3. Since the desired NIC in this exampls,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
 4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`.
-```
+
+```yaml
 ################################################################################
 # Extra vars
 ################################################################################
@@ -256,7 +260,7 @@ they can be specified directly through the vars file `all.yml`.
 To ensure the drive will be correctly mapped at each boot,
 we will locate the `/dev/disk/by-path` link to each drive.
 
-```
+```console
 # Locate names of the drives identified on your system
 $ lsblk | grep nvme
 nvme3n1     259:0    0   1.5T  0 disk
@@ -309,7 +313,6 @@ lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <
 ### Extra vars for by-path disk reference
 **Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to set the extra vars for by-path reference for the installation. Below are the extra vars along with the hardware used.
 
-
 | Hardware           | control_plane_install_disk                      | worker_install_disk                             |
 | ------------------ | ----------------------------------------------- | ----------------------------------------------- |
 | Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
@@ -320,7 +323,7 @@ assumes that the bastion hardware configuration is identical: in a heterogeneous
 execute this command on each host in your deployment, setting the `control_plane_install_disk` and
 `worker_install_disk` paths manually for each host in the inventory file.)
 
-```
+```console
 (.ansible) [root@<bastion> jetlag]# ls -la /dev/disk/by-path/
 total 0
 drwxr-xr-x. 2 root root 160 Apr 11 19:40 .

@@ -66,25 +66,25 @@ Versions:
 Update to RHEL 8.9
 
 ```console
-[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+[root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 (Ootpa)
 
-[root@xxx-xxx-xxx-r640 ~]# ./update-latest-rhel-release.sh 8.9
+[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
 ...
-[root@xxx-xxx-xxx-r640 ~]# dnf update -y
+[root@<bastion> ~]# dnf update -y
 ...
-[root@xxx-xxx-xxx-r640 ~]# reboot
+[root@<bastion> ~]# reboot
 ...
-[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+[root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.9 (Ootpa)
 ```
 
 Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# source bootstrap.sh
+[root@<bastion> jetlag]# source bootstrap.sh
 ...
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]#
+(.ansible) [root@<bastion> jetlag]#
 ```
 
 Pre-reqs for Supermicro hardware:
@@ -111,8 +111,8 @@ but might have to be edited for specific scenario/hardware usage. You can also [
 Start by editing the vars
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# vi ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
 ```
 
 Make sure to set/review the following vars:
@@ -130,7 +130,7 @@ Make sure to set/review the following vars:
 Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat pull_secret.txt
+(.ansible) [root@<bastion> jetlag]# cat pull_secret.txt
 {
   "auths": {
 ...
@@ -139,13 +139,13 @@ Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
 Run create-inventory playbook
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/create-inventory.yml
 ```
 
 Run setup-bastion playbook
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ```
 
 Run deploy for either bm/rwn/sno playbook with inventory created by create-inventory playbook
@@ -153,43 +153,43 @@ Run deploy for either bm/rwn/sno playbook with inventory created by create-inven
 Bare Metal Cluster:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
 ```
 See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for BM install related issues
 
 Remote Worker Node Cluster:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
 ```
 
 Single Node OpenShift:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ```
 
 Interact with your cluster from your bastion machine:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# export KUBECONFIG=/root/bm/kubeconfig
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# oc get no
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
 NAME               STATUS   ROLES                         AGE    VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
 xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
 xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat /root/bm/kubeadmin-password
+(.ansible) [root@<bastion> jetlag]# cat /root/bm/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```
 
 And for SNO
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# export KUBECONFIG=/root/sno/xxx-h02-000-r650/kubeconfig
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# oc get no
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/sno/xxx-h02-000-r650/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
 NAME      STATUS   ROLES                         AGE   VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   30h   v1.28.6+0fb4726
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat /root/sno/xxx-h02-000-r650/kubeadmin-password
+(.ansible) [root@<bastion> jetlag]# cat /root/sno/xxx-h02-000-r650/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```
 

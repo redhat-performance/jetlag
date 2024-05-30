@@ -1,6 +1,45 @@
 # Deploy a Single Node OpenShift cluster via Jetlag quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a Single Node OpenShift (SNO) cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Supermicro 1029U.
+Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a Single Node OpenShift (SNO) cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Supermicro 1029U. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart.
+
+Select the host name or IP for the first machine of your allocation from the
+[scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/) as your bastion.
+
+Update the version of RHEL on the bastion machine if necessary, and reboot.
+
+```console
+[user@<local> ~]$ ssh root@<bastion>
+...
+[root@<bastion> ~]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.2 (Ootpa)
+
+[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
+Changing repository from 8.2 to 8.9
+Cleaning dnf repo cache..
+
+-------------------------
+Run dnf update to upgrade to RHEL 8.9
+
+[root@<bastion> ~]# dnf update -y
+Updating Subscription Management repositories.
+Unable to read consumer identity
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+rhel89 AppStream                                                                                                                                              245 MB/s | 7.8 MB     00:00
+rhel89 BaseOS                                                                                                                                                 119 MB/s | 2.4 MB     00:00
+Extra Packages for Enterprise Linux 8 - x86_64                                                                                                                 14 MB/s |  14 MB     00:00
+Last metadata expiration check: 0:00:01 ago on Tue 02 May 2023 06:58:15 PM UTC.
+Dependencies resolved.
+...
+Complete!
+[root@<bastion> ~]# reboot
+Connection to <bastion> closed by remote host.
+Connection to <bastion> closed.
+...
+[user@<local> ~]$ ssh root@<bastion>
+...
+[root@<bastion> ~]# cat /etc/redhat-release
+Red Hat Enterprise Linux release 8.9 (Ootpa)
+```
 
 _**Table of Contents**_
 
@@ -41,6 +80,10 @@ Number of key(s) added: 2
 [user@<local> ~] ssh root@<bastion>
 [root@<bastion> ~]
 ```
+
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
 
 3. Install some additional tools to help after reboot
 
@@ -109,10 +152,11 @@ for subsequent steps:
 [root@<bastion> jetlag]
 ```
 
-6. Download your pull_secret.txt from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) and place it in the root directory of the local Jetlagrepo. You'll find the Pull Secret near the end of the long downloads
-page, in the section labeled "Tokens". You can either click the "Download" button and then copy `~/Downloads/pull-secret.txt` to `./pull_secret.txt` (notice that Jetlag expects an underscore (`_`) while the file will download with a hyphen (`-`)),
-*or* click on the "Copy" button, and then paste into the terminal after typing `cat >pull_secret.txt` to create the expected
-filename:
+6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
+the long downloads page, in the section labeled "Tokens". You can either click the "Download" button and then copy the
+downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
+file will download with a hyphen (`-`)), *or* click on the "Copy" button, and then paste into the terminal after typing
+`cat >pull_secret.txt` on the bastion to create the expected filename:
 
 ```console
 [root@<bastion> jetlag]# cat >pull_secret.txt
@@ -356,7 +400,7 @@ networktype: OVNKubernetes
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [user@fedora jetlag]$ ls pull_secret.txt
+# [root@<bastion> jetlag]$ ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################

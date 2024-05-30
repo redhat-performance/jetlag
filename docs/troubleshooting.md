@@ -80,11 +80,12 @@ Several services are run on the bastion in order to automate the tasks that Jetl
 * Dnsmasq / Coredns - 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
-```
-AI Gui - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8080/
-AI API - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/
-HTTP Server - http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/
-```
+
+| Interface | Address |
+| :-: | :- |
+| AI Gui | `http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8080/` |
+| AI API | `http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/` |
+| HTTP Server | `http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/` |
 
 Example accessing the bastion registry and listing repositories:
 ```console
@@ -210,7 +211,7 @@ ipmitool -I lanplus -H mgmt-computer.example.com -U user -P password mc reset co
 
 The following example errors can be corrected after resetting the bmc of the machines.
 
-```console
+```
 TASK [boot-iso : SuperMicro - Mount ISO] *****************************************************************************************
 Tuesday 05 October 2021  12:20:23 -0500 (0:00:01.256)       0:01:10.117 *******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x root xxxxxxxxx wsiso mount \"http://x.x.x.x:8081\" /iso/discovery.iso\n", "delta": "0:00:00.903331", "end": "2021-10-05 12:20:24.841290", "msg": "non-zero return code", "rc": 204, "start": "2021-10-05 12:20:23.937959", "stderr": "", "stderr_lines": [], "stdout": "An ISO file already mounted. Please umount ISO first", "stdout_lines": ["An ISO file already mounted. Please umount ISO first"]}
@@ -224,7 +225,7 @@ Failed GET request to 'https://address.example.com/redfish/v1/Systems/1': 'The r
 
 Error: The node product key needs to be activated for this device
 
-```console
+```
 TASK [boot-iso : SuperMicro - Unmount ISO] ***************************************************************************************************************************************************
 Thursday 30 September 2021  15:04:14 -0400 (0:00:04.861)       0:01:51.715 ****
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x root xxxxxxxxx wsiso umount\n", "delta": "0:00:00.857430", "end": "2021-09-30 14:04:15.985123", "msg": "non-zero return code", "rc": 155, "start": "2021-09-30 14:04:15.127693", "stderr": "", "stderr_lines": [], "stdout": "The node product key needs to be activated for this device", "stdout_lines": ["The node product key needs to be activated for this device"]}
@@ -232,7 +233,7 @@ fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool x.x.x.x ro
 
 Error: This device doesn't support WSISO commands
 
-```console
+```
 TASK [boot-iso : SuperMicro - Unmount ISO] *************************************
 Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
@@ -285,7 +286,7 @@ When set to ignore the error, Jetlag can proceed, but you will need to manually 
 
 In the ALIAS lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of BM or SNO cluster types. In the SCALE lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
 
-```
+```console
 badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute BootMode --value Uefi
 ```
 
@@ -315,7 +316,7 @@ Before the OCP install and any boot order changes, ssh on the machines to nuke t
 
 If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
-```
+```console
 badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
 badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
 badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
