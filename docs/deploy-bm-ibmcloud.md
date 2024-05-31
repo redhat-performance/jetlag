@@ -98,7 +98,7 @@ Now try logging into the machine and check to make sure that only the key(s) you
 [root@<bastion> ~]# ssh root@localhost
 [root@<bastion> ~]#
 ```
-S
+
 5. Clone the `jetlag` GitHub repo
 
 ```console
@@ -125,10 +125,10 @@ for subsequent steps:
 ```
 
 6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
-the long downloads page, in the section labeled "Tokens". You can either click the "Download" button and then copy the
+the long downloads page, in the section labeled "Tokens". You can either click the "Download" button, and then copy the
 downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
-file will download with a hyphen (`-`)), *or* click on the "Copy" button, and then paste into the terminal after typing
-`cat >pull_secret.txt` on the bastion to create the expected filename:
+file will download with a hyphen (`-`)); *or* click on the "Copy" button, and then paste the clipboard into the terminal
+after typing `cat >pull_secret.txt` on the bastion to create the expected filename:
 
 ```console
 [root@<bastion> jetlag]# cat >pull_secret.txt

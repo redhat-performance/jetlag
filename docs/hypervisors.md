@@ -112,7 +112,7 @@ The following vars apply to the manifests which are generated for deploying OCP 
 | `ssh_public_key_file` | Sets the permitted ssh key to ssh into the node |
 | `setup_hv_vm_dhcp` | Leaves the nmstateconfig portion out of the manifests |
 | `hv_vm_manifest_type` | Determines which kind of manifest(s) the playbook will generate, choose from `sno`, `compact`, `standard`, and `jumbo` |
-| `hv_vm_manifest_acm_cr` | Set to true if ACM CRs are desired to be generated with the manifests |
+| `hv_vm_manifest_acm_cr` | Set to true if you want ACM CRs generated with the manifests |
 | `compact_cluster_count` | If `hv_vm_manifest_type: compact`, then this determines the number of compact cluster siteconfigs to generate. Each compact cluster consists of 3 vms, be careful not to exceed the entire count of vms. |
 | `standard_cluster_count` | If `hv_vm_manifest_type: standard`, then this determines the number of standard cluster siteconfigs to generate. It will include `standard_cluster_node_count` count of vms in each standard cluster siteconfig. Be careful not to exceed the entire count of vms. |
 

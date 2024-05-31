@@ -1,9 +1,7 @@
 # Deploy a Bare Metal cluster via Jetlag from a Scale Lab Bastion Machine quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart.
-
-Select the host name or IP for the first machine of your allocation from the
-[scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/) as your bastion.
+Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
+[the scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
 
 Update the version of RHEL on the bastion machine if necessary, and reboot.
 
@@ -150,10 +148,10 @@ for subsequent steps:
 ```
 
 6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
-the long downloads page, in the section labeled "Tokens". You can either click the "Download" button and then copy the
+the long downloads page, in the section labeled "Tokens". You can either click the "Download" button, and then copy the
 downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
-file will download with a hyphen (`-`)), *or* click on the "Copy" button, and then paste into the terminal after typing
-`cat >pull_secret.txt` on the bastion to create the expected filename:
+file will download with a hyphen (`-`)); *or* click on the "Copy" button, and then paste the clipboard into the terminal
+after typing `cat >pull_secret.txt` on the bastion to create the expected filename:
 
 ```console
 [root@<bastion> jetlag]# cat >pull_secret.txt
