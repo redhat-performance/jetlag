@@ -4,9 +4,11 @@ Tooling to install clusters for testing via an on-prem [Assisted Installer](http
 
 Three separate layouts of clusters can be deployed:
 
-* BM - Bare Metal - 3 control-plane nodes, X number of worker nodes
-* RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
-* SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
+| Layout | Meaning | Description |
+| - | - | - |
+| BM | Bare Metal | 3 control-plane nodes, X number of worker nodes
+| RWN | Remote Worker Node | 3 control-plane/worker nodes, X number of remote worker nodes
+| SNO | Single Node OpenShift | 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
 Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer service and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. The worker node count can also be 0 such that your bare metal cluster is a compact 3 node cluster with schedulable control-plane nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
 
@@ -104,9 +106,11 @@ There are three main files to configure. The inventory file is generated (for SC
 but might have to be edited for specific scenario/hardware usage. You can also [manually create a
 "Bring Your Own Lab"](docs/bastion-deploy-bm-byol) inventory file.
 
-* `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
-* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
-* `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
+| File | Description |
+| - | - |
+| `ansible/vars/all.yml` | An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
+| `pull_secret.txt` | Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
+| `ansible/inventory/$CLOUDNAME.local` | The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
 
