@@ -117,23 +117,39 @@ Start by editing the vars
 
 Make sure to set/review the following vars:
 
-* `lab` - either `alias` or `scalelab`
-* `lab_cloud` - the cloud within the lab environment (Example: `cloud42`)
-* `cluster_type` - either `bm`, `rwn`, or `sno` for the respective cluster layout
-* `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
-* `sno_node_count` - applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
-* `bastion_lab_interface` - set to the bastion machine's lab accessible interface
-* `bastion_controlplane_interface` - set to the interface in which the bastion will be networked to the deployed ocp cluster
-* `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
-* More customization such as cluster_network and service_network can be supported as extra vars, check each ansible roles default vars file for variable names and options
+| Variable | Meaning |
+| - | - |
+| `lab` | either `alias` or `scalelab`
+| `lab_cloud` | the cloud within the lab environment (Example: `cloud42`)
+| `cluster_type` | either `bm`, `rwn`, or `sno` for the respective cluster layout
+| `worker_node_count` | applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
+| `sno_node_count` | applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
+| `bastion_lab_interface` | set to the bastion machine's lab accessible interface
+| `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
+| `controlplane_lab_interface` | applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
 
-Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
+More customization such as `cluster_network` and `service_network` can be supported as extra vars, check each ansible role default vars file for variable names and options.
+
+Save your pull-secret from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) in `pull_secret.txt` in the Jetlag repo base directory, for example by using the "Copy" button on the web page, and then pasting the clipboard text into a `cat > pull_secret.txt` command like this:
 
 ```console
-(.ansible) [root@<bastion> jetlag]# cat pull_secret.txt
+(.ansible) [root@<bastion> jetlag]# cat >pull_secret.txt
 {
   "auths": {
-...
+    "quay.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.redhat.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    }
+  }
+}
 ```
 
 Run create-inventory playbook

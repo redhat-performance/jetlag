@@ -238,7 +238,7 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 | Network 4 | `controlplane_network_interface_idx: 3` |
 | Network 5 | `controlplane_network_interface_idx: 4` |
 
-3. Since the desired NIC in this exampls,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
+3. Since the desired NIC in this example,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
 4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`.
 
 ```yaml

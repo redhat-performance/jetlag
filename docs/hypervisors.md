@@ -17,11 +17,13 @@ BM/RWN cluster types will allocate remaining hardware that was not put in the in
 
 Make sure to set and append the following vars in the "extra vars" section of the `vars/all.yml`
 
-* `hv_inventory` - Enables placing remaining cloud hardware into hypervisor host group in inventory file
-* `hv_ssh_pass` - The ssh password to the hypervisor machines
-* `hv_ip_offset` - Offsets hypervisor ip addresses to allow for future expansion of the "hub" cluster. For example, a setting of `10` allows the hub cluster to grow 10 nodes before the ip addresses will conflict with the hypervisors.
-* `hv_vm_prefix` - Set to a specific prefix. Defaults to `sno` which produces vms with hostnames sno00001, sno00002, ... snoXXXXX
-* `hypervisor_nic_interface_idx` - Defaults to `1` and corresponds to Network 1 in the scalelab. The index is used to lookup which nic name will be bridged for the VMs.
+| Variable | Meaning |
+| - | - |
+| `hv_inventory` | Enables placing remaining cloud hardware into hypervisor host group in inventory file
+| `hv_ssh_pass` | The ssh password to the hypervisor machines
+| `hv_ip_offset` | Offsets hypervisor ip addresses to allow for future expansion of the "hub" cluster. For example, a setting of `10` allows the hub cluster to grow 10 nodes before the ip addresses will conflict with the hypervisors.
+| `hv_vm_prefix` | Set to a specific prefix. Defaults to `sno` which produces VMs with hostnames `sno00001`, `sno00002`, ... `snoXXXXX`
+| `hypervisor_nic_interface_idx` | Defaults to `1` and corresponds to Network 1 in the scalelab. The index is used to lookup which nic name will be bridged for the VMs.
 
 The default VM resource configuration is:
 
@@ -46,10 +48,12 @@ After generating an inventory with the `create-inventory.yml` playbook, the hype
 
 Pay close attention to these vars:
 
-* `lab` - Likely `scalelab` as that is the only lab this has been setup and tested in.
-* `setup_hv_vm_dhcp` - Set to true if dnsmasq should be configured on each hypervisor to hand out static addresses to each vm
-* `base_dns_name` - If you set this for your hub cluster, then set it identically here
-* `controlplane_network` - If you adjusted this for the hub cluster, make sure it matches for the hypervisors
+| Variable | Comment |
+| - | - |
+| `lab` | Likely `scalelab` as that is the only lab where this has been tested.
+| `setup_hv_vm_dhcp` | Set to true if `dnsmasq` should be configured on each hypervisor to hand out static addresses to each VM.
+| `base_dns_name` | If you set this for your hub cluster, then set it identically here
+| `controlplane_network` | If you adjusted this for the hub cluster, make sure it matches for the hypervisors
 
 Run hv-setup playbook
 
@@ -70,11 +74,13 @@ To apply network impairments, first copy the network-impairments sample vars fil
 
 Make sure to set/review the following vars:
 
-* `install_tc` - toggles installing traffic control
-* `apply_egress_impairments` and `apply_ingress_impairments` - toggles out-going or incoming traffic impairments
-* `egress_delay` and `ingress_delay` - latency for egress/ingress in milliseconds
-* `egress_packet_loss` and `ingress_packet_loss` - packet loss in percent (Example `0.01` for 0.01%)
-* `egress_bandwidth` and `ingress_bandwidth` - bandwidth in kilobits (Example `100000` which is 100000kbps or 100Mbps)
+| Variable | Description |
+| - | - |
+| `install_tc` | toggles installing traffic control
+| `apply_egress_impairments` and `apply_ingress_impairments` | toggles out-going or incoming traffic impairments
+| `egress_delay` and `ingress_delay` | latency for egress/ingress in milliseconds
+| `egress_packet_loss` and `ingress_packet_loss` | packet loss in percent (Example `0.01` for 0.01%)
+| `egress_bandwidth` and `ingress_bandwidth` | bandwidth in kilobits (Example `100000` which is 100000kbps or 100Mbps)
 
 Apply impairments:
 
