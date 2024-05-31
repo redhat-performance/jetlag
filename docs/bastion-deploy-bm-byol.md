@@ -55,8 +55,8 @@ Number of key(s) added: 2
 
 # Now try logging into the machine, and confirm that only the expected key(s)
 # were added to ~/.ssh/known_hosts
-[user@<local> ~] ssh root@<bastion>
-[root@<bastion> ~]
+[user@<local> ~]$ ssh root@<bastion>
+[root@<bastion> ~]#
 ```
 
 Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
@@ -102,7 +102,7 @@ Number of key(s) added: 1
 
 Now try logging into the machine and check to make sure that only the key(s) you wanted were added:
 ```console
-[root@<bastion> ~] ssh root@localhost
+[root@<bastion> ~]# ssh root@localhost
 [root@<bastion> ~]#
 ```
 
@@ -127,8 +127,8 @@ Change your working directory to the repo's `jetlag` directory, which we'll assu
 for subsequent steps:
 
 ```console
-[root@<bastion> ~] cd jetlag
-[root@<bastion> jetlag]
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]#
 ```
 
 6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
@@ -290,7 +290,7 @@ enable_fips: false
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [root@<bastion> jetlag]$ ls pull_secret.txt
+# [root@<bastion> jetlag]# ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -346,7 +346,7 @@ Choose wisely which server for which role: bastion, masters and workers. Make su
 - Choose the control-plane NICs, the L2 NIC interface.
 - Record the interface names and MACs of the chosen control-plane interfaces.
 - The correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks, e.g., pulling images from quay.io when Jetlag has already touched `/etc/resolv.conf`, will fail.
-- Make sure you have root access to the bmc, i.e., iDRAC for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
+- Make sure you have root access to the BMC, i.e., iDRAC for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
 
 Now, create the `/ansible/inventory/byol.local` inventory file and edit it with the info from above manually from your BYOL lab:
 
@@ -423,7 +423,7 @@ Finally run the `bm-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor the first deployment to see if anything hangs on boot, or if the virtual media is incorrect according to the b. You can monitor the deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-r660.machine.com:8080/clusters`), opening the consoles via the bmc, i.e., idrac for Dell, of each machine, and once the machines are booted, you can directly connect to them and tail log files.
+You should monitor the first deployment to see if anything hangs on boot, or if the virtual media is incorrect according to the BMC. You can monitor the deployment by opening the bastion's `assisted-installer` GUI (port 8080, ex `http://<bastion>:8080/clusters`), opening the consoles via the BMC, i.e., iDRAC for Dell, of each machine, and once the machines are booted, you can directly connect to them and tail log files.
 
 If everything goes well, you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
@@ -449,7 +449,7 @@ In Jetlag, the cluster installation process is divided into two phases: (1) Setu
 
 - Sometimes the setup bastion process may fail, because it is not able to have connectivity between the assisted-service API and the target cluster machines. Check for `firewalld` or `iptables` with rules in place that prevent traffic between these machines. A quick test that fixes the problem is to silence and/or disable `firewalld` and clean `iptables` rules.
 
-- For Jetlag to be able to copy, change the boot order, and boot the machines from the RHCOS image, the user needs to have writing access to the bmc, i.e., idrac in the case of Dell machines.
+- For Jetlag to be able to copy, change the boot order, and boot the machines from the RHCOS image, the user needs to have writing access to the BMC, i.e., iDRAC in the case of Dell machines.
 
 - The installation disks on the machines could vary from SATA/SAS to NVME, and therefore the `/dev/disk/by-path` IDs will vary.
 
@@ -461,10 +461,10 @@ In Jetlag, the cluster installation process is divided into two phases: (1) Setu
 - The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines, where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As a workaround, one can set the machines to boot from the .iso, via the virtual console.
 
 - The task "Wait up to 40 min for nodes to be discovered" is the last most important step. Make sure that the *boot order* (via the *boot type*) is correct:
-  - Check the virtual console in the bmc, i.e., idrac for Dell, if the machines are booting correctly from the .iso image.
+  - Check the virtual console in the BMC, i.e., iDRAC for Dell, if the machines are booting correctly from the .iso image.
 
   - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. Jetlag will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.local` above.
   - If the machines boot from the .iso image, but they cannot reach the bastion, it is most likely a networking issue, i.e. double check L2 and L3 NIC interfaces again.
      - [badfish](https://github.com/redhat-performance/badfish) could be used for this purpose, however, it is limited to use only FQDN, and, by the time of writing, the configuration for Del R660 and R760 in the interface config file was missing.
 
-- In the assistant installer GUI, under cluster events, if you observe any *permission denied* error, it is related to the SELinux issue pointed out previously. If you however notice an issue related to *wrong booted device*, make sure to observe in the virtual console in the bmc, if the machines booted from the disk, and if the boot order contains the disk option. This is a classic boot order issue. The steps in the assistant installer are that the control-plane nodes will boot from the disk to be configured, and then join the control-plane "nominated" as the bootstrap node (this happens around 45-47% of the installation) to continue with the installation of the worker nodes.
+- In the assistant installer GUI, under cluster events, if you observe any *permission denied* error, it is related to the SELinux issue pointed out previously. If you however notice an issue related to *wrong booted device*, make sure to observe in the virtual console in the BMC, if the machines booted from the disk, and if the boot order contains the disk option. This is a classic boot order issue. The steps in the assistant installer are that the control-plane nodes will boot from the disk to be configured, and then join the control-plane "nominated" as the bootstrap node (this happens around 45-47% of the installation) to continue with the installation of the worker nodes.

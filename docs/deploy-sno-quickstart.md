@@ -75,8 +75,8 @@ Number of key(s) added: 2
 
 # Now try logging into the machine, and confirm that only the expected key(s)
 # were added to ~/.ssh/known_hosts
-[user@<local> ~] ssh root@<bastion>
-[root@<bastion> ~]
+[user@<local> ~]$ ssh root@<bastion>
+[root@<bastion> ~]#
 ```
 
 Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
@@ -146,8 +146,8 @@ Change your working directory to the repo's `jetlag` directory, which we'll assu
 for subsequent steps:
 
 ```console
-[root@<bastion> ~] cd jetlag
-[root@<bastion> jetlag]
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]#
 ```
 
 6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
@@ -206,8 +206,8 @@ with:
 Next copy the vars file so we can edit it.
 
 ```console
-(.ansible) [root@<bastion> jetlag]$ cp ansible/vars/all.sample.yml ansible/vars/all.yml
-(.ansible) [root@<bastion> jetlag]$ vi ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
 ```
 
 ### Lab & cluster infrastructure vars
@@ -398,7 +398,7 @@ networktype: OVNKubernetes
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [root@<bastion> jetlag]$ ls pull_secret.txt
+# [root@<bastion> jetlag]# ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -449,7 +449,7 @@ rwn_network_interface: ens1f1
 Run the create inventory playbook
 
 ```console
-(.ansible) [root@<bastion> jetlag]$ ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/create-inventory.yml
 ...
 ```
 
@@ -515,24 +515,24 @@ dns2=10.1.36.2
 Next run the `setup-bastion.yml` playbook ...
 
 ```console
-(.ansible) [root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ...
 ```
 
 We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
-(.ansible) [root@<bastion> jetlag]$ scp root@f12-h05-000-1029u.rdu2.scalelab.redhat.com:/root/.ssh/id_rsa.pub .
-Warning: Permanently added 'f12-h05-000-1029u.rdu2.scalelab.redhat.com,10.1.43.101' (ECDSA) to the list of known hosts.
+[user@<local> ~]$ scp root@<bastion>:/root/.ssh/id_rsa.pub .
+Warning: Permanently added '<bastion>,10.1.43.101' (ECDSA) to the list of known hosts.
 id_rsa.pub                                                                                100%  554    22.6KB/s   00:00
 ```
 
 Then set `ssh_public_key_file: /home/user/jetlag/id_rsa.pub` or to wherever you copied the file down to.
 
-Finally run the `sno-deploy.yml` playbook ...
+Finally run the `sno-deploy.yml` playbook from the bastion ...
 
 ```console
-(.ansible) [root@<bastion> jetlag]$ ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ...
 ```
 

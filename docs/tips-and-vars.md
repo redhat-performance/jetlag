@@ -45,7 +45,7 @@ Alias lab chart is available [here](http://wiki.alias.bos.scalelab.redhat.com/fa
 By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
 
 ```yaml
-ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
+ocp_inventory_override: http://<http-server>/<inventory-file>.json
 ```
 ## DU Profile for SNOs
 

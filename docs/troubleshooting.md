@@ -54,7 +54,7 @@ controlplane_lab_interface
 
 If the machines are reachable, but never registered with the assisted-installer, then check if the assisted-installer-agent container image was pulled and running. You can inspect journal logs to see if this occurred. Possible failures or misconfiguration preventing progress here could be incorrect dns, bad pull-secret, or NAT on bastion is incorrect and not forwarding traffic.
 
-If some nodes correctly registered but some did not, then the missing nodes need to be individually diagnosed. On a missing node, check if the bmc actually mounted the virtual media. Typically the machine just requires a bmc reset due to not booting virtual media which is described in below sections. Another possibility includes non-functional hardware and thus the machine does not boot into the discovery image.
+If some nodes correctly registered but some did not, then the missing nodes need to be individually diagnosed. On a missing node, check if the BMC actually mounted the virtual media. Typically the machine just requires a BMC reset due to not booting virtual media which is described in below sections. Another possibility includes non-functional hardware and thus the machine does not boot into the discovery image.
 
 ## Intermittent failures by repos or container registry
 
@@ -70,26 +70,28 @@ For disconnected environments, the bastion machine will serve all OCP, operator 
 
 Several services are run on the bastion in order to automate the tasks that Jetlag performs. You can access them via the following ports:
 
-* On-prem assisted-installer GUI - 8080
-* On-prem assisted-installer API - 8090
-* On-prem assisted-image-service - 8888
-* HTTP server - 8081
-* Container Registry (When setup_bastion_registry=true) - 5000
-* HAProxy (When disconnected) - 6443, 443, 80
-* Gogs - Self-hosted Git (When setup_bastion_gogs=true) - 10881 (http), 10022 (git)
-* Dnsmasq / Coredns - 53
+| Service | Port |
+| - | - |
+| On-prem `assisted-installer` GUI | 8080
+| On-prem `assisted-installer` API | 8090
+| On-prem `assisted-image-service` | 8888
+| HTTP server | 8081
+| Container Registry (When `setup_bastion_registry=true`) | 5000
+| HAProxy (When disconnected) | 6443, 443, 80
+| Gogs - Self-hosted Git (When `setup_bastion_gogs=true`) | 10881 (http), 10022 (git)
+| Dnsmasq / Coredns | 53
 
 Examples, change the FQDN to your bastion machine and open in your browser
 
 | Interface | Address |
 | :-: | :- |
-| AI Gui | `http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8080/` |
-| AI API | `http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8090/` |
-| HTTP Server | `http://f99-h11-000-1029p.rdu2.scalelab.redhat.com:8081/` |
+| AI Gui | `http://<bastion>:8080/` |
+| AI API | `http://<bastion>:8090/` |
+| HTTP Server | `http://<bastion>:8081/` |
 
 Example accessing the bastion registry and listing repositories:
 ```console
-(.ansible) [root@<bastion> jetlag]# curl -u registry:registry -k https://f99-h11-000-1029p.rdu2.scalelab.redhat.com:5000/v2/_catalog?n=100 | jq
+(.ansible) [root@<bastion> jetlag]# curl -u registry:registry -k https://<bastion>:5000/v2/_catalog?n=100 | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   532  100   532    0     0    104      0  0:00:05  0:00:05 --:--:--   120
@@ -203,13 +205,13 @@ To change this, navigate to Configuration -> Virtual Console -> Plug-in Type and
 
 ## Reset BMC / Resolving redfish connection error
 
-In some cases, issues during a deployment can be the result of a bmc issue. To reset a Supermicro bmc use `ipmitool` with the following example:
+In some cases, issues during a deployment can be the result of a BMC issue. To reset a Supermicro BMC use `ipmitool` with the following example:
 
 ```console
 ipmitool -I lanplus -H mgmt-computer.example.com -U user -P password mc reset cold
 ```
 
-The following example errors can be corrected after resetting the bmc of the machines.
+The following example errors can be corrected after resetting the BMC of the machines.
 
 ```
 TASK [boot-iso : SuperMicro - Mount ISO] *****************************************************************************************
@@ -239,7 +241,7 @@ Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
 ```
 
-The permissions of the ipmi/bmc user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset bmc [here](#reset-bmc--resolving-redfish-connection-error).
+The permissions of the ipmi/BMC user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset BMC [here](#reset-bmc--resolving-redfish-connection-error).
 
 How to verify that ipmi privilege set to administrator level permissions
 
@@ -302,7 +304,7 @@ Other things to look at:
 
 2) Did the machine boot the virtual media (management interface, i.e., iDRAC for Dell machines)?
 If the virtual media did not boot, it is most likely a *boot order* issue.
-Three other things to consider, however less common, are: 1) An old firmware that requires an iDRAC/bmc reset, 2) the DNS settings in the bmc cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
+Three other things to consider, however less common, are: 1) An old firmware that requires an iDRAC/BMC reset, 2) the DNS settings in the BMC cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
 
 ## Network pre-configuration
 

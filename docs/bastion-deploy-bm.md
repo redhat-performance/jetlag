@@ -118,7 +118,7 @@ Number of key(s) added: 1
 
 Now try logging into the machine and check to make sure that only the key(s) you wanted were added:
 ```console
-[root@<bastion> ~] ssh root@localhost
+[root@<bastion> ~]# ssh root@localhost
 [root@<bastion> ~]#
 ```
 
@@ -143,8 +143,8 @@ Change your working directory to the repo's `jetlag` directory, which we'll assu
 for subsequent steps:
 
 ```console
-[root@<bastion> ~] cd jetlag
-[root@<bastion> jetlag]
+[root@<bastion> ~]# cd jetlag
+[root@<bastion> jetlag]#
 ```
 
 6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
@@ -337,7 +337,7 @@ networktype: OVNKubernetes
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [root@<bastion> jetlag]$ ls pull_secret.txt
+# [root@<bastion> jetlag]# ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
