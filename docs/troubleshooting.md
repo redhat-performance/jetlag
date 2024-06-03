@@ -81,14 +81,6 @@ Several services are run on the bastion in order to automate the tasks that Jetl
 | Gogs - Self-hosted Git (When `setup_bastion_gogs=true`) | 10881 (http), 10022 (git)
 | Dnsmasq / Coredns | 53
 
-Examples, change the FQDN to your bastion machine and open in your browser
-
-| Interface | Address |
-| :-: | :- |
-| AI Gui | `http://<bastion>:8080/` |
-| AI API | `http://<bastion>:8090/` |
-| HTTP Server | `http://<bastion>:8081/` |
-
 Example accessing the bastion registry and listing repositories:
 ```console
 (.ansible) [root@<bastion> jetlag]# curl -u registry:registry -k https://<bastion>:5000/v2/_catalog?n=100 | jq
@@ -121,7 +113,7 @@ In the event your bastion's running containers have incorrect data or you are de
 Clean **all** containers (on bastion machine):
 
 ```console
-(.ansible) [root@<bastion> jetlag]# podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
+podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
 ```
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
