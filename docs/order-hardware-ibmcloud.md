@@ -18,7 +18,7 @@ You can select the location/datacenter and the Server profile based on cost esti
 For baremetal deployment, you will need:
 
 * One server to be provisioned as your bastion machine
-* Three additional servers to serve as control-plane nodes 
+* Three additional servers to serve as control-plane nodes
 * At least two more servers to serve as worker nodes in your openshift cluster
 
 The following guides can also assist you with procurement of devices:
@@ -36,7 +36,7 @@ Points to keep in mind while ordering hardware:
 * Port speed of 10 Gbps at minimum
 * The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. Other machines can have a public ip address but it is not currently in use with this deployment method.
 
-You might not receive an immediate notification on the order you just placed. 
+You might not receive an immediate notification on the order you just placed.
 If there are significant delays, IBMcloud will open up a support ticket on your behalf to notify about the readiness status of your servers.
 
 Once you are notified of the servers being ready, login to IBMcloud and navigate to 'Classic Infrastructure' to view your devices.
@@ -46,7 +46,7 @@ Once you are notified of the servers being ready, login to IBMcloud and navigate
 
 **IBMcloud VPN access:**
 
-To manage your servers remotely and securely over the IBM Cloud private network, you need to connect to IBMcloud VPN. 
+To manage your servers remotely and securely over the IBM Cloud private network, you need to connect to IBMcloud VPN.
 
 To get started, refer to https://cloud.ibm.com/docs/iaas-vpn?topic=iaas-vpn-getting-started
 
@@ -57,13 +57,13 @@ To get started with IBMcloud shell, refer to https://cloud.ibm.com/docs/cloud-sh
 Once you have successfully logged into the IBMcloud Shell, you should be able to list  your devices using the following command:
 
 ```console
-[user@fedora]$ ibmcloud sl hardware list
+[user@<local>]$ ibmcloud sl hardware list
 ```
 
 Sample output:
 
 ```console
-$ ibmcloud sl hardware list
+[user@<local>]$ ibmcloud sl hardware list
 id        hostname     domain                    public_ip        private_ip    datacenter   status
 960237    jetlag-bm0   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
 1165601   jetlag-bm1   performance-scale.cloud   X.X.X.X          X.X.X.X       dal10        ACTIVE
@@ -77,4 +77,3 @@ id        hostname     domain                    public_ip        private_ip    
 
 To open a support case with IBMcloud, access the link below:
 https://cloud.ibm.com/unifiedsupport/supportcenter
-

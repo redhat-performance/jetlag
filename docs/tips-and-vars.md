@@ -42,10 +42,10 @@ Alias lab chart is available [here](http://wiki.alias.bos.scalelab.redhat.com/fa
 
 ## Override lab ocpinventory json file
 
-Current jetlag lab use selects machines for roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You may have to create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
+By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
 
 ```yaml
-ocp_inventory_override: http://example.redhat.com/cloud12-inventories/cloud12-cp_r640-w_5039ms.json
+ocp_inventory_override: http://<http-server>/<inventory-file>.json
 ```
 ## DU Profile for SNOs
 
@@ -175,7 +175,7 @@ When worikng with OCP development builds/nightly releases, it might be required 
 * Execute the command shown below to print out the pull secret:
 
 ```console
-[user@fedora jetlag]$ oc registry login --to=-
+(.ansible) [root@<bastion> jetlag]# oc registry login --to=-
 ```
 * Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
 
@@ -197,14 +197,15 @@ spec:
 ```
 
 For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
-```yaml
-oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
+
+```console
+(.ansible) [root@<bastion> jetlag]# oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
 ```
 Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
 
 For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
 
-```yaml
+```console
 ### script
 #!/bin/bash
 registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
@@ -227,17 +228,20 @@ function rm_XXX_tag {
 If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
-2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping
-```
-* Network 1 = `controlplane_network_interface_idx: 0`
-* Network 2 = `controlplane_network_interface_idx: 1`
-* Network 3 = `controlplane_network_interface_idx: 2`
-* Network 4 = `controlplane_network_interface_idx: 3`
-* Network 5 = `controlplane_network_interface_idx: 4`
-```
-3. Since the desired NIC in this exampls,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
+2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping:
+
+| Network | YAML variable |
+| ------- | ------------- |
+| Network 1 | `controlplane_network_interface_idx: 0` |
+| Network 2 | `controlplane_network_interface_idx: 1` |
+| Network 3 | `controlplane_network_interface_idx: 2` |
+| Network 4 | `controlplane_network_interface_idx: 3` |
+| Network 5 | `controlplane_network_interface_idx: 4` |
+
+3. Since the desired NIC in this example,`ens2f0`, is listed under the column "Network 3" the value **2** is correct.
 4. Set **2** as the value of the variable `controlplane_network_interface_idx` in `ansible/vars/all.yaml`.
-```
+
+```yaml
 ################################################################################
 # Extra vars
 ################################################################################
@@ -256,7 +260,7 @@ they can be specified directly through the vars file `all.yml`.
 To ensure the drive will be correctly mapped at each boot,
 we will locate the `/dev/disk/by-path` link to each drive.
 
-```
+```console
 # Locate names of the drives identified on your system
 $ lsblk | grep nvme
 nvme3n1     259:0    0   1.5T  0 disk
@@ -293,9 +297,9 @@ controlplane_nvme_device: /dev/disk/by-path/pci-0000:b2:00.0-nvme-1
 controlplane_etcd_on_nvme: true
 ```
 
-**Note:** The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.  
+**Note:** The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.
 If your OpenShift version is based on RHEL9 (4.13+), you should install RHEL9 on the nodes
-first to ensure the paths are correct.  
+first to ensure the paths are correct.
 eg: `/dev/sda` - Seen on Supermicro 1029U
 ```
 RHEL8:
@@ -309,16 +313,18 @@ lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <
 ### Extra vars for by-path disk reference
 **Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to set the extra vars for by-path reference for the installation. Below are the extra vars along with the hardware used.
 
-
 | Hardware           | control_plane_install_disk                      | worker_install_disk                             |
 | ------------------ | ----------------------------------------------- | ----------------------------------------------- |
 | Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640          | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 
-To find your machine's by-path reference use the following command and choose the install disk
+To find your machine's by-path reference use the following command and choose the install disk. (Note, this
+assumes that the bastion hardware configuration is identical: in a heterogeneous cluster you may need to
+execute this command on each host in your deployment, setting the `control_plane_install_disk` and
+`worker_install_disk` paths manually for each host in the inventory file.)
 
-```
-[root@xxx-h06-000-r640 jetlag]# ls -la /dev/disk/by-path/
+```console
+(.ansible) [root@<bastion> jetlag]# ls -la /dev/disk/by-path/
 total 0
 drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
 drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..

@@ -1,12 +1,14 @@
-# jetlag
+# Jetlag
 
 Tooling to install clusters for testing via an on-prem [Assisted Installer](https://github.com/openshift/assisted-installer) in the Red Hat Scale/Alias Lab and bare metal servers in IBMcloud.
 
 Three separate layouts of clusters can be deployed:
 
-* BM - Bare Metal - 3 control-plane nodes, X number of worker nodes
-* RWN - Remote Worker Node - 3 control-plane/worker nodes, X number of remote worker nodes
-* SNO - Single Node OpenShift - 1 OpenShift Master/Worker Node "cluster" per available hardware resource
+| Layout | Meaning | Description |
+| - | - | - |
+| BM | Bare Metal | 3 control-plane nodes, X number of worker nodes
+| RWN | Remote Worker Node | 3 control-plane/worker nodes, X number of remote worker nodes
+| SNO | Single Node OpenShift | 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
 Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer service and serve as a router for clusters with a private machine network. BM and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. The worker node count can also be 0 such that your bare metal cluster is a compact 3 node cluster with schedulable control-plane nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, BM/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
 
@@ -66,25 +68,25 @@ Versions:
 Update to RHEL 8.9
 
 ```console
-[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+[root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.2 (Ootpa)
 
-[root@xxx-xxx-xxx-r640 ~]# ./update-latest-rhel-release.sh 8.9
+[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
 ...
-[root@xxx-xxx-xxx-r640 ~]# dnf update -y
+[root@<bastion> ~]# dnf update -y
 ...
-[root@xxx-xxx-xxx-r640 ~]# reboot
+[root@<bastion> ~]# reboot
 ...
-[root@xxx-xxx-xxx-r640 ~]# cat /etc/redhat-release
+[root@<bastion> ~]# cat /etc/redhat-release
 Red Hat Enterprise Linux release 8.9 (Ootpa)
 ```
 
 Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
-[root@xxx-xxx-xxx-r640 jetlag]# source bootstrap.sh
+[root@<bastion> jetlag]# source bootstrap.sh
 ...
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]#
+(.ansible) [root@<bastion> jetlag]#
 ```
 
 Pre-reqs for Supermicro hardware:
@@ -93,50 +95,77 @@ Pre-reqs for Supermicro hardware:
 
 ## Cluster Deployment Usage
 
-There are three main files to configure. The inventory file is generated but might have to be edited for specific scenario/hardware usage:
+We recommend that you set up Jetlag on the bastion machine and run playbooks
+from there. This will give faster access to the machines being configured, and
+it also provides an environment that can easily be shared for debugging if
+necessary. However you can run Jetlag playbooks from a remote host (for example,
+your laptop) as long as you can connect to the bastion machine in your cloud
+allocation.
 
-* `ansible/vars/all.yml` - An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
-* `pull_secret.txt` - Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
-* `ansible/inventory/$CLOUDNAME.local` - The generated inventory file (Samples provided in `ansible/inventory`)
+There are three main files to configure. The inventory file is generated (for SCALE lab and IBM Cloud),
+but might have to be edited for specific scenario/hardware usage. You can also [manually create a
+"Bring Your Own Lab"](docs/bastion-deploy-bm-byol) inventory file.
+
+| File | Description |
+| - | - |
+| `ansible/vars/all.yml` | An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
+| `pull_secret.txt` | Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
+| `ansible/inventory/$CLOUDNAME.local` | The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# vi ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
 ```
 
 Make sure to set/review the following vars:
 
-* `lab` - either `alias` or `scalelab`
-* `lab_cloud` - the cloud within the lab environment (Example: `cloud42`)
-* `cluster_type` - either `bm`, `rwn`, or `sno` for the respective cluster layout
-* `worker_node_count` - applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
-* `sno_node_count` - applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
-* `bastion_lab_interface` - set to the bastion machine's lab accessible interface
-* `bastion_controlplane_interface` - set to the interface in which the bastion will be networked to the deployed ocp cluster
-* `controlplane_lab_interface` - applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
-* More customization such as cluster_network and service_network can be supported as extra vars, check each ansible roles default vars file for variable names and options
+| Variable | Meaning |
+| - | - |
+| `lab` | either `alias` or `scalelab`
+| `lab_cloud` | the cloud within the lab environment (Example: `cloud42`)
+| `cluster_type` | either `bm`, `rwn`, or `sno` for the respective cluster layout
+| `worker_node_count` | applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
+| `sno_node_count` | applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
+| `bastion_lab_interface` | set to the bastion machine's lab accessible interface
+| `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
+| `controlplane_lab_interface` | applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
 
-Set your pull-secret in `pull_secret.txt` in repo base directory. Example:
+More customization such as `cluster_network` and `service_network` can be supported as extra vars, check each ansible role default vars file for variable names and options.
+
+Save your pull-secret from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) in `pull_secret.txt` in the Jetlag repo base directory, for example by using the "Copy" button on the web page, and then pasting the clipboard text into a `cat > pull_secret.txt` command like this:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat pull_secret.txt
+(.ansible) [root@<bastion> jetlag]# cat >pull_secret.txt
 {
   "auths": {
-...
+    "quay.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    },
+    "registry.redhat.io": {
+      "auth": "XXXXXXX",
+      "email": "XXXXXXX"
+    }
+  }
+}
 ```
 
 Run create-inventory playbook
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook ansible/create-inventory.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/create-inventory.yml
 ```
 
 Run setup-bastion playbook
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ```
 
 Run deploy for either bm/rwn/sno playbook with inventory created by create-inventory playbook
@@ -144,43 +173,43 @@ Run deploy for either bm/rwn/sno playbook with inventory created by create-inven
 Bare Metal Cluster:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
 ```
 See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for BM install related issues
 
 Remote Worker Node Cluster:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
 ```
 
 Single Node OpenShift:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ```
 
 Interact with your cluster from your bastion machine:
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# export KUBECONFIG=/root/bm/kubeconfig
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# oc get no
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
 NAME               STATUS   ROLES                         AGE    VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
 xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
 xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat /root/bm/kubeadmin-password
+(.ansible) [root@<bastion> jetlag]# cat /root/bm/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```
 
 And for SNO
 
 ```console
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# export KUBECONFIG=/root/sno/xxx-h02-000-r650/kubeconfig
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# oc get no
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/sno/xxx-h02-000-r650/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
 NAME      STATUS   ROLES                         AGE   VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   30h   v1.28.6+0fb4726
-(.ansible) [root@xxx-xxx-xxx-r640 jetlag]# cat /root/sno/xxx-h02-000-r650/kubeadmin-password
+(.ansible) [root@<bastion> jetlag]# cat /root/sno/xxx-h02-000-r650/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```
 
