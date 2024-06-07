@@ -13,7 +13,7 @@
 #
 # For Single Node OpenShift clusters:
 # * First machine is bastion
-# * Remaining machines are SNO clusters (depending upon sno_node_count)
+# * Second machine is SNO cluster
 #
 
 - name: Set ocp inventory download url from lab wiki
@@ -142,17 +142,11 @@
 
   - name: SNO - Set max number of nodes
     set_fact:
-      max_nodes: "{{ ocpinventory.json.nodes|length }}"
-    when: sno_node_count == None
-
-  - name: SNO - Set max number of SNO nodes (sno_node_count is set)
-    set_fact:
-      max_nodes: "{{ sno_node_count|int + 1 }}"
-    when: sno_node_count != None
+      max_nodes: "1"
 
   - name: SNO - Set ocpinventory sno nodes
     set_fact:
-      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:max_nodes|int] }}"
+      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
 
   - name: SNO - Get lab data for each sno
     uri:

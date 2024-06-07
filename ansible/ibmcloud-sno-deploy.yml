@@ -18,11 +18,13 @@
   - validate-vars
   - ocp-release
   - ibmcloud-sno-create-ai-cluster
-  - sno-generate-discovery-iso
+  - role: generate-discovery-iso
+    vars:
+      iso_name: "{{ groups['sno'][1] }}"
   - role: boot-iso
     vars:
       inventory_group: sno
-      index: "{{ sno_node_count }}"
+      index: "1"
   - sno-wait-hosts-discovered
-  - sno-install-cluster
+  - install-cluster
   - sno-post-cluster-install

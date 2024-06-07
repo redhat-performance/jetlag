@@ -175,8 +175,6 @@ Next copy the vars file so we can edit it.
 
 Change `cluster_type` to `cluster_type: sno`
 
-Change `sno_node_count` to the number of SNOs that should be provisioned. For Example `sno_node_count: 2`
-
 Change `private_network_cidr` to the network cidr for the private network of your hardware. For Example `private_network_cidr: X.X.X.0/26`
 
 Clear out settings for `controlplane_network_api` and `controlplane_network_ingress`
@@ -199,14 +197,11 @@ cluster_type: sno
 # Applies to bm clusters
 worker_node_count:
 
-# Applies to sno clusters
-sno_node_count: 2
-
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
 # Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
-# or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would 
+# or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would
 # be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16.
-# Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and 
+# Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and
 # https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
 ocp_build: "ga"
 

@@ -1,17 +1,17 @@
 ---
 # Set hostname and role
 
-- name: Identify the host bmc address
+- name: Set the host bmc address
   set_fact:
     host_bmc: "{{ (discovered_host.inventory | from_json).bmc_address }}"
   when: lab in cloud_labs
 
-- name: Identify the host identifing data
+- name: Set the host ID
   set_fact:
     host_interfaces: "{{ (discovered_host.inventory | from_json).interfaces }}"
     host_id: "{{ discovered_host.id }}"
 
-- name: Identify the hostname and role via mac address
+- name: Set the hostname and role via mac address
   set_fact:
     hostname: "{{ item.0 }}"
     host_role: "{{ hostvars[item.0]['role'] }}"
@@ -22,7 +22,7 @@
   loop_control:
     label: "{{ hostvars[item.0]['bmc_address'] }}"
 
-- name: Identify the hostname and role via bmc address
+- name: Set the hostname and role via bmc address
   set_fact:
     hostname: "{{ item }}"
     host_role: "{{ hostvars[item]['role'] }}"
