@@ -175,8 +175,6 @@ Next copy the vars file so we can edit it.
 
 Change `cluster_type` to `cluster_type: sno`
 
-Change `sno_node_count` to the number of SNOs that should be provisioned. For Example `sno_node_count: 2`
-
 Change `private_network_cidr` to the network cidr for the private network of your hardware. For Example `private_network_cidr: X.X.X.0/26`
 
 Clear out settings for `controlplane_network_api` and `controlplane_network_ingress`
@@ -198,9 +196,6 @@ cluster_type: sno
 
 # Applies to bm clusters
 worker_node_count:
-
-# Applies to sno clusters
-sno_node_count: 2
 
 # Versions are controlled by this release image. If you want to change images
 # you must stop and rm all assisted-installer containers on the bastion and rerun

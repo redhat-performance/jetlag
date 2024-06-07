@@ -226,8 +226,6 @@ Change `lab_cloud` to `lab_cloud: cloud99`
 
 Change `cluster_type` to `cluster_type: sno`
 
-Change `sno_node_count` to the number of SNOs that should be provisioned. For example `sno_node_count: 1`
-
 Change `ocp_release_image` to the desired image if the default (4.15.2) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.15`), then change `openshift_version` accordingly.
 
@@ -381,9 +379,6 @@ cluster_type: sno
 
 # Applies to both bm/rwn clusters
 worker_node_count:
-
-# Applies to sno clusters
-sno_node_count: 1
 
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable

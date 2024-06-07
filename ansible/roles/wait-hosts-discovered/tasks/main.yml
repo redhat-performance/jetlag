@@ -11,6 +11,17 @@
     inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
   when: cluster_type == "bm"
 
+- name: SNO - Create list of nodes to be discovered
+  set_fact:
+    inventory_nodes: "{{ groups['sno'] }}"
+  when: cluster_type == "sno"
+
+- name: Assert that inventory_nodes is defined
+  ansible.builtin.assert:
+    that: inventory_nodes is defined
+    quiet: true
+    fail_msg: "Unsupported cluster type {{ cluster_type }}"
+
 - name: Wait up to 40 min for nodes to be discovered
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"

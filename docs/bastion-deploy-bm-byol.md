@@ -201,8 +201,6 @@ Change `cluster_type` to `cluster_type: bm`
 
 Set `worker_node_count` it must be correct, in this guide it is set to `2`. However, if you desire to limit the number of worker nodes. Set it to `0`, if you want a 3 node compact cluster.
 
-Set `sno_node_count` it must be correct, in this guide it is set it to `0`.
-
 Change `ocp_release_image` to the desired image if the default (4.15.2) is not the desired version.
 If you change `ocp_release_image` to a different major version (Ex `4.15`), then change `openshift_version` accordingly.
 
@@ -262,9 +260,6 @@ cluster_type: bm
 
 # Applies to both bm/rwn clusters
 worker_node_count: 2
-
-# Applies to sno clusters
-sno_node_count: 0
 
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable

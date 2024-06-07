@@ -20,7 +20,7 @@
 
 - name: Create each SNO and infra-env
   include_tasks: create_individual_sno.yml
-  loop: "{{ groups['sno'][:sno_node_count|int] }}"
+  loop: "{{ groups['sno'][:1] }}"
 
 # - debug:
 #     msg: "{{ ai_cluster_ids }}"
@@ -75,7 +75,7 @@
       {%- endif %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
-  loop: "{{ groups['sno'][:sno_node_count|int] }}"
+  loop: "{{ groups['sno'][:1] }}"
 
 - name: Restart dnsmasq after /etc/hosts update
   systemd:

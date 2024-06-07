@@ -243,9 +243,6 @@ cluster_type: bm
 # Applies to bm clusters
 worker_node_count: 2
 
-# Applies to sno clusters
-sno_node_count:
-
 # Versions are controlled by this release image. If you want to change images
 # you must stop and rm all assisted-installer containers on the bastion and rerun
 # the setup-bastion step in order to setup your bastion's assisted-installer to
