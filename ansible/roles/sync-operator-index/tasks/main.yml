@@ -13,7 +13,7 @@
 - name: Render declarative config from the provided index image
   shell: |
     cd {{ sync_path }}
-    opm render {{ item['operator_index_container_image'] }} > {{ item['name'] }}-index.json
+    opm render --skip-tls-verify {{ item['operator_index_container_image'] }} > {{ item['name'] }}-index.json
   loop: "{{ operators_to_sync }}"
 
 - name: Template {{ operator_index_name }}.Dockerfile
@@ -30,7 +30,11 @@
   shell: |
     cd {{ sync_path }}/catalog
     {% for operator in item['operators'] %}
+    {% if item['brew_index'] %}
+    jq '. | select((.package=="{{ operator }}") or (.name=="{{ operator }}"))' ../{{ item['name'] }}-index.json | sed -e 's/registry.redhat.io/brew.registry.redhat.io/g' -e 's/registry.stage.redhat.io/brew.registry.redhat.io/g' >> {{ operator_index_name }}/index.json
+    {% else %}
     jq '. | select((.package=="{{ operator }}") or (.name=="{{ operator }}"))' ../{{ item['name'] }}-index.json >> {{ operator_index_name }}/index.json
+    {% endif %}
     {% endfor %}
   loop: "{{ operators_to_sync }}"
 
