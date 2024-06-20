@@ -23,6 +23,7 @@ ose_operator_registry_tag: v4.15
 # These defaults match ACM/ZTP testing (4.15 SNO with 4.15 Operators). For SNO DU profile defaults, refer ansible/vars/sync-operator-index.sample.yml
 operators_to_sync:
 - name: redhat-operators
+  brew_index: false
   operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.15
   operators:
   - ansible-automation-platform-operator
@@ -37,6 +38,7 @@ operators_to_sync:
   - topology-aware-lifecycle-manager
   - volsync-product
 #- name: certified-operators
+#  brew_index: false
 #  operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.15
 #  operators:
 #  - sriov-fec
