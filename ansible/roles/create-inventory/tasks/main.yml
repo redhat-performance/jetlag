@@ -48,9 +48,9 @@
     ocpinventory_hv_nodes: []
 
 - name: Bare metal cluster and remote worker node cluster type tasks
-  when: cluster_type == "bm" or cluster_type == "rwn"
+  when: cluster_type == "mno" or cluster_type == "rwn"
   block:
-  - name: BM/RWN - Set inventory variables
+  - name: MNO/RWN - Set inventory variables
     set_fact:
       controlplane0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
       controlplane1: "{{ ocpinventory.json.nodes[2].pm_addr }}"
@@ -62,7 +62,7 @@
       controlplane1_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[2].pm_addr.split('.')[0]).split('-')[-1]] }}"
       controlplane2_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[3].pm_addr.split('.')[0]).split('-')[-1]] }}"
 
-  - name: BM/RWN - Get controlplane0 lab mac address
+  - name: MNO/RWN - Get controlplane0 lab mac address
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane0 | replace('mgmt-','') }}"
       force_basic_auth: yes
@@ -71,13 +71,13 @@
       validate_certs: false
     register: controlplane0_foreman_data
 
-  - name: BM/RWN - Set controlplane0 lab mac addresses
+  - name: MNO/RWN - Set controlplane0 lab mac addresses
     set_fact:
       controlplane0_lab_mac: "{{ item.mac }}"
     with_items: "{{ controlplane0_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
-  - name: BM/RWN - Get controlplane1 lab mac address
+  - name: MNO/RWN - Get controlplane1 lab mac address
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane1 | replace('mgmt-','') }}"
       force_basic_auth: yes
@@ -86,13 +86,13 @@
       validate_certs: false
     register: controlplane1_foreman_data
 
-  - name: BM/RWN - Set controlplane1 lab mac addresses
+  - name: MNO/RWN - Set controlplane1 lab mac addresses
     set_fact:
       controlplane1_lab_mac: "{{ item.mac }}"
     with_items: "{{ controlplane1_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
-  - name: BM/RWN - Get controlplane2 lab mac address
+  - name: MNO/RWN - Get controlplane2 lab mac address
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane2 | replace('mgmt-','') }}"
       force_basic_auth: yes
@@ -101,23 +101,23 @@
       validate_certs: false
     register: controlplane2_foreman_data
 
-  - name: BM/RWN - Set controlplane2 lab mac addresses
+  - name: MNO/RWN - Set controlplane2 lab mac addresses
     set_fact:
       controlplane2_lab_mac: "{{ item.mac }}"
     with_items: "{{ controlplane2_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
-  - name: BM/RWN - Set max number of nodes
+  - name: MNO/RWN - Set max number of nodes
     set_fact:
       max_nodes: "{{ ocpinventory.json.nodes|length }}"
     when: worker_node_count == None
 
-  - name: BM/RWN - Set max number of nodes (worker_node_count set)
+  - name: MNO/RWN - Set max number of nodes (worker_node_count set)
     set_fact:
       max_nodes: "{{ worker_node_count|int + 4 }}"
     when: worker_node_count != None
 
-  - name: BM - Set ocpinventory bm nodes
+  - name: MNO - Set ocpinventory mno nodes
     set_fact:
       ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[4:max_nodes|int] }}"
 
@@ -125,11 +125,11 @@
     set_fact:
       ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:max_nodes|int] }}"
 
-  - name: BM/RWN - Set ocpinventory hv nodes
+  - name: MNO/RWN - Set ocpinventory hv nodes
     set_fact:
       ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[max_nodes|int:] }}"
 
-- name: BM - Get lab mac address
+- name: MNO - Get lab mac address
   uri:
     url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
     force_basic_auth: yes
@@ -138,8 +138,8 @@
     validate_certs: false
   with_items:
     - "{{ ocpinventory_worker_nodes }}"
-  when: cluster_type == "bm"
-  register: bm_foreman_data
+  when: cluster_type == "mno"
+  register: mno_foreman_data
 
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"

@@ -52,33 +52,33 @@
 - name: Bare metal cluster type tasks
   when: cluster_type == "bm"
   block:
-  - name: BM - Pick controlplane nodes
+  - name: MNO - Pick controlplane nodes
     set_fact:
       cp0_hardware_data: "{{ ibm_hardware_list_json[0] }}"
       cp1_hardware_data: "{{ ibm_hardware_list_json[1] }}"
       cp2_hardware_data: "{{ ibm_hardware_list_json[2] }}"
     when: controlplane_hardware_ids | length != 3
 
-  - name: BM - Set specific controlplane nodes from controlplane_hardware_ids
+  - name: MNO - Set specific controlplane nodes from controlplane_hardware_ids
     set_fact:
       cp0_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', controlplane_hardware_ids[0]) | first) }}"
       cp1_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', controlplane_hardware_ids[1]) | first) }}"
       cp2_hardware_data: "{{ (ibm_hardware_list_json | selectattr('id', 'eq', controlplane_hardware_ids[2]) | first) }}"
     when: controlplane_hardware_ids | length == 3
 
-  - name: BM - Remove the controlplane0 from hardware list data
+  - name: MNO - Remove the controlplane0 from hardware list data
     set_fact:
       ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([cp0_hardware_data]) }}"
 
-  - name: BM - Remove the controlplane1 from hardware list data
+  - name: MNO - Remove the controlplane1 from hardware list data
     set_fact:
       ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([cp1_hardware_data]) }}"
 
-  - name: BM - Remove the controlplane2 from hardware list data
+  - name: MNO - Remove the controlplane2 from hardware list data
     set_fact:
       ibm_hardware_list_json: "{{ ibm_hardware_list_json | difference([cp2_hardware_data]) }}"
 
-  - name: BM - Set bastion and control-plane details
+  - name: MNO - Set bastion and control-plane details
     set_fact:
       ibmcloud_hardware_count: "{{ ibm_hardware_list_json | length }}"
       controlplane0_hn: "{{ cp0_hardware_data.hostname }}"
@@ -88,74 +88,74 @@
       controlplane1_private: "{{ cp1_hardware_data.primaryBackendIpAddress | default('x.x.x.x') }}"
       controlplane2_private: "{{ cp2_hardware_data.primaryBackendIpAddress | default('x.x.x.x') }}"
 
-  - name: BM - Get controlplane0 Details
+  - name: MNO - Get controlplane0 Details
     shell: |
       ibmcloud sl hardware detail {{ cp0_hardware_data.id }} -p --output json
     register: ibm_hardware_detail_cp0
 
-  - name: BM - Get controlplane1 Details
+  - name: MNO - Get controlplane1 Details
     shell: |
       ibmcloud sl hardware detail {{ cp1_hardware_data.id }} -p --output json
     register: ibm_hardware_detail_cp1
 
-  - name: BM - Get controlplane2 Details
+  - name: MNO - Get controlplane2 Details
     shell: |
       ibmcloud sl hardware detail {{ cp2_hardware_data.id }} -p --output json
     register: ibm_hardware_detail_cp2
 
-  - name: BM - Read cli data into json data
+  - name: MNO - Read cli data into json data
     set_fact:
       ibm_hardware_detail_b_json: "{{ ibm_hardware_detail_bastion.stdout | from_json }}"
       ibm_hardware_detail_cp0_json: "{{ ibm_hardware_detail_cp0.stdout | from_json }}"
       ibm_hardware_detail_cp1_json: "{{ ibm_hardware_detail_cp1.stdout | from_json }}"
       ibm_hardware_detail_cp2_json: "{{ ibm_hardware_detail_cp2.stdout | from_json }}"
 
-  - name: BM - Get controlplane0 hardware vendor
+  - name: MNO - Get controlplane0 hardware vendor
     shell: |
       ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ cp0_hardware_data.id }} --mask="mask[components]" | jq '.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer'
     register: ibm_hardware_components_cp0_parsed
 
-  - name: BM - Get controlplane1 hardware vendor
+  - name: MNO - Get controlplane1 hardware vendor
     shell: |
       ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ cp1_hardware_data.id }} --mask="mask[components]" | jq '.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer'
     register: ibm_hardware_components_cp1_parsed
 
-  - name: BM - Get controlplane2 hardware vendor
+  - name: MNO - Get controlplane2 hardware vendor
     shell: |
       ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ cp2_hardware_data.id }} --mask="mask[components]" | jq '.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer'
     register: ibm_hardware_components_cp2_parsed
 
-  - name: BM - Set max number of nodes
+  - name: MNO - Set max number of nodes
     set_fact:
       max_nodes: "{{ ibm_hardware_list_json|length }}"
     when: worker_node_count == None
 
-  - name: BM - Set max number of nodes (worker_node_count set)
+  - name: MNO - Set max number of nodes (worker_node_count set)
     set_fact:
       max_nodes: "{{ worker_node_count|int }}"
     when: worker_node_count != None
 
   # All remaining nodes are considered worker nodes when worker_hardware_ids isn't specified
-  - name: BM - Get ibmcloud worker node detailed data
+  - name: MNO - Get ibmcloud worker node detailed data
     shell: |
       ibmcloud sl hardware detail {{ item.id }} -p --output json
     loop: "{{ ibm_hardware_list_json[:max_nodes|int] }}"
     register: ibmcloud_detailed_worker_data
     when: worker_hardware_ids | length == 0
 
-  - name: BM - Set specific ibmcloud worker node detailed data from worker_hardware_ids
+  - name: MNO - Set specific ibmcloud worker node detailed data from worker_hardware_ids
     shell: |
       ibmcloud sl hardware detail {{ item }} -p --output json
     loop: "{{ worker_hardware_ids }}"
     register: ibmcloud_detailed_worker_data_specific
     when: worker_hardware_ids | length != 0
 
-  - name: BM - Use specific worker node detailed data
+  - name: MNO - Use specific worker node detailed data
     set_fact:
       ibmcloud_detailed_worker_data: "{{ ibmcloud_detailed_worker_data_specific }}"
     when: worker_hardware_ids | length != 0
 
-  - name: BM - Get hardware vendor with hostname for worker nodes
+  - name: MNO - Get hardware vendor with hostname for worker nodes
     shell: |
       ibmcloud sl call-api SoftLayer_Hardware_Server getObject  --init {{ (item.stdout | from_json).id }} --mask="mask[components]" | jq '{ (.hostname) : (.components[].hardwareComponentModel | select(.hardwareGenericComponentModel.hardwareComponentType.type=="Motherboard") | .manufacturer)}'
     register: ibm_hardware_components_worker_jq_parsed
@@ -163,7 +163,7 @@
     loop_control:
       label: "{{ (item.stdout | from_json).id }}"
 
-  - name: BM - Merge worker nodes hostname:vendor hashes to a single dictionary
+  - name: MNO - Merge worker nodes hostname:vendor hashes to a single dictionary
     set_fact:
       vendor_mapping: "{{ vendor_mapping | combine(item.stdout | from_json) }}"
     loop: "{{ ibm_hardware_components_worker_jq_parsed.results }}"

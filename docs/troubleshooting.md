@@ -278,7 +278,7 @@ When set to ignore the error, Jetlag can proceed, but you will need to manually 
 
 ## Boot mode
 
-In the Performance lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of BM or SNO cluster types. In the Scale lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
+In the Performance lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of MNO or SNO cluster types. In the Scale lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
 
 ```console
 badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute BootMode --value Uefi

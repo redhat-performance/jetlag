@@ -13,10 +13,10 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-bm-byol.md
-     - deploy-bm-ibmcloud.md
-     - deploy-bm-performancelab.md
-     - deploy-bm-scalelab.md
+     - deploy-mno-byol.md
+     - deploy-mno-ibmcloud.md
+     - deploy-mno-performancelab.md
+     - deploy-mno-scalelab.md
      - deploy-sno-ibmcloud.md
      - deploy-sno-scalelab.md
      - deploy-sno-performancelab.md
@@ -371,10 +371,10 @@ lab: scalelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either bm or rwn or sno
+# Either mno or rwn or sno
 cluster_type: sno
 
-# Applies to both bm/rwn clusters
+# Applies to both mno/rwn clusters
 worker_node_count:
 
 # The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
@@ -385,7 +385,7 @@ ocp_version: "latest-4.16"
 # Empty value results in playbook failing with error message.
 ocp_build: "ga"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
 # Lab Network type, applies to sno cluster_type only
@@ -425,7 +425,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for all mno cluster and rwn control-plane nodes
 controlplane_lab_interface: eno1
 
 # Network configuration for public VLAN based sno cluster_type deployment
@@ -518,7 +518,7 @@ Next run the `setup-bastion.yml` playbook ...
 ...
 ```
 
-We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
+We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For multi node clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
 [user@<local> ~]$ scp root@<bastion>:/root/.ssh/id_rsa.pub .

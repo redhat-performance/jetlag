@@ -3,10 +3,10 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/mno-deploy.yml
 #
 
-- name: Creates a bare metal cluster with the assisted-installer
+- name: Creates a multi node cluster with the assisted-installer
   hosts: bastion
   vars_files:
   - vars/lab.yml
@@ -27,4 +27,4 @@
   - wait-hosts-discovered
   - configure-local-storage
   - install-cluster
-  - bm-post-cluster-install
+  - mno-post-cluster-install

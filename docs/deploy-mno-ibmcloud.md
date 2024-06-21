@@ -1,6 +1,6 @@
-# Deploy a Bare Metal cluster on IBMcloud via Jetlag quickstart
+# Deploy a Multi Node OpenShift cluster on IBMcloud via Jetlag quickstart
 
-To deploy a bare metal OpenShift cluster, order 6 machines from the [IBM bare metal server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm). For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](order-hardware-ibmcloud.md) in [docs](../docs) directory.
+To deploy a multi node OpenShift cluster, order 6 machines from the [IBM multi node server catalog](https://cloud.ibm.com/gen1/infrastructure/provision/bm). For guidance on how to order hardware on IBMcloud, see [order-hardware-ibmcloud.md](order-hardware-ibmcloud.md) in [docs](../docs) directory.
 
 The machines used to test this are of Server profile E5-2620 in DAL10 datacenter with automatic port redundancy. One machine will become the bastion, 3 machines will become control-plane nodes, and the remaining 2 nodes will be worker nodes. Ensure that you order either CentOS or RHEL machines with a new enough version (8.6) otherwise podman will not have host networking functionality. The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. The other machines can have a public ip address but it is not currently in use with this deployment method.
 
@@ -27,10 +27,10 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-bm-byol.md
-     - deploy-bm-ibmcloud.md
-     - deploy-bm-performancelab.md
-     - deploy-bm-scalelab.md
+     - deploy-mno-byol.md
+     - deploy-mno-ibmcloud.md
+     - deploy-mno-performancelab.md
+     - deploy-mno-scalelab.md
      - deploy-sno-ibmcloud.md
      - deploy-sno-scalelab.md
      - deploy-sno-performancelab.md
@@ -191,7 +191,7 @@ Next copy the vars file so we can edit it.
 
 Change `lab` to `lab: ibmcloud`
 
-Change `cluster_type` to `cluster_type: bm`
+Change `cluster_type` to `cluster_type: mno`
 
 Set `worker_node_count` if you need to limit the number of worker nodes from available hardware.
 
@@ -242,9 +242,9 @@ The `ansible/vars/ibmcloud.yml` now resembles ..
 # Lab is ibmcloud in this case
 lab: ibmcloud
 
-cluster_type: bm
+cluster_type: mno
 
-# Applies to bm clusters
+# Applies to mno clusters
 worker_node_count: 2
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
@@ -261,7 +261,7 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.16"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
