@@ -1,19 +1,19 @@
 ---
 # validate-vars default vars
 
-# bm = baremetal
+# mno = multi node openshift
 # rwn = remote worker node
 # sno = single node openshift
 rh_lab_cluster_types:
-- bm
+- mno
 - rwn
 - sno
 
 ibmcloud_cluster_types:
-- bm
+- mno
 - sno
 
-bm_network_types:
+mno_network_types:
 - OVNKubernetes
 - OpenShiftSDN
 

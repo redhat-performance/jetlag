@@ -1,5 +1,5 @@
 ---
-# bm-post-cluster-install default vars
+# mno-post-cluster-install default vars
 
 # This will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: "{{ groups['bastion'][0] }}"

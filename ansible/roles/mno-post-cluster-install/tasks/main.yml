@@ -1,7 +1,7 @@
 ---
-# bm-post-cluster-install tasks
+# mno-post-cluster-install tasks
 
-- name: Create directories for bm cluster configuration items
+- name: Create directories for mno cluster configuration items
   file:
     path: "{{ item }}"
     state: directory

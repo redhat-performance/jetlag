@@ -1,6 +1,6 @@
-# Deploy a Bare Metal cluster via Jetlag from a Scale Lab Bastion Machine quickstart
+# Deploy a Multi Node OpenShift cluster via Jetlag from a Scale Lab Bastion Machine quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
+Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a multi node cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
 [the scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
 
 _**Table of Contents**_
@@ -14,10 +14,10 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-bm-byol.md
-     - deploy-bm-ibmcloud.md
-     - deploy-bm-performancelab.md
-     - deploy-bm-scalelab.md
+     - deploy-mno-byol.md
+     - deploy-mno-ibmcloud.md
+     - deploy-mno-performancelab.md
+     - deploy-mno-scalelab.md
      - deploy-sno-ibmcloud.md
      - deploy-sno-scalelab.md
      - deploy-sno-performancelab.md
@@ -224,7 +224,7 @@ Change `lab` to `lab: scalelab`
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
-Change `cluster_type` to `cluster_type: bm`
+Change `cluster_type` to `cluster_type: mno`
 
 Set `worker_node_count` to limit the number of worker nodes from your scale lab allocation. Set it to `0` if you want a 3 node compact cluster.
 
@@ -252,9 +252,9 @@ bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
 ```
 
-Here you can see a network diagram for the bare metal cluster on Dell r650 with 3 workers and 3 master nodes:
+Here you can see a network diagram for the multi node cluster on Dell r650 with 3 workers and 3 master nodes:
 
-![BM Cluster](img/bm_cluster.png)
+![MNO Cluster](img/mno_cluster.png)
 
 Double check your nic names with your actual bastion machine.
 
@@ -277,7 +277,7 @@ controlplane_lab_interface: eno12399np0
 
 ### Extra vars
 
-For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
+For multi node deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
 - control_plane_install_disk
 - worker_install_disk
 
@@ -318,10 +318,10 @@ lab: scalelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either bm or rwn or sno
-cluster_type: bm
+# Either mno or rwn or sno
+cluster_type: mno
 
-# Applies to both bm/rwn clusters
+# Applies to both mno/rwn clusters
 worker_node_count: 0
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
@@ -338,7 +338,7 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.16"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
 # Lab Network type, applies to sno cluster_type only
@@ -378,7 +378,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for all mno cluster and rwn control-plane nodes
 controlplane_lab_interface: eno12399np0
 
 # Network configuration for public VLAN based sno cluster_type deployment
@@ -484,10 +484,10 @@ Next run the `setup-bastion.yml` playbook ...
 ...
 ```
 
-Finally run the `bm-deploy.yml` playbook ...
+Finally run the `mno-deploy.yml` playbook ...
 
 ```console
-(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/mno-deploy.yml
 ...
 ```
 
@@ -498,12 +498,12 @@ It is suggested to monitor your first deployment to see if anything hangs on boo
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
 
 ```console
-(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/mno/kubeconfig
 (.ansible) [root@<bastion> jetlag]# oc get no
 NAME               STATUS   ROLES                         AGE    VERSION
 xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
 xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
 xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
-(.ansible) [root@<bastion> jetlag]# cat /root/bm/kubeadmin-password
+(.ansible) [root@<bastion> jetlag]# cat /root/mno/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```

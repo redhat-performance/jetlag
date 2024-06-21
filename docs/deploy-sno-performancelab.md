@@ -486,7 +486,7 @@ Next run the `setup-bastion.yml` playbook ...
 ...
 ```
 
-We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
+We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For multi node clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
 [user@<local> ~]$ scp root@<bastion>:/root/.ssh/id_rsa.pub .
