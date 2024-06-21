@@ -13,8 +13,8 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - bastion-deploy-bm-byol.md
-     - bastion-bm-ibmcloud.md
+     - bastion-deploy-mno-byol.md
+     - bastion-mno-ibmcloud.md
      - deploy-sno-ibmcloud.md
      - deploy-sno-quickstart.md
  -->
@@ -375,10 +375,10 @@ lab: scalelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either bm or rwn or sno
+# Either mno or rwn or sno
 cluster_type: sno
 
-# Applies to both bm/rwn clusters
+# Applies to both mno/rwn clusters
 worker_node_count:
 
 # The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
@@ -389,7 +389,7 @@ ocp_version: "latest-4.16"
 # Empty value results in playbook failing with error message.
 ocp_build: "ga"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
 # Lab Network type, applies to sno cluster_type only
@@ -429,7 +429,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for all mno cluster and rwn control-plane nodes
 controlplane_lab_interface: eno1
 
 # Network configuration for public VLAN based sno cluster_type deployment

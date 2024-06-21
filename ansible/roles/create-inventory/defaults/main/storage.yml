@@ -9,7 +9,7 @@
 # Edit and adjust each machine's install_disk= to have the by-path/by-id reference instead of the symbolic reference
 # See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/managing_file_systems/index#device-identifiers_assembly_overview-of-persistent-naming-attributes
 
-# Default install disks for bm/rwn
+# Default install disks for mno/rwn
 control_plane_install_disk: /dev/sda
 worker_install_disk: /dev/sda
 remoteworker_install_disk: /dev/sda

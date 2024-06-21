@@ -6,10 +6,10 @@
     inventory_nodes: "{{ groups['controlplane'] }}"
   when: cluster_type == "rwn"
 
-- name: BM - Create list of nodes to be discovered
+- name: MNO - Create list of nodes to be discovered
   set_fact:
     inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
-  when: cluster_type == "bm"
+  when: cluster_type == "mno"
 
 - name: SNO - Create list of nodes to be discovered
   set_fact:
@@ -113,13 +113,13 @@
   include_tasks: set_node_install_disk.yml
   loop: "{{ cluster.json.hosts | selectattr('role', 'eq', 'master') | list }}"
   loop_control:
-    loop_var: bm_node
+    loop_var: mno_node
 
 - name: Set install disk for worker nodes
   include_tasks: set_node_install_disk.yml
   loop: "{{ cluster.json.hosts | selectattr('role', 'eq', 'worker') | list }}"
   loop_control:
-    loop_var: bm_node
+    loop_var: mno_node
 
 - name: Wait for cluster to be ready for install
   uri:

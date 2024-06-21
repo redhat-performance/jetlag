@@ -61,7 +61,7 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 {% if hv_inventory %}
 [hv]
 {% for hv in ocpinventory_hv_nodes %}
-{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} ip={{ controlplane_network | ansible.utils.nthhost(loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} nic={{ hw_nic_name[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hypervisor_nic_interface_idx] if lab == 'scalelab' }} disk2_enable={{ hv.disk2_enable }} disk2_device={{ hv.disk2_device }}
+{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} ip={{ controlplane_network | ansible.utils.nthhost(loop.index + ocpinventory_worker_nodes|length + mno_worker_node_offset + hv_ip_offset) }} nic={{ hw_nic_name[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hypervisor_nic_interface_idx] if lab == 'scalelab' }} disk2_enable={{ hv.disk2_enable }} disk2_device={{ hv.disk2_device }}
 {% endfor %}
 
 [hv:vars]
@@ -76,12 +76,12 @@ network_prefix={{ controlplane_network_prefix }}
 {% for hv in ocpinventory_hv_nodes %}
 {% set hv_loop = loop %}
 {% for vm in range(hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]]['default']) %}
-{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location=/var/lib/libvirt/images bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}
+{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + mno_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location=/var/lib/libvirt/images bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}
 {% set ctr.vm = ctr.vm + 1 %}
 {% endfor %}
 {% if hv.disk2_enable %}
 {% for vm in range(hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hv.disk2_device]) %}
-{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index + hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]]['default'] }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location={{ disk2_mount_path }}/libvirt/images bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}
+{{ hv_vm_prefix }}{{ '%05d' % ctr.vm }} ansible_host={{ hv.pm_addr | replace('mgmt-','') }} hv_ip={{ controlplane_network | ansible.utils.nthhost(hv_loop.index + ocpinventory_worker_nodes|length + mno_worker_node_offset + hv_ip_offset) }} ip={{ controlplane_network | ansible.utils.nthhost(hv_vm_ip_offset + ctr.vm - 1) }} cpus={{ hv_vm_cpu_count }} memory={{ hv_vm_memory_size }} disk_size={{ hv_vm_disk_size }} vnc_port={{ 5900 + loop.index + hw_vm_counts[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]]['default'] }} mac_address={{ (90520730730496 + ctr.vm) | ansible.utils.hwaddr('linux') }} domain_uuid={{ ctr.vm | to_uuid }} disk_location={{ disk2_mount_path }}/libvirt/images bw_avg={{ hv_vm_bandwidth_average }} bw_peak={{ hv_vm_bandwidth_peak }} bw_burst={{ hv_vm_bandwidth_burst }}
 {% set ctr.vm = ctr.vm + 1 %}
 {% endfor %}
 {% endif %}

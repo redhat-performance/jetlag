@@ -3,7 +3,7 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
+# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-mno-deploy.yml
 #
 
 - name: Creates a bare metal cluster with the assisted-installer on ibmcloud
@@ -30,4 +30,4 @@
   - wait-hosts-discovered
   - configure-local-storage
   - install-cluster
-  - bm-post-cluster-install
+  - mno-post-cluster-install
