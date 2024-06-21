@@ -26,10 +26,10 @@
   include_tasks: static_network_config.yml
   loop: "{{ groups['controlplane'] }}"
 
-- name: BM - Populate static network configuration with worker nodes
+- name: MNO - Populate static network configuration with worker nodes
   include_tasks: static_network_config.yml
   when:
-  - cluster_type == "bm"
+  - cluster_type == "mno"
   loop: "{{ groups['worker'] }}"
 
 # - debug:

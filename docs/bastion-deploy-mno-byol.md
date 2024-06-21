@@ -15,7 +15,7 @@ The cluster machines need a minimum of 1 online private interface:
 
 Since each node's NIC is on a L2 network, choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
 
-![BM BYOL Cluster](img/byol_cluster.png)
+![MNO BYOL Cluster](img/byol_cluster.png)
 
 _**Table of Contents**_
 
@@ -29,8 +29,8 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - bastion-deploy-bm-byol.md
-     - bastion-bm-ibmcloud.md
+     - bastion-deploy-mno-byol.md
+     - bastion-mno-ibmcloud.md
      - deploy-sno-ibmcloud.md
      - deploy-sno-quickstart.md
  -->
@@ -197,7 +197,7 @@ Change `lab` to `lab: scalelab or ibmcloud or alias or byol`
 
 Change `lab_cloud` to `lab_cloud: na`
 
-Change `cluster_type` to `cluster_type: bm`
+Change `cluster_type` to `cluster_type: mno`
 
 Set `worker_node_count` it must be correct, in this guide it is set to `2`. However, if you desire to limit the number of worker nodes. Set it to `0`, if you want a 3 node compact cluster.
 
@@ -257,10 +257,10 @@ lab: byol
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: na
 
-# Either bm or rwn or sno
-cluster_type: bm
+# Either mno or rwn or sno
+cluster_type: mno
 
-# Applies to both bm/rwn clusters
+# Applies to both mno/rwn clusters
 worker_node_count: 2
 
 # Applies to sno clusters
@@ -281,7 +281,7 @@ ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.15.2-x86_64
 # This should just match the above release image version (Ex: 4.15)
 openshift_version: "4.15"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
 # Enables FIPs security standard
@@ -318,7 +318,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for all mno cluster and rwn control-plane nodes
 controlplane_lab_interface: eno8303
 
 # Network configuration for public VLAN based sno cluster_type deployment
@@ -327,7 +327,7 @@ controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
-# Note: these cannot be commented out or bm-deploy will fail
+# Note: these cannot be commented out or mno-deploy will fail
 #       You will need to knowledge of actual interface names.
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
@@ -405,7 +405,7 @@ dns2=<DNS network_mac>
 [hv_vm]
 [hv_vm:vars]
 ```
-You can see the real example file for the above inventory [here](https://github.com/redhat-performance/jetlag/blob/main/ansible/inventory/inventory-bm-byol.sample).
+You can see the real example file for the above inventory [here](https://github.com/redhat-performance/jetlag/blob/main/ansible/inventory/inventory-mno-byol.sample).
 
 Next run the `setup-bastion.yml` playbook ...
 
@@ -414,10 +414,10 @@ Next run the `setup-bastion.yml` playbook ...
 ...
 ```
 
-Finally run the `bm-deploy.yml` playbook ...
+Finally run the `mno-deploy.yml` playbook ...
 
 ```console
-(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/byol.local ansible/bm-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/byol.local ansible/mno-deploy.yml
 ...
 ```
 
@@ -428,7 +428,7 @@ You should monitor the first deployment to see if anything hangs on boot, or if 
 If everything goes well, you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
 ```console
-(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/mno/kubeconfig
 (.ansible) [root@<bastion> jetlag]# oc get no
 NAME              STATUS   ROLES                  AGE   VERSION
 control-plane-0   Ready    control-plane,master   36m   v1.27.6+f67aeb3
@@ -455,7 +455,7 @@ In Jetlag, the cluster installation process is divided into two phases: (1) Setu
 
 - The task ''Stop and disable iptables'' can fail because `dnf install iptables-services` and `systemctl start` need to be done.
 
-### (2) BM-Deploy:
+### (2) MNO-Deploy:
 - The task "Dell - Insert Virtual Media" may fail. Silencing `firewalld` and `iptables` fixed it.
 
 - The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines, where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As a workaround, one can set the machines to boot from the .iso, via the virtual console.
