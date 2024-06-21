@@ -1,6 +1,6 @@
 ---
-# cluster_name applies only to bm/rwn clusters, sno clusters use base host name as the cluster name
-cluster_name: bm
+# cluster_name applies only to mno/rwn clusters, sno clusters use base host name as the cluster name
+cluster_name: mno
 base_dns_name: example.com
 
 # Setup and use coredns instead of dnsmasq

@@ -1,28 +1,18 @@
 ---
-# Create and deploy a cluster with the Assisted Installer
+# exists for backwards compatibility
+# you should be using mno-deploy
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-deploy.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/mno-deploy.yml
 #
 
-- name: Creates a bare metal cluster with the assisted-installer
-  hosts: bastion
-  vars_files:
-  - vars/lab.yml
-  - vars/all.yml
-  roles:
-  - validate-vars
-  - create-ai-cluster
-  - generate-discovery-iso
-  - role: boot-iso
-    vars:
-      inventory_group: controlplane
-      index: 3
-  - role: boot-iso
-    vars:
-      inventory_group: worker
-      index: "{{ worker_node_count }}"
-  - wait-hosts-discovered
-  - install-cluster
-  - bm-post-cluster-install
+- name: Backwards compatible pause
+  hosts: localhost
+  tasks:
+    - ansible.builtin.pause:
+        prompt: "bm-deploy.yml is now called mno-deploy.yml. Please update your invocation to use the new name."
+        minutes: 1
+
+- name: bm-deploy is now called mno-deploy, calling mno-deploy for you.
+  ansible.builtin.import_playbook: mno-deploy.yml

@@ -1,5 +1,5 @@
 ---
-# install-cluster tasks
+# mno-install-cluster tasks
 
 - name: Get bastion registry certificate
   slurp:
@@ -10,7 +10,7 @@
 # The extra "| to_json(ensure_ascii=False) | string" adds an additional "layer"
 # of escaping.  I am unsure of why I actually need this additional layer other
 # than the api expects a string (and not actual json)
-- name: Apply install-config overrides
+- name: Apply mno-install-config overrides
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/install-config"
     method: PATCH
