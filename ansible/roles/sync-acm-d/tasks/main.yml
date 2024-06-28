@@ -84,7 +84,7 @@
 
 - name: Mirror rhacm policy generator image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/multicluster-operators-subscription-rhel8:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/{{ rhacm_policy_generator_image.split("/")[-1] }}:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror cluster-group-upgrades-operator image
   shell: |
@@ -104,7 +104,7 @@
 
 - name: Mirror kube-rbac-proxy image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ kube_rbac_proxy_image }} {{ registry_host }}:{{ registry_port }}/kubebuilder/kube-rbac-proxy:v0.8.0 --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ kube_rbac_proxy_image }}:{{ kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/kubebuilder/kube-rbac-proxy:{{ kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
 
 # Image needed for IBU
 - name: Mirror recert image
