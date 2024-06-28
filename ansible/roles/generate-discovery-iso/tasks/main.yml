@@ -13,11 +13,11 @@
 - name: Download discovery ISO
   get_url:
     url: "{{ infraenv_image_url.json.url }}"
-    dest: "{{ http_store_path }}/data/discovery.iso"
+    dest: "{{ http_store_path }}/data/{{ iso_name }}.iso"
     timeout: 60
 
-- name: Symlink for /iso/discovery.iso
+- name: Symlink for discovery ISO
   ansible.builtin.file:
-    src: ../discovery.iso
-    dest: "{{ http_store_path }}/data/iso/discovery.iso"
+    src: ../{{ iso_name }}.iso
+    dest: "{{ http_store_path }}/data/iso/{{ iso_name }}.iso"
     state: link

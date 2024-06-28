@@ -2,3 +2,4 @@
 # bastion-http default vars
 
 http_store_path: /opt/http_store
+iso_name: discovery
