@@ -56,7 +56,7 @@ spec:
   # To use the standard (non-realtime) kernel, set enabled to false
   realTimeKernel:
     enabled: true
-{% if openshift_version in ["4.14","4.15"] %}
+{% if openshift_version is version('4.14', ">=") %}
   workloadHints:
     # WorkloadHints defines the set of upper level flags for different type of workloads.
     # See https://github.com/openshift/cluster-node-tuning-operator/blob/master/docs/performanceprofile/performance_profile.md#workloadhints

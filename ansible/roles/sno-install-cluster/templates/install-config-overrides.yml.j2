@@ -1,16 +1,21 @@
-{% if openshift_version is version('4.14', ">=") and du_profile %}
+{% if du_profile %}
+{% if openshift_version is version('4.14', ">=") %}
 cpuPartitioningMode: AllNodes
 {% endif %}
-{% if openshift_version is version('4.13', ">=") and du_profile %}
+{% if openshift_version is version('4.13', ">=") %}
 capabilities:
   baselineCapabilitySet: None
   additionalEnabledCapabilities:
-{% if openshift_version in ["4.13","4.14"] and du_profile %}
+{% if openshift_version in ["4.13","4.14"] %}
   - marketplace
 {% endif %}
   - NodeTuning
-{% if openshift_version is version('4.15', ">=") and du_profile %}
+{% if openshift_version is version('4.15', ">=") %}
   - OperatorLifecycleManager
+{% if openshift_version is version('4.16', ">=") %}
+  - Ingress
+{% endif %}
+{% endif %}
 {% endif %}
 {% endif %}
 {% if enable_fips | default(false) %}
