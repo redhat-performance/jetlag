@@ -43,13 +43,22 @@
 - include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
+  when: openshift_version in ["4.14", "4.15"]
+  with_items:
+  - file_name: enable-cgroups-v1.yaml
+    template_name: enable-cgroups-v1.yaml
+    enabled: "{{ du_profile }}"
+
+- include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
   when: openshift_version is version('4.14', ">=")
   with_items:
   - file_name: 08-set-rcu-normal-master.yaml
     template_name: 08-set-rcu-normal-master.yaml
     enabled: "{{ du_profile }}"
-  - file_name: enable-cgroups-v1.yaml
-    template_name: enable-cgroups-v1.yaml
+  - file_name: 99-sync-time-once-master.yaml
+    template_name: 99-sync-time-once-master.yaml
     enabled: "{{ du_profile }}"
 
 - include_role:

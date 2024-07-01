@@ -28,6 +28,9 @@ spec:
 {% if openshift_version is version('4.13', ">=") %}
         group.ice-gnss=0:f:10:*:ice-gnss.*
 {% endif %}
+{% if openshift_version is version('4.14', ">=") %}
+        group.ice-dplls=0:f:10:*:ice-dplls.*
+{% endif %}
         [service]
         service.stalld=start,enable
         service.chronyd=stop,disable
