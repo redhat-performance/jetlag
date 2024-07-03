@@ -225,7 +225,7 @@ function rm_XXX_tag {
 
 ## Using other network interfaces
 
-If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml`.
+If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml` and run from the `create-inventory.yml` playbook.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
 2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping:
