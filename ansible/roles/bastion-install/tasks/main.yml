@@ -165,8 +165,8 @@
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
   - url: "{{ openshift_client_url }}/latest/oc-mirror.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
-  - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
+  - url: "{{ openshift_client_url }}/latest/openshift-client-linux-amd64-rhel8.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux-amd64-rhel8.tar.gz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
@@ -206,7 +206,7 @@
 # an oc client in order to do that so we just use the latest public oc client
 - name: Untar oc/kubectl clients
   unarchive:
-    src: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
+    src: "{{ bastion_cluster_config_dir }}/openshift-client-linux-amd64-rhel8.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}"
     remote_src: yes
     mode: 0700
