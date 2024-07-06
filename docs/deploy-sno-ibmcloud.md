@@ -202,14 +202,13 @@ worker_node_count:
 # Applies to sno clusters
 sno_node_count: 2
 
-# Versions are controlled by this release image. If you want to change images
-# you must stop and rm all assisted-installer containers on the bastion and rerun
-# the setup-bastion step in order to setup your bastion's assisted-installer to
-# the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.15.2-x86_64
+# The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
+# Values accepted: 'latest-4.13', 'latest-4.14', explicit version i.e. 4.15.2 or for dev builds, candidate-4.16
+ocp_version: "latest-4.15"
 
-# This should just match the above release image version (Ex: 4.15)
-openshift_version: "4.15"
+# Enter whether the build should use 'dev' (nightly builds) or 'ga' for Generally Available version of OpenShift
+# Empty value results in playbook failing with error message.
+ocp_build: "ga"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes

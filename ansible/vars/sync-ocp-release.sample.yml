@@ -1,9 +1,10 @@
 ---
-# Sample sync-ocp-release vars file
+# The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
+# Values accepted: 'latest-4.13', 'latest-4.14', explicit version i.e. 4.15.2 or for dev builds, candidate-4.16
+ocp_version: "latest-4.15"
 
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.15.2-x86_64
-
-# This should just match the above release image version (Ex: 4.15)
-openshift_version: "4.15"
+# Enter whether the build should use 'dev' (nightly builds) or 'ga' for Generally Available version of OpenShift
+# Empty value results in playbook failing with error message. Example of a dev build would be candidate-4.17
+ocp_build: "ga"
 
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"

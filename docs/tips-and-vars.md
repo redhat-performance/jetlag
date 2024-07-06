@@ -160,12 +160,12 @@ install_performance_addon_operator: true
 
 Versions are controlled by the release image. If you want to change images:
 
-Modify the vars file to update release image path with `ocp_release_image` and the openshift version with `openshift_version`
+Modify the vars file to update the openshift version  with `ocp_version` and the build (ga or dev) with `ocp_build`.
 Example:
 
 ```yaml
-ocp_release_image: registry.ci.openshift.org/ocp/release:4.10.0-0.nightly-2022-01-18-044014
-openshift_version: "4.10"
+ocp_version: "4.15.2" 
+ocp_build: "ga"
 ```
 Ensure that your pull secrets are still valid.
 When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:

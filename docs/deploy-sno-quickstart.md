@@ -228,8 +228,8 @@ Change `cluster_type` to `cluster_type: sno`
 
 Change `sno_node_count` to the number of SNOs that should be provisioned. For example `sno_node_count: 1`
 
-Change `ocp_release_image` to the desired image if the default (4.15.2) is not the desired version.
-If you change `ocp_release_image` to a different major version (Ex `4.15`), then change `openshift_version` accordingly.
+Change `ocp_version` to the desired OpenShift version.
+Set `ocp_build` to either ga or dev depending on whether you want to install a ga version like z-stream or a development version like candidate-4.16.
 
 For the ssh keys we have a chicken before the egg problem in that our bastion machine won't be defined or ensure that keys are created until after we run `create-inventory.yml` and `setup-bastion.yml` playbooks. We will revisit that a little bit later.
 
@@ -391,14 +391,13 @@ sno_node_count: 1
 # scalelab cloud
 public_vlan: false
 
-# Versions are controlled by this release image. If you want to change images
-# you must stop and rm all assisted-installer containers on the bastion and rerun
-# the setup-bastion step in order to setup your bastion's assisted-installer to
-# the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.15.2-x86_64
+# The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
+# Values accepted: 'latest-4.13', 'latest-4.14', explicit version i.e. 4.15.2 or for dev builds, candidate-4.16
+ocp_version: "latest-4.15"
 
-# This should just match the above release image version (Ex: 4.15)
-openshift_version: "4.15"
+# Enter whether the build should use 'dev' (nightly builds) or 'ga' for Generally Available version of OpenShift
+# Empty value results in playbook failing with error message.
+ocp_build: "ga"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
