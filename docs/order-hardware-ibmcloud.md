@@ -4,7 +4,7 @@
 
 Ensure you have access to IBMcloud (https://cloud.ibm.com). You will need to contact the lab manager to get an account created.
 
-Currently supported hardware vendors in Jetlag are 'Supermicro' and 'Lenovo'. Unfortunately. you will not get to know which vendor the servers are from until your devices are ready.
+Currently tested hardware vendors in Jetlag are 'Supermicro' and 'Lenovo'. Unfortunately, you will not get to know which vendor the servers are from until your devices are ready.
 
 
 ## Ordering Hardware
@@ -37,7 +37,7 @@ Points to keep in mind while ordering hardware:
 * The bastion machine should have a public accessible ip and will NAT traffic for the cluster to the public network. Other machines can have a public ip address but it is not currently in use with this deployment method.
 
 You might not receive an immediate notification on the order you just placed.
-If there are significant delays, IBMcloud will open up a support ticket on your behalf to notify about the readiness status of your servers.
+If there are significant delays, IBMcloud will open up a ticket on your behalf to notify about the readiness status of your servers.
 
 Once you are notified of the servers being ready, login to IBMcloud and navigate to 'Classic Infrastructure' to view your devices.
 

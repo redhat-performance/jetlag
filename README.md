@@ -132,7 +132,7 @@ Make sure to set/review the following vars:
 | `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
 | `controlplane_lab_interface` | applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
 
-More customization such as `cluster_network` and `service_network` can be supported as extra vars, check each ansible role default vars file for variable names and options.
+More customization such as `cluster_network` and `service_network` are available as extra vars, check each ansible role default vars file for variable names and options.
 
 Save your pull-secret from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) in `pull_secret.txt` in the Jetlag repo base directory, for example by using the "Copy" button on the web page, and then pasting the clipboard text into a `cat > pull_secret.txt` command like this:
 
