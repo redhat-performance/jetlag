@@ -15,7 +15,7 @@ _**Table of Contents**_
   - [Rebooted Bastion](#rebooted-bastion)
   - [ipv4 to ipv6 deployed cluster and vice-versa](#ipv4-to-ipv6-deployed-cluster)
 - [Generic Hardware](#generic-hardware)
-  - [Minimum Supported Firmware Versions](#minimum-supported-firmware-versions)
+  - [Minimum Firmware Versions](#minimum-firmware-versions)
 - [Dell](#dell)
   - [Reset BMC / iDrac](#reset-bmc--idrac)
   - [Unable Mount Virtual Media](#unable-mount-virtual-media)
@@ -172,7 +172,7 @@ When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead o
 
 # Generic Hardware
 
-## Minimum Supported Firmware Versions
+## Minimum Firmware Versions
 
 Review the [OpenShift documentation to understand what minimum firmware versions are required](https://docs.openshift.com/container-platform/4.14/installing/installing_bare_metal_ipi/ipi-install-prerequisites.html#ipi-install-firmware-requirements-for-installing-with-virtual-media_ipi-install-prerequisites) for HP and Dell hardware  based clusters to be deployed via Redfish virtual media.
 
@@ -233,7 +233,7 @@ Sunday 04 September 2022  15:10:25 -0500 (0:00:03.603)       0:00:21.026 ******
 fatal: [jetlag-bm0]: FAILED! => {"changed": true, "cmd": "SMCIPMITool 10.220.217.126 root bybdjEBW5y wsiso umount\n", "delta": "0:00:01.319311", "end": "2022-09-04 15:10:27.754259", "msg": "non-zero return code", "rc": 153, "start": "2022-09-04 15:10:26.434948", "stderr": "", "stderr_lines": [], "stdout": "This device doesn't support WSISO commands", "stdout_lines": ["This device doesn't support WSISO commands"]}
 ```
 
-The permissions of the ipmi/BMC user are likely that of operator and not administrator. Open a support case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset BMC [here](#reset-bmc--resolving-redfish-connection-error).
+The permissions of the ipmi/BMC user are likely that of operator and not administrator. Open a case to set ipmi privilege level permissions to administrator. If you have the permissions already set correctly, try to reset BMC [here](#reset-bmc--resolving-redfish-connection-error).
 
 How to verify that ipmi privilege set to administrator level permissions
 
@@ -270,7 +270,7 @@ Expected result: Chassis Power is on
 The property Boot is not in the list of valid properties for the resource.
 ```
 
-This is caused by having an older BIOS version. The older BIOS version simply does not support the command.
+This is caused by having an older BIOS version.
 
 When set to ignore the error, Jetlag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
 

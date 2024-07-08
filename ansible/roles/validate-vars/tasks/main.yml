@@ -22,7 +22,7 @@
 
 - name: Check for RHEL 8.6 (Bastion Validation)
   fail:
-    msg: "Upgrade to RHEL 8.6 for podman host network support"
+    msg: "Upgrade to RHEL 8.6 for podman host network"
   when:
   - ansible_facts['distribution'] is defined
   - (ansible_facts['distribution']|lower == "redhat" and ansible_facts['distribution_version'] is version('8.6', '<'))
