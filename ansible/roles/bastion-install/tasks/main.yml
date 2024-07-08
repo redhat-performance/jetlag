@@ -270,10 +270,11 @@
   ansible.builtin.git:
     repo: "{{ rh_crucible_url }}"
     dest: /tmp/crucible
+    force: true
   environment:
     GIT_SSL_NO_VERIFY: "False"
-  when: install_rh_crucible
+  when: install_rh_crucible | bool
 
 - name: Install Red Hat Crucible
   command: chdir=/tmp/crucible bash rh-install-crucible.sh
-  when: install_rh_crucible
+  when: install_rh_crucible | bool
