@@ -1,0 +1,16 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-gitops-operator
+  namespace: openshift-operators
+spec:
+  name: openshift-gitops-operator
+  sourceNamespace: openshift-marketplace
+  channel: {{ gitops_channel }}
+  installPlanApproval: Automatic
+{% if use_bastion_registry | default(false) %}
+  source: {{ operator_index_name }}
+{% else %}
+  source: redhat-operators
+{% endif %}

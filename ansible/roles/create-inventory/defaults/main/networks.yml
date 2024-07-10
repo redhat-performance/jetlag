@@ -1,5 +1,6 @@
 ---
-# Network configuration for bm cluster and rwn control-plane nodes
+# Index used to select mac address from ocpinventory control-plane interface.
+# Used for SNOs, MNO control-plane and worker nodes, and RWN control-plane nodes
 controlplane_network_interface_idx: 0
 # The assisted-installer actually does not need the exact nic name for our controlplane network. Eth0 is used
 # as a representative for the actual nic name. The actual nic is determined by the mac address which is
