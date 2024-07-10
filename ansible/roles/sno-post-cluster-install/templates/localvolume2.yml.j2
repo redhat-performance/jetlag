@@ -1,0 +1,13 @@
+---
+apiVersion: "local.storage.openshift.io/v1"
+kind: "LocalVolume"
+metadata:
+  name: "localvolume2"
+  namespace: "openshift-local-storage"
+spec:
+  storageClassDevices:
+  - storageClassName: "localstorage2-sc"
+    volumeMode: Filesystem
+    fsType: xfs
+    devicePaths:
+    - {{ localvolume2_device }}

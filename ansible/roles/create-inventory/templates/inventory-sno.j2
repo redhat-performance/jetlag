@@ -41,7 +41,7 @@ bmc_password={{ bmc_password }}
 {%- else -%}
 {%- set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip -%}
 {%- endif -%}
-{% if not loop.first %}# {% endif %}{{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ sno.pm_addr }} boot_iso={{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }}.iso ip={{ ip }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} lab_mac={{ (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first) | json_query(mac_query) | join(', ') }} network_mac={{ sno.mac[0] }} install_disk={{ sno_install_disk }}
+{% if not loop.first %}# {% endif %}{{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ sno.pm_addr }} boot_iso={{ sno.pm_addr.split('.')[0] | replace('mgmt-','') }}.iso ip={{ ip }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} lab_mac={{ (sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first) | json_query(mac_query) | join(', ') }} network_mac={{ sno.mac[controlplane_network_interface_idx] }} install_disk={{ sno_install_disk }}
 {% endfor %}
 
 [sno:vars]
