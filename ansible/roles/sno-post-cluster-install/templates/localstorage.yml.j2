@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annontations:
+    openshift.io/node-selector: ''
+  name: openshift-local-storage
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: local-operator-group
+  namespace: openshift-local-storage
+spec:
+  targetNamespaces:
+  - openshift-local-storage
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: local-storage-operator
+  namespace: openshift-local-storage
+spec:
+  installPlanApproval: Automatic
+  name: local-storage-operator
+  channel: stable
+{% if use_bastion_registry | default(false) %}
+  source: {{ operator_index_name }}
+{% else %}
+  source: redhat-operators
+{% endif %}
+  sourceNamespace: openshift-marketplace
