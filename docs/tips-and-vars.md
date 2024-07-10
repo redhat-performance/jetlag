@@ -21,6 +21,7 @@ Values here reflect the default (Network 1 which maps to `controlplane_network_i
 
 | Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
 | ------------------ | --------------------- | ------------------------------ | -------------------------- |
+| Dell r660          | eno12399np0           | ens1f0                         | eno12399np0                |
 | Dell r650          | eno12399np0           | ens1f0                         | eno12399np0                |
 | Dell r640          | eno1np0               | ens1f0                         | eno1np0                    |
 | Dell fc640         | eno1                  | eno2                           | eno1                       |

@@ -80,6 +80,13 @@ hw_nic_name:
     - ens2f0
     - ens2f1
     - eno12409np1
+    r660:
+    - eno12399np0
+    - ens1f0
+    - ens1f1
+    - ens2f0
+    - ens2f1
+    - eno12409np1
     r730xd:
     - eno3
     - eno1
@@ -156,6 +163,9 @@ hw_vm_counts:
       sdb: 12
       nvme0n1: 12
     r650:
+      default: 4
+      nvme0n1: 23
+    r660:
       default: 4
       nvme0n1: 23
     r730xd:
