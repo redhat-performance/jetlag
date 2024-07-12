@@ -163,10 +163,8 @@
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
-  - url: "{{ openshift_client_url }}/latest/oc-mirror.tar.gz"
+  - url: "{{ release_url }}/latest/oc-mirror.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
-  - url: "{{ openshift_client_url }}/latest/openshift-client-linux-amd64-rhel8.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux-amd64-rhel8.tar.gz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
@@ -184,7 +182,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ openshift_client_url }}/latest-4.14/opm-linux.tar.gz"
+  -  url: "{{ release_url }}/latest-4.14/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
@@ -195,33 +193,9 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
+  -  url: "{{ release_url}}/latest/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('9', '==')
-
-# We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
-# likely not the actual version of the intended cluster, those specific clients
-# are obtained during the bastion-ocp-version role in which we use oc.latest to
-# extract the correct oc/kubectl clients for that version. Unfortunately we need
-# an oc client in order to do that so we just use the latest public oc client
-- name: Untar oc/kubectl clients
-  unarchive:
-    src: "{{ bastion_cluster_config_dir }}/openshift-client-linux-amd64-rhel8.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}"
-    remote_src: yes
-    mode: 0700
-
-- name: Copy oc/kubectl clients into a pathed directory
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    remote_src: true
-    mode: 0700
-  loop:
-  - src: "{{ bastion_cluster_config_dir }}/oc"
-    dest: /usr/local/bin/oc.latest
-  - src: "{{ bastion_cluster_config_dir }}/kubectl"
-    dest: /usr/local/bin/kubectl.latest
 
 - name: Untar coredns, opm, kube-burner and grpcurl client
   unarchive:

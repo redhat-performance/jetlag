@@ -14,6 +14,7 @@
   vars_files:
   - vars/sync-ocp-release.yml
   roles:
+  - ocp-release
   - role: bastion-ocp-version
     vars:
       setup_bastion: false

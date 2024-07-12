@@ -13,6 +13,21 @@
     msg: "Pull secret appears unset"
   when: pull_secret is not defined
 
+- name: Validate ocp_build
+  fail:
+    msg: "Invalid ocp_build selected('{{ ocp_build }}') Select from {{ ocp_build_types }}"
+  when: ocp_build not in ocp_build_types
+
+- name: Validate ocp_version
+  fail:
+    msg: "The version is undefined or empty. Use a value such as 'latest-4.15' or 'latest-4.16' or '4.16.1'."
+  when: (ocp_version is undefined) or (ocp_version|length == 0)
+
+- name: Fail if build is invalid
+  fail:
+    msg: "The openshift build defined is invalid, Use either 'ga' or 'dev' only"
+  when: (ocp_build != 'ga') and (ocp_build != 'dev')
+
 - name: Check for RHEL/Centos (Bastion Validation)
   fail:
     msg: "Expecting RHEL or Centos for a Bastion OS"
@@ -33,7 +48,7 @@
   when: (cluster_type == "bm" or cluster_type == "rwn") and
         (worker_node_count is undefined or not worker_node_count | int) and
         ansible_play_name != "Create inventory from a lab cloud" and
-        ansible_play_name != "Create inventory from ibmcloud hardware"
+       	ansible_play_name != "Create inventory from ibmcloud hardware"
 
 - name: Set sno_node_count if undefined or empty
   set_fact:

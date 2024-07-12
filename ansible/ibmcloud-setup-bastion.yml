@@ -17,6 +17,7 @@
     http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
   roles:
   - validate-vars
+  - ocp-release
   - bastion-install
   - ibmcloud-bastion-network
   - bastion-dnsmasq

@@ -159,14 +159,13 @@ install_performance_addon_operator: true
 
 ## Updating the OCP version
 
-Versions are controlled by the release image. If you want to change images:
+Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift. Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16 or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would  be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
 
-Modify the vars file to update release image path with `ocp_release_image` and the openshift version with `openshift_version`
-Example:
+Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
 ```yaml
-ocp_release_image: registry.ci.openshift.org/ocp/release:4.10.0-0.nightly-2022-01-18-044014
-openshift_version: "4.10"
+ocp_version: "4.15.2" 
+ocp_build: "ga"
 ```
 Ensure that your pull secrets are still valid.
 When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:

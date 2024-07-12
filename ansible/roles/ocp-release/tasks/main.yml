@@ -1,0 +1,29 @@
+---
+# ocp-release tasks
+
+- name: Get release.txt file
+  uri:
+    url: "{{ release_url }}/{{ ocp_version }}/release.txt"
+    return_content: yes
+  register: result
+  until: result.status == 200
+  retries: 3
+  delay: 5
+  failed_when: result.content|length == 0 or result.status >= 400
+
+- name: Set facts for release version and image
+  set_fact:
+    ocp_release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
+    ocp_release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+
+- name: Set fact for OpenShift major version
+  set_fact:
+    openshift_version: "{{ ocp_release_version.split('.')[0] + '.' + ocp_release_version.split('.')[1] }}"
+
+- name: Display release vars
+  debug:
+    msg: "{{ item }}"
+  loop:
+  - "{{ openshift_version }}"
+  - "{{ ocp_release_version }}"
+  - "{{ ocp_release_image }}"

@@ -6,5 +6,5 @@
     oc adm release mirror \
       -a {{ registry_path }}/pull-secret-bastion.txt \
       --from={{ ocp_release_image }} \
-      --to-release-image={{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }} \
+      --to-release-image={{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_version }}-x86_64 \
       --to={{ registry_host }}:{{ registry_port }}/{{ registry_repo }}
