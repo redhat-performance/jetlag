@@ -16,6 +16,7 @@
     http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
   roles:
   - validate-vars
+  - ocp-release
   - ibmcloud-sno-create-ai-cluster
   - sno-generate-discovery-iso
   - role: boot-iso

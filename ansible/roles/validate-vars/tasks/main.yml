@@ -13,15 +13,15 @@
     msg: "Pull secret appears unset"
   when: pull_secret is not defined
 
-- name: Fail if version is undefined or empty.
+- name: Validate ocp_build
   fail:
-    msg: "The version is undefined or empty. Use a value such as 'latest-4.13' or 'latest-4.14' or an explicit version."
-  when: (ocp_version is undefined) or (ocp_version|length == 0)
+    msg: "Invalid ocp_build selected('{{ ocp_build }}') Select from {{ ocp_build_types }}"
+  when: ocp_build not in ocp_build_types
 
-- name: Fail if build is undefined or empty
+- name: Validate ocp_version
   fail:
-    msg: "The build is undefined or empty. Use a value of either 'dev' or 'ga'."
-  when: (ocp_build is undefined) or (ocp_build|length == 0)
+    msg: "The version is undefined or empty. Use a value such as 'latest-4.15' or 'latest-4.16' or '4.16.1'."
+  when: (ocp_version is undefined) or (ocp_version|length == 0)
 
 - name: Fail if build is invalid
   fail:
@@ -103,27 +103,3 @@
   fail:
     msg: "isolated_cpus is unset"
   when: (cluster_type == "sno") and (du_profile | default(false) | bool) and isolated_cpus is undefined
-
-- name: Set release_url
-  set_fact:
-    release_url: "{{ 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp' if ocp_build == 'ga' else 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview' }}"
-
-- name: Get release.txt file
-  uri:
-    url: "{{ release_url }}/{{ ocp_version }}/release.txt"
-    return_content: yes
-  register: result
-  until: result.status == 200
-  retries: 3
-  delay: 5
-  failed_when: result.content|length == 0 or result.status >= 400
-
-- name: Set facts for release version and image
-  set_fact:
-    ocp_release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
-    ocp_release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
-
-- name: Set fact for OpenShift major version
-  set_fact:
-    openshift_version: "{{ ocp_release_version.split('.')[0] + '.' + ocp_release_version.split('.')[1] }}"
-

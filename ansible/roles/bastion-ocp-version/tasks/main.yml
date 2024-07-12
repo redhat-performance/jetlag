@@ -154,10 +154,10 @@
   loop:
   - dest: "{{ ocp_version_path }}/assisted_service_openshift_version-bastion.json"
     content: |
-      {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
+      {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_version }}-x86_64", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
   - dest: "{{ ocp_version_path }}/assisted_service_os_images-bastion.json"
     content: |
       [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}","rootfs_url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}","version":"{{ ocp_version_rhcos_version.stdout }}"}]
   - dest: "{{ ocp_version_path }}/assisted_service_release_images-bastion.json"
     content: |
-      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}","version":"{{ ocp_version_display_name.stdout }}"}]
+      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_version }}-x86_64","version":"{{ ocp_version_display_name.stdout }}"}]

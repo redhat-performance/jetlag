@@ -163,6 +163,8 @@
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
+  - url: "{{ release_url }}/latest/oc-mirror.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
