@@ -37,10 +37,6 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.15"
 
-# Enter whether the build should use 'dev' (nightly builds) or 'ga' for Generally Available version of OpenShift
-# Empty value results in playbook failing with error message. Example of a dev build would be candidate-4.17
-ocp_build: "ga"
-
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
 
