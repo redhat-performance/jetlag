@@ -48,7 +48,7 @@
   when: (cluster_type == "bm" or cluster_type == "rwn") and
         (worker_node_count is undefined or not worker_node_count | int) and
         ansible_play_name != "Create inventory from a lab cloud" and
-       	ansible_play_name != "Create inventory from ibmcloud hardware"
+        ansible_play_name != "Create inventory from ibmcloud hardware"
 
 - name: Set sno_node_count if undefined or empty
   set_fact:
@@ -88,11 +88,6 @@
     fail:
       msg: "Invalid cluster_type selected - {{ cluster_type }} Select from {{ ibmcloud_cluster_types }}"
     when: cluster_type not in ibmcloud_cluster_types
-
-- name: Check if PAO install is enabled when du_profile is enabled and OCP version is 4.9 or 4.10
-  fail:
-    msg: "set install_performance_addon_operator to true"
-  when: (cluster_type == "sno") and (openshift_version == "4.9" or openshift_version == "4.10") and (not install_performance_addon_operator | default(false) | bool) and (du_profile | default(false) | bool)
 
 - name: Check reserved_cpus var is set
   fail:
