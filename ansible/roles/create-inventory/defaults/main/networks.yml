@@ -27,3 +27,4 @@ vip_dhcp_allocation: false
 # This index var corresponds to the index in hw_nic_name in labs.yml for which network to use as the impaired nic for
 # the hypervisor impairments playbook
 hypervisor_nic_interface_idx: 1
+sno_nic_interface_idx: 1
