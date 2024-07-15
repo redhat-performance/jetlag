@@ -29,9 +29,10 @@ bmc_password={{ bmc_password }}
 
 [sno]
 # Single Node OpenShift Clusters
-#  Report all machines in the cluster aside from the bastion. Each may be used
-#  to build an SNO cluster, based on the "sno_index" variable, which defaults
-#  to 0.
+#  Report all machines in the cluster aside from the bastion. Only one should
+#  be uncommented at a time, but you can build SNO clusters one at a time by
+#  rerunning the SNO deploy playbook after changing which inventory line is
+#  uncommented.
 {% for sno in ocpinventory_sno_nodes %}
 {%- if use_bastion_registry -%}
 {%-   set ip_address=controlplane_network | ansible.utils.nthhost(loop.index0 + 5) -%}
