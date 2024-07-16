@@ -4,3 +4,8 @@
 # This will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
+
+# This defaults the base name of the downloaded ISO, if not overriden by the
+# caller. (Bare metal clusters use "discovery" while SNO clusters use the DNS
+# name of the machine.)
+iso_name: discovery

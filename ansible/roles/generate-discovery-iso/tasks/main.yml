@@ -16,7 +16,7 @@
     dest: "{{ http_store_path }}/data/{{ iso_name }}.iso"
     timeout: 60
 
-- name: Symlink for discovery ISO
+- name: Symlink discovery ISO into "iso" subdirectory
   ansible.builtin.file:
     src: ../{{ iso_name }}.iso
     dest: "{{ http_store_path }}/data/iso/{{ iso_name }}.iso"
