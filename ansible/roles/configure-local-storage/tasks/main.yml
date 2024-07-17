@@ -1,9 +1,6 @@
 ---
 # local-storage tasks
 
-- debug:
-    msg: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts"
-
 - name: Get host ids
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts"
@@ -12,9 +9,6 @@
     status_code: [200]
     return_content: true
   register: get_hosts
-
-- debug:
-    var: get_hosts
 
 - name: Multi Node storage configuration
   block:
