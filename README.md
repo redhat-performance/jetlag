@@ -128,7 +128,6 @@ Make sure to set/review the following vars:
 | `lab_cloud` | the cloud within the lab environment (Example: `cloud42`)
 | `cluster_type` | either `bm`, `rwn`, or `sno` for the respective cluster layout
 | `worker_node_count` | applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
-| `sno_node_count` | applies to sno cluster type for the desired sno count, ideal for leaving left over inventory hosts for other purposes
 | `bastion_lab_interface` | set to the bastion machine's lab accessible interface
 | `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
 | `controlplane_lab_interface` | applies to bm and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)

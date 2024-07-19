@@ -1,6 +1,0 @@
----
-# sno-generate-discovery-iso tasks
-
-- name: Download individual SNO discovery ISOs
-  include_tasks: download_individual_sno_iso.yml
-  loop: "{{ groups['sno'][:sno_node_count|int] }}"

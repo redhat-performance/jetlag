@@ -1,0 +1,46 @@
+---
+# local-storage tasks
+
+- name: Get host ids
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts"
+    method: GET
+    body_format: json
+    status_code: [200]
+    return_content: true
+  register: get_hosts
+
+- name: Multi Node storage configuration
+  block:
+  - name: Apply controlplane host ignition config overrides
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ item.id }}/ignition"
+      method: PATCH
+      body_format: json
+      status_code: [201]
+      return_content: true
+      body: { "config": "{{ lookup('template', 'controlplane.ign.j2') | to_json }}" }
+    with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'master') | list }}"
+    when: (controlplane_etcd_on_nvme or controlplane_localstorage_configuration)
+
+  - name: Apply worker host ignition config overrides
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts//{{ item.id }}/ignition"
+      method: PATCH
+      body_format: json
+      status_code: [201]
+      return_content: true
+      body: { "config": "{{ lookup('template', 'worker.ign.j2') | to_json }}" }
+    with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'worker') | list }}"
+    when: worker_localstorage_configuration
+  when: cluster_type != "sno"
+
+- name: Apply sno host ignition config overrides
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ get_hosts.json[0].id }}/ignition"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: { "config": "{{ lookup('template', 'sno.ign.j2') | to_json }}" }
+  when: cluster_type == "sno" and sno_localstorage_configuration

@@ -8,7 +8,7 @@
 #
 # For Single Node OpenShift clusters:
 # * First machine is bastion
-# * Remaining machines are SNO clusters (depending upon sno_node_count)
+# * Second machine is SNO cluster
 #
 # You can also specify which machines based on machine id should be bastion/controlplane/worker roles
 #
@@ -175,13 +175,7 @@
   block:
   - name: SNO - Set max number of nodes
     set_fact:
-      max_snos: "{{ ibm_hardware_list_json|length }}"
-    when: sno_node_count == None
-
-  - name: SNO - Set max number of SNO nodes (sno_node_count is set)
-    set_fact:
-      max_snos: "{{ sno_node_count|int }}"
-    when: sno_node_count != None
+      max_snos: "1"
 
   - name: SNO - Get ibmcloud SNO node detailed data
     shell: |
