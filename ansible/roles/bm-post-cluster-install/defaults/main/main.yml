@@ -43,6 +43,9 @@ fix_metal3_provisioningosdownloadurl: false
 migrate_ingresscontrollers: false
 migrate_monitoring: false
 
+# Set the rention period for prometheus to allow up to 15 days of data by default
+prometheus_retention_period: 15d
+
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z

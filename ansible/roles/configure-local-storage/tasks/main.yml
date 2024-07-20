@@ -1,5 +1,5 @@
 ---
-# local-storage tasks
+# configure-local-storage tasks
 
 - name: Get host ids
   uri:

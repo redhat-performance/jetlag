@@ -1,3 +1,6 @@
+---
+# configure-local-storage default vars
+
 sno_localstorage_configuration: false
 sno_localstorage_device: /dev/nvme0n1
 sno_localstorage_lv_count: 10
