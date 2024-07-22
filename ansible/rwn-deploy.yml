@@ -22,6 +22,7 @@
       inventory_group: controlplane
       index: 3
   - wait-hosts-discovered
+  - configure-local-storage
   - install-cluster
   - rwn-post-cluster-install
   - generate-livecd
