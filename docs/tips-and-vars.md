@@ -30,16 +30,53 @@ Values here reflect the default (Network 1 which maps to `controlplane_network_i
 
 Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces).
 
-
 **Performance Lab**
 
 | Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
 | ------------------ | --------------------- | ------------------------------ | -------------------------- |
-| Dell r750          | eno8303               | ens3f0                         | eno8303                    |
-| Dell r740xd        | eno3                  | eno1                           | eno1np0                    |
+| Dell r750          | eno8303               | ens6f0                         | eno8303                    |
+| Dell r740xd        | eno3                  | ens7f0                         | eno3                       |
 
 Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking).
 
+## Extra vars for by-path disk reference
+**Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to set the extra vars for by-path reference for the installation as sometimes disk names get swapped during boot discovery (e.g., sda and sdb).
+Using the PCI paths (in a homogeneous SCALE or ALIAS lab cloud) should be consistent across all the machines,
+and isn't subject to change during discovery. Below are the extra vars along with the hardware used.
+
+If your cloud is not homogeneous, you'll need to edit the inventory file to set appropriate install paths
+for each machine.
+
+**Scale Lab**
+
+| Hardware           | control_plane_install_disk                      | worker_install_disk                             |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------- |
+| Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
+| Dell r640          | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+
+**Alias Lab**
+
+| Hardware | control_plane_install_disk | worker_install_disk |
+| - | - | - |
+| Dell r750 | /dev/disk/by-path/pci-0000:65:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:65:00.0-scsi-0:2:0:0 |
+
+To find your machine's by-path reference use the following command and choose the install disk. (Note, this
+assumes that the bastion hardware configuration is identical: in a heterogeneous cluster you may need to
+execute this command on each host in your deployment, setting the `control_plane_install_disk` and
+`worker_install_disk` paths manually for each host in the inventory file.)
+
+```console
+(.ansible) [root@<bastion> jetlag]# ls -la /dev/disk/by-path/
+total 0
+drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
+drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..
+lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0 -> ../../sda
+lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part1 -> ../../sda1
+lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part2 -> ../../sda2
+lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:1:0 -> ../../sdb
+lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:2:0 -> ../../sdc
+lrwxrwxrwx. 1 root root  13 Apr 11 19:40 pci-0000:d8:00.0-nvme-1 -> ../../nvme0n1
+```
 
 ## Override lab ocpinventory json file
 
@@ -164,6 +201,7 @@ Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally A
 Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
 ```yaml
+ocp_version: "4.15.2"
 ocp_build: "ga"
 ocp_version: "4.15.2"
 ```
@@ -308,30 +346,4 @@ lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
 RHEL9:
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <---- Use this one
-```
-
-### Extra vars for by-path disk reference
-**Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to set the extra vars for by-path reference for the installation. Below are the extra vars along with the hardware used.
-
-| Hardware           | control_plane_install_disk                      | worker_install_disk                             |
-| ------------------ | ----------------------------------------------- | ----------------------------------------------- |
-| Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
-| Dell r640          | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
-
-To find your machine's by-path reference use the following command and choose the install disk. (Note, this
-assumes that the bastion hardware configuration is identical: in a heterogeneous cluster you may need to
-execute this command on each host in your deployment, setting the `control_plane_install_disk` and
-`worker_install_disk` paths manually for each host in the inventory file.)
-
-```console
-(.ansible) [root@<bastion> jetlag]# ls -la /dev/disk/by-path/
-total 0
-drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
-drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..
-lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0 -> ../../sda
-lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part1 -> ../../sda1
-lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part2 -> ../../sda2
-lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:1:0 -> ../../sdb
-lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:2:0 -> ../../sdc
-lrwxrwxrwx. 1 root root  13 Apr 11 19:40 pci-0000:d8:00.0-nvme-1 -> ../../nvme0n1
 ```
