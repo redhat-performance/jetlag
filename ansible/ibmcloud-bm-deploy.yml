@@ -28,5 +28,6 @@
       inventory_group: worker
       index: "{{ worker_node_count }}"
   - wait-hosts-discovered
+  - configure-local-storage
   - install-cluster
   - bm-post-cluster-install

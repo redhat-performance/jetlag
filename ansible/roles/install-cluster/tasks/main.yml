@@ -20,10 +20,6 @@
     body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
   register: get_install_config
 
-- name: Apply local storage ignition overrides
-  include_role:
-    name: configure-local-storage
-
 - name: Install cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/actions/install"

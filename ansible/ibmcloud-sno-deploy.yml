@@ -26,5 +26,6 @@
       inventory_group: sno
       index: "1"
   - sno-wait-hosts-discovered
+  - configure-local-storage
   - install-cluster
   - sno-post-cluster-install
