@@ -240,13 +240,13 @@ The system type determines the values of `bastion_lab_interface` and `bastion_co
 Using the chart provided by the [alias lab here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
-* `bastion_controlplane_interface` should be set to the nic name under "EM3" for this guide
+* `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
 
 For Dell r750 set those vars to the following
 
 ```yaml
 bastion_lab_interface: eno8303
-bastion_controlplane_interface: ens6f0
+bastion_controlplane_interface: ens3f0
 ```
 
 Here you can see a network diagram for the bare metal cluster on Dell r650 with 3 workers and 3 master nodes:
@@ -359,7 +359,7 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 smcipmitool_url:
 
 bastion_lab_interface: eno8303
-bastion_controlplane_interface: ens6f0
+bastion_controlplane_interface: ens3f0
 
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
