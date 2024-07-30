@@ -7,12 +7,12 @@ cloud_labs:
 
 # Red Hat lab environments
 rh_labs:
-- alias
+- performancelab
 - scalelab
 - byol
 
 labs:
-  alias:
+  performancelab:
     dns:
     - 10.6.60.1
     foreman: foreman.rdu3.labs.perfscale.redhat.com

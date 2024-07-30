@@ -46,7 +46,7 @@ should be executed from the bastion.
 3. Upgrade RHEL to at least RHEL 8.6
 
 You need to be running at least RHEL 8.6 to have the minimal `podman`. By default,
-the SCALE lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
+the Scale lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
 using the `/root/update-latest-rhel-release.sh` script provisioned by the QUADS
 system. You can determine the installed version by looking at `/etc/redhat-release`,
 and the update script allows you to ask what versions are available:

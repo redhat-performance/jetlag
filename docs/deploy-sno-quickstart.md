@@ -50,7 +50,7 @@ should be executed from the bastion.
 3. Upgrade RHEL to at least RHEL 8.6
 
 You need to be running at least RHEL 8.6 to have the minimal `podman`. By default,
-the SCALE lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
+the Scale lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
 using the `/root/update-latest-rhel-release.sh` script provisioned by the QUADS
 system. You can determine the installed version by looking at `/etc/redhat-release`,
 and the update script allows you to ask what versions are available:
@@ -253,37 +253,37 @@ Here you can see a network diagram for the SNO cluster on Dell r640 with 3 SNO c
 
 For example if your bastion is ...
 
-Dell fc640
+Dell fc640 (Scale Lab)
 ```yaml
 bastion_lab_interface: eno1
 bastion_controlplane_interface: eno2
 ```
 
-Dell r640
+Dell r640 (Scale Lab)
 ```yaml
 bastion_lab_interface: eno1np0
 bastion_controlplane_interface: ens1f0
 ```
 
-Dell r650
+Dell r650 (Scale Lab)
 ```yaml
 bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
 ```
 
-Dell r750 (on ALIAS lab)
+Dell r750 (Performance Lab)
 ```yaml
 bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens3f0
 ```
 
-Supermicro 1029p or Supermicro 1029U
+Supermicro 1029p or Supermicro 1029u (Scale Lab)
 ```yaml
 bastion_lab_interface: eno1
 bastion_controlplane_interface: ens2f0
 ```
 
-Supermicro 5039ms
+Supermicro 5039ms (Scale Lab)
 ```yaml
 bastion_lab_interface: enp2s0f0
 bastion_controlplane_interface: enp1s0f0
@@ -301,32 +301,32 @@ The same chart provided by the scale lab for the bastion machine, is used to ide
 
 For example if your Bare Metal OpenShift systems are ...
 
-Dell fc640
+Dell fc640 (Scale Lab)
 ```yaml
 controlplane_lab_interface: eno1
 ```
 
-Dell r640
+Dell r640 (Scale Lab)
 ```yaml
 controlplane_lab_interface: eno1np0
 ```
 
-Dell r650
+Dell r650 (Scale Lab)
 ```yaml
 controlplane_lab_interface: eno12399np0
 ```
 
-Dell r750 (on ALIAS lab)
+Dell r750 (Performance Lab)
 ```yaml
 controlplane_lab_interface: eno8303
 ```
 
-Supermicro 1029p or Supermicro 1029U
+Supermicro 1029p or Supermicro 1029u (Scale Lab)
 ```yaml
 controlplane_lab_interface: eno1
 ```
 
-Supermicro 5039ms
+Supermicro 5039ms (Scale Lab)
 ```yaml
 controlplane_lab_interface: enp2s0f0
 ```

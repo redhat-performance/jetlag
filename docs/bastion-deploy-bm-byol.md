@@ -193,7 +193,7 @@ Copy the vars file and edit it to create the inventory with your BYOL lab info:
 
 ### Lab & cluster infrastructure vars
 
-Change `lab` to `lab: scalelab or ibmcloud or alias or byol`
+Change `lab` to `lab: byol`
 
 Change `lab_cloud` to `lab_cloud: na`
 

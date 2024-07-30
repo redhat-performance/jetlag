@@ -1,6 +1,6 @@
 # Jetlag
 
-Tooling to install clusters for testing via an on-prem [Assisted Installer](https://github.com/openshift/assisted-installer) in the Red Hat Scale/Alias Lab and bare metal servers in IBMcloud.
+Tooling to install clusters for testing via an on-prem [Assisted Installer](https://github.com/openshift/assisted-installer) in the Red Hat Scale Lab, Red Hat Performance Lab, and IBMcloud (Bare Metal).
 
 Three separate layouts of clusters can be deployed:
 
@@ -28,7 +28,7 @@ _**Table of Contents**_
 
 The listed hardware has been used for cluster deployments successfully. Potentially other hardware has been tested but not documented here.
 
-**Alias Lab**
+**Performance Lab**
 
 | Hardware | BM  | RWN | SNO |
 | -------- | --- | --- | --- |
@@ -103,9 +103,8 @@ necessary. However you can run Jetlag playbooks from a remote host (for example,
 your laptop) as long as you can connect to the bastion machine in your cloud
 allocation.
 
-There are three main files to configure. The inventory file is generated (for SCALE lab and IBM Cloud),
-but might have to be edited for specific scenario/hardware usage. You can also [manually create a
-"Bring Your Own Lab"](docs/bastion-deploy-bm-byol) inventory file.
+There are three main files to configure. The inventory file is generated and can be edited for specific scenario/hardware usage.
+You can also [manually create a "Bring Your Own Lab"](docs/bastion-deploy-bm-byol.md) inventory file.
 
 | File | Description |
 | - | - |
@@ -124,7 +123,7 @@ Make sure to set/review the following vars:
 
 | Variable | Meaning |
 | - | - |
-| `lab` | either `alias` or `scalelab`
+| `lab` | either `performancelab` or `scalelab`
 | `lab_cloud` | the cloud within the lab environment (Example: `cloud42`)
 | `cluster_type` | either `bm`, `rwn`, or `sno` for the respective cluster layout
 | `worker_node_count` | applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes

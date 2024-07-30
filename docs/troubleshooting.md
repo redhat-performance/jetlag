@@ -278,7 +278,7 @@ When set to ignore the error, Jetlag can proceed, but you will need to manually 
 
 ## Boot mode
 
-In the ALIAS lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of BM or SNO cluster types. In the SCALE lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
+In the Performance lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of BM or SNO cluster types. In the Scale lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
 
 ```console
 badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute BootMode --value Uefi
@@ -320,8 +320,8 @@ Substitute the user/password/hostname to allow the boot order to be fixed on the
 
 Note that with badfish this is a one time operation, i.e., the boot order after a rebuild/reboot will return to the original value.
 
-Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for SCALE vs ALIAS lab.
-The values in *config/idrac_interfaces.yml* are first of all for the SCALE lab.
+Also, watch for the output of **--boot-to-type foreman**, because the correct boot order is different for Scale vs Performance lab.
+The values in *config/idrac_interfaces.yml* are first of all for the Scale lab.
 
 ```console
 [user@<local> badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
