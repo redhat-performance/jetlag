@@ -31,14 +31,14 @@ Values here reflect the default (Network 1 which maps to `controlplane_network_i
 Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces).
 
 
-**Alias Lab**
+**Performance Lab**
 
 | Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
 | ------------------ | --------------------- | ------------------------------ | -------------------------- |
 | Dell r750          | eno8303               | ens3f0                         | eno8303                    |
 | Dell r740xd        | eno3                  | eno1                           | eno1np0                    |
 
-Alias lab chart is available [here](http://wiki.alias.bos.scalelab.redhat.com/faq/#Is_network_traffic_isolated).
+Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking).
 
 
 ## Override lab ocpinventory json file

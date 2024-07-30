@@ -37,7 +37,7 @@
     name: python-hpilo
     executable: pip3
 
-- name: Scale / Alias lab bastion tasks
+- name: Red Hat lab bastion tasks
   when:
     - lab in rh_labs
     - 'not lab == "byol"'
