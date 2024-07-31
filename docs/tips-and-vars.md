@@ -164,8 +164,8 @@ Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally A
 Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
 ```yaml
-ocp_version: "4.15.2" 
 ocp_build: "ga"
+ocp_version: "4.15.2"
 ```
 Ensure that your pull secrets are still valid.
 When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:
