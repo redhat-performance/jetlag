@@ -34,48 +34,76 @@ Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalela
 
 | Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
 | ------------------ | --------------------- | ------------------------------ | -------------------------- |
-| Dell r750          | eno8303               | ens6f0                         | eno8303                    |
-| Dell r740xd        | eno3                  | ens7f0                         | eno3                       |
+| Dell r740xd        | eno3                  | eno1                           | eno3                       |
+| Dell r7425         | eno3                  | eno1                           | eno3                       |
+| Dell r7525         | eno1                  | enp33np0                       | eno1                       |
+| Dell r750          | eno8303               | ens3f0                         | eno8303                    |
+| Supermicro 6029p   | eno1                  | enp95s0f0                      | eno1                       |
 
 Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking).
 
 ## Extra vars for by-path disk reference
-**Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to set the extra vars for by-path reference for the installation as sometimes disk names get swapped during boot discovery (e.g., sda and sdb).
-Using the PCI paths (in a homogeneous SCALE or ALIAS lab cloud) should be consistent across all the machines,
-and isn't subject to change during discovery. Below are the extra vars along with the hardware used.
+**Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to
+set the extra vars for by-path reference for the installation as sometimes disk
+names get swapped during boot discovery (e.g., sda and sdb). Using the PCI
+paths (in a homogeneous SCALE or ALIAS lab cloud) should be consistent across
+all the machines, and isn't subject to change during discovery. Below are the
+extra vars along with the hardware used.
 
-If your cloud is not homogeneous, you'll need to edit the inventory file to set appropriate install paths
-for each machine.
+You can also set `sno_install_disk` for SNO deployments.
+
+If the machine configurations in your cloud are not homogeneous, you'll need to
+edit the inventory file to set appropriate install paths for each machine.
+
+*NOTE*: Editing your inventory file is not recommended unless absolutely
+necessary, as you won't be able to use the `create-inventory.yml` playbook again
+without overwriting your customizations!
 
 **Scale Lab**
 
-| Hardware           | control_plane_install_disk                      | worker_install_disk                             |
-| ------------------ | ----------------------------------------------- | ----------------------------------------------- |
-| Dell r650          | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
-| Dell r640          | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+| Hardware | Install disk | Install disk path
+| -------- | ------------ | ----------------- |
+| Dell r650 | sda | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
+| Dell r640 | sda | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 
 **Alias Lab**
 
-| Hardware | control_plane_install_disk | worker_install_disk |
+| Hardware | Install disk | Install disk path
 | - | - | - |
-| Dell r750 | /dev/disk/by-path/pci-0000:65:00.0-scsi-0:2:0:0 | /dev/disk/by-path/pci-0000:65:00.0-scsi-0:2:0:0 |
+| Dell r740xd | sda | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
+| Dell r750 | sdk | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
 
-To find your machine's by-path reference use the following command and choose the install disk. (Note, this
-assumes that the bastion hardware configuration is identical: in a heterogeneous cluster you may need to
-execute this command on each host in your deployment, setting the `control_plane_install_disk` and
-`worker_install_disk` paths manually for each host in the inventory file.)
+To find your machine's by-path reference:
+
+1. Use the `lsblk` command to find the disk with the mounted `/boot` partition;
+`sda` in this example.
+2. Use `find` to find the PCI path to that disk, which in this example is
+`/dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0`.
+
+*NOTE*: this assumes that the bastion hardware configuration is homogeneous: in
+a heterogeneous cluster you may need to execute these commands on each host in
+your cloud, setting the `sno_install_disk` (or `control_plane_install_disk` and
+`worker_install_disk`) paths manually for each host in the inventory file.
 
 ```console
-(.ansible) [root@<bastion> jetlag]# ls -la /dev/disk/by-path/
-total 0
-drwxr-xr-x. 2 root root 160 Apr 11 19:40 .
-drwxr-xr-x. 6 root root 120 Apr 11 19:40 ..
-lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0 -> ../../sda
-lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part1 -> ../../sda1
-lrwxrwxrwx. 1 root root  10 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:0:0-part2 -> ../../sda2
-lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:1:0 -> ../../sdb
-lrwxrwxrwx. 1 root root   9 Apr 11 19:40 pci-0000:18:00.0-scsi-0:2:2:0 -> ../../sdc
-lrwxrwxrwx. 1 root root  13 Apr 11 19:40 pci-0000:d8:00.0-nvme-1 -> ../../nvme0n1
+(.ansible) [root@<bastion> jetlag]# lsblk
+NAME                                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                                   8:0    0  1.7T  0 disk
+├─sda1                                8:1    0    1G  0 part /boot
+└─sda2                                8:2    0  1.7T  0 part
+  ├─rhel_y37--h27--000--r740xd-root 253:0    0   70G  0 lvm  /
+  └─rhel_y37--h27--000--r740xd-swap 253:1    0    4G  0 lvm  [SWAP]
+sdb                                   8:16   0  1.7T  0 disk
+sdc                                   8:32   0  1.7T  0 disk
+sdd                                   8:48   0  1.7T  0 disk
+└─sdd1                                8:49   0  1.7T  0 part
+sde                                   8:64   0  1.7T  0 disk
+sdf                                   8:80   0  1.7T  0 disk
+sdg                                   8:96   0  1.7T  0 disk
+sdh                                   8:112  0  1.7T  0 disk
+nvme0n1                             259:0    0  1.5T  0 disk
+(.ansible) [root@<bastion> jetlag]# find /dev/disk/by-path -lname \*sda
+/dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0
 ```
 
 ## Override lab ocpinventory json file

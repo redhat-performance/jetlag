@@ -29,10 +29,13 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - bastion-deploy-bm-byol.md
-     - bastion-bm-ibmcloud.md
+     - deploy-bm-alias.md
+     - deploy-bm-byol.md
+     - deploy-bm-ibmcloud.md
+     - deploy-bm-scale.md
+     - deploy-sno-alias.md
      - deploy-sno-ibmcloud.md
-     - deploy-sno-quickstart.md
+     - deploy-sno-scale.md
  -->
 ## Bastion setup
 
