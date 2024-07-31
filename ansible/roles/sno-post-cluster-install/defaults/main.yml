@@ -21,5 +21,4 @@ isolated_cpus: 2-47,50-95
 
 du_profile: false
 operator_index_name: redhat-operator-index
-operator_index_tag: v4.15
-
+operator_index_tag: v4.16
