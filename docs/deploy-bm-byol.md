@@ -29,13 +29,13 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-bm-alias.md
      - deploy-bm-byol.md
      - deploy-bm-ibmcloud.md
-     - deploy-bm-scale.md
-     - deploy-sno-alias.md
+     - deploy-bm-performancelab.md
+     - deploy-bm-scalelab.md
      - deploy-sno-ibmcloud.md
-     - deploy-sno-scale.md
+     - deploy-sno-scalelab.md
+     - deploy-sno-performancelab.md
  -->
 ## Bastion setup
 
@@ -254,7 +254,7 @@ The `ansible/vars/all.yml` now resembles ...
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex scalelab)
+# Which lab to be deployed into (Ex byol)
 lab: byol
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: na
@@ -285,7 +285,7 @@ networktype: OVNKubernetes
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
+# cloud
 public_vlan: false
 
 # Enables FIPs security standard

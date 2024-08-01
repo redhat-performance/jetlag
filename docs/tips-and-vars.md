@@ -46,7 +46,7 @@ Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redha
 **Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to
 set the extra vars for by-path reference for the installation as sometimes disk
 names get swapped during boot discovery (e.g., sda and sdb). Using the PCI
-paths (in a homogeneous SCALE or ALIAS lab cloud) should be consistent across
+paths (in a homogeneous Scale or Performance lab cloud) should be consistent across
 all the machines, and isn't subject to change during discovery. Below are the
 extra vars along with the hardware used.
 
@@ -66,7 +66,7 @@ without overwriting your customizations!
 | Dell r650 | sda | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640 | sda | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 
-**Alias Lab**
+**Performance Lab**
 
 | Hardware | Install disk | Install disk path
 | - | - | - |

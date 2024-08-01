@@ -1,7 +1,14 @@
 # Deploy a Single Node OpenShift cluster via Jetlag quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a Single Node OpenShift (SNO) cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Supermicro 1029U. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
-[the scale lab wiki](http://wiki.rdu3.lab.perfscale.redhat.com/)
+Assuming you received a Performance lab allocation named `cloud99`, this guide
+will walk you through getting a Single Node OpenShift (SNO) cluster up in your
+allocation. For purposes of the guide the systems in `cloud99` will be
+Supermicro 1029U. You should run Jetlag directly on the bastion machine. Jetlag
+picks the first machine in an allocation as the bastion. You can
+[trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file)
+but that is beyond the scope of this quickstart. You can find the machines in
+your cloud allocation on
+[the Performance lab wiki](http://wiki.rdu3.lab.perfscale.redhat.com/)
 
 _**Table of Contents**_
 
@@ -13,13 +20,13 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-bm-alias.md
      - deploy-bm-byol.md
      - deploy-bm-ibmcloud.md
-     - deploy-bm-scale.md
-     - deploy-sno-alias.md
+     - deploy-bm-performancelab.md
+     - deploy-bm-scalelab.md
      - deploy-sno-ibmcloud.md
-     - deploy-sno-scale.md
+     - deploy-sno-scalelab.md
+     - deploy-sno-performancelab.md
  -->
 ## Bastion setup
 
@@ -52,11 +59,10 @@ should be executed from the bastion.
 
 3. Upgrade RHEL to at least RHEL 8.6
 
-You need to be running at least RHEL 8.6 to have the minimal `podman`. By default,
-the SCALE lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
-using the `/root/update-latest-rhel-release.sh` script provisioned by the QUADS
-system. You can determine the installed version by looking at `/etc/redhat-release`,
-and the update script allows you to ask what versions are available:
+You need to be running at least RHEL 8.6 to have the minimal `podman`. We recommend
+upgrading to RHEL 8.9 using the `/root/update-latest-rhel-release.sh` script
+provisioned by the QUADS system. You can determine the installed version by looking
+at `/etc/redhat-release`, and the update script allows you to ask what versions are available:
 
 ```console
 [root@<bastion> ~]# cat /etc/redhat-release
@@ -223,7 +229,7 @@ Next copy the vars file so we can edit it.
 
 ### Lab & cluster infrastructure vars
 
-Change `lab` to `lab: alias`
+Change `lab` to `lab: performancelab`
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
@@ -243,7 +249,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [alias lab here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
+Using the chart provided by the [Performance lab here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
 * `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
@@ -256,43 +262,42 @@ Here you can see a network diagram for the SNO cluster on Dell r750 with 3 SNO c
 
 For example if your bastion is ...
 
-Dell r750
+Dell r740xd (Performance Lab)
+```yaml
+bastion_lab_interface: eno3
+bastion_controlplane_interface: eno1
+```
+
+Dell r750 (Performance Lab)
 ```yaml
 bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens3f0
 ```
 
-Dell r740xd
-```yaml
-bastion_lab_interface: eno3
-bastion_controlplane_interface: eno1
-```
-
-Dell r7425
-```yaml
-bastion_lab_interface: eno3
-bastion_controlplane_interface: eno1
-```
-
 For the guide we set our values for the Dell r750.
 
-** If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
+** If you desire to use a different network than "Network 1" for your controlplane
+network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
 
 ### OCP node vars
 
-The same chart provided by the alias lab for the bastion machine, is used to identify the nic names for `controlplane_lab_interface`.
+The same chart provided by the Performance lab for the bastion machine, is used to identify
+the nic names for `controlplane_lab_interface`.
 
-* `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
+* `controlplane_lab_interface` should always be set to the nic name under
+"Public Network" for the specific system type
 
 For example if your Bare Metal OpenShift systems are ...
 
-Dell r750 (on ALIAS lab)
+Dell r750 (Performance lab)
 ```yaml
 controlplane_lab_interface: eno8303
 ```
 
 For the guide we set our values for the Dell r750.
-** If your machine types are not homogeneous, then you will have to manually edit your generated inventory file to correct any nic names until this is reasonably automated.
+** If your machine types are not homogeneous, then you will have to manually
+edit your generated inventory file to correct any nic names until this is
+reasonably automated.
 
 ### Extra vars
 
@@ -329,8 +334,8 @@ The `ansible/vars/all.yml` now resembles ..
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex alias)
-lab: alias
+# Which lab to be deployed into (Ex performancelab)
+lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
@@ -343,7 +348,7 @@ worker_node_count:
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
+# performancelab cloud
 public_vlan: false
 
 # The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
