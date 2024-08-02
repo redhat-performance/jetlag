@@ -310,9 +310,10 @@ Before the OCP install and any boot order changes, ssh on the machines to nuke t
 
 If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
-**NOTE** The process for the Performance Lab is similar, however the GitLab `config/idrac_interfaces.yml`
-is specialized for the Scale Lab configurations, and needs to be modified for Performance Lab. This is
-not covered here.
+> [!NOTE]
+> The process for the Performance Lab is similar, however the GitLab `config/idrac_interfaces.yml`
+> is specialized for the Scale Lab configurations, and needs to be modified for Performance Lab. The
+> necessary modifications are not covered here.
 
 ```console
 badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
@@ -339,7 +340,8 @@ The values in *config/idrac_interfaces.yml* are first of all for the Scale lab.
 ```
 ## Upgrade RHEL
 
-**NOTE** This applies to both Scale lab and Performance lab.
+> [!TIP]
+> This applies to Scale lab and Performance lab.
 
 On the bastion machine:
 

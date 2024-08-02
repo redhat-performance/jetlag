@@ -43,21 +43,24 @@ Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalela
 Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking).
 
 ## Extra vars for by-path disk reference
-**Note:** For bare-metal deployment of OCP 4.13 or greater it is advisable to
-set the extra vars for by-path reference for the installation as sometimes disk
-names get swapped during boot discovery (e.g., sda and sdb). Using the PCI
-paths (in a homogeneous Scale or Performance lab cloud) should be consistent across
-all the machines, and isn't subject to change during discovery. Below are the
-extra vars along with the hardware used.
+
+> [!TIP]
+> For bare-metal deployment of OCP 4.13 or greater it is advisable to
+> set the extra vars for by-path reference for the installation as sometimes disk
+> names get swapped during boot discovery (e.g., sda and sdb). Using the PCI
+> paths (in a homogeneous Scale or Performance lab cloud) should be consistent across
+> all the machines, and isn't subject to change during discovery. Below are the
+> extra vars along with the hardware used.
 
 You can also set `sno_install_disk` for SNO deployments.
 
 If the machine configurations in your cloud are not homogeneous, you'll need to
 edit the inventory file to set appropriate install paths for each machine.
 
-*NOTE*: Editing your inventory file is not recommended unless absolutely
-necessary, as you won't be able to use the `create-inventory.yml` playbook again
-without overwriting your customizations!
+> [!CAUTION]
+> Editing your inventory file is not recommended unless absolutely
+> necessary, as you won't be able to use the `create-inventory.yml` playbook again
+> without overwriting your customizations!
 
 **Scale Lab**
 
@@ -80,10 +83,11 @@ To find your machine's by-path reference:
 2. Use `find` to find the PCI path to that disk, which in this example is
 `/dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0`.
 
-*NOTE*: this assumes that the bastion hardware configuration is homogeneous: in
-a heterogeneous cluster you may need to execute these commands on each host in
-your cloud, setting the `sno_install_disk` (or `control_plane_install_disk` and
-`worker_install_disk`) paths manually for each host in the inventory file.
+> [!WARNING]
+> This assumes that the bastion hardware configuration is homogeneous: in
+> a heterogeneous cluster you may need to execute these commands on each host in
+> your cloud, setting the `sno_install_disk` (or `control_plane_install_disk` and
+> `worker_install_disk`) paths manually for each host in the inventory file.
 
 ```console
 (.ansible) [root@<bastion> jetlag]# lsblk
@@ -219,8 +223,8 @@ Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml
 install_performance_addon_operator: true
 ```
 
-**Please Note**
-* Performance Addon Operator is not available in OCP 4.11 or higher. The PAO code was moved into the Node Tuning Operator in OCP 4.11
+> [!NOTE]
+> The Performance Addon Operator is not available in OCP 4.11 or higher. The PAO code was moved into the Node Tuning Operator in OCP 4.11
 
 ## Updating the OCP version
 
@@ -363,10 +367,11 @@ controlplane_nvme_device: /dev/disk/by-path/pci-0000:b2:00.0-nvme-1
 controlplane_etcd_on_nvme: true
 ```
 
-**Note:** The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.
-If your OpenShift version is based on RHEL9 (4.13+), you should install RHEL9 on the nodes
-first to ensure the paths are correct.
-eg: `/dev/sda` - Seen on Supermicro 1029U
+> [!WARNING]
+> The values seen in `/dev/disk/by-path` may differ between RHEL8 and RHEL9.
+> If your OpenShift version is based on RHEL9 (4.13+), you should install RHEL9 on the nodes
+> first to ensure the paths are correct.
+> eg: `/dev/sda` - Seen on Supermicro 1029U
 ```
 RHEL8:
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda

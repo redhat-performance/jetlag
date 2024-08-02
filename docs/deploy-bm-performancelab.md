@@ -1,7 +1,7 @@
-# Deploy a Bare Metal cluster via Jetlag from an Alias (perf) Lab Bastion Machine quickstart
+# Deploy a Bare Metal cluster via Jetlag from a Performance Lab Bastion Machine quickstart
 
-Assuming you received an alias lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
-[the alias lab wiki](http://wiki.rdu3.labs.perfscale.redhat.com/)
+Assuming you received an Performance lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
+[the Performance lab wiki](http://wiki.rdu3.labs.perfscale.redhat.com/)
 
 _**Table of Contents**_
 
@@ -49,14 +49,14 @@ should be executed from the bastion.
 3. Upgrade RHEL to at least RHEL 8.6
 
 You need to be running at least RHEL 8.6 to have the minimal `podman`. By default,
-the ALIAS lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
+the Performance lab installs RHEL 8.6. We recommend upgrading to RHEL 8.9
 using the `/root/update-latest-rhel-release.sh` script provisioned by the QUADS
 system. You can determine the installed version by looking at `/etc/redhat-release`,
 and the update script allows you to ask what versions are available:
 
 ```console
 [root@<bastion> ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.2 (Ootpa)
+Red Hat Enterprise Linux release 8.6 (Ootpa)
 [root@<bastion> ~]# /root/update-latest-rhel-release.sh list`
 8.2 8.6 8.9
 ```
@@ -220,13 +220,13 @@ Copy the sample vars file and edit it:
 
 ### Lab & cluster infrastructure vars
 
-Change `lab` to `lab: alias`
+Change `lab` to `lab: performancelab`
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
 Change `cluster_type` to `cluster_type: bm`
 
-Set `worker_node_count` to limit the number of worker nodes from your alias lab allocation. Set it to `0` if you want a 3 node compact cluster.
+Set `worker_node_count` to limit the number of worker nodes from your Performance lab allocation. Set it to `0` if you want a 3 node compact cluster.
 
 Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift. Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16 or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would  be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
 
@@ -240,7 +240,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [alias lab here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
+Using the chart provided by the [Performance lab](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
 * `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
@@ -263,9 +263,11 @@ See [tips and vars](tips-and-vars.md#using-other-network-interfaces) for more in
 
 ### OCP node vars
 
-The same chart provided by the alias lab for the bastion machine, is used to identify the nic name for `controlplane_lab_interface`.
+The same chart provided by the performance lab for the bastion machine, is used
+to identify the nic name for `controlplane_lab_interface`.
 
-* `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
+* `controlplane_lab_interface` should always be set to the nic name under "Public
+Network" for the specific system type
 
 For Dell r750 set `controlplane_lab_interface` var to the following
 
@@ -314,8 +316,8 @@ The `ansible/vars/all.yml` now resembles ..
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex alias)
-lab: alias
+# Which lab to be deployed into (Ex performancelab)
+lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
@@ -328,7 +330,7 @@ worker_node_count: 0
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# alias cloud
+# Red Hat cloud
 public_vlan: false
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
