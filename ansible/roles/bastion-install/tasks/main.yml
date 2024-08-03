@@ -112,7 +112,7 @@
   when: lab in cloud_labs
   block:
   - name: Copy ssh keys to bastion
-    no_log: True
+    no_log: true
     copy:
       content: "{{ item.content }}"
       dest: "{{ item.dest }}"
