@@ -183,7 +183,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ release_url }}/latest-4.14/opm-linux.tar.gz"
+  -  url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.14/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
