@@ -85,7 +85,11 @@ spec:
 {% else %}
       ironicInspect: disabled
 {% endif %}
+{% if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4 %}
+      bmcAddress: redfish-virtualmedia+http://{{ hostvars[inventory_hostname]['hv_ip'] }}:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
+{% else %}
       bmcAddress: redfish-virtualmedia+http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:9000/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}
+{% endif %}
       bmcCredentialsName:
         name: {{ inventory_hostname }}-bmc-secret
       bootMACAddress: {{ hostvars[inventory_hostname]['mac_address'] }}

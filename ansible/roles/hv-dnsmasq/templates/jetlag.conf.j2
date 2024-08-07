@@ -45,11 +45,12 @@ address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hos
 {% endif %}
 {% endfor %}
 
+# Interface which we should listen for requests default: br0
+interface={{ hypervisor_bridge_name }}
+
 # Jetlag DHCP for VMs
 {% if setup_hv_vm_dhcp %}
 log-dhcp
-
-interface={{ hypervisor_bridge_name }}
 
 domain={{ base_dns_name }}
 
