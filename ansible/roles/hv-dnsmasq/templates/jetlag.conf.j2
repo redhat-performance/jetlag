@@ -40,8 +40,8 @@ address=/apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ host
 {% endif %}
 
 {% for item in groups['sno'] %}
-{% if hostvars[item].ip_address is defined %}
-address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip_address }}
+{% if hostvars[item].ip is defined %}
+address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip }}
 {% endif %}
 {% endfor %}
 

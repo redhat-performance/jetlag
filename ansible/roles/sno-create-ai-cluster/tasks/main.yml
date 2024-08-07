@@ -65,13 +65,13 @@
     path: "/etc/hosts"
     backup: true
     block: |
-      {{ hostvars[item].ip_address }} api.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip_address }} api-int.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip }} api.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip }} api-int.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
       {% for route in etc_hosts_ingress_routes %}
-      {{ hostvars[item].ip_address }} {{ route }}.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[item].ip }} {{ route }}.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
       {% endfor %}
       {% if public_vlan %}
-      {{ hostvars[item].ip_address }} {{ hostvars[item].inventory_hostname }} # SNO node
+      {{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }} # SNO node
       {%- endif %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"

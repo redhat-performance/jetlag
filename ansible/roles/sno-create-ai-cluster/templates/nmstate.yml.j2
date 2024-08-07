@@ -9,7 +9,7 @@ interfaces:
   ipv6:
 {% endif %}
     address:
-    - ip: {{ hostvars[item]['ip_address'] }}
+    - ip: {{ hostvars[item]['ip'] }}
       prefix-length: {{ hostvars[item]['network_prefix'] }}
     auto-dns: false
     enabled: true
