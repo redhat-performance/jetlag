@@ -26,27 +26,35 @@ labs:
     ntp_server: clock1.rdu2.redhat.com
     quads: quads.rdu2.scalelab.redhat.com
 
+# NOTE: This should map every server model in the Scale and Performance labs to
+# the vendor. Right now, Jetlag supports only the Dell and Supermicro vendors,
+# and others (e.g. NVIDIA dgx) will fail to map.
 hw_vendor:
+  mx750c: Dell
   r620: Dell
   r630: Dell
   r640: Dell
   r650: Dell
   r660: Dell
   r730xd: Dell
+  r740xd: Dell
   r750: Dell
+  r760: Dell
   r930: Dell
   fc640: Dell
-  740xd: Dell
-  7425: Dell
-  7525: Dell
-  6018r: Supermicro
-  6048r: Supermicro
+  r6526: Dell
+  r7425: Dell
+  r7525: Dell
+  r7625: Dell
   1029u: Supermicro
   1029p: Supermicro
   5039ms: Supermicro
-  6049p: Supermicro
-  6048p: Supermicro
+  6018r: Supermicro
+  6029p: Supermicro
   6029r: Supermicro
+  6048r: Supermicro
+  6048p: Supermicro
+  6049p: Supermicro
   dl360: Hp
 
 # This dictionary contains the expected nic names for networks in the scale lab. This determines the name of the
