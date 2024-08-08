@@ -8,10 +8,10 @@ lab:
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud:
 
-# Either bm or rwn or sno
+# Either mno or rwn or sno
 cluster_type:
 
-# Applies to both bm/rwn clusters
+# Applies to both mno/rwn clusters
 worker_node_count:
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
@@ -28,7 +28,7 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.16"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
 # Lab Network type, applies to sno cluster_type only
@@ -71,7 +71,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for all mno cluster and rwn control-plane nodes
 controlplane_lab_interface: eno1np0
 
 # Network configuration for public VLAN based sno cluster_type deployment
@@ -80,7 +80,7 @@ controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
-# Note: these cannot be commented out or bm-deploy will fail
+# Note: these cannot be commented out or mno-deploy will fail
 #       You will need to knowledge of actual interface names.
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
