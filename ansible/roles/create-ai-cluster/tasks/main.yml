@@ -120,9 +120,12 @@
   include_tasks: 01_manifest_update.yml
   with_items:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
-    template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
+    template_name: 50-controlplane-disable-lab-dhcp-interface.yml.j2
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
-    template_name: "50-worker-disable-lab-dhcp-interface.yml.j2"
+    template_name: 50-worker-disable-lab-dhcp-interface.yml.j2
+  - file_name: 50-controlplane-tune-kni-haproxy.yaml
+    template_name: 50-controlplane-tune-kni-haproxy.yml.j2
+    enabled: "{{ override_kni_infra_haproxy }}"
   - file_name: 99-master-kdump.yml
     template_name: 99-master-kdump.yml
     enabled: "{{ kdump_master_config }}"
