@@ -1,0 +1,18 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 50-controlplane-tune-kni-haproxy
+  labels:
+    machineconfiguration.openshift.io/role: master
+spec:
+  config:
+    ignition:
+      version: 3.1.0
+    storage:
+      files:
+        - contents:
+            source: data:text/plain;charset=utf-8;base64,{{ lookup('template', './haproxy.cfg.tmpl.j2') | b64encode }}
+            verification: {}
+          overwrite: true
+          mode: 420
+          path: /etc/kubernetes/static-pod-resources/haproxy/haproxy.cfg.tmpl
