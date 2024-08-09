@@ -26,13 +26,41 @@ spec:
         - 99-sync-time-once-master.yaml
         - 99-sync-time-once-worker.yaml
 {% endif %}
-{% if siteconfig_du_sno_install_config_overrides == "4.12" %}
+{% if siteconfig_sno_du_profile == "4.12" %}
+    # 4.12
     installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\" ] }}"
-{% elif siteconfig_du_sno_install_config_overrides in ["4.13", "4.14"] %}
+    # 4.13, 4.14
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
+    # 4.15
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"NodeTuning\" ] }}"
+    # 4.16
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"Ingress\", \"NodeTuning\" ] }}"
+{% elif siteconfig_sno_du_profile in ["4.13", "4.14"] %}
+    # 4.12
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\" ] }}"
+    # 4.13, 4.14
     installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
-{% elif siteconfig_du_sno_install_config_overrides == "4.15" %}
+    # 4.15
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"NodeTuning\" ] }}"
+    # 4.16
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"Ingress\", \"NodeTuning\" ] }}"
+{% elif siteconfig_sno_du_profile == "4.15" %}
+    # 4.12
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\" ] }}"
+    # 4.13, 4.14
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
+    # 4.15
     installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"NodeTuning\" ] }}"
-{% elif siteconfig_du_sno_install_config_overrides == "4.16" %}
+    # 4.16
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"Ingress\", \"NodeTuning\" ] }}"
+{% elif siteconfig_sno_du_profile == "4.16" %}
+    # 4.12
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\" ] }}"
+    # 4.13, 4.14
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"marketplace\", \"NodeTuning\" ] }}"
+    # 4.15
+    # installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"NodeTuning\" ] }}"
+    # 4.16
     installConfigOverrides:  "{\"capabilities\":{\"baselineCapabilitySet\": \"None\", \"additionalEnabledCapabilities\": [ \"OperatorLifecycleManager\", \"Ingress\", \"NodeTuning\" ] }}"
 {% else %}
 {% if siteconfig_fips %}
@@ -42,6 +70,9 @@ spec:
     clusterLabels:
       common: 'true'
       group-du-sno: ''
+{% if siteconfig_sno_du_profile in ["4.12", "4.13", "4.14", "4.15", "4.16"] %}
+      du-profile: "{{ siteconfig_sno_du_profile }}"
+{% endif %}
       name: {{ inventory_hostname }}
       sites: {{ inventory_hostname }}
       vendor: OpenShift
