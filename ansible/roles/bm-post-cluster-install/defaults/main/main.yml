@@ -29,10 +29,6 @@ aap_override_max_concurrent_awt: 10
 setup_openshift_gitops: false
 gitops_channel: stable
 
-# Enable with bastion registry in order to download image to bastion and serve via
-# bastion http_store such that metal3 pods run
-fix_metal3_provisioningosdownloadurl: false
-
 # Migrate the ingresscontrollers and/or monitoring components to the master nodes
 # Used during nodedensity testing to ensure these things are more available
 migrate_ingresscontrollers: false

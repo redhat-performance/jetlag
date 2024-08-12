@@ -294,7 +294,6 @@ controlplane_network_prefix: 64
 cluster_network_cidr: fd01::/48
 cluster_network_host_prefix: 64
 service_network_cidr: fd02::/112
-fix_metal3_provisioningosdownloadurl: true
 ```
 
 Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
