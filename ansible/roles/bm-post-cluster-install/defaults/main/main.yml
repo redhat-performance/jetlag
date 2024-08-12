@@ -34,10 +34,6 @@ setup_openshift_gitops_ztp: false
 # ZTP gitops requires this version of the gitops operator
 gitops_starting_csv: openshift-gitops-operator.v1.5.4
 
-# Enable with bastion registry in order to download image to bastion and serve via
-# bastion http_store such that metal3 pods run
-fix_metal3_provisioningosdownloadurl: false
-
 # Migrate the ingresscontrollers and/or monitoring components to the master nodes
 # Used during nodedensity testing to ensure these things are more available
 migrate_ingresscontrollers: false
