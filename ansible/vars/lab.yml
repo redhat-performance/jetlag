@@ -100,15 +100,6 @@ hw_nic_name:
     - ens3f1
     - ens6f0
     - ens6f1
-    r760:
-    - eno12399
-    - eno12409
-    - eno12419
-    - eno12429
-    - ens3f0
-    - ens3f1
-    - ens6f0
-    - ens6f1
     r930:
     - em3
     - eno1
@@ -184,8 +175,6 @@ hw_vm_counts:
     r750:
       default: 4
       nvme0n1: 23
-    r760:
-      default: 16
     r930:
       default: 5
       nvme0n1: 14
