@@ -325,7 +325,7 @@ lab_cloud: cloud99
 cluster_type: bm
 
 # Applies to both bm/rwn clusters
-worker_node_count: 0
+worker_node_count: 2
 
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
@@ -345,7 +345,7 @@ ocp_build: "ga"
 # Values accepted depended on the build chosen ('ga' or 'dev').
 # For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
-ocp_version: "latest-4.15"
+ocp_version: "latest-4.16"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
 networktype: OVNKubernetes
