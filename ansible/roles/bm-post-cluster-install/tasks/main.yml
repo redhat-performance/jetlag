@@ -11,7 +11,6 @@
     - "{{ bastion_cluster_config_dir }}/gitops"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/minio"
-    - "{{ bastion_cluster_config_dir }}/net-attach-def"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
     - "{{ bastion_cluster_config_dir }}/performance-addon-operator"
 
@@ -59,8 +58,6 @@
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml"
     - src: minio.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
-    - src: network-attachment-definition.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
     - src: cluster-monitoring-config.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
     - src: performance-addon-operator.yml.j2
@@ -195,11 +192,6 @@
   when: migrate_monitoring or worker_localstorage_configuration
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
-
-- name: Setup NetworkAttachmentDefinition for 2nd pod network (macvlan type only)
-  when: setup_network_attachment_definition
-  shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml
 
 - name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
   shell: |

@@ -42,14 +42,6 @@ setup_minio: false
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 minio_pv_storageclass: localstorage2-sc
 
-# Setup a network attachment definition so pods can have a 2nd interface (macvlan type only)
-setup_network_attachment_definition: false
-# Configuration of the network attachment definition
-net_attach_def_namespace: default
-net_attach_def_name: net1
-net_attach_def_interface: bond0
-net_attach_def_range: 192.168.0.0/16
-
 # Performance-addon-operator vars_files
 install_performance_addon_operator: false
 ocp_channel: "{{ openshift_version }}"
