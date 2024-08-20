@@ -108,15 +108,25 @@ You can also [manually create a "Bring Your Own Lab"](docs/deploy-bm-byol.md) in
 
 | File | Description |
 | - | - |
-| `ansible/vars/all.yml` | An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
+| `ansible/vars/all.yml` | An Ansible vars file used for Red Hat performance labs (sample provided at `ansible/vars/all.sample.yml`)
+| `ansible/vars/ibmcloud.yml` | An Ansible vars file used for IBM Cloud (sample provided at `ansible/vars/ibmcloud.sample.yml`)
 | `pull_secret.txt` | Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
 | `ansible/inventory/$CLOUDNAME.local` | The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
 
+**Red Hat performance labs**
+
 ```console
 (.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
 (.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
+```
+
+**IBM Cloud**
+
+```console
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/ibmcloud.yml
 ```
 
 Make sure to set/review the following vars:
@@ -124,7 +134,7 @@ Make sure to set/review the following vars:
 | Variable | Meaning |
 | - | - |
 | `lab` | `performancelab`, `scalelab`, or `ibmcloud`
-| `lab_cloud` | the cloud within the lab environment for Scale and Performance labs (Example: `cloud42`)
+| `lab_cloud` | the cloud within the lab environment for Red Hat Performance labs (Example: `cloud42`)
 | `cluster_type` | either `bm`, `rwn`, or `sno` for the respective cluster layout
 | `worker_node_count` | applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 | `bastion_lab_interface` | set to the bastion machine's lab accessible interface

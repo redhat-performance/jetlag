@@ -64,17 +64,17 @@ edit the inventory file to set appropriate install paths for each machine.
 
 **Scale Lab**
 
-| Hardware | Install disk | Install disk path
-| -------- | ------------ | ----------------- |
-| Dell r650 | sda | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
-| Dell r640 | sda | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+| Hardware  | Install disk path
+| --------  | ----------------- |
+| Dell r650 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
+| Dell r640 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 
 **Performance Lab**
 
-| Hardware | Install disk | Install disk path
-| - | - | - |
-| Dell r740xd | sda | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
-| Dell r750 | sdk | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
+| Hardware | Install disk path
+| - | - |
+| Dell r740xd | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
+| Dell r750  | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
 
 To find your machine's by-path reference:
 
@@ -233,10 +233,10 @@ Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally A
 Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
 ```yaml
-ocp_version: "4.15.2"
 ocp_build: "ga"
 ocp_version: "4.15.2"
 ```
+
 Ensure that your pull secrets are still valid.
 When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:
 * Login to https://console-openshift-console.apps.ci.l2s4.p1.openshiftapps.com/ with your github id. You must be a member of Openshift Org to do this.
