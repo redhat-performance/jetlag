@@ -13,10 +13,13 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - bastion-deploy-bm-byol.md
-     - bastion-bm-ibmcloud.md
+     - deploy-bm-byol.md
+     - deploy-bm-ibmcloud.md
+     - deploy-bm-performancelab.md
+     - deploy-bm-scalelab.md
      - deploy-sno-ibmcloud.md
-     - deploy-sno-quickstart.md
+     - deploy-sno-scalelab.md
+     - deploy-sno-performancelab.md
  -->
 ## Bastion setup
 
@@ -240,7 +243,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
+Using the chart provided by the [Scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
 * `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
@@ -269,12 +272,6 @@ Dell r650 (Scale Lab)
 ```yaml
 bastion_lab_interface: eno12399np0
 bastion_controlplane_interface: ens1f0
-```
-
-Dell r750 (Performance Lab)
-```yaml
-bastion_lab_interface: eno8303
-bastion_controlplane_interface: ens3f0
 ```
 
 Supermicro 1029p or Supermicro 1029u (Scale Lab)

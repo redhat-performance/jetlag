@@ -104,27 +104,37 @@ your laptop) as long as you can connect to the bastion machine in your cloud
 allocation.
 
 There are three main files to configure. The inventory file is generated and can be edited for specific scenario/hardware usage.
-You can also [manually create a "Bring Your Own Lab"](docs/bastion-deploy-bm-byol.md) inventory file.
+You can also [manually create a "Bring Your Own Lab"](docs/deploy-bm-byol.md) inventory file.
 
 | File | Description |
 | - | - |
-| `ansible/vars/all.yml` | An ansible vars file (Sample provided `ansible/vars/all.sample.yml`)
+| `ansible/vars/all.yml` | An Ansible vars file used for Red Hat performance labs (sample provided at `ansible/vars/all.sample.yml`)
+| `ansible/vars/ibmcloud.yml` | An Ansible vars file used for IBM Cloud (sample provided at `ansible/vars/ibmcloud.sample.yml`)
 | `pull_secret.txt` | Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
 | `ansible/inventory/$CLOUDNAME.local` | The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
+
+**Red Hat performance labs**
 
 ```console
 (.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
 (.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
 ```
 
+**IBM Cloud**
+
+```console
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/ibmcloud.sample.yml ansible/vars/ibmcloud.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/ibmcloud.yml
+```
+
 Make sure to set/review the following vars:
 
 | Variable | Meaning |
 | - | - |
-| `lab` | either `performancelab` or `scalelab`
-| `lab_cloud` | the cloud within the lab environment (Example: `cloud42`)
+| `lab` | `performancelab`, `scalelab`, or `ibmcloud`
+| `lab_cloud` | the cloud within the lab environment for Red Hat Performance labs (Example: `cloud42`)
 | `cluster_type` | either `bm`, `rwn`, or `sno` for the respective cluster layout
 | `worker_node_count` | applies to bm and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 | `bastion_lab_interface` | set to the bastion machine's lab accessible interface
@@ -214,11 +224,12 @@ xxxxx-xxxxx-xxxxx-xxxxx
 
 ## Quickstart guides
 
-* [Deploy a Bare Metal cluster via jetlag from a Scale Lab Bastion Machine quickstart](docs/bastion-deploy-bm.md)
-* [Deploy a Bare Metal cluster on IBMcloud via jetlag quickstart](docs/deploy-bm-ibmcloud.md)
-* [Deploy Single Node OpenShift (SNO) clusters via jetlag quickstart guide](docs/deploy-sno-quickstart.md)
-* [Deploy Single Node OpenShift (SNO) clusters on IBMcloud via jetlag quickstart](docs/deploy-sno-ibmcloud.md)
-
+* [Deploy a Bare Metal cluster via jetlag from a Scale Lab Bastion Machine](docs/deploy-bm-scalelab.md)
+* [Deploy a Bare Metal cluster via jetlag from a Performance Lab Bastion Machine](docs/deploy-bm-performancelab.md)
+* [Deploy a Bare Metal cluster on IBMcloud via jetlag](docs/deploy-bm-ibmcloud.md)
+* [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Scale Lab Bastion Machine](docs/deploy-sno-scalelab.md)
+* [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Performance Lab Bastion Machine](docs/deploy-sno-performancelab.md)
+* [Deploy Single Node OpenShift (SNO) clusters via jetlag on IBMcloud ](docs/deploy-sno-ibmcloud.md)
 
 ## Tips and Troubleshooting
 

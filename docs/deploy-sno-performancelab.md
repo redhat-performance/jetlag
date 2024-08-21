@@ -1,23 +1,32 @@
-# Deploy a Bare Metal cluster via Jetlag from a Scale Lab Bastion Machine quickstart
+# Deploy a Single Node OpenShift cluster via Jetlag quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a bare-metal cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
-[the scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
+Assuming you received a Performance lab allocation named `cloud99`, this guide
+will walk you through getting a Single Node OpenShift (SNO) cluster up in your
+allocation. For purposes of the guide the systems in `cloud99` will be
+Supermicro 1029U. You should run Jetlag directly on the bastion machine. Jetlag
+picks the first machine in an allocation as the bastion. You can
+[trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file)
+but that is beyond the scope of this quickstart. You can find the machines in
+your cloud allocation on
+[the Performance lab wiki](http://wiki.rdu3.lab.perfscale.redhat.com/)
 
 _**Table of Contents**_
 
 <!-- TOC -->
 - [Bastion setup](#bastion-setup)
 - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
-- [Review vars all.yml](#review-vars-allyml)
+- [Review all.yml](#review-allyml)
 - [Run playbooks](#run-playbooks)
-- [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - bastion-deploy-bm-byol.md
-     - bastion-bm-ibmcloud.md
+     - deploy-bm-byol.md
+     - deploy-bm-ibmcloud.md
+     - deploy-bm-performancelab.md
+     - deploy-bm-scalelab.md
      - deploy-sno-ibmcloud.md
-     - deploy-sno-quickstart.md
+     - deploy-sno-scalelab.md
+     - deploy-sno-performancelab.md
  -->
 ## Bastion setup
 
@@ -37,6 +46,11 @@ Warning: Permanently added '<bastion>,x.x.x.x' (ECDSA) to the list of known host
 root@<bastion>'s password:
 
 Number of key(s) added: 2
+
+# Now try logging into the machine, and confirm that only the expected key(s)
+# were added to ~/.ssh/known_hosts
+[user@<local> ~]$ ssh root@<bastion>
+[root@<bastion> ~]#
 ```
 
 Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
@@ -45,11 +59,10 @@ should be executed from the bastion.
 
 3. Upgrade RHEL to at least RHEL 8.6
 
-You need to be running at least RHEL 8.6 to have the minimal `podman`. By default,
-the Scale lab installs RHEL 8.2. We recommend upgrading to RHEL 8.9
-using the `/root/update-latest-rhel-release.sh` script provisioned by the QUADS
-system. You can determine the installed version by looking at `/etc/redhat-release`,
-and the update script allows you to ask what versions are available:
+You need to be running at least RHEL 8.6 to have the minimal `podman`. We recommend
+upgrading to RHEL 8.9 using the `/root/update-latest-rhel-release.sh` script
+provisioned by the QUADS system. You can determine the installed version by looking
+at `/etc/redhat-release`, and the update script allows you to ask what versions are available:
 
 ```console
 [root@<bastion> ~]# cat /etc/redhat-release
@@ -123,12 +136,11 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 root@localhost's password:
 
 Number of key(s) added: 1
-
-Now try logging into the machine and check to make sure that only the key(s) you wanted were added:
-```console
-[root@<bastion> ~]# ssh root@localhost
-[root@<bastion> ~]#
 ```
+
+Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
+or using the bastion root account password if not), because the remaining commands
+should be executed from the bastion.
 
 6. Clone the `jetlag` GitHub repo
 
@@ -208,81 +220,92 @@ with:
 
 ## Configure Ansible vars in `all.yml`
 
-Copy the sample vars file and edit it:
+Next copy the vars file so we can edit it.
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
-(.ansible) [root@xxx-h01-000-r650 jetlag]# vi ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
 ```
 
 ### Lab & cluster infrastructure vars
 
-Change `lab` to `lab: scalelab`
+Change `lab` to `lab: performancelab`
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
-Change `cluster_type` to `cluster_type: bm`
-
-Set `worker_node_count` to limit the number of worker nodes from your scale lab allocation. Set it to `0` if you want a 3 node compact cluster.
+Change `cluster_type` to `cluster_type: sno`
 
 Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift. Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16 or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would  be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
 
 Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
-Only change `networktype` if you need to test something other than `OVNKubernetes`
+For the ssh keys we have a chicken before the egg problem in that our bastion machine won't be defined or ensure that keys are created until after we run `create-inventory.yml` and `setup-bastion.yml` playbooks. We will revisit that a little bit later.
 
 ### Bastion node vars
+
+By default, Jetlag will choose the first node in an allocation as the bastion node.
 
 Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
+Using the chart provided by the [Performance lab](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
-* `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
+* `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
 
-For Dell r650 set those vars to the following
+You may have to ssh to your intended bastion machine and view the network interface names to ensure the correct nic name is picked here.
 
+Here you can see a network diagram for the SNO cluster on Dell r750 with 3 SNO clusters:
+
+![SNO Cluster](img/sno_cluster.png)
+
+For example if your bastion is ...
+
+Dell r740xd (Performance Lab)
 ```yaml
-bastion_lab_interface: eno12399np0
-bastion_controlplane_interface: ens1f0
+bastion_lab_interface: eno3
+bastion_controlplane_interface: eno1
 ```
 
-Here you can see a network diagram for the bare metal cluster on Dell r650 with 3 workers and 3 master nodes:
+Dell r750 (Performance Lab)
+```yaml
+bastion_lab_interface: eno8303
+bastion_controlplane_interface: ens3f0
+```
 
-![BM Cluster](img/bm_cluster.png)
+For the guide we set our values for the Dell r750.
 
-Double check your nic names with your actual bastion machine.
-
-** If you desire to use a *different network* than "Network 1" for your controlplane network then you will have to append additional overrides to the extra vars portion of the `all.yml` vars file.
-See [tips and vars](tips-and-vars.md#using-other-network-interfaces) for more information
+** If you desire to use a different network than "Network 1" for your controlplane
+network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
 
 ### OCP node vars
 
-The same chart provided by the scale lab for the bastion machine, is used to identify the nic name for `controlplane_lab_interface`.
+The same chart provided by the Performance lab for the bastion machine, is used to identify
+the nic names for `controlplane_lab_interface`.
 
-* `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
+* `controlplane_lab_interface` should always be set to the nic name under
+"Public Network" for the specific system type
 
-For Dell r650 set `controlplane_lab_interface` var to the following
+For example if your Bare Metal OpenShift systems are ...
 
+Dell r750 (Performance lab)
 ```yaml
-controlplane_lab_interface: eno12399np0
+controlplane_lab_interface: eno8303
 ```
 
-** If your machine types are not homogeneous, then you will have to manually edit your generated inventory file to correct any nic names until this is reasonably automated.
+For the guide we set our values for the Dell r750.
+** If your machine types are not homogeneous, then you will have to manually
+edit your generated inventory file to correct any nic names until this is
+reasonably automated.
 
 ### Extra vars
 
-For bare-metal deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
-- control_plane_install_disk
-- worker_install_disk
-
-These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review `all.yml`](#review-vars-allyml) are correct for the Scale lab R650 instances. Please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference) to determine the correct paths for other instances.
+No extra vars are needed for an IPv4 SNO cluster.
 
 ### Disconnected and ipv6 vars
 
-If you want to deploy a disconnected ipv6 cluster then the following vars need to be set.
+If you want to deploy a disconnected IPv6 cluster then the following vars need to be set.
 
 Change `setup_bastion_registry` to `setup_bastion_registry: true` and `use_bastion_registry` to `use_bastion_registry: true` under "Bastion node vars"
 
@@ -294,13 +317,14 @@ controlplane_network_prefix: 64
 cluster_network_cidr: fd01::/48
 cluster_network_host_prefix: 64
 service_network_cidr: fd02::/112
+fix_metal3_provisioningosdownloadurl: true
 ```
 
 Oddly enough if you run into any routing issues because of duplicate address detection, determine if someone else is using subnet `fc00:1000::/64` in the same lab environment and adjust accordingly.
 
 The completed `all.yml` vars file and generated inventory files following this section only reflect that of an ipv4 connected install. If you previously deployed ipv4 stop and remove all running podman containers off the bastion and rerun the `setup-bastion.yml` playbook.
 
-## Review vars `all.yml`
+## Review `all.yml`
 
 The `ansible/vars/all.yml` now resembles ..
 
@@ -310,39 +334,33 @@ The `ansible/vars/all.yml` now resembles ..
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex scalelab)
-lab: scalelab
+# Which lab to be deployed into (Ex performancelab)
+lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
 # Either bm or rwn or sno
-cluster_type: bm
+cluster_type: sno
 
 # Applies to both bm/rwn clusters
-worker_node_count: 0
-
-# Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
-# Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
-# or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would
-# be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16.
-# Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and
-# https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
-ocp_build: "ga"
-
-# The version of the openshift-installer binary, undefined or empty results in the playbook failing with error message.
-# Values accepted depended on the build chosen ('ga' or 'dev').
-# For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
-# For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
-ocp_version: "latest-4.16"
-
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
-networktype: OVNKubernetes
+worker_node_count:
 
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
+# performancelab cloud
 public_vlan: false
+
+# The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
+# Values accepted: 'latest-4.13', 'latest-4.14', explicit version i.e. 4.15.2 or for dev builds, candidate-4.16
+ocp_version: "latest-4.16"
+
+# Enter whether the build should use 'dev' (nightly builds) or 'ga' for Generally Available version of OpenShift
+# Empty value results in playbook failing with error message.
+ocp_build: "ga"
+
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
@@ -355,10 +373,10 @@ pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 ################################################################################
 bastion_cluster_config_dir: /root/{{ cluster_type }}
 
-smcipmitool_url:
+smcipmitool_url: http://example.lab.com/tools/SMCIPMITool_2.25.0_build.210326_bundleJRE_Linux_x64.tar.gz
 
-bastion_lab_interface: eno12399np0
-bastion_controlplane_interface: ens1f0
+bastion_lab_interface: eno8303
+bastion_controlplane_interface: ens3f0
 
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
@@ -376,7 +394,7 @@ use_bastion_registry: false
 # OCP node vars
 ################################################################################
 # Network configuration for all bm cluster and rwn control-plane nodes
-controlplane_lab_interface: eno12399np0
+controlplane_lab_interface: eno8303
 
 # Network configuration for public VLAN based sno cluster_type deployment
 controlplane_pub_network_cidr:
@@ -391,8 +409,6 @@ rwn_network_interface: ens1f1
 # Extra vars
 ################################################################################
 # Append override vars below
-control_plane_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
-worker_install_disk: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
 ```
 
 ## Run playbooks
@@ -410,44 +426,27 @@ The inventory file resembles ...
 
 ```
 [all:vars]
-allocation_node_count=16
-supermicro_nodes=False
+allocation_node_count=6
+supermicro_nodes=True
 
 [bastion]
-xxx-h01-000-r650.rdu2.scalelab.redhat.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.rdu2.scalelab.redhat.com
+f12-h05-000-1029u.rdu3.lab.perfscale.redhat.com ansible_ssh_user=root bmc_address=mgmt-f12-h05-000-1029u.rdu3.lab.perfscale.redhat.com
 
 [bastion:vars]
 bmc_user=quads
-bmc_password=XXXXXXX
+bmc_password=xxxx
 
 [controlplane]
-xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
-xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
-xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
+# Unused
 
 [controlplane:vars]
-role=master
-boot_iso=discovery.iso
-bmc_user=quads
-bmc_password=XXXXXXX
-lab_interface=eno12399np0
-network_interface=eth0
-network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+# Unused
 
 [worker]
+# Unused
 
 [worker:vars]
-role=worker
-boot_iso=discovery.iso
-bmc_user=quads
-bmc_password=XXXXXXX
-lab_interface=eno12399np0
-network_interface=eth0
-network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+# Unused
 
 [remoteworker]
 # Unused
@@ -456,23 +455,29 @@ dns1=198.18.10.1
 # Unused
 
 [sno]
-# Unused
+# Single Node OpenShift Clusters
+f12-h06-000-1029u bmc_address=mgmt-f12-h06-000-1029u.rdu3.lab.perfscale.redhat.com boot_iso=f12-h06-000-1029u.iso ip_address=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e network_mac=00:25:90:5f:5f:5b
 
 [sno:vars]
-# Unused
+bmc_user=quads
+bmc_password=xxxx
+dns1=10.1.36.1
+dns2=10.1.36.2
 
 [hv]
-# Set `hv_inventory: true` to populate
+# Unused
 
 [hv:vars]
-# Set `hv_inventory: true` to populate
+# Unused
 
 [hv_vm]
-# Set `hv_inventory: true` to populate
+# Unused
 
 [hv_vm:vars]
-# Set `hv_inventory: true` to populate
+# Unused
 ```
+
+** If your bastion machine is not running RHEL 8.6 or newer, you will have to upgrade following [this short procedure](troubleshooting.md#scalelab---upgrade-rhel).
 
 Next run the `setup-bastion.yml` playbook ...
 
@@ -481,26 +486,29 @@ Next run the `setup-bastion.yml` playbook ...
 ...
 ```
 
-Finally run the `bm-deploy.yml` playbook ...
+We can now set the ssh vars in the `ansible/vars/all.yml` file since `setup-bastion.yml` has completed. For bare metal clusters only `ssh_public_key_file` is required to be filled out. The recommendation is to copy the public ssh key file from your bastion local to your laptop and set `ssh_public_key_file` to the location of that file. This file determines which ssh key will be automatically permitted to ssh into the cluster's nodes.
 
 ```console
-(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bm-deploy.yml
+[user@<local> ~]$ scp root@<bastion>:/root/.ssh/id_rsa.pub .
+Warning: Permanently added '<bastion>,10.1.43.101' (ECDSA) to the list of known hosts.
+id_rsa.pub                                                                                100%  554    22.6KB/s   00:00
+```
+
+Then set `ssh_public_key_file: /home/user/jetlag/id_rsa.pub` or to wherever you copied the file down to.
+
+Finally run the `sno-deploy.yml` playbook from the bastion ...
+
+```console
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
 ...
 ```
 
-## Monitor install and interact with cluster
+A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.rdu3.lab.perfscale.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
-
-If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
+If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 
 ```console
-(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
 (.ansible) [root@<bastion> jetlag]# oc get no
-NAME               STATUS   ROLES                         AGE    VERSION
-xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
-xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
-xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
-(.ansible) [root@<bastion> jetlag]# cat /root/bm/kubeadmin-password
-xxxxx-xxxxx-xxxxx-xxxxx
+...
 ```
