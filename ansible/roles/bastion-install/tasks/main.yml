@@ -21,6 +21,7 @@
     - jq
     - make
     - net-tools
+    - nmstate
     - python3-pip
     - podman
     - rsync
