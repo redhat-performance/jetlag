@@ -16,10 +16,15 @@
 # * Second machine is SNO cluster
 #
 
-- name: Set ocp inventory download url from lab wiki
+- name: Set ocp inventory download url from lab wiki - scalelab
   set_fact:
     ocp_inventory_url: "https://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
-  when:  ocp_inventory_override | string | length < 1
+  when:  ocp_inventory_override | string | length < 1 and lab == scalelab
+
+- name: Set ocp inventory download url from lab wiki - performancelab
+  set_fact:
+    ocp_inventory_url: "https://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
+  when:  ocp_inventory_override | string | length < 1 and lab == performancelab 
 
 - name: Set ocp inventory download url to override
   set_fact:
