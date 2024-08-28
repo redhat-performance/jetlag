@@ -5,14 +5,6 @@
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 
-# Setup a network attachment definition so pods can have a 2nd interface (macvlan type only)
-setup_network_attachment_definition: false
-# Configuration of the network attachment definition
-net_attach_def_namespace: default
-net_attach_def_name: net1
-net_attach_def_interface: bond0
-net_attach_def_range: 192.168.0.0/16
-
 # Performance-addon-operator and du profile vars
 install_performance_addon_operator: false
 hugepages_count: 16

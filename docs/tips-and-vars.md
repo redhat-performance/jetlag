@@ -8,7 +8,6 @@ _**Table of Contents**_
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Updating the OCP version](#updating-the-ocp-version)
 - [Add/delete contents to the bastion registry](#add-delete-contents-to-the-bastion-registry)
-- [Using other network interfaces](#using-other-network-interfaces)
 - [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
 <!-- /TOC -->
 
@@ -165,29 +164,6 @@ CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
 ```
 
 ## Post Deployment Tasks
-
-### Network Attachment Definition
-
-Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to add a Macvlan Network Attachment
-Definition. This allows you to add an additional network to pods created in your cluster.
-
-```yaml
-setup_network_attachment_definition: true
-net_attach_def_namespace: default
-net_attach_def_name: net1
-net_attach_def_interface: bond0
-net_attach_def_range: 192.168.0.0/16
-```
-
-Modify `net_attach_def_interface` to the desired host interface in which you want the macvlan network to exist. Modify
-`net_attach_def_range` to an ip range that does not conflict with any other test-bed address ranges.
-
-To have a pod attach an interface to the additional network, add the following example metadata annotation:
-
-```yaml
-annotations:
-  k8s.v1.cni.cncf.io/networks: '[{"name": "net1", "namespace": "default"}]'
-```
 
 ### SNO DU Profile
 
