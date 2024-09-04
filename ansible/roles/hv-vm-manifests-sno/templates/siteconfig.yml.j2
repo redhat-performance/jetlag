@@ -69,18 +69,18 @@ spec:
 {% endif %}
     clusterLabels:
       common: 'true'
-      group-du-sno: ''
 {% if siteconfig_sno_du_profile in ["4.12", "4.13", "4.14", "4.15", "4.16"] %}
       du-profile: "{{ siteconfig_sno_du_profile }}"
 {% endif %}
+      group-du-sno: ''
       name: {{ inventory_hostname }}
-      sites: {{ inventory_hostname }}
-      vendor: OpenShift
 {% if siteconfig_observability %}
       observability: enabled
 {% else %}
       observability: disabled
 {% endif %}
+      sites: {{ inventory_hostname }}
+      vendor: OpenShift
     clusterNetwork:
     - cidr: {{ "fd01::/48" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
       hostPrefix: {{ sno_cluster_network_host_prefix }}

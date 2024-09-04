@@ -108,15 +108,17 @@ kind: ManagedCluster
 metadata:
   name: standard-{{ '%05d' | format(item) }}
   labels:
+    common: 'true'
+    common-mno: 'true'
+    group-du-standard: ''
     name: standard-{{ '%05d' | format(item) }}
-    vendor: OpenShift
 {% if manifest_observability %}
     observability: enabled
 {% else %}
     observability: disabled
 {% endif %}
-    common: "true"
-    group-du-standard: ""
+    sites: standard-{{ '%05d' | format(item) }}
+    vendor: OpenShift
 spec:
   hubAcceptsClient: true
 {% endif %}

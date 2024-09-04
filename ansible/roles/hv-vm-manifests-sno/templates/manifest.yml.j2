@@ -152,12 +152,12 @@ kind: ManagedCluster
 metadata:
   name: {{ inventory_hostname }}
   labels:
+    common: 'true'
+    group-du-sno: ''
     name: {{ inventory_hostname }}
-    vendor: OpenShift
     observability: disabled
-    common: "true"
-    group-du-sno: ""
-    group-sno-du: "true"
+    sites: {{ inventory_hostname }}
+    vendor: OpenShift
 spec:
   hubAcceptsClient: true
 {% endif %}
