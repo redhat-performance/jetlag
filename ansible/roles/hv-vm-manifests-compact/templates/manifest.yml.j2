@@ -108,11 +108,13 @@ kind: ManagedCluster
 metadata:
   name: compact-{{ '%05d' | format(item) }}
   labels:
+    common: 'true'
+    common-mno: 'true'
+    group-du-3node: ''
     name: compact-{{ '%05d' | format(item) }}
-    vendor: OpenShift
     observability: disabled
-    common: "true"
-    group-du-3node: ""
+    sites: compact-{{ '%05d' | format(item) }}
+    vendor: OpenShift
 spec:
   hubAcceptsClient: true
 {% endif %}

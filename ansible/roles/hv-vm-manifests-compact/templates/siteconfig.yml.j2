@@ -34,13 +34,13 @@ spec:
       common-mno: 'true'
       group-du-3node: ''
       name: compact-{{ '%05d' | format(item) }}
-      sites: compact-{{ '%05d' | format(item) }}
-      vendor: OpenShift
 {% if siteconfig_observability %}
       observability: enabled
 {% else %}
       observability: disabled
 {% endif %}
+      sites: compact-{{ '%05d' | format(item) }}
+      vendor: OpenShift
     clusterNetwork:
     - cidr: {{ "fd01::/48" if hostvars[groups['hv_vm'][((item - 1) * compact_cluster_node_count)]]['hv_ip'] | ansible.utils.ipv6 else "10.128.0.0/14" }}
       hostPrefix: {{ compact_cluster_network_host_prefix }}

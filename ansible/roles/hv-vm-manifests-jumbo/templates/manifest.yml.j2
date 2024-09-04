@@ -108,12 +108,13 @@ kind: ManagedCluster
 metadata:
   name: jumbocluster00
   labels:
+    # common: 'true'
+    # common-mno: 'true'
+    # group-du-standard: ''
     name: jumbocluster00
-    vendor: OpenShift
     observability: disabled
-    # common: "true"
-    # group-du-sno: ""
-    # group-sno-du: "true"
+    sites: jumbocluster00
+    vendor: OpenShift
 spec:
   hubAcceptsClient: true
 {% endif %}
