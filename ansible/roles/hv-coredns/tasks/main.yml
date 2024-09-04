@@ -13,14 +13,10 @@
     state: directory
 
 - name: Copy the Corefile.hosts file from bastion to hypervisors
-  tags: sync-pull
   synchronize:
-    src: "{{ item }}"
-    dest: "{{ item }}"
+    src: /etc/coredns/Corefile.hosts
+    dest: /etc/coredns/Corefile.hosts
   delegate_to: "{{groups['bastion'][0]}}"
-  register: syncfile
-  with_items:
-   - "/etc/coredns/Corefile.hosts"
 
 - name: Configure Coredns / NetworkManager
   template:
