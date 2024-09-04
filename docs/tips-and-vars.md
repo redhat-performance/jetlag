@@ -65,6 +65,7 @@ edit the inventory file to set appropriate install paths for each machine.
 
 | Hardware  | Install disk path
 | --------  | ----------------- |
+| Dell r660 | /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:1:0 |
 | Dell r650 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 

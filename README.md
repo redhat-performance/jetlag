@@ -39,7 +39,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 | Hardware           | BM  | RWN | SNO |
 | ------------------ | --- | --- | --- |
-| Dell r660          | Yes | No  | No  |
+| Dell r660          | Yes | No  | Yes |
 | Dell r650          | Yes | No  | Yes |
 | Dell r640          | Yes | Yes | Yes |
 | Dell fc640         | Yes | No  | Yes |
