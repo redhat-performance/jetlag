@@ -2,7 +2,7 @@
 # hv-vm-manifests-sno tasks
 
 - name: Create directories for hv-vm manifests on bastion for SNOs
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
   delegate_to: "{{ groups['bastion'][0] }}"
@@ -10,8 +10,21 @@
   loop:
   - "{{ hv_vm_manifests_directory }}/"
   - "{{ hv_vm_manifests_directory }}/sno"
-  - "{{ hv_vm_manifests_directory }}/sno/manifests"
-  - "{{ hv_vm_manifests_directory }}/sno/siteconfigs"
+  - "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs"
+  - "{{ hv_vm_manifests_directory }}/sno/ai-manifests"
+
+- name: Symlink siteconfigs and manifests directories
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  loop:
+  - src: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs"
+    dest: "{{ hv_vm_manifests_directory }}/sno/siteconfigs"
+  - src: "{{ hv_vm_manifests_directory }}/sno/ai-manifests"
+    dest: "{{ hv_vm_manifests_directory }}/sno/manifests"
 
 - name: Obtain pull-secret for bastion registry
   slurp:
@@ -28,21 +41,15 @@
   run_once: true
   when: use_bastion_registry
 
-- name: Create directories per SNO for hv-vm manifests on bastion
-  file:
-    path: "{{ hv_vm_manifests_directory }}/sno/manifests/{{ inventory_hostname }}"
-    state: directory
-  delegate_to: "{{ groups['bastion'][0] }}"
-
 - name: Template a manifest per hv-vm on bastion as an SNO
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
   - src: manifest.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/sno/manifests/{{ inventory_hostname }}/manifest.yml"
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-manifests/{{ inventory_hostname }}-manifests.yml"
   - src: siteconfig.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/sno/siteconfigs/{{ inventory_hostname }}-siteconfig.yml"
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs/{{ inventory_hostname }}-siteconfig.yml"
   - src: siteconfig-resources.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/sno/siteconfigs/{{ inventory_hostname }}-resources.yml"
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs/{{ inventory_hostname }}-resources.yml"
   delegate_to: "{{ groups['bastion'][0] }}"
