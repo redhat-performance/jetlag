@@ -31,10 +31,12 @@ ocp_version: "latest-4.16"
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
-# Lab Network type, applies to sno cluster_type only
+# Lab Network type, applies to sno and bm cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # scalelab cloud
+# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx and
+# base_dns_name to the according values
 public_vlan: false
 
 # Enables FIPs security standard
