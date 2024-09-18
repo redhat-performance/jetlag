@@ -22,6 +22,11 @@ capabilities:
 {% else %}
 networking:
   networkType: {{ networktype }}
+  clusterNetwork:
+  - cidr: {{ cluster_network }}
+  hostPrefix: {{ host_prefix }}
+  serviceNetwork:
+  - {{ service_network }}
 {% endif %}
 {% if enable_fips | default(false) %}
 fips: true
