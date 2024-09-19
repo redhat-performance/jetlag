@@ -49,7 +49,7 @@
 
 - name: Public VLAN - Configuring controlplane_network_interface_idx to the last interface
   set_fact:
-    controlplane_network_interface_idx: "{{ ocpinventory.json.nodes[0].network.interfaces[0].mac | length - 1 }}"
+    controlplane_network_interface_idx: "{{ ocpinventory.json.nodes[0].mac | length - 1 }}"
   when: public_vlan and cluster_type == "bm"
 
 - name: Bare metal cluster and remote worker node cluster type tasks
