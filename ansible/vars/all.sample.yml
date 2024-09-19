@@ -35,8 +35,9 @@ networktype: OVNKubernetes
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # scalelab cloud
-# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx and
-# base_dns_name to the according values
+# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
+# required in the public VLAN
 public_vlan: false
 
 # Enables FIPs security standard

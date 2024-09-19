@@ -56,7 +56,7 @@
 
   - name: Get assignment from quads
     uri:
-      url: "https://{{ labs[lab]['quads'] }}/api/v1/assignments/active/{{ lab_cloud}}/"
+      url: "https://{{ labs[lab]['quads'] }}/api/v3/assignments/active/{{ lab_cloud }}"
       force_basic_auth: yes
       user: "{{ lab_cloud }}"
       password: "{{ ocpinventory.json.nodes[0].pm_password }}"
@@ -65,8 +65,8 @@
 
   - name: Public VLAN - Set addressing information
     set_fact:
-      controlplane_network: "{{ quads_assignment.json.vlan.address }}"
-      network_prefix: "{{ quads_assignment.json.vlan.prefix }}"
+      controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
+      network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       gateway: "{{ quads_assignment.json.vlan.gateway }}"
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
 
@@ -78,9 +78,9 @@
       controlplane0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
       controlplane1: "{{ ocpinventory.json.nodes[2].pm_addr }}"
       controlplane2: "{{ ocpinventory.json.nodes[3].pm_addr }}"
-      controlplane0_network_mac: "{{ ocpinventory.json.nodes[1].mac[controlplane_network_interface_idx] }}"
-      controlplane1_network_mac: "{{ ocpinventory.json.nodes[2].mac[controlplane_network_interface_idx] }}"
-      controlplane2_network_mac: "{{ ocpinventory.json.nodes[3].mac[controlplane_network_interface_idx] }}"
+      controlplane0_network_mac: "{{ ocpinventory.json.nodes[1].mac[controlplane_network_interface_idx | int] }}"
+      controlplane1_network_mac: "{{ ocpinventory.json.nodes[2].mac[controlplane_network_interface_idx | int] }}"
+      controlplane2_network_mac: "{{ ocpinventory.json.nodes[3].mac[controlplane_network_interface_idx | int] }}"
       controlplane0_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[1].pm_addr.split('.')[0]).split('-')[-1]] }}"
       controlplane1_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[2].pm_addr.split('.')[0]).split('-')[-1]] }}"
       controlplane2_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[3].pm_addr.split('.')[0]).split('-')[-1]] }}"

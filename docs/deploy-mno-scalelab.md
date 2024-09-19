@@ -284,10 +284,15 @@ controlplane_lab_interface: eno12399np0
 
 ### Deploy in the public VLAN
 
-In order to deploy in the public VLAN, some variables need to be configured:
+In order to deploy in the public VLAN, set the variable `public_vlan` in `all.yml` to true. Once this variable is enable jetlag:
 
-- `public_vlan`: Enable this variable **before creating the inventory**, to let jetlag to auto-configure the interface number (`controlplane_network_interface_idx`) to the last of the available NICs of the ocpinventory.json file, when this variable is configured, `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory file.
-- `cluster_name`: Should be configured to the public VLAN name. i.e: `vlan600`, check the public VLANs allocation info in the [scalelab's wiki](https://wiki.rdu2.scalelab.redhat.com/vlans/)
+- Auto-configures the interface number (`controlplane_network_interface_idx`) to the last of the available NICs of the ocpinventory.json file.
+- `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory
+- With the help of the `quads` API these variables are also configured automatically:
+  - `controlplane_network`: public VLAN subnet
+  - `network_prefix`: public VLAN network mask
+  - `gateway`: public VLAN default gateway
+  - `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
 
 Once the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
 
@@ -344,8 +349,9 @@ worker_node_count: 0
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # Red Hat cloud
-# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx and
-# base_dns_name to the according values
+# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
+# required in the public VLAN
 public_vlan: false
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
