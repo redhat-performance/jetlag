@@ -288,7 +288,6 @@ In order to deploy in the public VLAN, some variables need to be configured:
 
 - `public_vlan`: Enable this variable **before creating the inventory**, to let jetlag to auto-configure the interface number (`controlplane_network_interface_idx`) to the last of the available NICs of the ocpinventory.json file, when this variable is configured, `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory file.
 - `cluster_name`: Should be configured to the public VLAN name. i.e: `vlan600`, check the public VLANs allocation info in the [scalelab's wiki](https://wiki.rdu2.scalelab.redhat.com/vlans/)
-- `controlplane_network`, `network_prefix` and `gateway` also need to be configured to its corresponding values.
 
 Once the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
 

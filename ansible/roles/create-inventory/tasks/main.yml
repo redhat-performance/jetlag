@@ -47,10 +47,28 @@
     ocpinventory_sno_nodes: []
     ocpinventory_hv_nodes: []
 
-- name: Public VLAN - Configuring controlplane_network_interface_idx to the last interface
-  set_fact:
-    controlplane_network_interface_idx: "{{ ocpinventory.json.nodes[0].mac | length - 1 }}"
+- name: Public VLAN in BM cluster
   when: public_vlan and cluster_type == "bm"
+  block:
+  - name: Public VLAN - Configuring controlplane_network_interface_idx to the last interface
+    set_fact:
+      controlplane_network_interface_idx: "{{ ocpinventory.json.nodes[0].mac | length - 1 }}"
+
+  - name: Get assignment from quads
+    uri:
+      url: "https://{{ labs[lab]['quads'] }}/api/v1/assignments/active/{{ lab_cloud}}/"
+      force_basic_auth: yes
+      user: "{{ lab_cloud }}"
+      password: "{{ ocpinventory.json.nodes[0].pm_password }}"
+      validate_certs: false
+    register: quads_assignment
+
+  - name: Public VLAN - Set addressing information
+    set_fact:
+      controlplane_network: "{{ quads_assignment.json.vlan.address }}"
+      network_prefix: "{{ quads_assignment.json.vlan.prefix }}"
+      gateway: "{{ quads_assignment.json.vlan.gateway }}"
+      cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
 
 - name: Bare metal cluster and remote worker node cluster type tasks
   when: cluster_type == "mno" or cluster_type == "rwn"
