@@ -8,8 +8,8 @@
   loop:
   - "{{ hv_vm_manifests_directory }}/"
   - "{{ hv_vm_manifests_directory }}/compact"
-  - "{{ hv_vm_manifests_directory }}/compact/manifests"
-  - "{{ hv_vm_manifests_directory }}/compact/siteconfigs"
+  - "{{ hv_vm_manifests_directory }}/compact/ai-siteconfig"
+  - "{{ hv_vm_manifests_directory }}/compact/ai-manifest"
 
 - name: Obtain pull-secret for bastion registry
   slurp:
@@ -22,27 +22,21 @@
     pull_secret: "{{ slurped_pull_secret.content }}"
   when: use_bastion_registry
 
-- name: Fast create directory for each cluster
-  shell: |
-    {% for item in (range(1, compact_cluster_count + 1, 1) | list) %}
-    mkdir -p {{ hv_vm_manifests_directory }}/compact/manifests/compact-{{ '%05d' | format(item) }}
-    {% endfor %}
-
 # Commented out because not currently tested
 # - name: Template a manifest per cluster
 #   template:
 #     src: manifest.yml.j2
-#     dest: "{{ hv_vm_manifests_directory }}/compact/manifests/compact-{{ '%05d' | format(item) }}/manifest.yml"
+#     dest: "{{ hv_vm_manifests_directory }}/compact/ai-manifest/compact-{{ '%05d' | format(item) }}-manifest.yml"
 #   loop: "{{ range(1, compact_cluster_count + 1, 1) | list }}"
 
 - name: Template a siteconfig per cluster
   template:
     src: siteconfig.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/compact/siteconfigs/compact-{{ '%05d' | format(item) }}-siteconfig.yml"
+    dest: "{{ hv_vm_manifests_directory }}/compact/ai-siteconfig/compact-{{ '%05d' | format(item) }}-siteconfig.yml"
   loop: "{{ range(1, compact_cluster_count + 1, 1) | list }}"
 
 - name: Template a siteconfig-resources per cluster
   template:
     src: siteconfig-resources.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/compact/siteconfigs/compact-{{ '%05d' | format(item) }}-resources.yml"
+    dest: "{{ hv_vm_manifests_directory }}/compact/ai-siteconfig/compact-{{ '%05d' | format(item) }}-resources.yml"
   loop: "{{ range(1, compact_cluster_count + 1, 1) | list }}"

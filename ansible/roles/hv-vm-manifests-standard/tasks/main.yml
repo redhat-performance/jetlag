@@ -8,8 +8,8 @@
   loop:
   - "{{ hv_vm_manifests_directory }}/"
   - "{{ hv_vm_manifests_directory }}/standard"
-  - "{{ hv_vm_manifests_directory }}/standard/manifests"
-  - "{{ hv_vm_manifests_directory }}/standard/siteconfigs"
+  - "{{ hv_vm_manifests_directory }}/standard/ai-siteconfig"
+  - "{{ hv_vm_manifests_directory }}/standard/ai-manifest"
 
 - name: Obtain pull-secret for bastion registry
   slurp:
@@ -22,32 +22,26 @@
     pull_secret: "{{ slurped_pull_secret.content }}"
   when: use_bastion_registry
 
-- name: Fast create directory for each cluster
-  shell: |
-    {% for item in (range(1, standard_cluster_count + 1, 1) | list) %}
-    mkdir -p {{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}
-    {% endfor %}
-
 - name: Template complete manifests per cluster
   template:
     src: manifest.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}/manifest.yml"
+    dest: "{{ hv_vm_manifests_directory }}/standard/ai-manifest/standard-{{ '%05d' | format(item) }}-manifest.yml"
   loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
 
 - name: Template acm managedcluster manifests per cluster
   template:
     src: managedcluster.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/standard/manifests/standard-{{ '%05d' | format(item) }}/managedcluster.yml"
+    dest: "{{ hv_vm_manifests_directory }}/standard/ai-manifest/standard-{{ '%05d' | format(item) }}-managedcluster.yml"
   loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
 
 - name: Template a siteconfig per cluster
   template:
     src: siteconfig.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/standard/siteconfigs/standard-{{ '%05d' | format(item) }}-siteconfig.yml"
+    dest: "{{ hv_vm_manifests_directory }}/standard/ai-siteconfig/standard-{{ '%05d' | format(item) }}-siteconfig.yml"
   loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
 
 - name: Template a siteconfig-resources per cluster
   template:
     src: siteconfig-resources.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/standard/siteconfigs/standard-{{ '%05d' | format(item) }}-resources.yml"
+    dest: "{{ hv_vm_manifests_directory }}/standard/ai-siteconfig/standard-{{ '%05d' | format(item) }}-resources.yml"
   loop: "{{ range(1, standard_cluster_count + 1, 1) | list }}"
