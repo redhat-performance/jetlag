@@ -10,21 +10,8 @@
   loop:
   - "{{ hv_vm_manifests_directory }}/"
   - "{{ hv_vm_manifests_directory }}/sno"
-  - "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs"
-  - "{{ hv_vm_manifests_directory }}/sno/ai-manifests"
-
-- name: Symlink siteconfigs and manifests directories
-  ansible.builtin.file:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    state: link
-  delegate_to: "{{ groups['bastion'][0] }}"
-  run_once: true
-  loop:
-  - src: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs"
-    dest: "{{ hv_vm_manifests_directory }}/sno/siteconfigs"
-  - src: "{{ hv_vm_manifests_directory }}/sno/ai-manifests"
-    dest: "{{ hv_vm_manifests_directory }}/sno/manifests"
+  - "{{ hv_vm_manifests_directory }}/sno/ai-siteconfig"
+  - "{{ hv_vm_manifests_directory }}/sno/ai-manifest"
 
 - name: Obtain pull-secret for bastion registry
   slurp:
@@ -46,10 +33,10 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
-  - src: manifest.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/sno/ai-manifests/{{ inventory_hostname }}-manifests.yml"
-  - src: siteconfig.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs/{{ inventory_hostname }}-siteconfig.yml"
-  - src: siteconfig-resources.yml.j2
-    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfigs/{{ inventory_hostname }}-resources.yml"
+  - src: ai-manifest.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-manifest/{{ inventory_hostname }}-manifest.yml"
+  - src: ai-siteconfig.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfig/{{ inventory_hostname }}-siteconfig.yml"
+  - src: ai-resources.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfig/{{ inventory_hostname }}-resources.yml"
   delegate_to: "{{ groups['bastion'][0] }}"
