@@ -42,7 +42,7 @@ standard_cluster_node_count: 5
 cluster_image_set: openshift-4.16.3
 
 # Include ACM CRs in the manifests
-hv_vm_manifest_acm_cr: false
+hv_vm_manifest_acm_cr: true
 
 # Retrieves the bastion pull-secret instead of below pull-secret
 use_bastion_registry: false
