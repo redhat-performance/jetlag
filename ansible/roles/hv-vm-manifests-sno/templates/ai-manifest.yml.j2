@@ -1,16 +1,4 @@
 ---
-# 100-namespace
-# 200-bmc-secret
-# 300-nmstate
-# 400-image-pull-secret
-# 500-agentclusterinstall
-# 500-clusterdeployment
-# 600-klusterletaddonconfig
-# 700-managedcluster
-# 800-infraenv
-# 900-bmh
-# 1000-configmap-workload-paritioning
-#
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -65,17 +53,48 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: assisted-deployment-pull-secret
+  name: ai-pull-secret
   namespace: {{ inventory_hostname }}
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ pull_secret }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ inventory_hostname }}-marketplace-namespace
+  namespace: {{ inventory_hostname }}
+data:
+  namespace.yml: |
+    # Taken from https://github.com/operator-framework/operator-marketplace/blob/53c124a3f0edfd151652e1f23c87dd39ed7646bb/manifests/01_namespace.yaml
+    # Update it as the source evolves.
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      annotations:
+        openshift.io/node-selector: ""
+        workload.openshift.io/allowed: "management"
+      labels:
+        openshift.io/cluster-monitoring: "true"
+        pod-security.kubernetes.io/enforce: baseline
+        pod-security.kubernetes.io/enforce-version: v1.25
+        pod-security.kubernetes.io/audit: baseline
+        pod-security.kubernetes.io/audit-version: v1.25
+        pod-security.kubernetes.io/warn: baseline
+        pod-security.kubernetes.io/warn-version: v1.25
+      name: "openshift-marketplace"
+---
 apiVersion: extensions.hive.openshift.io/v1beta1
 kind: AgentClusterInstall
 metadata:
   annotations:
+{% if siteconfig_sno_du_profile == "4.15" %}
+    agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"},"capabilities":{"baselineCapabilitySet":"None","additionalEnabledCapabilities":["OperatorLifecycleManager","NodeTuning"]}}'
+{% elif siteconfig_sno_du_profile in ["4.16", "4.17"] %}
+    agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"},"capabilities":{"baselineCapabilitySet":"None","additionalEnabledCapabilities":["OperatorLifecycleManager","Ingress","NodeTuning"]}}'
+{% else %}
     agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"}}'
+{% endif %}
   name: {{ inventory_hostname }}
   namespace: {{ inventory_hostname }}
 spec:
@@ -95,12 +114,22 @@ spec:
     controlPlaneAgents: 1
     workerAgents: 0
   sshPublicKey: {{ lookup('file', ssh_public_key_file) }}
+{% if siteconfig_sno_du_profile in ["4.15", "4.16", "4.17"] %}
+  manifestsConfigMapRefs:
+  - name: {{ inventory_hostname }}-marketplace-namespace
 {% if siteconfig_enable_cpuset %}
-  manifestsConfigMapRef:
-    name: "sno-workload-partitioning-configmap"
+  - name: sno-workload-partitioning-configmap
 {% else %}
-  # manifestsConfigMapRef:
-  #   name: "sno-workload-partitioning-configmap"
+  # - name: sno-workload-partitioning-configmap
+{% endif %}
+{% else %}
+{% if siteconfig_enable_cpuset %}
+  manifestsConfigMapRefs:
+  - name: sno-workload-partitioning-configmap
+{% else %}
+  # manifestsConfigMapRefs:
+  # - name: sno-workload-partitioning-configmap
+{% endif %}
 {% endif %}
 ---
 apiVersion: hive.openshift.io/v1
@@ -122,7 +151,7 @@ spec:
         matchLabels:
           cluster-name: {{ inventory_hostname }}
   pullSecretRef:
-    name: assisted-deployment-pull-secret
+    name: ai-pull-secret
 {% if hv_vm_manifest_acm_cr %}
 ---
 apiVersion: agent.open-cluster-management.io/v1
@@ -181,7 +210,7 @@ spec:
     matchLabels:
       cluster-name: {{ inventory_hostname }}
   pullSecretRef:
-    name: assisted-deployment-pull-secret
+    name: ai-pull-secret
   nmStateConfigLabelSelector:
     matchLabels:
       sno-cluster-{{ inventory_hostname }}: {{ inventory_hostname }}
