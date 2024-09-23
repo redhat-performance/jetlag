@@ -31,6 +31,8 @@ spec:
       state: up
       {{ "ipv6" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
         enabled: true
+        autoconf: false
+        dhcp: false
         address:
         - ip: {{ hostvars[inventory_hostname]['ip'] }}
           prefix-length: {{ hostvars[inventory_hostname]['network_prefix'] }}

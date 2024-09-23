@@ -109,6 +109,8 @@ spec:
 {% if hostvars[groups['hv_vm'][vm]]['hv_ip'] | ansible.utils.ipv4 %}
             ipv4:
               enabled: true
+              autoconf: false
+              dhcp: false
               address:
               - ip: "{{ hostvars[groups['hv_vm'][vm]]['ip'] }}"
                 prefix-length: {{ hostvars[groups['hv_vm'][vm]]['network_prefix'] }}
@@ -119,6 +121,8 @@ spec:
               enabled: false
             ipv6:
               enabled: true
+              autoconf: false
+              dhcp: false
               address:
               - ip: "{{ hostvars[groups['hv_vm'][vm]]['ip'] }}"
                 prefix-length: {{ hostvars[groups['hv_vm'][vm]]['network_prefix'] }}
