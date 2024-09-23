@@ -54,7 +54,7 @@
     set_fact:
       controlplane_network_interface_idx: "{{ ocpinventory.json.nodes[0].mac | length - 1 }}"
 
-  - name: Get assignment from quads
+  - name: Get assignment from scalelab quads
     uri:
       url: "https://{{ labs[lab]['quads'] }}/api/v3/assignments/active/{{ lab_cloud }}"
       force_basic_auth: yes
@@ -62,13 +62,28 @@
       password: "{{ ocpinventory.json.nodes[0].pm_password }}"
       validate_certs: false
     register: quads_assignment
+    when: lab == "scalelab"
 
-  - name: Public VLAN - Set addressing information
+  - name: Public scalelab VLAN - Set addressing information
     set_fact:
       controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
       network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       gateway: "{{ quads_assignment.json.vlan.gateway }}"
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
+    when: lab == "scalelab"
+
+  - name: Get VLAN info from performancelab quads
+    shell: "curl -sk https://wiki.rdu3.labs.perfscale.redhat.com/vlans/ | grep -B7 {{ lab_cloud }} | sed 's/<\\/\\?td>//g' | xargs | column -J --table-columns vlan_id,cidr,netmask,gateway,ipfree,owner,ticket,cloud"
+    register: vlan_info
+    when: lab == "performancelab"
+
+  - name: Public performancelab VLAN - Set addressing information
+    set_fact:
+      controlplane_network: "{{ (vlan_info.stdout | from_json).table[0].cidr }}"
+      network_prefix: "{{ (vlan_info.stdout | from_json).table[0].cidr | ipaddr('prefix') }}"
+      gateway: "{{ (vlan_info.stdout | from_json).table[0].gateway }}"
+      cluster_name: "vlan{{ (vlan_info.stdout | from_json).table[0].vlan_id }}"
+    when: lab == "performancelab"
 
 - name: Bare metal cluster and remote worker node cluster type tasks
   when: cluster_type == "mno" or cluster_type == "rwn"
