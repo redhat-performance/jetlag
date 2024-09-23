@@ -144,6 +144,8 @@ spec:
 {% if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4 %}
             ipv4:
               enabled: true
+              autoconf: false
+              dhcp: false
               address:
               - ip: "{{ hostvars[inventory_hostname]['ip'] }}"
                 prefix-length: {{ hostvars[inventory_hostname]['network_prefix'] }}
@@ -154,6 +156,8 @@ spec:
               enabled: false
             ipv6:
               enabled: true
+              autoconf: false
+              dhcp: false
               address:
               - ip: "{{ hostvars[inventory_hostname]['ip'] }}"
                 prefix-length: {{ hostvars[inventory_hostname]['network_prefix'] }}
