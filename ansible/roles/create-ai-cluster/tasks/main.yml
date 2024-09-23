@@ -1,20 +1,43 @@
 ---
 # create-ai-cluster tasks
 
-- name: Obtain pull-secret for disconnected
+- name: Obtain pull-secret for bastion registry
   slurp:
-    src: "{{ registry_path }}/pull-secret-disconnected.txt"
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
   register: slurped_pull_secret
-  when: use_disconnected_registry
+  when: use_bastion_registry
 
-- name: Set pull-secret for disconnected
+- name: Set pull-secret for bastion registry
   set_fact:
     pull_secret: "{{ slurped_pull_secret.content | b64decode }}"
-  when: use_disconnected_registry
+  when: use_bastion_registry
+
+- name: Obtain bastion registry certificate
+  slurp:
+    src: "{{ registry_path }}/certs/domain.crt"
+  register: mirror_cert
+  when: use_bastion_registry
+
+- name: Set empty static network configuration
+  set_fact:
+    static_network_config: []
+
+- name: Populate static network configuration with controlplane nodes
+  include_tasks: static_network_config.yml
+  loop: "{{ groups['controlplane'] }}"
+
+- name: BM - Populate static network configuration with worker nodes
+  include_tasks: static_network_config.yml
+  when:
+  - cluster_type == "bm"
+  loop: "{{ groups['worker'] }}"
+
+# - debug:
+#     msg: "{{ static_network_config }}"
 
 - name: Create cluster
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
     method: POST
     body_format: json
     status_code: [201]
@@ -26,17 +49,51 @@
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
         "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "service_network_cidr": "{{ service_network_cidr }}",
-        "ingress_vip": "{{ controlplane_network_ingress }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_disconnected_registry else labs[lab]['ntp_server'] }}"
+        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}"
     }
   register: create_cluster_return
 
-- name: Set cluster ID
+- name: Set ai_cluster_id
   set_fact:
     ai_cluster_id: "{{ create_cluster_return.json.id }}"
+
+- name: Create a connected infra-env
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "name": "{{ cluster_name }}",
+        "additional_ntp_sources": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
+        "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "static_network_config": "{{ static_network_config }}",
+        "image_type": "full-iso",
+        "cluster_id": "{{ ai_cluster_id }}",
+        "openshift_version": "{{ openshift_version }}",
+    }
+  register: create_infra_env_return
+
+- name: Set ai_infraenv_id
+  set_fact:
+    ai_infraenv_id: "{{ create_infra_env_return.json.id }}"
+
+- name: Patch infra-env for bastion registry with ignition config overrides
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "ignition_config_override": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}",
+    }
+  when: use_bastion_registry | default(false)
 
 - name: Add entries in /etc/hosts
   blockinfile:
@@ -55,28 +112,33 @@
   systemd:
     state: restarted
     name: dnsmasq
-  when: controlplane_bastion_as_dns
+  when:
+  - controlplane_bastion_as_dns
+  - not setup_coredns
 
 - name: Include custom manifests
   include_tasks: 01_manifest_update.yml
   with_items:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
-    template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
+    template_name: 50-controlplane-disable-lab-dhcp-interface.yml.j2
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
-    template_name: "50-worker-disable-lab-dhcp-interface.yml.j2"
+    template_name: 50-worker-disable-lab-dhcp-interface.yml.j2
+  - file_name: 50-controlplane-tune-kni-haproxy.yaml
+    template_name: 50-controlplane-tune-kni-haproxy.yml.j2
+    enabled: "{{ override_kni_infra_haproxy }}"
   - file_name: 99-master-kdump.yml
     template_name: 99-master-kdump.yml
     enabled: "{{ kdump_master_config }}"
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
-  - file_name: rhacm-iscp.yml
-    template_name: rhacm-icsp.yml
-    enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"
+  - file_name: 99-disconnected-dns-workaround.yml
+    template_name: 99-disconnected-dns-workaround.yml
+    enabled: "{{ use_bastion_registry }}"
 
 - name: RWN - Get OpenShift versions to obtain coredns image
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/openshift_versions"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/openshift_versions"
     method: GET
     status_code: [200, 201]
     return_content: true
@@ -107,7 +169,7 @@
 
 - name: RWN - Add additional manifest for remote worker node cluster
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/manifests"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/manifests"
     method: POST
     body_format: json
     status_code: [201]

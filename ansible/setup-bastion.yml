@@ -5,51 +5,31 @@
 #
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/setup-bastion.yml
 #
-- name: ensure bastion is powered on
-  hosts: localhost
-  vars_files:
-  - vars/all.yml
-  - vars/lab.yml
-  tasks:
-  - name: Set fact for bastion_machine
-    set_fact:
-      bastion_machine: "{{ groups['bastion'][0] }}"
-
-  - name: Ensure bastion is powered on
-    community.general.redfish_command:
-      category: Systems
-      command: PowerOn
-      baseuri: "{{ hostvars[bastion_machine]['bmc_address'] }}"
-      username: "{{ hostvars[bastion_machine]['bmc_user'] }}"
-      password: "{{ hostvars[bastion_machine]['bmc_password'] }}"
-    register: bastion_power
-
-  - name: Wait if bastion has just been powered on
-    wait_for_connection:
-      delay: 60
-      timeout: 420
-    when: bastion_power.changed
 
 - name: Setup bastion machine
   hosts: bastion
   vars_files:
-  - vars/all.yml
   - vars/lab.yml
+  - vars/all.yml
   roles:
   - validate-vars
+  - ocp-release
   - bastion-install
   - bastion-network
-  - bastion-dnsmasq
+  - role: bastion-dnsmasq
+    when: not setup_coredns
+  - role: bastion-coredns
+    when: setup_coredns
   - bastion-http
   - bastion-ocp-version
-  - role: bastion-disconnected-registry
-    when: use_disconnected_registry
-  - role: disconnected-sync-operator-index
-    when: use_disconnected_registry
-  - role: disconnected-sync-ocp-release
-    when: use_disconnected_registry
+  - role: bastion-registry
+    when: setup_bastion_registry
+  - role: sync-operator-index
+    when: setup_bastion_registry
+  - role: sync-ocp-release
+    when: setup_bastion_registry
   - bastion-assisted-installer
   - role: bastion-gogs
-    when: setup_gogs
+    when: setup_bastion_gogs
   - role: bastion-disconnected-haproxy
-    when: use_disconnected_registry
+    when: use_bastion_registry

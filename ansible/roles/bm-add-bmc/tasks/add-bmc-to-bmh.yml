@@ -1,0 +1,19 @@
+---
+- name: "{{ item }} - Set additional BMC variables"
+  set_fact:
+    bmc_secret_name: "{{ item }}-bmc-secret"
+    bmc_username_base64: "{{ hostvars[item]['bmc_user'] | b64encode }}"
+    bmc_password_base64: "{{ hostvars[item]['bmc_password'] | b64encode }}"
+
+- name: "{{ item }} - Create BMC Secret YAML from template"
+  template:
+    src: "bmc-secret.yml.j2"
+    dest: "{{ bastion_cluster_config_dir }}/bmc/{{ bmc_secret_name }}.yml"
+
+- name: "{{ item }} - Create BMC Secret Resource"
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/bmc/{{ bmc_secret_name }}.yml
+
+- name: "{{ item }} - Update BareMetalHost with BMC Secret"
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch -n openshift-machine-api bmh {{ item }} --type merge -p='{"spec": {"bmc": {"address": "{{ hostvars[item]['bmc_address'] }}", "credentialsName": "{{ bmc_secret_name }}", "disableCertificateVerification": true} } }'

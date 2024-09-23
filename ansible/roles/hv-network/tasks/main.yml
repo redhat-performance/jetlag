@@ -4,6 +4,7 @@
 - name: Clean lab interfaces
   shell: |
     /root/clean-interfaces.sh --nuke
+  ignore_errors: true
 
 - name: Restart NetworkManager to remove lab interfaces
   systemd:
@@ -36,7 +37,29 @@
     value: "1"
   - name: net.ipv6.conf.all.disable_ipv6
     value: "0"
-  when: hostvars[inventory_hostname].ip | ansible.netcommon.ipv6
+  when: hostvars[inventory_hostname].ip | ansible.utils.ipv6
+
+- name: Increase the size of the arp-cache
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/arp.conf
+    state: present
+    reload: true
+  loop:
+  - name: net.ipv4.neigh.default.gc_thresh1
+    value: "8192"
+  - name: net.ipv4.neigh.default.gc_thresh2
+    value: "32768"
+  - name: net.ipv4.neigh.default.gc_thresh3
+    value: "65536"
+  - name: net.ipv6.neigh.default.gc_thresh1
+    value: "8192"
+  - name: net.ipv6.neigh.default.gc_thresh2
+    value: "32768"
+  - name: net.ipv6.neigh.default.gc_thresh3
+    value: "65536"
 
 - name: Setup bridge for hypervisor "control-plane" interface (ipv4)
   nmcli:
@@ -45,7 +68,7 @@
     ifname: "{{ hypervisor_bridge_name }}"
     ip4: "{{ hostvars[inventory_hostname].ip }}/{{ hostvars[inventory_hostname].network_prefix }}"
     state: present
-  when: hostvars[inventory_hostname].ip | ansible.netcommon.ipv4
+  when: hostvars[inventory_hostname].ip | ansible.utils.ipv4
 
 - name: Setup bridge for hypervisor "control-plane" interface (ipv6)
   nmcli:
@@ -54,7 +77,7 @@
     ifname: "{{ hypervisor_bridge_name }}"
     ip6: "{{ hostvars[inventory_hostname].ip }}/{{ hostvars[inventory_hostname].network_prefix }}"
     state: present
-  when: hostvars[inventory_hostname].ip | ansible.netcommon.ipv6
+  when: hostvars[inventory_hostname].ip | ansible.utils.ipv6
 
 - name: Bind interface with bridge
   shell: |

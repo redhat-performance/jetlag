@@ -1,0 +1,39 @@
+---
+# The siteconfig resources
+#
+# 200-bmc-secret
+# 400-image-pull-secret
+#
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ inventory_hostname }}-bmc-secret
+  namespace: {{ inventory_hostname }}
+type: Opaque
+data:
+  password: {{ bmc_password_base64 }}
+  username: {{ bmc_username_base64 }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assisted-deployment-pull-secret
+  namespace: {{ inventory_hostname }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ pull_secret }}
+{% if siteconfig_resource_site_data %}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # annotations:
+  #   argocd.argoproj.io/sync-wave: "2"
+  name: site-{{ inventory_hostname }}
+  namespace: {{ siteconfig_site_data_namespace }}
+data:
+  sitekey1: "sitevalue1"
+  sitekey2: "sitevalue2"
+  sitekey3: "sitevalue3"
+  sitekey4: "sitevalue4"
+{% endif %}

@@ -1,0 +1,10 @@
+#!/bin/bash
+# Jetlag sno-setup-lvm.sh
+for vg in $(vgs -o name --noheadings | grep "vg_ls") ; do vgremove -y $vg ; done
+pvremove /dev/disk/by-partlabel/LS
+echo "Setting up LVM for local-storage"
+vgcreate vg_ls /dev/disk/by-partlabel/LS -f
+lvcreate -l 99%VG -T vg_ls/lv_tp_ls
+{% for i in range(sno_localstorage_lv_count) %}
+lvcreate -V {{ sno_localstorage_lv_size }} -T vg_ls/lv_tp_ls -n lv_sno_tv{{ '%02d' % i }}
+{% endfor %}

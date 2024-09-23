@@ -14,8 +14,22 @@ cluster_type:
 # Applies to both bm/rwn clusters
 worker_node_count:
 
-# Applies to sno clusters
-sno_node_count:
+# Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
+# Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
+# or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would
+# be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16.
+# Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and
+# https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
+ocp_build: "ga"
+
+# The version of the openshift-installer binary, undefined or empty results in the playbook failing with error message.
+# Values accepted depended on the build chosen ('ga' or 'dev').
+# For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
+# For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
+ocp_version: "latest-4.16"
+
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+networktype: OVNKubernetes
 
 # Lab Network type, applies to sno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
@@ -23,22 +37,13 @@ sno_node_count:
 # scalelab cloud
 public_vlan: false
 
-# Versions are controlled by this release image. If you want to change images
-# you must stop and rm all assisted-installer containers on the bastion and rerun
-# the setup-bastion step in order to setup your bastion's assisted-installer to
-# the version you specified
-ocp_release_image: quay.io/openshift-release-dev/ocp-release:4.10.15-x86_64
-
-# This should just match the above release image version (Ex: 4.10)
-openshift_version: "4.10"
-
-# List type: Use only one of OpenShiftSDN or OVNKubernetes for BM/RWN, but could be both for SNO mix and match
-networktype:
-  - OpenShiftSDN
-  - OVNKubernetes
+# Enables FIPs security standard
+enable_fips: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
+# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
+# [root@<bastion> jetlag]# ls pull_secret.txt
 pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
 
 ################################################################################
@@ -54,17 +59,19 @@ bastion_controlplane_interface: ens1f0
 # vlaned interfaces are for remote worker node clusters only
 bastion_vlaned_interface: ens1f1
 
-# Used in conjunction with ACM/ZTP disconnected hub clusters (ipv6 only at the moment)
-setup_gogs: false
+# Sets up Gogs a self-hosted git service on the bastion
+setup_bastion_gogs: false
+
+# Set to enable and sync container images into a container image registry on the bastion
+setup_bastion_registry: false
 
 # Use in conjunction with ipv6 based clusters
-use_disconnected_registry: false
+use_bastion_registry: false
 
 ################################################################################
 # OCP node vars
 ################################################################################
 # Network configuration for all bm cluster and rwn control-plane nodes
-# Network configuration for public VLAN based sno cluster_type deployment
 controlplane_lab_interface: eno1np0
 
 # Network configuration for public VLAN based sno cluster_type deployment
@@ -73,6 +80,8 @@ controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 # Network only for remote worker nodes
+# Note: these cannot be commented out or bm-deploy will fail
+#       You will need to knowledge of actual interface names.
 rwn_lab_interface: eno1np0
 rwn_network_interface: ens1f1
 

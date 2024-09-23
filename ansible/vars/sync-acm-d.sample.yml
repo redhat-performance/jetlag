@@ -1,0 +1,40 @@
+---
+# Sample sync-acm-d vars file
+
+# ACM Build to sync
+rhacm_build: 2.11.0-DOWNSTREAM-2024-06-26-14-32-34
+
+# ZTP - Zero-Touch Provisioning Site Generator Image
+ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
+ztp_site_generator_image_tag: v4.16.0-34
+
+# ACM - Advanced Cluster Management Policy Generator Image
+rhacm_policy_generator_image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel9
+rhacm_policy_generator_image_tag: v2.10
+
+# TALM - Topology Aware Lifecycle Manager Images (Orchestrates DU Profile Policies and Upgrade Policies)
+cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
+cluster_group_upgrades_operator_image_tag: 4.16.0
+cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
+cluster_group_upgrades_operator_precache_image_tag: 4.16.0
+cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-group-upgrades-operator-recovery
+cluster_group_upgrades_operator_recovery_image_tag: 4.16.0
+origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy
+origin_kube_rbac_proxy_image_tag: 4.15
+kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy
+kube_rbac_proxy_image_tag: v0.8.0
+
+# IBU - Image Based Upgrade recert image (Override-able in case of custom image for test)
+recert_image: quay.io/edge-infrastructure/recert
+recert_image_tag: latest
+
+# Minio provides an S3 storage service for ACM's OBS and s3 storage for OADP
+minio_image: quay.io/minio/minio
+minio_image_tag: RELEASE.2022-04-01T03-41-39Z
+
+# Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
+acm_operator_bundle: v2.3.0-185
+
+acm_d_pull_secret: "{{ lookup('file', '../pull_secret.acm_d.txt') }}"
+
+download_mapping_file_from_deploy_repo: true

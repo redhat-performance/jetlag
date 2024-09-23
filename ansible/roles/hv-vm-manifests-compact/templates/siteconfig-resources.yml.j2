@@ -1,0 +1,43 @@
+---
+# The siteconfig resources
+#
+# 200-bmc-secret
+# 400-image-pull-secret
+#
+# "{{ (((item - 1) * compact_cluster_node_count) + sno_cluster_count) }} until {{ ((item * compact_cluster_node_count) - 1 + sno_cluster_count) }}"
+{% for vm in range(((item - 1) * compact_cluster_node_count) + sno_cluster_count, (item * compact_cluster_node_count) + sno_cluster_count, 1) %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ groups['hv_vm'][vm] }}-bmc-secret
+  namespace: compact-{{ '%05d' | format(item) }}
+type: Opaque
+data:
+  password: {{ bmc_password_base64 }}
+  username: {{ bmc_username_base64 }}
+{% endfor %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assisted-deployment-pull-secret
+  namespace: compact-{{ '%05d' | format(item) }}
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ pull_secret }}
+{% if siteconfig_resource_site_data %}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # annotations:
+  #   argocd.argoproj.io/sync-wave: "2"
+  name: site-compact-{{ '%05d' | format(item) }}
+  namespace: {{ siteconfig_site_data_namespace }}
+data:
+  sitekey1: "sitevalue1"
+  sitekey2: "sitevalue2"
+  sitekey3: "sitevalue3"
+  sitekey4: "sitevalue4"
+{% endif %}

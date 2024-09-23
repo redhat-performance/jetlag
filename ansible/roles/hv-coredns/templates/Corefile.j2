@@ -1,0 +1,12 @@
+# Jetlag HV CoreDNS Configuration
+. {
+    errors
+    # log
+{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
+    forward . {{ labs[lab]['dns'][0] }}
+{% endif %}
+    cache 30
+    reload
+
+    import Corefile.hosts
+}

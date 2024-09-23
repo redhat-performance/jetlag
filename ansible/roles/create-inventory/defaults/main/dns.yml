@@ -1,0 +1,43 @@
+---
+# cluster_name applies only to bm/rwn clusters, sno clusters use base host name as the cluster name
+cluster_name: bm
+base_dns_name: example.com
+
+# Setup and use coredns instead of dnsmasq
+setup_coredns: false
+
+# Appends each entry to /etc/hosts of bastion machine during cluster install to
+# allow sshuttle easy resolution when proxying into cluster
+etc_hosts_ingress_routes:
+- agent-registration-multicluster-engine
+- alertmanager-main-openshift-monitoring
+- alertmanager-open-cluster-management-observability
+- assisted-image-service-multicluster-engine
+- assisted-service-multicluster-engine
+- automationcontroller-ansible-automation-platform
+- automationhub-ansible-automation-platform
+- canary-openshift-ingress-canary
+- cluster-proxy-anp
+- cluster-proxy-user
+- console-openshift-console
+- dittybopper-dittybopper
+- downloads-openshift-console
+- federate-openshift-user-workload-monitoring
+- grafana-open-cluster-management-observability
+- hcp-cli-download-multicluster-engine
+- kam-openshift-gitops
+- minio-minio
+- multicloud-console
+- oauth-openshift
+- observatorium-api-open-cluster-management-observability
+- openshift-gitops-server-openshift-gitops
+- prometheus-k8s-federate-openshift-monitoring
+- prometheus-k8s-openshift-monitoring
+- rbac-query-proxy-open-cluster-management-observability
+- thanos-querier-openshift-monitoring
+- thanos-ruler-openshift-user-workload-monitoring
+
+# Default number of additional dns entries to add in the event we have hypervisor machines with VMs.
+# Ignore if you are not doing anything with hypervisor machines and VMs
+compact_cluster_dns_count: 4000
+standard_cluster_dns_count: 4000

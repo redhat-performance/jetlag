@@ -1,0 +1,16 @@
+---
+# BM post-deploy add BMC to BareMetalHosts
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bm-post-deploy-add-bmc.yml
+#
+
+- name: BM post-deploy add BMC to BareMetalHosts
+  hosts: bastion
+  vars_files:
+  - vars/lab.yml
+  - vars/all.yml
+  roles:
+  - validate-vars
+  - bm-add-bmc

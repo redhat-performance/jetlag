@@ -1,0 +1,42 @@
+---
+# hv-vm-create tasks
+
+- name: Check if vm disk file exists
+  stat:
+    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
+  register: vm_disk_stat
+
+- name: Create vm disk
+  shell: |
+    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2 {{ hostvars[inventory_hostname]['disk_size'] }}G
+  when: not vm_disk_stat.stat.exists
+
+- name: Template out kvm definition file
+  template:
+    src: kvm-def.xml.j2
+    dest: "{{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml"
+
+- name: Create vm from xml
+  shell: |
+    virsh define {{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml
+
+- name: Set bmc url ipv4
+  set_fact:
+    bmc_url: "http://{{ hostvars[inventory_hostname]['hv_ip'] }}:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
+  when: hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4
+
+- name: Set bmc url ipv6
+  set_fact:
+    bmc_url: "http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
+  when: hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6
+
+- name: Verify virtual bmc is accessible
+  uri:
+    url: "{{ bmc_url }}"
+    method: Get
+    validate_certs: no
+    return_content: yes
+  register: webpage
+  until: webpage.status == 200
+  retries: 3
+  delay: 2

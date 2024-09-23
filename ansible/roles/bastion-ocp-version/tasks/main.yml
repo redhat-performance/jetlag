@@ -14,18 +14,49 @@
     content: "{{ pull_secret }}"
     dest: "/root/.docker/config.json"
 
+- name: Cleanup {{ ocp_version_path }}
+  file:
+    path: "{{ ocp_version_path }}"
+    state: absent
+
 - name: Create directory for bastion ocp-version data
   file:
     path: "{{ ocp_version_path }}"
     state: directory
 
-- name: Extract/Download the openshift-install binary for the specific release
-  shell: |
-    cd {{ ocp_version_path }}
-    rm -rf openshift-install-linux-*.tar.gz openshift-client-linux-*.tar.gz
-    oc.latest adm release extract --tools {{ ocp_release_image }}
-    tar -xvf openshift-install-linux-*.tar.gz openshift-install
-    tar -xvf openshift-client-linux-*.tar.gz oc kubectl
+# Set bastion rhel version for ocp 4.15 and newer
+- name: RHEL version rhel9 check
+  set_fact:
+    bastion_rhel_version: "rhel9"
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
+
+- name: RHEL version rhel8 check
+  set_fact:
+    bastion_rhel_version: "rhel8"
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
+
+- name: Set new fact - oc installer prefix
+  set_fact:
+    installer_oc_installer_prefix: >-
+      {{ (ocp_release_version is version('4.15.0', '>=') and
+          bastion_rhel_version == 'rhel8') |
+          ternary('openshift-client-linux-amd64-' + bastion_rhel_version, 'openshift-client-linux') }}
+
+- name: Get the ocp client tar gunzip file
+  get_url:
+    url: "{{ release_url }}/{{ocp_release_version}}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
+    dest: "{{ ocp_version_path }}"
+    mode: 0700
+  register: client_chk
+  retries: 3
+  delay: 5
+  until: client_chk is not failed
+
+- name: Unarchive the clients
+  unarchive:
+    src: "{{ ocp_version_path }}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
+    dest: "{{ ocp_version_path }}"
+    remote_src: yes
 
 - name: Copy correctly versioned oc/kubectl clients into a pathed directory
   copy:
@@ -40,10 +71,26 @@
     dest: /usr/local/bin/kubectl
   when: setup_bastion | default(true)
 
+- name: Extract/Download the openshift-install binary for the specific release
+  shell: |
+    REGISTRY_AUTH_FILE="/root/.docker/config.json" oc adm release extract --tools {{ ocp_release_image }}
+    tar -xvf openshift-install-linux-*.tar.gz openshift-install
+  args:
+    chdir: "{{ ocp_version_path }}"
+
+# Prevents errors when attempting to get the display/release name/version and the cluster
+# auth-ed by the config is inaccessible
+- name: Remove existing /root/.kube/config
+  file:
+    path: /root/.kube/config
+    state: absent
+
 - name: Get display/release name/version
   shell: |
+    unset KUBECONFIG
     {{ ocp_version_path }}/oc version -o json | jq -r .releaseClientVersion
   register: ocp_version_display_name
+  failed_when: ocp_version_display_name.stderr != ''
 
 - name: Identify current shell
   set_fact:
@@ -83,7 +130,7 @@
     url: "{{ ocp_version_rootfs_location.stdout }}"
     dest: "{{ http_store_path }}/data/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}"
 
-- name: Dump assisted-installer json configs (non-disconnected)
+- name: Dump assisted-installer json configs (connected)
   copy:
     content: "{{ item.content }}"
     dest: "{{ item.dest }}"
@@ -99,18 +146,18 @@
     content: |
       [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ ocp_release_image }}","version":"{{ ocp_version_display_name.stdout }}"}]
 
-- name: Dump assisted-installer json configs (disconnected)
+- name: Dump assisted-installer json configs (bastion registry)
   copy:
     content: "{{ item.content }}"
     dest: "{{ item.dest }}"
   when: setup_bastion | default(true)
   loop:
-  - dest: "{{ ocp_version_path }}/assisted_service_openshift_version-disconnected.json"
+  - dest: "{{ ocp_version_path }}/assisted_service_openshift_version-bastion.json"
     content: |
-      {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
-  - dest: "{{ ocp_version_path }}/assisted_service_os_images-disconnected.json"
+      {"{{ openshift_version }}":{"display_name": "{{ ocp_version_display_name.stdout }}", "release_version": "{{ ocp_version_display_name.stdout }}", "release_image": "{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_version }}-x86_64", "rhcos_image": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}", "rhcos_rootfs": "http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}", "rhcos_version": "{{ ocp_version_rhcos_version.stdout }}", "support_level": "beta"} }
+  - dest: "{{ ocp_version_path }}/assisted_service_os_images-bastion.json"
     content: |
       [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_disk_location.stdout | basename }}","rootfs_url":"http://{{ http_store_host }}:{{ http_store_port }}/{{ ocp_version_display_name.stdout }}/{{ ocp_version_rootfs_location.stdout | basename }}","version":"{{ ocp_version_rhcos_version.stdout }}"}]
-  - dest: "{{ ocp_version_path }}/assisted_service_release_images-disconnected.json"
+  - dest: "{{ ocp_version_path }}/assisted_service_release_images-bastion.json"
     content: |
-      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ disconnected_registry_host }}:{{ disconnected_registry_port }}/{{ registry_repo }}:{{ ocp_release_image.split(":")[1] }}","version":"{{ ocp_version_display_name.stdout }}"}]
+      [{"openshift_version":"{{ openshift_version }}","cpu_architecture":"x86_64","url":"{{ registry_host }}:{{ registry_port }}/{{ registry_repo }}:{{ ocp_release_version }}-x86_64","version":"{{ ocp_version_display_name.stdout }}"}]

@@ -1,22 +1,25 @@
 ---
-# Setups up hypervisor machines to host virtual machine SNOs that emulate bare-metal SNOs for RHACM/ZTP scale testing
+# Setups up hypervisors to host VMs
 #
 # Example Usage:
 #
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-setup.yml
 #
 
-- name: Setup hypervisor machines to host emulated bare-metal SNOs
+- name: Setup hypervisors to host VMs
   hosts: hv
   vars_files:
-  - vars/hv.yml
   - vars/lab.yml
+  - vars/hv.yml
   roles:
   - name: install-tc
     when: install_tc
   - hv-install
   - hv-network
-  - hv-dnsmasq
+  - role: hv-dnsmasq
+    when: not setup_coredns
+  - role: hv-coredns
+    when: setup_coredns
   - hv-libvirt
   - role: hv-setup-disk2
     when: hostvars[inventory_hostname].disk2_enable | default(false) | bool

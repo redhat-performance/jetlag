@@ -1,0 +1,14 @@
+# Jetlag Bastion CoreDNS Configuration
+. {
+    errors
+    # log
+
+{% for dns in labs[lab]['dns'] %}
+    forward . {{ dns }}
+{% endfor %}
+
+    cache 30
+    reload
+
+    import Corefile.hosts
+}

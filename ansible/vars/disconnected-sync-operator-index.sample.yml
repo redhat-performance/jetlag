@@ -1,9 +1,0 @@
----
-# Sample disconnected-sync-operator-index vars file
-
-# Current defaults match ACM/ZTP testing (4.10 SNO with 4.9 Operators)
-operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.9
-operator_index_name: redhat-operator-index
-operator_index_tag: v4.9
-
-operators_to_sync: cluster-logging,local-storage-operator,openshift-gitops-operator,performance-addon-operator,ptp-operator,redhat-oadp-operator,sriov-network-operator

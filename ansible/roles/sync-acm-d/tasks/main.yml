@@ -1,0 +1,116 @@
+---
+# sync-acm-d tasks
+
+- name: Create directories for syncing acm
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - "{{ sync_path }}"
+  - "{{ sync_path }}/acm"
+
+- name: Template out pull-secret
+  copy:
+    content: "{{ acm_d_pull_secret }}"
+    dest: "{{ sync_path }}/pull-secret.acm_d.txt"
+
+- name: Add bastion registry to pull-secret
+  shell: |
+    b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
+    AUTHSTRING="{\"{{ registry_host }}:{{ registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
+    jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm_d.txt > {{ sync_path }}/pull-secret-bastion.acm_d.txt
+
+- name: Download acm mapping file from stolostron/deploy repo
+  when: download_mapping_file_from_deploy_repo
+  block:
+  - name: Download the acm mapping file from github
+    get_url:
+      force: true
+      url: "https://raw.githubusercontent.com/stolostron/deploy/master/mirror/{{ rhacm_build }}.txt"
+      dest: "{{ sync_path }}/acm/mapping.txt"
+
+  - name: Replacements in acm downloaded mapping file
+    replace:
+      path: "{{ sync_path }}/acm/mapping.txt"
+      regexp: "{{ item.regexp }}"
+      replace: "{{ item.replace }}"
+      backup: true
+    when: item.enabled | default(true) | bool
+    loop:
+    - regexp: "__DESTINATION_ORG__"
+      replace: "{{ registry_host }}:{{ registry_port }}/acm-d"
+
+- name: Generate acm mapping file from acm-custom-registry image
+  when: not download_mapping_file_from_deploy_repo
+  block:
+  - name: Copy acm-custom-registry to bastion registry
+    shell: |
+      skopeo copy --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt --all docker://quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} docker://{{ registry_host }}:{{ registry_port }}/acm-d/acm-custom-registry:{{ rhacm_build }}
+
+  - name: Copy acm-operator-bundle to bastion registry
+    shell: |
+      skopeo copy --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt --all docker://quay.io:443/acm-d/acm-operator-bundle:{{ acm_operator_bundle }} docker://{{ registry_host }}:{{ registry_port }}/acm-d/acm-operator-bundle:{{ acm_operator_bundle }}
+
+  - name: Generate acm container image mapping.txt
+    shell: |
+      oc adm catalog mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} {{ registry_host }}:{{ registry_port }} --manifests-only --to-manifests={{ sync_path }}/acm/
+
+  - name: Replacements in acm mapping file
+    replace:
+      path: "{{ sync_path }}/acm/mapping.txt"
+      regexp: "{{ item.regexp }}"
+      replace: "{{ item.replace }}"
+      backup: true
+    loop:
+    - regexp: registry.redhat.io/rhacm2/
+      replace: quay.io:443/acm-d/
+    - regexp: "{{ registry_host }}:{{ registry_port }}/rhel8/postgresql-12"
+      replace: "{{ registry_host }}:{{ registry_port }}/acm-d/postgresql-12"
+    - regexp: rhacm2
+      replace: acm-d
+
+# If this errors, you won't be able to install ACM later, so retries are added incase of issues with the registry
+- name: Mirror acm images onto the bastion registry
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
+  register: result
+  until: not result.failed
+  retries: 3
+  delay: 1
+
+- name: Mirror ztp-site-generator image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ ztp_site_generator_image }}:{{ ztp_site_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/ztp-site-generator:{{ ztp_site_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror rhacm policy generator image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/{{ rhacm_policy_generator_image.split("/")[-1] }}:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror cluster-group-upgrades-operator image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_image }}:{{ cluster_group_upgrades_operator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator:{{ cluster_group_upgrades_operator_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror cluster-group-upgrades-operator-precache image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_precache_image }}:{{ cluster_group_upgrades_operator_precache_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator-precache:{{ cluster_group_upgrades_operator_precache_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror cluster-group-upgrades-operator-recovery image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_recovery_image }}:{{ cluster_group_upgrades_operator_recovery_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator-recovery:{{ cluster_group_upgrades_operator_recovery_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror origin-kube-rbac-proxy image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ origin_kube_rbac_proxy_image }}:{{ origin_kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift/origin-kube-rbac-proxy:{{ origin_kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror kube-rbac-proxy image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ kube_rbac_proxy_image }}:{{ kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/kubebuilder/kube-rbac-proxy:{{ kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
+
+# Image needed for IBU
+- name: Mirror recert image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ recert_image }}:{{ recert_image_tag }} {{ registry_host }}:{{ registry_port }}/edge-infrastructure/recert:{{ recert_image_tag }} --keep-manifest-list --continue-on-error=true
+
+- name: Mirror minio image
+  shell: |
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ minio_image }}:{{ minio_image_tag }} {{ registry_host }}:{{ registry_port }}/minio/minio:{{ minio_image_tag }} --keep-manifest-list --continue-on-error=true

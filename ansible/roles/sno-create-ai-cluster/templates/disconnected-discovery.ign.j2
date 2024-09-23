@@ -1,0 +1,25 @@
+{
+  "ignition": {
+    "version": "3.1.0"
+  },
+  "storage": {
+    "files": [
+      {
+        "contents": {
+          "source": "data:text/plain;base64,{{ mirror_cert.content }}"
+        },
+        "mode": 420,
+        "overwrite": true,
+        "path": "/etc/pki/ca-trust/source/anchors/domain.crt"
+      },
+      {
+        "contents": {
+          "source": "data:text/plain;base64,{{ lookup('template', './registries.conf.j2') | b64encode }}"
+        },
+        "mode": 420,
+        "overwrite": true,
+        "path": "/etc/containers/registries.conf"
+      }
+    ]
+  }
+}

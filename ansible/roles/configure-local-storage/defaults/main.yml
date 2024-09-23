@@ -1,0 +1,22 @@
+---
+# configure-local-storage default vars
+
+sno_localstorage_configuration: false
+sno_localstorage_device: /dev/nvme0n1
+sno_localstorage_lv_count: 10
+sno_localstorage_lv_size: 100G
+
+controlplane_etcd_on_nvme: false
+controlplane_nvme_device: /dev/nvme0n1
+controlplane_localstorage_configuration: false
+controlplane_localstorage_device: /dev/sdb
+controlplane_localstorage_lv_count: 10
+controlplane_localstorage_lv_size: 100G
+
+worker_localstorage_configuration: false
+worker_localstorage_device: /dev/nvme0n1
+worker_localstorage_lv_count: 10
+worker_localstorage_lv_size: 100G
+
+localvolume2_configuration: false
+localvolume2_device: /dev/sdc

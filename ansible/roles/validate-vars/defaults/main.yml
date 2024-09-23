@@ -12,3 +12,11 @@ rh_lab_cluster_types:
 ibmcloud_cluster_types:
 - bm
 - sno
+
+bm_network_types:
+- OVNKubernetes
+- OpenShiftSDN
+
+ocp_build_types:
+- ga
+- dev

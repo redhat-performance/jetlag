@@ -1,29 +1,30 @@
 ---
 # Set hostname and role
 
-- name: Identify the host bmc address
+- name: Set the host bmc address
   set_fact:
     host_bmc: "{{ (discovered_host.inventory | from_json).bmc_address }}"
   when: lab in cloud_labs
 
-- name: Identify the host identifing data
+- name: Set the host ID
   set_fact:
     host_interfaces: "{{ (discovered_host.inventory | from_json).interfaces }}"
     host_id: "{{ discovered_host.id }}"
 
-- name: Identify the hostname and role via mac address
+- name: Set the hostname and role via mac address
   set_fact:
-    host_name: "{{ item.0 }}"
+    hostname: "{{ item.0 }}"
     host_role: "{{ hostvars[item.0]['role'] }}"
   when:
     - lab in rh_labs
     - hostvars[item.0]['lab_mac'] == item.1.mac_address
   loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
-  no_log: true
+  loop_control:
+    label: "{{ hostvars[item.0]['bmc_address'] }}"
 
-- name: Identify the hostname and role via bmc address
+- name: Set the hostname and role via bmc address
   set_fact:
-    host_name: "{{ item }}"
+    hostname: "{{ item }}"
     host_role: "{{ hostvars[item]['role'] }}"
   when:
     - lab in cloud_labs
@@ -32,22 +33,14 @@
   loop_control:
     label: "{{ hostvars[item]['bmc_address'] }}"
 
-- name: Prepare hostname and role for {{ host_name }}
-  set_fact:
-    host:
-      id: "{{ host_id }}"
-      hostname: "{{ host_name }}"
-      role: "{{ host_role }}"
-  when: host_name is defined or host_role is defined
-
-- name: Set hostname and role for {{ host_name }}
+- name: Set hostname and role for {{ hostname }}
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ host_id }}"
     method: PATCH
     body_format: json
     status_code: [201]
     return_content: true
     body: {
-        "hosts_names": [ "{{ host }}" ],
-        "hosts_roles": [ "{{ host }}" ]
+        "host_name": "{{ hostname }}",
+        "host_role": "{{ host_role }}"
     }

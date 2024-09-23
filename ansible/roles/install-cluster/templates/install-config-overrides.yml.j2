@@ -1,16 +1,50 @@
+{% if cluster_type == "sno" %}
+{% if du_profile %}
+{% if openshift_version is version('4.14', ">=") %}
+cpuPartitioningMode: AllNodes
+{% endif %}
+{% if openshift_version is version('4.13', ">=") %}
+capabilities:
+  baselineCapabilitySet: None
+  additionalEnabledCapabilities:
+{% if openshift_version in ["4.13","4.14"] %}
+  - marketplace
+{% endif %}
+  - NodeTuning
+{% if openshift_version is version('4.15', ">=") %}
+  - OperatorLifecycleManager
+{% endif %}
+{% if openshift_version is version('4.16', ">=") %}
+  - Ingress
+{% endif %}
+{% endif %}
+{% endif %}
+{% else %}
 networking:
-  networkType: {{ networktype[0] }}
-{% if use_disconnected_registry | default(false) %}
+  networkType: {{ networktype }}
+{% endif %}
+{% if enable_fips | default(false) %}
+fips: true
+{% else %}
+fips: false
+{% endif %}
+{% if use_bastion_registry | default(false) %}
 imageContentSources:
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
+  - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-release
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/ocp4/openshift4
+  - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 - mirrors:
-  - {{ disconnected_registry_host }}:{{ disconnected_registry_port }}/edge-infrastructure
+  - {{ registry_host }}:{{ registry_port }}/edge-infrastructure
   source: quay.io/edge-infrastructure
+- mirrors:
+  - {{ registry_host }}:{{ registry_port }}/ansible-automation-platform
+  source: registry.redhat.io/ansible-automation-platform
+- mirrors:
+  - {{ registry_host }}:{{ registry_port }}/ansible-automation-platform-24
+  source: registry.redhat.io/ansible-automation-platform-24
 additionalTrustBundle: |
   {{ mirror_cert.content | b64decode | indent(width=2) }}
 {% endif %}

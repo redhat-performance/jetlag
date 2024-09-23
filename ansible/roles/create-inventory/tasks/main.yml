@@ -13,13 +13,18 @@
 #
 # For Single Node OpenShift clusters:
 # * First machine is bastion
-# * Remaining machines are SNO clusters (depending upon sno_node_count)
+# * Second machine is SNO cluster
 #
 
-- name: Set ocp inventory download url from lab wiki
+- name: Set ocp inventory download url from lab wiki - scalelab
+  set_fact:
+    ocp_inventory_url: "https://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
+  when:  ocp_inventory_override | string | length < 1 and lab == 'scalelab'
+
+- name: Set ocp inventory download url from lab wiki - performancelab
   set_fact:
     ocp_inventory_url: "http://{{ labs[lab]['quads'] }}/cloud/{{ lab_cloud }}_ocpinventory.json"
-  when:  ocp_inventory_override | string | length < 1
+  when:  ocp_inventory_override | string | length < 1 and lab == 'performancelab'
 
 - name: Set ocp inventory download url to override
   set_fact:
@@ -142,17 +147,11 @@
 
   - name: SNO - Set max number of nodes
     set_fact:
-      max_nodes: "{{ ocpinventory.json.nodes|length }}"
-    when: sno_node_count == None
-
-  - name: SNO - Set max number of SNO nodes (sno_node_count is set)
-    set_fact:
-      max_nodes: "{{ sno_node_count|int + 1 }}"
-    when: sno_node_count != None
+      max_nodes: "1"
 
   - name: SNO - Set ocpinventory sno nodes
     set_fact:
-      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:max_nodes|int] }}"
+      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
 
   - name: SNO - Get lab data for each sno
     uri:
@@ -219,16 +218,15 @@
     loop_control:
       index_var: idx
 
-  - name: Enable disk2_enable for r650, r730xd, and r930 with nvme0n1
+  - name: Enable disk2_enable for r650, r750, r730xd, and r930 with nvme0n1
     set_fact:
       ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
-    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r730xd', 'r930']
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r750', 'r730xd', 'r930']
     loop: "{{ ocpinventory_hv_nodes }}"
     loop_control:
       index_var: idx
 
-  # Skip r750 type since it has no extra disk
   # Skip fc640 type since it has no extra disk
   # Skip 6018r type since it has only 2 80G disks
 

@@ -8,7 +8,43 @@ ssh_public_key_file: ~/.ssh/id_rsa.pub
 
 install_tc: true
 
-hv_sno_generate_manifests: true
+# Setup and use coredns instead of dnsmasq
+setup_coredns: false
 
-bastion_dnsmasq_cd_network_offset: 1000
-bastion_dnsmasq_cd_network_count: 2100
+# Enables using DHCP instead of relying on static network configuration for VMs
+setup_hv_vm_dhcp: false
+
+hv_vm_generate_manifests: true
+
+# Types: sno, compact, standard, mixed, jumbo
+# sno = 1 node per cluster
+# compact = 3 nodes per cluster
+# standard = 5 nodes or more per cluster (3 control-plane, 2 or more workers)
+# mixed = provisions sno, compact, and standard as determined by below counts
+# jumbo = all vms for the one cluster (Can not be combined because consumes all available vms)
+hv_vm_manifest_type: sno
+
+# If hv_vm_manifest_type is set to mixed, compact or standard, use these vars to adjust the count of clusters and size of standard clusters
+# sno_cluster_count does not apply when hv_vm_manifest_type is set to sno
+# Careful not to exceed the count of your VMs
+# Example:
+# sno_cluster_count: 442
+# compact_cluster_count: 100
+# standard_cluster_count: 100
+# standard_cluster_node_count: 5
+# Requires 1242 VMS (442 * 1) + (100 * 3) + (100 * 5) when set to mixed
+sno_cluster_count: 0
+compact_cluster_count: 0
+standard_cluster_count: 0
+standard_cluster_node_count: 5
+
+# The cluster imageset used in the manifests
+cluster_image_set: openshift-4.16.3
+
+# Include ACM CRs in the manifests
+hv_vm_manifest_acm_cr: true
+
+# Retrieves the bastion pull-secret instead of below pull-secret
+use_bastion_registry: false
+# Provide pull-secret for connected manifests
+pull_secret: "{{ lookup('file', '../pull_secret.txt') | b64encode }}"

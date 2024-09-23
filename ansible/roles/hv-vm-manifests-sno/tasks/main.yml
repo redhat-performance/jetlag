@@ -1,0 +1,42 @@
+---
+# hv-vm-manifests-sno tasks
+
+- name: Create directories for hv-vm manifests on bastion for SNOs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  loop:
+  - "{{ hv_vm_manifests_directory }}/"
+  - "{{ hv_vm_manifests_directory }}/sno"
+  - "{{ hv_vm_manifests_directory }}/sno/ai-siteconfig"
+  - "{{ hv_vm_manifests_directory }}/sno/ai-manifest"
+
+- name: Obtain pull-secret for bastion registry
+  slurp:
+    src: "{{ registry_path }}/pull-secret-bastion.txt"
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  register: slurped_pull_secret
+  when: use_bastion_registry
+
+- name: Set pull-secret for bastion registry
+  set_fact:
+    pull_secret: "{{ slurped_pull_secret.content }}"
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  when: use_bastion_registry
+
+- name: Template a manifest per hv-vm on bastion as an SNO
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: ai-manifest.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-manifest/{{ inventory_hostname }}-manifest.yml"
+  - src: ai-siteconfig.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfig/{{ inventory_hostname }}-siteconfig.yml"
+  - src: ai-resources.yml.j2
+    dest: "{{ hv_vm_manifests_directory }}/sno/ai-siteconfig/{{ inventory_hostname }}-resources.yml"
+  delegate_to: "{{ groups['bastion'][0] }}"

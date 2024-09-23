@@ -22,7 +22,7 @@
 
   - name: Check if cluster is installed
     uri:
-      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}"
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
       method: GET
       status_code: [200, 201]
       return_content: true
@@ -31,7 +31,7 @@
 
   - name: Get cluster hosts
     uri:
-      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts"
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/hosts"
       method: GET
       body_format: json
       status_code: [200]

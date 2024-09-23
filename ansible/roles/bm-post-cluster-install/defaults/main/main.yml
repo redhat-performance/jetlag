@@ -10,40 +10,37 @@ http_store_host: "{{ groups['bastion'][0] }}"
 http_store_port: 8081
 
 # This will be your bastion machine (if you run setup-bastion playbook)
-disconnected_registry_host: "{{ groups['bastion'][0] }}"
-disconnected_registry_port: 5000
+registry_host: "{{ groups['bastion'][0] }}"
+registry_port: 5000
 
 # Deploy performance-dashboards
 setup_performance_dashboards: false
 
+# Deploy ansible-automation-platform operator
+setup_ansible_automation_platform: false
+aap_channel: stable-2.4-cluster-scoped
+aap_enable_overrides: false
+# MAX_CONCURRENT_RECONCILES_ANSIBLEJOB_TOWER_ANSIBLE_COM
+aap_override_max_concurrent_ajt: 10
+# MAX_CONCURRENT_RECONCILES_ANSIBLEWORKFLOW_TOWER_ANSIBLE_COM
+aap_override_max_concurrent_awt: 10
+
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
-# Deploy specific openshift-gitops required for ZTP using "manual" approval process
-setup_openshift_gitops_ztp: false
-# ZTP gitops requires this version of the gitops operator
-gitops_starting_csv: openshift-gitops-operator.v1.4.5
-
-# Enable with disconnected in order to download image to bastion and serve via
-# bastion http_store such that metal3 pods run
-fix_metal3_provisioningosdownloadurl: false
+gitops_channel: stable
 
 # Migrate the ingresscontrollers and/or monitoring components to the master nodes
 # Used during nodedensity testing to ensure these things are more available
 migrate_ingresscontrollers: false
 migrate_monitoring: false
 
+# Set the rention period for prometheus to allow up to 15 days of data by default
+prometheus_retention_period: 15d
+
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 minio_pv_storageclass: localstorage2-sc
-
-# Setup a network attachment definition so pods can have a 2nd interface (macvlan type only)
-setup_network_attachment_definition: false
-# Configuration of the network attachment definition
-net_attach_def_namespace: default
-net_attach_def_name: net1
-net_attach_def_interface: bond0
-net_attach_def_range: 192.168.0.0/16
 
 # Performance-addon-operator vars_files
 install_performance_addon_operator: false

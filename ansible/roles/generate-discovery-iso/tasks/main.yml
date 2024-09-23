@@ -1,58 +1,23 @@
 ---
 # generate-discovery-iso tasks
 
-- name: Get disconnected registry certificate
-  slurp:
-    src: "{{ registry_path }}/certs/domain.crt"
-  register: mirror_cert
-  when: use_disconnected_registry | default(false)
-
-- name: Apply disconnected discovery ignition config override
+- name: Get infra-env image-url
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/discovery-ignition"
-    method: PATCH
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/downloads/image-url"
+    method: Get
     body_format: json
-    status_code: [201]
+    status_code: [200]
     return_content: true
-    body: { "config": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}" }
-  when: use_disconnected_registry | default(false)
-
-- name: Set empty static network configuration
-  set_fact:
-    static_network_config: []
-
-- name : Populate static network configuration with controlplane nodes
-  include_tasks: static_network_config.yml
-  with_items:
-    - "{{ groups['controlplane'] }}"
-
-- name : BM - Populate static network configuration with worker nodes
-  include_tasks: static_network_config.yml
-  when:
-  - cluster_type == "bm"
-  with_items:
-    - "{{ groups['worker'] }}"
-
-# - debug:
-#     msg: "{{ static_network_config }}"
-
-- name: Generate a discovery ISO
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
-    method: POST
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: { "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}", "static_network_config" : "{{ static_network_config }}", "image_type": "full-iso" }
-  register: http_reply
+  register: infraenv_image_url
 
 - name: Download discovery ISO
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/image"
-    dest: "{{ http_store_path }}/data/discovery.iso"
+    url: "{{ infraenv_image_url.json.url }}"
+    dest: "{{ http_store_path }}/data/{{ iso_name }}.iso"
+    timeout: 60
 
-- name: Symlink for /iso/discovery.iso
+- name: Symlink discovery ISO into "iso" subdirectory
   ansible.builtin.file:
-    src: ../discovery.iso
-    dest: "{{ http_store_path }}/data/iso/discovery.iso"
+    src: ../{{ iso_name }}.iso
+    dest: "{{ http_store_path }}/data/iso/{{ iso_name }}.iso"
     state: link

@@ -1,0 +1,32 @@
+---
+# hv-vm-delete tasks
+
+- name: Remove directories for hv-vm manifests on bastion
+  file:
+    path: "{{ hv_vm_manifests_directory }}"
+    state: absent
+  delegate_to: "{{ groups['bastion'][0] }}"
+  run_once: true
+  when: hv_vm_remove_all_manifests
+
+- name: Destroy VM
+  shell: |
+    virsh destroy {{ inventory_hostname }}
+  ignore_errors: true
+
+- name: Undefine VM
+  shell: |
+    virsh undefine --nvram {{ inventory_hostname }}
+  ignore_errors: true
+
+- name: Delete VM disk
+  file:
+    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
+    state: absent
+  ignore_errors: true
+
+- name: Remove VM definition file
+  file:
+    path: "{{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml"
+    state: absent
+  ignore_errors: true

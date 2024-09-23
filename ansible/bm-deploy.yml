@@ -9,10 +9,11 @@
 - name: Creates a bare metal cluster with the assisted-installer
   hosts: bastion
   vars_files:
-  - vars/all.yml
   - vars/lab.yml
+  - vars/all.yml
   roles:
   - validate-vars
+  - ocp-release
   - create-ai-cluster
   - generate-discovery-iso
   - role: boot-iso
@@ -24,5 +25,6 @@
       inventory_group: worker
       index: "{{ worker_node_count }}"
   - wait-hosts-discovered
+  - configure-local-storage
   - install-cluster
   - bm-post-cluster-install

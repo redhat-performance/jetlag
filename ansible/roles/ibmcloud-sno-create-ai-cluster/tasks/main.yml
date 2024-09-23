@@ -1,36 +1,20 @@
 ---
 # ibmcloud-sno-create-ai-cluster tasks
 
-- name: Create SNO cluster
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
-    method: POST
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: {
-        "name": "{{ hostvars[item].inventory_hostname }}",
-        "openshift_version": "{{ openshift_version }}",
-        "high_availability_mode": "None",
-        "base_dns_domain": "{{ base_dns_name }}",
-        "cluster_network_cidr": "{{ cluster_network_cidr }}",
-        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-        "service_network_cidr": "{{ service_network_cidr }}",
-        "pull_secret": "{{ pull_secret | to_json }}",
-        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-    }
-  loop: "{{ groups['sno'][:sno_node_count|int] }}"
-  register: create_cluster_return
+- name: Create each SNO and infra-env
+  include_role:
+    name: sno-create-ai-cluster
+    tasks_from: create_individual_sno.yml
+  vars:
+    use_bastion_registry: false
+  loop: "{{ groups['sno'][:1] }}"
 
-- name: Populate cluster ids
-  when: cluster_type == "sno"
-  set_fact:
-    ai_cluster_ids: "{{ ai_cluster_ids|default({}) | combine( {item.item: {'cluster_name': item.item, 'cluster_id': item.json.id} } ) }}"
-  loop: "{{ create_cluster_return.results }}"
+# - debug:
+#     msg: "{{ ai_cluster_ids }}"
 
 - name: Update machine CIDR
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -52,7 +36,7 @@
       {% endfor %}
     insertafter: "EOF"
     marker: "# {mark} {{ hostvars[item].inventory_hostname }} SNO CLUSTER MANAGED BLOCK"
-  loop: "{{ groups['sno'][:sno_node_count|int] }}"
+  loop: "{{ groups['sno'][:1] }}"
 
 - name: Restart dnsmasq after /etc/hosts update
   systemd:

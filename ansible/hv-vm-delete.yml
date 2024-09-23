@@ -1,0 +1,35 @@
+---
+# Cleans up VMS on hypervisors
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-delete.yml
+#
+
+- name: Delete VMs on hypervisors
+  hosts: hv_vm
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
+  - hv-vm-delete
+
+- name: Cleanup hypervisors after clearing off VMs
+  hosts: hv
+  gather_facts: false
+  tasks:
+  - name: Restart sushy-emulator
+    systemd:
+      state: restarted
+      enabled: true
+      name: sushy-emulator
+
+  - name: Clean up directory where boot iso files can accumulate
+    file:
+      path: /var/lib/libvirt/images/
+      state: absent
+
+  - name: Ensure libvirt images directory exists
+    file:
+      path: /var/lib/libvirt/images/
+      state: directory

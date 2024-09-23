@@ -1,0 +1,28 @@
+---
+# sno-post-cluster-install default vars
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+assisted_installer_host: "{{ groups['bastion'][0] }}"
+assisted_installer_port: 8090
+
+# Deploy openshift-gitops-operator
+setup_openshift_gitops: false
+gitops_channel: stable
+
+# Performance-addon-operator and du profile vars
+install_performance_addon_operator: false
+hugepages_count: 16
+node: 0
+isolated_cpus: 2-47,50-95
+
+du_profile: false
+operator_index_name: redhat-operator-index
+operator_index_tag: v4.16
+
+# Minio deployment is an object storage pod for use with ACM
+setup_minio: false
+minio_image_tag: RELEASE.2022-04-01T03-41-39Z
+minio_pv_storageclass: localstorage2-sc
+
+# setup metal3
+sno_metal3: false

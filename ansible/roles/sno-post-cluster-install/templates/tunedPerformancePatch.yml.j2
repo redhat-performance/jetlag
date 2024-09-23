@@ -1,0 +1,41 @@
+apiVersion: tuned.openshift.io/v1
+kind: Tuned
+metadata:
+  name: performance-patch
+  namespace: openshift-cluster-node-tuning-operator
+  annotations:
+    ran.openshift.io/ztp-deploy-wave: "10"
+spec:
+  profile:
+    - name: performance-patch
+      # The 'include' line must match the associated PerformanceProfile name, following below pattern
+      # include=openshift-node-performance-${PerformanceProfile.metadata.name}
+
+      # The 'cmdline_crash' CPU set must match the 'isolated' set in the associated PerformanceProfile
+      # OCP 4.13 onwards 'nohz_full=${isolated_cores}' is removed from TunedPerformancePatch.yaml as it's covered in the auto-created tuned patch for the performanceProfile already
+      data: |
+        [main]
+        summary=Configuration changes profile inherited from performance created tuned
+        include=openshift-node-performance-perf-profile
+{% if openshift_version is version('4.12', "<=") %}
+        [bootloader]
+        cmdline_crash=nohz_full={{ isolated_cpus }}
+{% endif %}
+        [sysctl]
+        kernel.timer_migration=1
+        [scheduler]
+        group.ice-ptp=0:f:10:*:ice-ptp.*
+{% if openshift_version is version('4.13', ">=") %}
+        group.ice-gnss=0:f:10:*:ice-gnss.*
+{% endif %}
+{% if openshift_version is version('4.14', ">=") %}
+        group.ice-dplls=0:f:10:*:ice-dplls.*
+{% endif %}
+        [service]
+        service.stalld=start,enable
+        service.chronyd=stop,disable
+  recommend:
+    - machineConfigLabels:
+        machineconfiguration.openshift.io/role: master
+      priority: 19
+      profile: performance-patch

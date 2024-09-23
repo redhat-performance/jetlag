@@ -1,9 +1,28 @@
 ---
 # ibmcloud-create-ai-cluster tasks
 
+- name: Set empty static network configuration
+  set_fact:
+    static_network_config: []
+
+- name: Populate static network configuration with controlplane nodes
+  include_role:
+    name: create-ai-cluster
+    tasks_from: static_network_config.yml
+  loop: "{{ groups['controlplane'] }}"
+
+- name: Populate static network configuration with worker nodes
+  include_role:
+    name: create-ai-cluster
+    tasks_from: static_network_config.yml
+  loop: "{{ groups['worker'] }}"
+
+# - debug:
+#     msg: "{{ static_network_config }}"
+
 - name: Create cluster
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
     method: POST
     body_format: json
     status_code: [201]
@@ -15,7 +34,6 @@
         "cluster_network_cidr": "{{ cluster_network_cidr }}",
         "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "service_network_cidr": "{{ service_network_cidr }}",
-        "ingress_vip": "{{ controlplane_network_ingress }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
@@ -25,6 +43,28 @@
 - name: Set cluster ID
   set_fact:
     ai_cluster_id: "{{ create_cluster_return.json.id }}"
+
+- name: Create a connected infra-env
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "name": "{{ cluster_name }}",
+        "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "static_network_config": "{{ static_network_config }}",
+        "image_type": "full-iso",
+        "cluster_id": "{{ ai_cluster_id }}",
+        "openshift_version": "{{ openshift_version }}",
+    }
+  register: create_infra_env_return
+
+- name: Set ai_infraenv_id
+  set_fact:
+    ai_infraenv_id: "{{ create_infra_env_return.json.id }}"
 
 - name: Add entries in /etc/hosts
   blockinfile:
@@ -47,8 +87,8 @@
 
 - name: Include custom manifests
   include_role:
-      name: create-ai-cluster
-      tasks_from: 01_manifest_update.yml
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
   with_items:
   - file_name: 99-master-kdump.yml
     template_name: 99-master-kdump.yml
@@ -56,6 +96,3 @@
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
-  - file_name: rhacm-iscp.yml
-    template_name: rhacm-icsp.yml
-    enabled: "{{ rhacm_add_acm_d_icsp_manifest }}"

@@ -9,19 +9,23 @@
 - name: Create SNO cluster(s) with the assisted-installer on ibmcloud
   hosts: bastion
   vars_files:
-  - vars/ibmcloud.yml
   - vars/lab.yml
+  - vars/ibmcloud.yml
   vars:
     assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
     http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
   roles:
   - validate-vars
+  - ocp-release
   - ibmcloud-sno-create-ai-cluster
-  - ibmcloud-sno-generate-discovery-iso
+  - role: generate-discovery-iso
+    vars:
+      iso_name: "{{ groups['sno'][1] }}"
   - role: boot-iso
     vars:
       inventory_group: sno
-      index: "{{ sno_node_count }}"
+      index: "1"
   - sno-wait-hosts-discovered
-  - sno-install-cluster
+  - configure-local-storage
+  - install-cluster
   - sno-post-cluster-install

@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  name: ansible-automation-platform
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: ansible-automation-platform-operator-group
+  namespace: ansible-automation-platform
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ansible-automation-platform-operator
+  namespace: ansible-automation-platform
+spec:
+  installPlanApproval: Automatic
+  name: ansible-automation-platform-operator
+  channel: {{ aap_channel }}
+{% if use_bastion_registry | default(false) %}
+  source: {{ operator_index_name }}
+{% else %}
+  source: redhat-operators
+{% endif %}
+  sourceNamespace: openshift-marketplace
+{% if aap_enable_overrides %}
+  config:
+    env:
+      - name: MAX_CONCURRENT_RECONCILES_ANSIBLEJOB_TOWER_ANSIBLE_COM
+        value: "{{ aap_override_max_concurrent_ajt }}"
+      - name: MAX_CONCURRENT_RECONCILES_ANSIBLEWORKFLOW_TOWER_ANSIBLE_COM
+        value: "{{ aap_override_max_concurrent_awt }}"
+{% endif %}

@@ -5,9 +5,6 @@
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 
-# Manifest to enable or disable mirroring of image registry for acm-d
-rhacm_add_acm_d_icsp_manifest: false
-
 # Manifest for KubeletConfig to adjust max pods
 kubelet_config: false
 kubelet_config_max_pods: 530
@@ -15,3 +12,9 @@ kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io
 
 # Manifest for MachineConfig to enable kdump on master nodes
 kdump_master_config: false
+
+# Enable applying the below maxconn tuning override during cluster creation
+override_kni_infra_haproxy: false
+# Manually override the openshift-kni-haproxy max connections via a machineconfig that replaces the
+# haproxy templatized config file with one with greater max connections (Original default 20000)
+openshift_kni_infra_haproxy_maxconn: 40000

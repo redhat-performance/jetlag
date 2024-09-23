@@ -17,11 +17,14 @@
     - httpd-tools
     - ipmitool
     - iproute-tc
+    - iptables-services
     - jq
     - make
     - net-tools
+    - nmstate
     - python3-pip
     - podman
+    - rsync
     - skopeo
     - tcpdump
     - tmux
@@ -35,8 +38,10 @@
     name: python-hpilo
     executable: pip3
 
-- name: Scale / Alias lab bastion tasks
-  when: lab in rh_labs
+- name: Red Hat lab bastion tasks
+  when:
+    - lab in rh_labs
+    - 'not lab == "byol"'
   block:
   - name: Clean lab interfaces
     shell: |
@@ -108,6 +113,7 @@
   when: lab in cloud_labs
   block:
   - name: Copy ssh keys to bastion
+    no_log: true
     copy:
       content: "{{ item.content }}"
       dest: "{{ item.dest }}"
@@ -147,58 +153,62 @@
         mode: 0700
         extra_opts:
         - --strip-components=1
-  when: supermicro_nodes
+  when: supermicro_nodes | default(true)
 
-- name: Get OpenShift clients, opm, kube-burner, grpcurl, and yq
+- name: Get CoreDNS, OpenShift clients, opm, kube-burner, grpcurl, minio client, and yq
+  get_url:
+    validate_certs: false
+    force: true
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode | default('0644') }}"
+  with_items:
+  - url: "{{ coredns_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
+  - url: "{{ release_url }}/latest/oc-mirror.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
+  - url: "{{ kubeburner_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+  - url: "{{ grpcurl_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+  - url: "{{ minio_client_url }}"
+    dest: "/usr/local/bin/mc"
+    mode: "0700"
+  - url: "{{ yq_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
+
+- name: Get rhel8 opm
   get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  - url: "{{ openshift_client_url }}/latest/openshift-client-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
-  - url: "{{ openshift_client_url }}/latest/opm-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
-  - url: "{{ kubeburner_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
-  - url: "{{ grpcurl_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
-  - url: "{{ yq_url }}"
-    dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
+  -  url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.14/opm-linux.tar.gz"
+     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
 
-# We rename oc/kubectl clients as oc.latest and kubectl.latest since they are
-# likely not the actual version of the intended cluster, those specific clients
-# are obtained during the bastion-ocp-version role in which we use oc.latest to
-# extract the correct oc/kubectl clients for that version. Unfortunately we need
-# an oc client in order to do that so we just use the latest public oc client
-- name: Untar oc/kubectl clients
-  unarchive:
-    src: "{{ bastion_cluster_config_dir }}/openshift-client-linux.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}"
-    remote_src: yes
-    mode: 0700
-
-- name: Copy oc/kubectl clients into a pathed directory
-  copy:
-    src: "{{ item.src }}"
+- name: Get rhel9 opm
+  get_url:
+    validate_certs: false
+    force: true
+    url: "{{ item.url }}"
     dest: "{{ item.dest }}"
-    remote_src: true
-    mode: 0700
-  loop:
-  - src: "{{ bastion_cluster_config_dir }}/oc"
-    dest: /usr/local/bin/oc.latest
-  - src: "{{ bastion_cluster_config_dir }}/kubectl"
-    dest: /usr/local/bin/kubectl.latest
+  with_items:
+  -  url: "{{ release_url}}/latest/opm-linux.tar.gz"
+     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
 
-- name: Untar opm, kube-burner and grpcurl client
+- name: Untar coredns, opm, kube-burner and grpcurl client
   unarchive:
     src: "{{ item }}"
     dest: /usr/local/bin
     remote_src: yes
     mode: 0700
   loop:
+  - "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
   - "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 
@@ -231,3 +241,16 @@
   file:
     path: "{{ promdump_tarball }}"
     state: absent
+
+- name: Download Red Hat Crucible
+  ansible.builtin.git:
+    repo: "{{ rh_crucible_url }}"
+    dest: /tmp/crucible
+    force: true
+  environment:
+    GIT_SSL_NO_VERIFY: "False"
+  when: install_rh_crucible | bool
+
+- name: Install Red Hat Crucible
+  command: chdir=/tmp/crucible bash rh-install-crucible.sh
+  when: install_rh_crucible | bool

@@ -7,16 +7,17 @@ cloud_labs:
 
 # Red Hat lab environments
 rh_labs:
-- alias
+- performancelab
 - scalelab
+- byol
 
 labs:
-  alias:
+  performancelab:
     dns:
-    - 10.19.96.1
-    foreman: foreman.alias.bos.scalelab.redhat.com
+    - 10.6.60.1
+    foreman: foreman.rdu3.labs.perfscale.redhat.com
     ntp_server: clock2.bos.redhat.com
-    quads: quads.alias.bos.scalelab.redhat.com
+    quads: quads.rdu3.labs.perfscale.redhat.com
   scalelab:
     dns:
     - 10.1.36.1
@@ -25,26 +26,35 @@ labs:
     ntp_server: clock1.rdu2.redhat.com
     quads: quads.rdu2.scalelab.redhat.com
 
+# NOTE: This should map every server model in the Scale and Performance labs to
+# the vendor. Right now, Jetlag supports only the Dell and Supermicro vendors,
+# and others (e.g. NVIDIA dgx) will fail to map.
 hw_vendor:
+  mx750c: Dell
   r620: Dell
   r630: Dell
   r640: Dell
   r650: Dell
+  r660: Dell
   r730xd: Dell
+  r740xd: Dell
   r750: Dell
+  r760: Dell
   r930: Dell
   fc640: Dell
-  740xd: Dell
-  7425: Dell
-  7525: Dell
-  6018r: Supermicro
-  6048r: Supermicro
+  r6526: Dell
+  r7425: Dell
+  r7525: Dell
+  r7625: Dell
   1029u: Supermicro
   1029p: Supermicro
   5039ms: Supermicro
-  6049p: Supermicro
-  6048p: Supermicro
+  6018r: Supermicro
+  6029p: Supermicro
   6029r: Supermicro
+  6048r: Supermicro
+  6048p: Supermicro
+  6049p: Supermicro
   dl360: Hp
 
 # This dictionary contains the expected nic names for networks in the scale lab. This determines the name of the
@@ -72,6 +82,13 @@ hw_nic_name:
     - ens2f0
     - ens2f1
     r650:
+    - eno12399np0
+    - ens1f0
+    - ens1f1
+    - ens2f0
+    - ens2f1
+    - eno12409np1
+    r660:
     - eno12399np0
     - ens1f0
     - ens1f1
@@ -143,8 +160,8 @@ hw_nic_name:
     - ens1f0
     - ens1f1
 
-# Based on SNO Size (8vCPU, 18GiB Memory, 120G Disk)
-hw_vm_sno_counts:
+# Based on VM Size (8vCPU, 18GiB Memory, 120G Disk)
+hw_vm_counts:
   scalelab:
     r630:
       default: 2
@@ -154,13 +171,17 @@ hw_vm_sno_counts:
       sdb: 12
       nvme0n1: 12
     r650:
-      default: 7
-      nvme0n1: 20
+      default: 4
+      nvme0n1: 23
+    r660:
+      default: 4
+      nvme0n1: 23
     r730xd:
       default: 3
       nvme0n1: 3
     r750:
-      default: 2
+      default: 4
+      nvme0n1: 23
     r930:
       default: 5
       nvme0n1: 14
@@ -187,8 +208,8 @@ hw_vm_sno_counts:
       default: 8
       sdc: 12
 
-# # Based on SNO Size (8vCPU, 28GiB Memory, 120G Disk)
-# hw_vm_sno_counts:
+# # Based on VM Size (8vCPU, 28GiB Memory, 120G Disk)
+# hw_vm_counts:
 #   scalelab:
 #     r630:
 #       default: 2

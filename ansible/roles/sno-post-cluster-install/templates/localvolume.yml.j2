@@ -1,0 +1,15 @@
+---
+apiVersion: "local.storage.openshift.io/v1"
+kind: "LocalVolume"
+metadata:
+  name: "lv-worker-localstorage"
+  namespace: "openshift-local-storage"
+spec:
+  storageClassDevices:
+  - storageClassName: "localstorage-sc"
+    volumeMode: Filesystem
+    fsType: xfs
+    devicePaths:
+{% for i in range(sno_localstorage_lv_count) %}
+      - "/dev/vg_ls/lv_sno_tv{{ '%02d' % i }}"
+{% endfor %}

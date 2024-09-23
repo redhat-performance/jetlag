@@ -1,0 +1,15 @@
+---
+# bastion-registry default vars
+
+# This will be your bastion machine (if you run setup-bastion playbook)
+registry_host: "{{ groups['bastion'][0] }}"
+registry_port: 5000
+
+registry_path: /opt/registry
+
+registry_user: registry
+registry_password: registry
+
+registry_container_image: quay.io/redhat-performance/registry:2.8.1
+
+registry_repo: ocp4/openshift4

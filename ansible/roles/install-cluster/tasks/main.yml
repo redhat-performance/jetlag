@@ -1,18 +1,18 @@
 ---
 # install-cluster tasks
 
-- name: Get disconnected registry certificate
+- name: Get bastion registry certificate
   slurp:
     src: "{{ registry_path }}/certs/domain.crt"
   register: mirror_cert
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
 # The extra "| to_json(ensure_ascii=False) | string" adds an additional "layer"
 # of escaping.  I am unsure of why I actually need this additional layer other
 # than the api expects a string (and not actual json)
 - name: Apply install-config overrides
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/install-config"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/install-config"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -20,40 +20,9 @@
     body: "{{ lookup('template', 'install-config-overrides.yml.j2') | from_yaml | to_json(ensure_ascii=False) | string | to_json(ensure_ascii=False) | string }}"
   register: get_install_config
 
-- name: Get host ids
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts"
-    method: GET
-    body_format: json
-    status_code: [200]
-    return_content: true
-  register: get_hosts
-
-- name: Apply controlplane host ignition config overrides
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}/ignition"
-    method: PATCH
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: { "config": "{{ lookup('template', 'controlplane.ign.j2') | to_json }}" }
-  with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'master') | list }}"
-  when: (controlplane_etcd_on_nvme or controlplane_localstorage_configuration)
-
-- name: Apply worker host ignition config overrides
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/hosts/{{ item.id }}/ignition"
-    method: PATCH
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: { "config": "{{ lookup('template', 'worker.ign.j2') | to_json }}" }
-  with_items: "{{ get_hosts.json|selectattr('role', 'eq', 'worker') | list }}"
-  when: worker_localstorage_configuration
-
 - name: Install cluster
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/actions/install"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/actions/install"
     method: POST
     status_code: [202]
     return_content: true

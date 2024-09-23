@@ -9,16 +9,20 @@
 - name: Create SNO cluster(s)
   hosts: bastion
   vars_files:
-  - vars/all.yml
   - vars/lab.yml
+  - vars/all.yml
   roles:
   - validate-vars
+  - ocp-release
   - sno-create-ai-cluster
-  - sno-generate-discovery-iso
+  - role: generate-discovery-iso
+    vars:
+      iso_name: "{{ groups['sno'][0] }}"
   - role: boot-iso
     vars:
       inventory_group: sno
-      index: "{{ sno_node_count }}"
+      index: "1"
   - sno-wait-hosts-discovered
-  - sno-install-cluster
+  - configure-local-storage
+  - install-cluster
   - sno-post-cluster-install

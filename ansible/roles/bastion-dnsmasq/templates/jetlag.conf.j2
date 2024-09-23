@@ -1,19 +1,42 @@
-# Jetlag provided DNS
+# Jetlag provided DNS on Bastion
+{% if lab in cloud_labs %}
+except-interface={{ bastion_public_interface }}
+{% endif %}
+
 # Bastion / assisted-installer / http-server / registry / router / dns
 address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
 
 address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
 address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
 
-# Jetlag provided DNS for clusterdeployments
-{% for cd_index in range(bastion_dnsmasq_cd_network_count) %}
-address=/{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}/{{ bastion_dnsmasq_cd_network | ansible.netcommon.nthhost(cd_index + bastion_dnsmasq_cd_network_offset) }}
-address=/apps.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | ansible.netcommon.nthhost(cd_index + bastion_dnsmasq_cd_network_offset) }}
-address=/api.{{ bastion_dnsmasq_cd_prefix }}{{ '%05d' % (cd_index + 1) }}.{{ base_dns_name }}/{{ bastion_dnsmasq_cd_network | ansible.netcommon.nthhost(cd_index + bastion_dnsmasq_cd_network_offset) }}
+# Jetlag provided DNS for VMs
+{% for vm in groups['hv_vm'] %}
+address=/{{ vm }}/{{ hostvars[vm].ip }}
+address=/api.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
+address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
 {% endfor %}
 
+{% if groups['hv_vm'] | length > 0 %}
+# Jumbo cluster DNS
+address=/jumbocluster00/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
+address=/api.jumbocluster00.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }}
+address=/apps.jumbocluster00.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-3) }}
+# Standard cluster DNS ({{ standard_cluster_dns_count }} Entries)
+{% for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
+address=/standard-{{ '%05d' | format(cluster) }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }}
+address=/api.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }}
+address=/apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}
+{% endfor %}
+# Compact cluster DNS ({{ compact_cluster_dns_count }} Entries)
+{% for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
+address=/compact-{{ '%05d' | format(cluster) }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }}
+address=/api.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }}
+address=/apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}
+{% endfor %}
+{% endif %}
+
 {% for item in groups['sno'] %}
-{% if hostvars[item].ip_address is defined %}
-address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip_address }}
+{% if hostvars[item].ip is defined %}
+address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip }}
 {% endif %}
 {% endfor %}

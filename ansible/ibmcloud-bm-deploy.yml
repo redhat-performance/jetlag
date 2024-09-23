@@ -9,13 +9,14 @@
 - name: Creates a bare metal cluster with the assisted-installer on ibmcloud
   hosts: bastion
   vars_files:
-  - vars/ibmcloud.yml
   - vars/lab.yml
+  - vars/ibmcloud.yml
   vars:
     assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
     http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
   roles:
   - validate-vars
+  - ocp-release
   - ibmcloud-create-ai-cluster
   - generate-discovery-iso
   - role: boot-iso
@@ -27,5 +28,6 @@
       inventory_group: worker
       index: "{{ worker_node_count }}"
   - wait-hosts-discovered
+  - configure-local-storage
   - install-cluster
   - bm-post-cluster-install

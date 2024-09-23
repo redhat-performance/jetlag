@@ -7,12 +7,15 @@ apply_egress_impairments: true
 apply_ingress_impairments: true
 
 # delay in milliseconds
-egress_delay: 75
-ingress_delay: 75
+egress_delay: 25
+ingress_delay: 25
 # packet loss in %
 egress_packet_loss: 0.02
 ingress_packet_loss: 0.02
 # bandwidth in kilobits
 # Ex: 100000kbps = 100Mbps
-egress_bandwidth: 100000
-ingress_bandwidth: 100000
+# This is disabled by default. Bandwidth impairments are
+# generally implemented in the libvirt xml per host.
+# This bandwidth impairment is global to a hypervisor.
+egress_bandwidth: 0
+ingress_bandwidth: 0

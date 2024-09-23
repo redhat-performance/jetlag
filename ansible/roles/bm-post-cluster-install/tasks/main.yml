@@ -7,16 +7,16 @@
     state: directory
   with_items:
     - "{{ bastion_cluster_config_dir }}"
+    - "{{ bastion_cluster_config_dir }}/aap"
     - "{{ bastion_cluster_config_dir }}/gitops"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/minio"
-    - "{{ bastion_cluster_config_dir }}/net-attach-def"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
     - "{{ bastion_cluster_config_dir }}/performance-addon-operator"
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v1/clusters/{{ ai_cluster_id }}/downloads/files?file_name={{ item.name }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/downloads/credentials?file_name={{ item.name }}"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.dest }}"
   with_items:
     - name: kubeadmin-password
@@ -46,6 +46,8 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
+    - src: ansible-automation-platform-operator.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/aap/ansible-automation-platform-operator.yml"
     - src: openshift-gitops-operator.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
     - src: localstorage.yml.j2
@@ -56,8 +58,6 @@
       dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume2.yml"
     - src: minio.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
-    - src: network-attachment-definition.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml"
     - src: cluster-monitoring-config.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
     - src: performance-addon-operator.yml.j2
@@ -89,64 +89,30 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
   when: setup_kube_burner_sa | default(true) | bool
 
-- name: Disable default OperatorHub sources on disconnected clusters
+- name: Disable default OperatorHub sources on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-  when: use_disconnected_registry | default(false)
+  when: use_bastion_registry | default(false)
 
-- name: Apply olm-mirror imageContentSourcePolicy on disconnected clusters
+- name: Apply olm-mirror imageContentSourcePolicy on bastion registry clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
-  when: use_disconnected_registry | default(false)
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
+  when: use_bastion_registry | default(false)
 
-- name: Apply olm-mirror catalogSource on disconnected clusters
+- name: Apply olm-mirror catalogSource on bastion registry clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_tag }}/catalogSource.yaml
-  when: use_disconnected_registry | default(false)
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
+  when: use_bastion_registry | default(false)
 
-- name: Fix metal3 provisioningOSDownloadURL and host image on bastion http_store
-  when:
-  - fix_metal3_provisioningosdownloadurl
-  - (openshift_version == "4.8" or openshift_version == "4.9")
-  block:
-  - name: Determine metal3 provisioning URL
-    shell: |
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get provisionings provisioning-configuration -o json
-    register: metal3_osdownloadurl
-
-  - name: Set download url
-    set_fact:
-      metal3_download_url: "{{ (metal3_osdownloadurl.stdout |from_json).spec.provisioningOSDownloadURL }}"
-
-  - name: Download image into http_store
-    get_url:
-      url: "{{ metal3_download_url }}"
-      dest: "{{ http_store_path }}/data/"
-
-  - name: Patch provisioning-configuration
-    shell: |
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch provisionings provisioning-configuration -p '{"spec":{"provisioningOSDownloadURL":"http://{{ http_store_host }}:{{ http_store_port }}/{{ metal3_download_url | basename }}" }}' --type=merge
+- name: Install Ansible-Automation-Platform-operator
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/aap/ansible-automation-platform-operator.yml
+  when: setup_ansible_automation_platform
 
 - name: Install OpenShift-gitops-operator
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml
   when: setup_openshift_gitops
-
-- name: Setup openshift-gitops for ZTP
-  when: setup_openshift_gitops_ztp
-  block:
-  - name: Get installPlan name
-    shell: |
-      set -o pipefail
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get subs -n openshift-operators openshift-gitops-operator -o json | jq -r '.status.installplan.name'
-    register: installplan_name
-    until: installplan_name.stdout | length > 5
-    retries: 60
-    delay: 1
-
-  - name: Approve installPlan
-    shell: |
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch installPlan {{ installplan_name.stdout }} -n openshift-operators --type merge --patch '{"spec": {"approved": true }}'
 
 - name: Setup control-plane nodes localstorage
   when: controlplane_localstorage_configuration
@@ -226,11 +192,6 @@
   when: migrate_monitoring or worker_localstorage_configuration
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
-
-- name: Setup NetworkAttachmentDefinition for 2nd pod network (macvlan type only)
-  when: setup_network_attachment_definition
-  shell:
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/net-attach-def/network-attachment-definition.yml
 
 - name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
   shell: |

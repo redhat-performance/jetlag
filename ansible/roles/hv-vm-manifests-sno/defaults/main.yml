@@ -1,0 +1,47 @@
+---
+# hv-vm-manifests-sno default vars
+
+hv_vm_manifests_directory: /root/hv-vm
+
+# 64 is a prefix for ipv6, 24 would work for ipv4
+sno_cluster_network_host_prefix: 64
+
+registry_path: /opt/registry
+
+# Used with bmc-secret
+bmc_username_base64: "{{ 'redhat' | b64encode }}"
+bmc_password_base64: "{{ 'password' | b64encode }}"
+
+# Used in conjunction with including the PerformanceProfile in the DU profile
+siteconfig_enable_cpuset: false
+siteconfig_cpuset: "0-3"
+
+# Used in conjuntion with converged flow
+siteconfig_baremetalhost_override_converged_flow: false
+
+# Exclude manifests to sync time once via chronyd
+siteconfig_exclude_sync_time_once: false
+
+# Enable DU profile SNO installConfigOverrides (Can not be combined with siteconfig_fips)
+# Can be set to "none", "4.12", "4.13", "4.14", "4.15", "4.16", or "4.17"
+siteconfig_sno_du_profile: "4.16"
+
+# Enable fips via installConfigOverrides (Set siteconfig_sno_du_profile to "none")
+siteconfig_fips: false
+
+# Used when converged flow is enabled
+siteconfig_ironic_inspect: true
+
+# One or the other, not both enabled as they each create the same configmap
+# One creates the configmap from data within the siteconfig (4.15 ZTP Site Generate required) as the other creates the
+# configmap from siteconfig-resource yaml data
+siteconfig_map_site_data: false
+siteconfig_resource_site_data: false
+# Place the site specific configmap data in this namespace
+siteconfig_site_data_namespace: ztp-group
+
+# Used to enable observability in siteconfigs
+siteconfig_observability: true
+
+# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
+siteconfig_staticpod_fix: false

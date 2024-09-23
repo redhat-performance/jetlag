@@ -24,8 +24,8 @@ bmc_password=XXXXXXXXXX
 
 [sno]
 # Single Node OpenShift Clusters
-jetlag-bm4 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:d3:16:dc,0c:c4:7a:d3:16:de bmc_address=X.X.X.X bmc_user=root bmc_password=XXXXXXXXXX vendor=Supermicro boot_iso=jetlag-bm4.iso
-jetlag-bm5 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:a4:2d:8c,0c:c4:7a:a4:2d:8e bmc_address=X.X.X.X bmc_user=root bmc_password=XXXXXXXXXX vendor=Supermicro boot_iso=jetlag-bm5.iso
+jetlag-bm4 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:d3:16:dc,0c:c4:7a:d3:16:de bmc_address=X.X.X.X bmc_user=root bmc_password=XXXXXXXXXX vendor=Supermicro boot_iso=jetlag-bm4.iso install_disk=/dev/sda
+jetlag-bm5 ansible_host=X.X.X.X private_address=X.X.X.X bond0_macs=0c:c4:7a:a4:2d:8c,0c:c4:7a:a4:2d:8e bmc_address=X.X.X.X bmc_user=root bmc_password=XXXXXXXXXX vendor=Supermicro boot_iso=jetlag-bm5.iso install_disk=/dev/sda
 
 [sno:vars]
 dns1=Y.Y.Y.Y

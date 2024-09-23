@@ -1,7 +1,18 @@
 pull_secret.*
 kubeconfig
+.ansible
 .vscode
 id_rsa
 id_rsa.pub
 *.csv
-workload/*.csv
+
+# IntelliJ project files
+.idea
+*.iws
+*.ipr
+*.iml
+out
+gen
+.idea/
+.idea/workspace.xml
+
