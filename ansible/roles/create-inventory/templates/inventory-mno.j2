@@ -8,7 +8,7 @@ base_dns_name=rdu2.scalelab.redhat.com
 {% elif lab == "performancelab" %}
 base_dns_name=rdu3.labs.perfscale.redhat.com
 {% else %}
-base_dns_name=example.com
+base_dns_name={{ base_dns_name }}
 {% endif %}
 {% endif %}
 

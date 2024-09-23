@@ -345,13 +345,16 @@ cluster_type: mno
 # Applies to both mno/rwn clusters
 worker_node_count: 0
 
+# Applies to bm/rwn/sno clusters
+base_dns_name: example.com
+
 # Lab Network type, applies to sno and bm cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # Red Hat cloud
 # For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
 # base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
-# required in the public VLAN
+# required in the public VLAN attached to the lab assignment
 public_vlan: false
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
