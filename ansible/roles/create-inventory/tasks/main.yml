@@ -73,7 +73,7 @@
     when: lab == "scalelab"
 
   - name: Get VLAN info from performancelab quads
-    shell: "curl -sk https://wiki.rdu3.labs.perfscale.redhat.com/vlans/ | grep -B7 {{ lab_cloud }} | sed 's/<\\/\\?td>//g' | xargs | column -J --table-columns vlan_id,cidr,netmask,gateway,ipfree,owner,ticket,cloud"
+    shell: "curl -sk https://wiki.rdu3.labs.perfscale.redhat.com/vlans/ | grep -B7 {{ lab_cloud }} | sed -E 's#</?td>##g'| tr '\n' ' ' | column -J --table-columns vlan_id,cidr,netmask,gateway,ipfree,owner,ticket,cloud"
     register: vlan_info
     when: lab == "performancelab"
 
