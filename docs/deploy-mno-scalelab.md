@@ -284,17 +284,16 @@ controlplane_lab_interface: eno12399np0
 
 ### Deploy in the public VLAN
 
-In order to deploy in the public VLAN, set the variable `public_vlan` in `all.yml` to true. Once this variable is enable jetlag:
+In order to deploy a cluster using the public VLAN, set the variable `public_vlan` in `all.yml` to `true`. Once enabled the following variables are automatically configured:
 
-- Auto-configures the interface number (`controlplane_network_interface_idx`) to the last of the available NICs of the ocpinventory.json file.
+- `controlplane_network_interface_idx`: Is set to the corresponding interface number
 - `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory
-- With the help of the `quads` API these variables are also configured automatically:
-  - `controlplane_network`: public VLAN subnet
-  - `network_prefix`: public VLAN network mask
-  - `gateway`: public VLAN default gateway
-  - `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
+- `controlplane_network`: public VLAN subnet
+- `network_prefix`: public VLAN network mask
+- `gateway`: public VLAN default gateway
+- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
 
-Once the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
+When the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
 
 ### Extra vars
 
