@@ -26,7 +26,7 @@ metadata:
 spec:
   config:
     interfaces:
-    - name: enp1s0
+    - name: {{ vm_nic_interface }}
       type: ethernet
       state: up
       {{ "ipv6" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
@@ -46,10 +46,10 @@ spec:
       - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
         metric: 1
         next-hop-address: {{ hostvars[inventory_hostname]['gateway'] }}
-        next-hop-interface: enp1s0
+        next-hop-interface: {{ vm_nic_interface }}
         table-id: 254
   interfaces:
-  - name: "enp1s0"
+  - name: {{ vm_nic_interface }}
     macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
 ---
 apiVersion: v1
