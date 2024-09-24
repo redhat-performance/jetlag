@@ -32,3 +32,8 @@ vip_dhcp_allocation: false
 # This index var corresponds to the index in hw_nic_name in labs.yml for which network to use as the impaired nic for
 # the hypervisor impairments playbook
 hypervisor_nic_interface_idx: 1
+
+# Only for bm clusters
+cluster_network: 10.128.0.0/14
+host_prefix: 23
+service_network: 172.30.0.0/16
