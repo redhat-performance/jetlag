@@ -12,6 +12,8 @@ registry_path: /opt/registry
 bmc_username_base64: "{{ 'redhat' | b64encode }}"
 bmc_password_base64: "{{ 'password' | b64encode }}"
 
+vm_nic_interface: enp1s0
+
 # Used in conjunction with including the PerformanceProfile in the DU profile
 siteconfig_enable_cpuset: false
 siteconfig_cpuset: "0-3"

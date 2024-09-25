@@ -10,3 +10,5 @@ registry_path: /opt/registry
 # Used with bmc-secret
 bmc_username_base64: "{{ 'redhat' | b64encode }}"
 bmc_password_base64: "{{ 'password' | b64encode }}"
+
+vm_nic_interface: enp1s0

@@ -134,11 +134,11 @@ spec:
 {% endif %}
       nodeNetwork:
         interfaces:
-        - name: eno1
+        - name: {{ vm_nic_interface }}
           macAddress: {{ hostvars[inventory_hostname]['mac_address'] }}
         config:
           interfaces:
-          - name: eno1
+          - name: {{ vm_nic_interface }}
             type: ethernet
             state: up
 {% if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4 %}
@@ -169,6 +169,6 @@ spec:
           routes:
             config:
             - destination: {{ "::/0" if hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
-              next-hop-interface: eno1
+              next-hop-interface: {{ vm_nic_interface }}
               next-hop-address: {{ hostvars[inventory_hostname]['gateway'] }}
               table-id: 254

@@ -3,6 +3,8 @@
 
 hv_vm_manifests_directory: /root/hv-vm
 
+vm_nic_interface: enp1s0
+
 # 64 is a prefix for ipv6, 24 would work for ipv4
 compact_cluster_network_host_prefix: 64
 
