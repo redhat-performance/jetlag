@@ -44,6 +44,3 @@ siteconfig_site_data_namespace: ztp-group
 
 # Used to enable observability in siteconfigs
 siteconfig_observability: true
-
-# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
-siteconfig_staticpod_fix: false
