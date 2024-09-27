@@ -32,9 +32,6 @@
   - cluster_type == "mno"
   loop: "{{ groups['worker'] }}"
 
-# - debug:
-#     msg: "{{ static_network_config }}"
-
 - name: Create cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"

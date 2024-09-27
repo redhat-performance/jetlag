@@ -23,7 +23,7 @@
   - role: boot-iso
     vars:
       inventory_group: worker
-      index: "{{ worker_node_count }}"
+      index: "{{ worker_node_count|int + (hybrid_worker_count | default(0)) }}"
   - wait-hosts-discovered
   - configure-local-storage
   - install-cluster
