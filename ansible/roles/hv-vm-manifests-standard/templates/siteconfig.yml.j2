@@ -72,7 +72,9 @@ spec:
 # "{{ (((item - 1) * standard_cluster_node_count) + offset) }} until {{ ((item * standard_cluster_node_count) - 1 + offset) }}"
 {% for vm in range(((item - 1) * standard_cluster_node_count) + offset, (item * standard_cluster_node_count) + offset, 1) %}
     - hostName: "{{ groups['hv_vm'][vm] }}"
-{% if vm < (((item - 1) * standard_cluster_node_count) + offset + 3) %}
+{% if 'role' in hostvars[groups['hv_vm'][vm]] %}
+      role: "{{ hostvars[groups['hv_vm'][vm]]['role'] }}"
+{% elif vm < (((item - 1) * standard_cluster_node_count) + offset + 3) %}
       role: "master"
 {% else %}
       role: "worker"
