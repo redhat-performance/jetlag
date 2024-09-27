@@ -1,6 +1,6 @@
 [
     {
-        "mac_address": "{{ hostvars[item]['network_mac'] }}",
+        "mac_address": "{{ hostvars[item]['mac_address'] }}",
         "logical_nic_name": "{{ hostvars[item]['network_interface'] }}"
     },
     {

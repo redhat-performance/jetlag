@@ -487,7 +487,7 @@ bmc_password=xxxx
 
 [sno]
 # Single Node OpenShift Clusters
-f12-h06-000-1029u bmc_address=mgmt-f12-h06-000-1029u.rdu2.scalelab.redhat.com boot_iso=f12-h06-000-1029u.iso ip=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e network_mac=00:25:90:5f:5f:5b
+f12-h06-000-1029u bmc_address=mgmt-f12-h06-000-1029u.rdu2.scalelab.redhat.com boot_iso=f12-h06-000-1029u.iso ip=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e mac_address=00:25:90:5f:5f:5b
 
 [sno:vars]
 bmc_user=quads

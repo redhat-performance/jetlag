@@ -90,3 +90,8 @@
   fail:
     msg: "isolated_cpus is unset"
   when: (cluster_type == "sno") and (du_profile | default(false) | bool) and isolated_cpus is undefined
+
+- name: Inventory network_mac parameters have been renamed to mac_address
+  fail:
+    msg: "Rerun create-inventory to fix this"
+  when: hostvars | json_query('(*)[?network_mac]')

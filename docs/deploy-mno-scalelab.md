@@ -443,9 +443,9 @@ bmc_user=quads
 bmc_password=XXXXXXX
 
 [controlplane]
-xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
-xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
-xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com network_mac=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
+xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
+xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
+xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
 
 [controlplane:vars]
 role=master

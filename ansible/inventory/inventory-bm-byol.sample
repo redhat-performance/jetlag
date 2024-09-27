@@ -11,9 +11,9 @@ bmc_user=redhat
 bmc_password=password
 
 [controlplane]
-control-plane-0 bmc_address=172.29.170.70 network_mac=40:a6:b7:83:98:b0 lab_mac=ec:2a:72:33:15:f0 ip=198.18.10.5 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:01:00.0-nvme-1
-control-plane-1 bmc_address=172.29.170.71 network_mac=40:a6:b7:83:98:c0 lab_mac=ec:2a:72:33:16:c8 ip=198.18.10.6 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:3f:00.0-scsi-0:0:1:0
-control-plane-2 bmc_address=172.29.170.193 network_mac=b4:83:51:07:45:28 lab_mac=ec:2a:72:51:0a:f4 ip=198.18.10.7 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:4a:00.0-scsi-0:3:111:0
+control-plane-0 bmc_address=172.29.170.70 mac_address=40:a6:b7:83:98:b0 lab_mac=ec:2a:72:33:15:f0 ip=198.18.10.5 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:01:00.0-nvme-1
+control-plane-1 bmc_address=172.29.170.71 mac_address=40:a6:b7:83:98:c0 lab_mac=ec:2a:72:33:16:c8 ip=198.18.10.6 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:3f:00.0-scsi-0:0:1:0
+control-plane-2 bmc_address=172.29.170.193 mac_address=b4:83:51:07:45:28 lab_mac=ec:2a:72:51:0a:f4 ip=198.18.10.7 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:4a:00.0-scsi-0:3:111:0
 
 [controlplane:vars]
 role=master
@@ -28,8 +28,8 @@ dns1=198.18.10.1
 dns2=172.29.202.10
 
 [worker]
-worker-0 bmc_address=172.29.170.219 network_mac=b4:96:91:f2:d3:90 lab_mac=ec:2a:72:33:17:2a ip=198.18.10.8 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:01:00.0-nvme-1
-worker-1 bmc_address=172.29.170.73 network_mac=00:62:0b:2f:2b:50 lab_mac=c8:4b:d6:8d:78:2e ip=198.18.10.9 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:3e:00.0-nvme-1
+worker-0 bmc_address=172.29.170.219 mac_address=b4:96:91:f2:d3:90 lab_mac=ec:2a:72:33:17:2a ip=198.18.10.8 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:01:00.0-nvme-1
+worker-1 bmc_address=172.29.170.73 mac_address=00:62:0b:2f:2b:50 lab_mac=c8:4b:d6:8d:78:2e ip=198.18.10.9 vendor=Dell install_disk=/dev/disk/by-path/pci-0000:3e:00.0-nvme-1
 
 [worker:vars]
 role=worker
