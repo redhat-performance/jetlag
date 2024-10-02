@@ -12,11 +12,7 @@ lab_cloud:
 cluster_type:
 
 # Applies to both bm/rwn clusters
-cluster_name: mno
 worker_node_count:
-
-# Applies to mno/rwn/sno clusters
-base_dns_name: example.com
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
 # Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
@@ -35,11 +31,11 @@ ocp_version: "latest-4.16"
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
 networktype: OVNKubernetes
 
-# Lab Network type, applies to sno and bm cluster_type only
+# Lab Network type, applies to sno and mno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # scalelab cloud
-# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
 # base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
 # required in the public VLAN
 public_vlan: false

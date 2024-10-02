@@ -339,7 +339,7 @@ lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either bm or rwn or sno
+# Either mno or rwn or sno
 cluster_type: sno
 
 # Applies to both bm/rwn clusters
@@ -393,7 +393,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all bm cluster and rwn control-plane nodes
+# Network configuration for all mno cluster and rwn control-plane nodes
 controlplane_lab_interface: eno8303
 
 # Network configuration for public VLAN based sno cluster_type deployment
