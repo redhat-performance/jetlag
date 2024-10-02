@@ -24,7 +24,7 @@ labs:
     - 10.1.36.2
     foreman: foreman.rdu2.scalelab.redhat.com
     ntp_server: clock1.rdu2.redhat.com
-    quads: quads.rdu2.scalelab.redhat.com
+    quads: quads2.rdu2.scalelab.redhat.com
 
 # NOTE: This should map every server model in the Scale and Performance labs to
 # the vendor. Right now, Jetlag supports only the Dell and Supermicro vendors,

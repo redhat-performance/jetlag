@@ -6,11 +6,18 @@ Assuming you received an Performance lab allocation named `cloud99`, this guide 
 _**Table of Contents**_
 
 <!-- TOC -->
-- [Bastion setup](#bastion-setup)
-- [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
-- [Review vars all.yml](#review-vars-allyml)
-- [Run playbooks](#run-playbooks)
-- [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
+- [Deploy a Bare Metal cluster via Jetlag from a Performance Lab Bastion Machine quickstart](#deploy-a-bare-metal-cluster-via-jetlag-from-a-performance-lab-bastion-machine-quickstart)
+  - [Bastion setup](#bastion-setup)
+  - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
+    - [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)
+    - [Bastion node vars](#bastion-node-vars)
+    - [OCP node vars](#ocp-node-vars)
+    - [Deploy in the public VLAN](#deploy-in-the-public-vlan)
+    - [Extra vars](#extra-vars)
+    - [Disconnected and ipv6 vars](#disconnected-and-ipv6-vars)
+  - [Review vars `all.yml`](#review-vars-allyml)
+  - [Run playbooks](#run-playbooks)
+  - [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
@@ -277,6 +284,19 @@ controlplane_lab_interface: eno8303
 
 ** If your machine types are not homogeneous, then you will have to manually edit your generated inventory file to correct any nic names until this is reasonably automated.
 
+### Deploy in the public VLAN
+
+In order to deploy a cluster using the public VLAN, set the variable `public_vlan` in `all.yml` to `true`. Once enabled the following variables are automatically configured:
+
+- `controlplane_network_interface_idx`: Is set to the corresponding interface number
+- `base_dns_name` is set to `rdu3.lab.perfscale.redhat.com` in the inventory
+- `controlplane_network`: public VLAN subnet
+- `network_prefix`: public VLAN network mask
+- `gateway`: public VLAN default gateway
+- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
+
+When the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
+
 ### Extra vars
 
 For multi node deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
@@ -321,16 +341,17 @@ lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either mno or rwn or sno
-cluster_type: mno
-
-# Applies to both mno/rwn clusters
+# Applies to both bm/rwn clusters
+cluster_name: mno
 worker_node_count: 2
 
-# Lab Network type, applies to sno cluster_type only
+# Lab Network type, applies to sno and bm cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # Red Hat cloud
+# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
+# required in the public VLAN attached to the lab assignment
 public_vlan: false
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
