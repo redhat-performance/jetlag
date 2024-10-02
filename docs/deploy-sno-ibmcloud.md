@@ -197,7 +197,7 @@ lab: ibmcloud
 
 cluster_type: sno
 
-# Applies to bm clusters
+# Applies to mno clusters
 worker_node_count:
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
@@ -253,7 +253,7 @@ private_network_prefix: 26
 
 cluster_name: jetlag-ibm
 
-# Only applies for bm cluster types
+# Only applies for mno cluster types
 controlplane_network_api:
 controlplane_network_ingress:
 

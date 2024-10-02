@@ -291,8 +291,8 @@ In order to deploy a cluster using the public VLAN, set the variable `public_vla
 - `controlplane_network_interface_idx`: Is set to the corresponding interface number
 - `base_dns_name` is set to `rdu3.lab.perfscale.redhat.com` in the inventory
 - `controlplane_network`: public VLAN subnet
-- `network_prefix`: public VLAN network mask
-- `gateway`: public VLAN default gateway
+- `controlplane_network_prefix`: public VLAN network mask
+- `controlplane_network_gateway`: public VLAN default gateway
 - `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
 
 When the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
@@ -341,15 +341,17 @@ lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
+# Either mno or rwn or sno
+cluster_type: mno
+
 # Applies to both bm/rwn clusters
-cluster_name: mno
 worker_node_count: 2
 
-# Lab Network type, applies to sno and bm cluster_type only
+# Lab Network type, applies to sno and mno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # Red Hat cloud
-# For bm clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
 # base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
 # required in the public VLAN attached to the lab assignment
 public_vlan: false

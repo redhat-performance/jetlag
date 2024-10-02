@@ -48,7 +48,7 @@
     ocpinventory_hv_nodes: []
 
 - name: Public VLAN in BM cluster
-  when: public_vlan and cluster_type == "bm"
+  when: public_vlan and cluster_type == "mno"
   block:
   - name: Public VLAN - Configuring controlplane_network_interface_idx to the last interface
     set_fact:
@@ -67,8 +67,8 @@
   - name: Public scalelab VLAN - Set addressing information
     set_fact:
       controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
-      network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
-      gateway: "{{ quads_assignment.json.vlan.gateway }}"
+      controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
+      controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
     when: lab == "scalelab"
 
@@ -80,8 +80,8 @@
   - name: Public performancelab VLAN - Set addressing information
     set_fact:
       controlplane_network: "{{ (vlan_info.stdout | from_json).table[0].cidr }}"
-      network_prefix: "{{ (vlan_info.stdout | from_json).table[0].cidr | ipaddr('prefix') }}"
-      gateway: "{{ (vlan_info.stdout | from_json).table[0].gateway }}"
+      controlplane_network_prefix: "{{ (vlan_info.stdout | from_json).table[0].cidr | ipaddr('prefix') }}"
+      controlplane_network_gateway: "{{ (vlan_info.stdout | from_json).table[0].gateway }}"
       cluster_name: "vlan{{ (vlan_info.stdout | from_json).table[0].vlan_id }}"
     when: lab == "performancelab"
 
