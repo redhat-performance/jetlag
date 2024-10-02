@@ -1,8 +1,8 @@
 [all:vars]
 allocation_node_count={{ ocpinventory.json.nodes | length }}
 supermicro_nodes={{ has_supermicro | bool }}
-cluster_name={{ cluster_name }}
 {% if public_vlan %}
+cluster_name={{ cluster_name }}
 {% if lab == "scalelab" %}
 base_dns_name=rdu2.scalelab.redhat.com
 {% elif lab == "performancelab" %}
