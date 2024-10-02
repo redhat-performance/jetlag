@@ -1,4 +1,4 @@
-# Deploy a Bare Metal cluster via Jetlag from a Performance Lab Bastion Machine quickstart
+# Deploy a Multi node cluster via Jetlag from a Performance Lab Bastion Machine quickstart
 
 Assuming you received an Performance lab allocation named `cloud99`, this guide will walk you through getting a multi node cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
 [the Performance lab wiki](http://wiki.rdu3.labs.perfscale.redhat.com/)
@@ -6,7 +6,7 @@ Assuming you received an Performance lab allocation named `cloud99`, this guide 
 _**Table of Contents**_
 
 <!-- TOC -->
-- [Deploy a Bare Metal cluster via Jetlag from a Performance Lab Bastion Machine quickstart](#deploy-a-bare-metal-cluster-via-jetlag-from-a-performance-lab-bastion-machine-quickstart)
+- [Deploy a Multi node cluster via Jetlag from a Performance Lab Bastion Machine quickstart](#deploy-a-bare-metal-cluster-via-jetlag-from-a-performance-lab-bastion-machine-quickstart)
   - [Bastion setup](#bastion-setup)
   - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
     - [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)

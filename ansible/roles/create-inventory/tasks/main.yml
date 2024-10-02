@@ -1,7 +1,7 @@
 ---
 # create-inventory tasks
 #
-# For Bare Metal clusters:
+# For Multi node clusters:
 # * First machine is bastion
 # * Following 3 machines are controlplane nodes (master)
 # * Remaining are worker nodes (depending upon worker_node_count)
@@ -85,7 +85,7 @@
       cluster_name: "vlan{{ (vlan_info.stdout | from_json).table[0].vlan_id }}"
     when: lab == "performancelab"
 
-- name: Bare metal cluster and remote worker node cluster type tasks
+- name: Multi node cluster and remote worker node cluster type tasks
   when: cluster_type == "mno" or cluster_type == "rwn"
   block:
   - name: MNO/RWN - Set inventory variables

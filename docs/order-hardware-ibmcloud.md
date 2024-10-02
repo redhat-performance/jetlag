@@ -15,7 +15,7 @@ Browse to Catalog and filter 'Compute'. Select Bare Metal Servers from the list 
 
 You can select the location/datacenter and the Server profile based on cost estimates
 
-For baremetal deployment, you will need:
+For multi node deployment, you will need:
 
 * One server to be provisioned as your bastion machine
 * Three additional servers to serve as control-plane nodes
