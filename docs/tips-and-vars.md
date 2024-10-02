@@ -44,7 +44,7 @@ Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redha
 ## Extra vars for by-path disk reference
 
 > [!TIP]
-> For bare-metal deployment of OCP 4.13 or greater it is advisable to
+> For multi node deployment of OCP 4.13 or greater it is advisable to
 > set the extra vars for by-path reference for the installation as sometimes disk
 > names get swapped during boot discovery (e.g., sda and sdb). Using the PCI
 > paths (in a homogeneous Scale or Performance lab cloud) should be consistent across
