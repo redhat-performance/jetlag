@@ -43,8 +43,6 @@ gateway=198.18.10.1
 dns1=198.18.10.1
 dns2=172.29.202.10
 
-[remoteworker]
-[remoteworker:vars]
 [sno]
 [sno:vars]
 [hv]

@@ -21,12 +21,6 @@ bmc_password=password
 [worker:vars]
 # Unused
 
-[remoteworker]
-# Unused
-
-[remoteworker:vars]
-# Unused
-
 [sno]
 # Single Node OpenShift Clusters
 sno-0 bmc_address=mgmt-sno-0.example.com boot_iso=sno-0.iso ip=10.0.0.1 vendor=Dell lab_mac=00:4e:01:3d:e6:9e network_mac=40:a6:b7:00:63:61 install_disk=/dev/sda

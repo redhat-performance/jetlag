@@ -42,18 +42,18 @@
   - ansible_facts['distribution'] is defined
   - (ansible_facts['distribution']|lower == "redhat" and ansible_facts['distribution_version'] is version('8.6', '<'))
 
-- name: Set worker_node_count if undefined or empty (mno/rwn)
+- name: Set worker_node_count if undefined or empty (mno)
   set_fact:
     worker_node_count: "{{ allocation_node_count - 4 }}"
-  when: (cluster_type == "mno" or cluster_type == "rwn") and
+  when: (cluster_type == "mno") and
         (worker_node_count is undefined or not worker_node_count | int) and
         ansible_play_name != "Create inventory from a lab cloud" and
         ansible_play_name != "Create inventory from ibmcloud hardware"
 
-- name: Check if the required number of nodes exist for mno/rwn
+- name: Check if the required number of nodes exist for mno
   fail:
-    msg: "Insufficient number of nodes in your allocation for mno/rwn"
-  when: (allocation_node_count is defined and (cluster_type == "mno" or cluster_type == "rwn")) and (worker_node_count | int  > allocation_node_count - 4)
+    msg: "Insufficient number of nodes in your allocation for mno"
+  when: (allocation_node_count is defined and cluster_type == "mno") and (worker_node_count | int  > allocation_node_count - 4)
 
 - name: Check if the required number of nodes exist for sno
   fail:
@@ -62,8 +62,8 @@
 
 - name: Check if networktype is either "OVNKubernetes" or "OpenShiftSDN"
   fail:
-    msg: "networktype can only be OVNKubernetes or OpenShiftSDN for MNO/RWN clusters"
-  when: (cluster_type == "mno" or cluster_type == "rwn") and (networktype not in mno_network_types)
+    msg: "networktype can only be OVNKubernetes or OpenShiftSDN for MNO clusters"
+  when: (cluster_type == "mno") and (networktype not in mno_network_types)
 
 - name: Validate Red Hat lab vars
   when: lab in rh_labs

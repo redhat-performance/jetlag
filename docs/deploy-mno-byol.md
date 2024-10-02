@@ -259,11 +259,11 @@ lab: byol
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: na
 
-# Either mno or rwn or sno
+# Either mno or sno
 cluster_type: mno
 
-# Applies to both mno/rwn clusters
-worker_node_count: 2
+# Applies to mno clusters
+worker_node_count:
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
 # Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
@@ -279,13 +279,16 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.16"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO/RWN cluster types)
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
 networktype: OVNKubernetes
 
-# Lab Network type, applies to sno cluster_type only
+# Lab Network type, applies to sno and mno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# cloud
+# scalelab cloud
+# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
+# required in the public VLAN
 public_vlan: false
 
 # Enables FIPs security standard
@@ -307,9 +310,6 @@ smcipmitool_url:
 bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens1f0
 
-# vlaned interfaces are for remote worker node clusters only
-bastion_vlaned_interface: ens1f1
-
 # Sets up Gogs a self-hosted git service on the bastion
 setup_bastion_gogs: false
 
@@ -322,19 +322,13 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all mno cluster and rwn control-plane nodes
+# Network configuration for all mno cluster nodes
 controlplane_lab_interface: eno8303
 
 # Network configuration for public VLAN based sno cluster_type deployment
 controlplane_pub_network_cidr:
 controlplane_pub_network_gateway:
 jumbo_mtu: false
-
-# Network only for remote worker nodes
-# Note: these cannot be commented out or mno-deploy will fail
-#       You will need to knowledge of actual interface names.
-rwn_lab_interface: eno1np0
-rwn_network_interface: ens1f1
 
 ################################################################################
 # Extra vars
@@ -400,8 +394,6 @@ gateway=198.18.10.1
 dns1=198.18.10.1
 dns2=<DNS network_mac>
 
-[remoteworker]
-[remoteworker:vars]
 [sno]
 [sno:vars]
 [hv]

@@ -1,6 +1,0 @@
----
-rwn_autorules_rule:
-  name: .*worker.*
-  runonce: true
-  labels:
-  - node-role.kubernetes.io/worker

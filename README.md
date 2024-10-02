@@ -2,15 +2,14 @@
 
 Tooling to install clusters for testing via an on-prem [Assisted Installer](https://github.com/openshift/assisted-installer) in the Red Hat Scale Lab, Red Hat Performance Lab, and IBMcloud (Bare Metal).
 
-Three separate layouts of clusters can be deployed:
+Two types of clusters can be deployed:
 
 | Layout | Meaning | Description |
 | - | - | - |
 | MNO | Multi Node OpenShift | 3 control-plane nodes, X number of worker nodes
-| RWN | Remote Worker Node | 3 control-plane/worker nodes, X number of remote worker nodes
 | SNO | Single Node OpenShift | 1 OpenShift Master/Worker Node "cluster" per available hardware resource
 
-Each cluster layout requires a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer service and serve as a router for clusters with a private machine network. MNO and RWN layouts produce a single cluster consisting of 3 control-plane nodes and X number of worker or remote worker nodes. The worker node count can also be 0 such that your multi node cluster is a compact 3 node cluster with schedulable control-plane nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, MNO/RWN cluster types will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
+Both cluster layouts require a bastion machine which is the first machine out of your lab "cloud" allocation. The bastion machine will host the assisted-installer service and serve as a router for clusters with a private machine network. MNO layout produces a single cluster consisting of 3 control-plane nodes and X number of worker nodes. The worker node count can also be 0 such that your multi node cluster is a compact 3 node cluster with schedulable control-plane nodes. SNO layout creates an SNO cluster per available machine after fulfilling the bastion machine requirement. Lastly, MNO cluster type will allocate any unused machines under the `hv` ansible group which stands for hypervisor nodes. The `hv` nodes can host vms for additional clusters that can be deployed from the hub cluster. (For ACM/MCE testing)
 
 _**Table of Contents**_
 
@@ -30,22 +29,22 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 **Performance Lab**
 
-| Hardware | MNO | RWN | SNO |
-| -------- | --- | --- | --- |
-| 740xd    | Yes | No  | Yes |
-| Dell r750| Yes | No  | Yes |
+| Hardware | MNO | SNO |
+| -------- | --- | --- |
+| 740xd    | Yes | Yes |
+| Dell r750| Yes | Yes |
 
 **Scale Lab**
 
-| Hardware           | MNO | RWN | SNO |
-| ------------------ | --- | --- | --- |
-| Dell r660          | Yes | No  | Yes |
-| Dell r650          | Yes | No  | Yes |
-| Dell r640          | Yes | Yes | Yes |
-| Dell fc640         | Yes | No  | Yes |
-| Supermicro 1029p   | Yes | Yes | No  |
-| Supermicro 1029U   | Yes | No  | Yes |
-| Supermicro 5039ms  | Yes | No  | Yes |
+| Hardware           | MNO | SNO |
+| ------------------ | --- | --- |
+| Dell r660          | Yes | Yes |
+| Dell r650          | Yes | Yes |
+| Dell r640          | Yes | Yes |
+| Dell fc640         | Yes | Yes |
+| Supermicro 1029p   | Yes | No  |
+| Supermicro 1029U   | Yes | Yes |
+| Supermicro 5039ms  | Yes | Yes |
 
 **IBMcloud**
 
@@ -135,11 +134,11 @@ Make sure to set/review the following vars:
 | - | - |
 | `lab` | `performancelab`, `scalelab`, or `ibmcloud`
 | `lab_cloud` | the cloud within the lab environment for Red Hat Performance labs (Example: `cloud42`)
-| `cluster_type` | either `mno`, `rwn`, or `sno` for the respective cluster layout
-| `worker_node_count` | applies to mno and rwn cluster types for the desired worker count, ideal for leaving left over inventory hosts for other purposes
+| `cluster_type` | either `mno`, or `sno` for the respective cluster layout
+| `worker_node_count` | applies to mno cluster type for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 | `bastion_lab_interface` | set to the bastion machine's lab accessible interface
 | `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
-| `controlplane_lab_interface` | applies to mno and rwn cluster types and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
+| `controlplane_lab_interface` | applies to mno cluster type and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
 
 More customization such as `cluster_network` and `service_network` are available as extra vars, check each ansible role default vars file for variable names and options.
 
@@ -177,7 +176,7 @@ Run setup-bastion playbook
 (.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
 ```
 
-Run deploy for either mno/rwn/sno playbook with inventory created by create-inventory playbook
+Run deploy for either mno/sno playbook with inventory created by create-inventory playbook
 
 Multi Node OpenShift Cluster:
 
@@ -185,12 +184,6 @@ Multi Node OpenShift Cluster:
 (.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/mno-deploy.yml
 ```
 See [troubleshooting.md](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md) in [docs](https://github.com/redhat-performance/jetlag/tree/main/docs) directory for MNO install related issues
-
-Remote Worker Node Cluster:
-
-```console
-(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/rwn-deploy.yml
-```
 
 Single Node OpenShift:
 
