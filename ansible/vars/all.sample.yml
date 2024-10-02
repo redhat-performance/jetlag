@@ -11,8 +11,12 @@ lab_cloud:
 # Either mno or rwn or sno
 cluster_type:
 
-# Applies to both mno/rwn clusters
+# Applies to both bm/rwn clusters
+cluster_name: mno
 worker_node_count:
+
+# Applies to mno/rwn/sno clusters
+base_dns_name: example.com
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
 # Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'

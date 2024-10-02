@@ -341,8 +341,9 @@ lab_cloud: cloud99
 # Either mno or rwn or sno
 cluster_type: mno
 
-# Applies to both mno/rwn clusters
-worker_node_count: 0
+# Applies to both bm/rwn clusters
+cluster_name: mno
+worker_node_count: 2
 
 # Applies to bm/rwn/sno clusters
 base_dns_name: example.com

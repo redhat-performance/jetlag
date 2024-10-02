@@ -341,10 +341,8 @@ lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either mno or rwn or sno
-cluster_type: mno
-
-# Applies to both mno/rwn clusters
+# Applies to both bm/rwn clusters
+cluster_name: mno
 worker_node_count: 2
 
 # Lab Network type, applies to sno and bm cluster_type only
