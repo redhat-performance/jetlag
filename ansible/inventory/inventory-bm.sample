@@ -42,12 +42,6 @@ gateway=198.18.10.1
 dns1=198.18.10.1
 dns2=10.1.36.1
 
-[remoteworker]
-# Unused
-
-[remoteworker:vars]
-# Unused
-
 [sno]
 # Unused
 

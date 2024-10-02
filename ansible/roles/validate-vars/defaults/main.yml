@@ -2,11 +2,9 @@
 # validate-vars default vars
 
 # mno = multi node openshift
-# rwn = remote worker node
 # sno = single node openshift
 rh_lab_cluster_types:
 - mno
-- rwn
 - sno
 
 ibmcloud_cluster_types:

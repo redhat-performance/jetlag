@@ -119,14 +119,3 @@
     ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
     state: present
   when:  bastion_controlplane_ip | ansible.utils.ipv6
-
-- name: Setup rwn vlaned interfaces
-  nmcli:
-    type: vlan
-    vlandev: "{{ bastion_vlaned_interface }}"
-    vlanid: "{{ hostvars[item].vlan }}"
-    conn_name: "{{ bastion_vlaned_interface }}.{{ hostvars[item].vlan }}"
-    ip4: "{{ hostvars[item].gateway }}/{{ hostvars[item].network_prefix }}"
-    state: present
-  when: cluster_type == "rwn"
-  loop: "{{ groups['remoteworker'] }}"

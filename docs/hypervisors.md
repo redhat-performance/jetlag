@@ -13,7 +13,7 @@ _**Table of Contents**_
 
 ## Overview
 
-MNO/RWN cluster types will allocate remaining hardware that was not put in the inventory for the cluster as Hypervisor machines if `hv_inventory: true` is set in the `all.yml` vars file while running the `create-inventory.yml` playbook. This is typically used for testing ACM/MCE installed on a hub cluster such that the VMs will serve as host machines for spoke clusters.
+MNO cluster type will allocate remaining hardware that was not put in the inventory for the cluster as Hypervisor machines if `hv_inventory: true` is set in the `all.yml` vars file while running the `create-inventory.yml` playbook. This is typically used for testing ACM/MCE installed on a hub cluster such that the VMs will serve as host machines for spoke clusters.
 
 Make sure to set and append the following vars in the "extra vars" section of the `vars/all.yml`
 

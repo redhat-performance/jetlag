@@ -12,8 +12,7 @@ install_rh_crucible: false
 rh_crucible_url: https://github.com/perftool-incubator/crucible
 
 
-# Since the use of tc on the bastion machine is rare and only for remote worker node testing in Red Hat labs, we
-# disable rebooting the bastion machine by default.
+# Since the use of tc on the bastion machine is rare, we disable rebooting the bastion machine by default
 bastion_install_tc_reboot: false
 
 # promdump

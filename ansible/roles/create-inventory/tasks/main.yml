@@ -1,15 +1,10 @@
 ---
 # create-inventory tasks
 #
-# For Multi node clusters:
+# For Multi Node OpenShift clusters:
 # * First machine is bastion
 # * Following 3 machines are controlplane nodes (master)
 # * Remaining are worker nodes (depending upon worker_node_count)
-#
-# For Remote Worker Node clusters:
-# * First machine is bastion
-# * Following 3 machines are controlplane nodes (master/worker)
-# * Remaining are remote worker nodes (depending upon worker_node_count)
 #
 # For Single Node OpenShift clusters:
 # * First machine is bastion
@@ -43,7 +38,6 @@
     bmc_user: "{{ ocpinventory.json.nodes[0].pm_user }}"
     bmc_password: "{{ ocpinventory.json.nodes[0].pm_password }}"
     ocpinventory_worker_nodes: []
-    ocpinventory_rwn_nodes: []
     ocpinventory_sno_nodes: []
     ocpinventory_hv_nodes: []
 
@@ -85,10 +79,10 @@
       cluster_name: "vlan{{ (vlan_info.stdout | from_json).table[0].vlan_id }}"
     when: lab == "performancelab"
 
-- name: Multi node cluster and remote worker node cluster type tasks
-  when: cluster_type == "mno" or cluster_type == "rwn"
+- name: Multi node cluster type tasks
+  when: cluster_type == "mno"
   block:
-  - name: MNO/RWN - Set inventory variables
+  - name: MNO - Set inventory variables
     set_fact:
       controlplane0: "{{ ocpinventory.json.nodes[1].pm_addr }}"
       controlplane1: "{{ ocpinventory.json.nodes[2].pm_addr }}"
@@ -100,7 +94,7 @@
       controlplane1_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[2].pm_addr.split('.')[0]).split('-')[-1]] }}"
       controlplane2_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[3].pm_addr.split('.')[0]).split('-')[-1]] }}"
 
-  - name: MNO/RWN - Get controlplane0 lab mac address
+  - name: MNO - Get controlplane0 lab mac address
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane0 | replace('mgmt-','') }}"
       force_basic_auth: yes
@@ -109,13 +103,13 @@
       validate_certs: false
     register: controlplane0_foreman_data
 
-  - name: MNO/RWN - Set controlplane0 lab mac addresses
+  - name: MNO - Set controlplane0 lab mac addresses
     set_fact:
       controlplane0_lab_mac: "{{ item.mac }}"
     with_items: "{{ controlplane0_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
-  - name: MNO/RWN - Get controlplane1 lab mac address
+  - name: MNO - Get controlplane1 lab mac address
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane1 | replace('mgmt-','') }}"
       force_basic_auth: yes
@@ -124,13 +118,13 @@
       validate_certs: false
     register: controlplane1_foreman_data
 
-  - name: MNO/RWN - Set controlplane1 lab mac addresses
+  - name: MNO - Set controlplane1 lab mac addresses
     set_fact:
       controlplane1_lab_mac: "{{ item.mac }}"
     with_items: "{{ controlplane1_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
-  - name: MNO/RWN - Get controlplane2 lab mac address
+  - name: MNO - Get controlplane2 lab mac address
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ controlplane2 | replace('mgmt-','') }}"
       force_basic_auth: yes
@@ -139,18 +133,18 @@
       validate_certs: false
     register: controlplane2_foreman_data
 
-  - name: MNO/RWN - Set controlplane2 lab mac addresses
+  - name: MNO - Set controlplane2 lab mac addresses
     set_fact:
       controlplane2_lab_mac: "{{ item.mac }}"
     with_items: "{{ controlplane2_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
-  - name: MNO/RWN - Set max number of nodes
+  - name: MNO - Set max number of nodes
     set_fact:
       max_nodes: "{{ ocpinventory.json.nodes|length }}"
     when: worker_node_count == None
 
-  - name: MNO/RWN - Set max number of nodes (worker_node_count set)
+  - name: MNO - Set max number of nodes (worker_node_count set)
     set_fact:
       max_nodes: "{{ worker_node_count|int + 4 }}"
     when: worker_node_count != None
@@ -159,11 +153,7 @@
     set_fact:
       ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[4:max_nodes|int] }}"
 
-  - name: RWN - Set ocpinventory rwn nodes
-    set_fact:
-      ocpinventory_rwn_nodes: "{{ ocpinventory.json.nodes[4:max_nodes|int] }}"
-
-  - name: MNO/RWN - Set ocpinventory hv nodes
+  - name: MNO - Set ocpinventory hv nodes
     set_fact:
       ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[max_nodes|int:] }}"
 

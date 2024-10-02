@@ -339,28 +339,40 @@ lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
 
-# Either mno or rwn or sno
+# Either mno or sno
 cluster_type: sno
 
-# Applies to both bm/rwn clusters
+# Applies to mno clusters
 worker_node_count:
 
-# Lab Network type, applies to sno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# performancelab cloud
-public_vlan: false
-
-# The version of the openshift-installer, undefined or empty results in the playbook failing with error message.
-# Values accepted: 'latest-4.13', 'latest-4.14', explicit version i.e. 4.15.2 or for dev builds, candidate-4.16
-ocp_version: "latest-4.16"
-
-# Enter whether the build should use 'dev' (nightly builds) or 'ga' for Generally Available version of OpenShift
-# Empty value results in playbook failing with error message.
+# Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
+# Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
+# or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would
+# be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16.
+# Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and
+# https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
 ocp_build: "ga"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for BM/RWN cluster types)
+# The version of the openshift-installer binary, undefined or empty results in the playbook failing with error message.
+# Values accepted depended on the build chosen ('ga' or 'dev').
+# For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
+# For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
+ocp_version: "latest-4.16"
+
+# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
 networktype: OVNKubernetes
+
+# Lab Network type, applies to sno and mno cluster_type only
+# Set this variable if you want to host your SNO cluster on lab public routable
+# VLAN network, set this ONLY if you have public routable VLAN enabled in your
+# scalelab cloud
+# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
+# required in the public VLAN
+public_vlan: false
+
+# Enables FIPs security standard
+enable_fips: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
@@ -378,9 +390,6 @@ smcipmitool_url: http://example.lab.com/tools/SMCIPMITool_2.25.0_build.210326_bu
 bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens3f0
 
-# vlaned interfaces are for remote worker node clusters only
-bastion_vlaned_interface: ens1f1
-
 # Sets up Gogs a self-hosted git service on the bastion
 setup_bastion_gogs: false
 
@@ -393,17 +402,13 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all mno cluster and rwn control-plane nodes
+# Network configuration for all mno cluster nodes
 controlplane_lab_interface: eno8303
 
 # Network configuration for public VLAN based sno cluster_type deployment
 controlplane_pub_network_cidr:
 controlplane_pub_network_gateway:
 jumbo_mtu: false
-
-# Network only for remote worker nodes
-rwn_lab_interface: eno1np0
-rwn_network_interface: ens1f1
 
 ################################################################################
 # Extra vars
@@ -446,12 +451,6 @@ bmc_password=xxxx
 # Unused
 
 [worker:vars]
-# Unused
-
-[remoteworker]
-# Unused
-
-[remoteworker:vars]
 # Unused
 
 [sno]
