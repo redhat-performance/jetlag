@@ -154,7 +154,7 @@
   - name: Label the worker nodes
     shell: |
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true prometheus=true
-    with_items: "{{ groups['worker'] }}"
+    with_items: "{{ groups['worker'] + groups['hv_vm'][hybrid_worker_offset:hybrid_worker_offset+hybrid_worker_count] }}"
 
   - name: Install local-storage operator
     shell:
