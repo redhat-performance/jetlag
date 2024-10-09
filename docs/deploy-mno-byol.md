@@ -362,9 +362,9 @@ bmc_user=root
 bmc_password=password
 
 [controlplane]
-control-plane-0 bmc_address=<IP or FQDN> network_mac=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.5 vendor=Dell install_disk=/dev/disk/by-path/...
-control-plane-1 bmc_address=<IP or FQDN> network_mac=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.6 vendor=Dell install_disk=/dev/disk/by-path/...
-control-plane-2 bmc_address=<IP or FQDN> network_mac=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.7 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-0 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.5 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-1 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.6 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-2 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.7 vendor=Dell install_disk=/dev/disk/by-path/...
 
 [controlplane:vars]
 role=master
@@ -376,11 +376,11 @@ network_interface=<anything>
 network_prefix=24
 gateway=198.18.10.1
 dns1=198.18.10.1
-dns2=<DNS network_mac>
+dns2=<DNS ip_address>
 
 [worker]
-worker-0 bmc_address=172.29.170.219 network_mac=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.8 vendor=Dell install_disk=/dev/disk/by-path/...
-worker-1 bmc_address=172.29.170.73 network_mac=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.9 vendor=Dell install_disk=/dev/disk/by-path/...
+worker-0 bmc_address=172.29.170.219 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.8 vendor=Dell install_disk=/dev/disk/by-path/...
+worker-1 bmc_address=172.29.170.73 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.9 vendor=Dell install_disk=/dev/disk/by-path/...
 
 [worker:vars]
 role=worker
@@ -392,7 +392,7 @@ network_interface=<anything>
 network_prefix=24
 gateway=198.18.10.1
 dns1=198.18.10.1
-dns2=<DNS network_mac>
+dns2=<DNS ip_address>
 
 [sno]
 [sno:vars]
