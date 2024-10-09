@@ -3,7 +3,7 @@
 
 - name: MNO - Create list of nodes to be discovered
   set_fact:
-    inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
+    inventory_nodes: "{{ groups['controlplane'] + groups['worker'] + groups['hv_vm'][hybrid_worker_offset:hybrid_worker_offset+hybrid_worker_count] }}"
   when: cluster_type == "mno"
 
 - name: SNO - Create list of nodes to be discovered

@@ -13,6 +13,9 @@ cluster_type:
 
 # Applies to mno clusters
 worker_node_count:
+# If HV is setup, how many workers are VMs
+hybrid_worker_count: 0
+hybrid_worker_offset: 0
 
 # Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
 # Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
