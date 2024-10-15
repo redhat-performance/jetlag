@@ -24,6 +24,10 @@
     vars:
       inventory_group: worker
       index: "{{ worker_node_count }}"
+  - role: boot-iso
+    vars:
+      inventory_group: hv_vm
+      index: "{{ hybrid_worker_count }}"
   - wait-hosts-discovered
   - configure-local-storage
   - install-cluster
