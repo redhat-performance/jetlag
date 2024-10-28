@@ -34,10 +34,10 @@
 
 # - debug:
 #     msg: "{{ static_network_config }}"
-- name: Fetch SSH public content key from bastion
-  slurp:
+- name: Copy SSH public key to bastion
+  copy:
     src: "{{ ssh_public_key_file }}"
-  register: ssh_public_key_content
+    dest: "{{ ssh_public_key_file }}"
 
 - name: Create cluster
   uri:
@@ -54,7 +54,7 @@
         "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
         "service_network_cidr": "{{ service_network_cidr }}",
         "pull_secret": "{{ pull_secret | to_json }}",
-        "ssh_public_key": "{{ ssh_public_key_content.content | b64decode | trim }}",
+        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
         "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}"
     }
@@ -74,7 +74,7 @@
     body: {
         "name": "{{ cluster_name }}",
         "additional_ntp_sources": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
-        "ssh_authorized_key": "{{ ssh_public_key_content.content | b64decode | trim }}",
+        "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "static_network_config": "{{ static_network_config }}",
         "image_type": "full-iso",
