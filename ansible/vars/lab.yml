@@ -16,14 +16,14 @@ labs:
     dns:
     - 10.6.60.1
     foreman: foreman.rdu3.labs.perfscale.redhat.com
-    ntp_server: clock2.bos.redhat.com
+    ntp_server: clock.redhat.com
     quads: quads.rdu3.labs.perfscale.redhat.com
   scalelab:
     dns:
     - 10.1.36.1
     - 10.1.36.2
     foreman: foreman.rdu2.scalelab.redhat.com
-    ntp_server: clock1.rdu2.redhat.com
+    ntp_server: clock.redhat.com
     quads: quads2.rdu2.scalelab.redhat.com
 
 # NOTE: This should map every server model in the Scale and Performance labs to
