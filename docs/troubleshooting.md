@@ -44,7 +44,7 @@ That may not be all of the conflicts, thus the preferred method to remediate thi
 
 ## Failed on Wait up to 40 min for nodes to be discovered
 
-If the playbook failed on the task [Wait up to 40 min for nodes to be discovered](https://github.com/redhat-performance/jetlag/blob/main/ansible/roles/wait-hosts-discovered/tasks/main.yml#L14) then open the assisted-installer gui page (http://$BASTION:8080) and see if any of the cluster's machines were discovered. If the intended cluster is a multi-node OpenShift cluster and zero nodes were discovered, then likely there is an issue with the network setup. The next step would be to confirm if the machines are reachable over the intended network using (ping and ssh). If they are not, then reconfirm the correct values for the following vars:
+If the playbook failed on the task [Wait up to 40 min for nodes to be discovered](https://github.com/redhat-performance/jetlag/blob/main/ansible/roles/wait-hosts-discovered/tasks/main.yml#L20) then open the assisted-installer gui page (http://$BASTION:8080) and see if any of the cluster's machines were discovered. If the intended cluster is a multi-node OpenShift cluster and zero nodes were discovered, then likely there is an issue with the network setup. The next step would be to confirm if the machines are reachable over the intended network using (ping and ssh). If they are not, then reconfirm the correct values for the following vars:
 
 ```
 bastion_lab_interface
