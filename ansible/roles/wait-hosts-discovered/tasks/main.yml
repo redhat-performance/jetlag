@@ -55,44 +55,6 @@
   loop_control:
     loop_var: discovered_host
 
-- name: Patch cluster network settings
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
-    method: PATCH
-    status_code: [201]
-    return_content: true
-    body_format: json
-    body: {
-        "cluster_networks":  [
-          {
-            "cidr": "{{ cluster_network_cidr }}",
-            "cluster_id": "{{ ai_cluster_id }}",
-            "host_prefix": "{{ cluster_network_host_prefix }}"
-          }
-        ],
-        "service_networks":  [
-          {
-            "cidr": "{{ service_network_cidr }}",
-            "cluster_id": "{{ ai_cluster_id }}",
-          }
-        ]
-    }
-
-- name: Patch cluster ingress/api vip addresses
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
-    method: PATCH
-    status_code: [201]
-    return_content: true
-    body_format: json
-    body: {
-        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-        "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
-        "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
-        "network_type": "{{ networktype }}"
-    }
-
 - name: Wait for cluster to be ready
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"

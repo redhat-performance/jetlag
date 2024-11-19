@@ -52,13 +52,39 @@
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}"
+        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
+        "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
+        "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
+        "network_type": "{{ networktype }}"
     }
   register: create_cluster_return
 
 - name: Set ai_cluster_id
   set_fact:
     ai_cluster_id: "{{ create_cluster_return.json.id }}"
+
+- name: Patch cluster network settings
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
+    method: PATCH
+    status_code: [201]
+    return_content: true
+    body_format: json
+    body: {
+        "cluster_networks":  [
+          {
+            "cidr": "{{ cluster_network_cidr }}",
+            "cluster_id": "{{ ai_cluster_id }}",
+            "host_prefix": "{{ cluster_network_host_prefix }}"
+          }
+        ],
+        "service_networks":  [
+          {
+            "cidr": "{{ service_network_cidr }}",
+            "cluster_id": "{{ ai_cluster_id }}",
+          }
+        ]
+    }
 
 - name: Create a connected infra-env
   uri:
