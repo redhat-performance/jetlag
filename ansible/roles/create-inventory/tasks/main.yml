@@ -41,8 +41,8 @@
     ocpinventory_sno_nodes: []
     ocpinventory_hv_nodes: []
 
-- name: Public VLAN in BM cluster
-  when: public_vlan and cluster_type == "mno"
+- name: Public VLAN in SNO/MNO cluster
+  when: public_vlan and (cluster_type == "mno" or cluster_type == "sno")
   block:
   - name: Public VLAN - Configuring controlplane_network_interface_idx to the last interface
     set_fact:

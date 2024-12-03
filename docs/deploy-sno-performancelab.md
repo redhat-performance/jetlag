@@ -13,10 +13,17 @@ your cloud allocation on
 _**Table of Contents**_
 
 <!-- TOC -->
-- [Bastion setup](#bastion-setup)
-- [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
-- [Review all.yml](#review-allyml)
-- [Run playbooks](#run-playbooks)
+- [Deploy a Single Node OpenShift cluster via Jetlag quickstart](#deploy-a-single-node-openshift-cluster-via-jetlag-quickstart)
+  - [Bastion setup](#bastion-setup)
+  - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
+    - [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)
+    - [Bastion node vars](#bastion-node-vars)
+    - [OCP node vars](#ocp-node-vars)
+    - [Deploy in the public VLAN](#deploy-in-the-public-vlan)
+    - [Extra vars](#extra-vars)
+    - [Disconnected and ipv6 vars](#disconnected-and-ipv6-vars)
+  - [Review `all.yml`](#review-allyml)
+  - [Run playbooks](#run-playbooks)
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
@@ -299,6 +306,19 @@ For the guide we set our values for the Dell r750.
 edit your generated inventory file to correct any nic names until this is
 reasonably automated.
 
+### Deploy in the public VLAN
+
+In order to deploy a cluster using the public VLAN, set the variable `public_vlan` in `all.yml` to `true`. Once enabled the following variables are automatically configured:
+
+- `controlplane_network_interface_idx`: Is set to the corresponding interface number
+- `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory
+- `controlplane_network`: public VLAN subnet
+- `controlplane_network_prefix`: public VLAN network mask
+- `controlplane_network_gateway`: public VLAN default gateway
+- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
+
+When the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
+
 ### Extra vars
 
 No extra vars are needed for an IPv4 SNO cluster.
@@ -366,7 +386,7 @@ networktype: OVNKubernetes
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your
 # scalelab cloud
-# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
+# For mno and sno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
 # base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
 # required in the public VLAN
 public_vlan: false
