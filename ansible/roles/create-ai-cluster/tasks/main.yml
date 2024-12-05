@@ -32,6 +32,13 @@
   - cluster_type == "mno"
   loop: "{{ groups['worker'] }}"
 
+- name: MNO / Hybrid (VM Workers) - Populate static network configuration with VM worker nodes
+  include_tasks: static_network_config.yml
+  when:
+  - cluster_type == "mno"
+  - hybrid_worker_count > 0
+  loop: "{{ groups['hv_vm'][:hybrid_worker_count] }}"
+
 # - debug:
 #     msg: "{{ static_network_config }}"
 
@@ -52,7 +59,10 @@
         "pull_secret": "{{ pull_secret | to_json }}",
         "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
         "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}"
+        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
+        "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
+        "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
+        "network_type": "{{ networktype }}"
     }
   register: create_cluster_return
 
