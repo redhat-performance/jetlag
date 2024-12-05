@@ -6,7 +6,7 @@
 # ansible-playbook ansible/create-inventory.yml
 #
 
-- name: Create inventory from a lab cloud
+- name: Create inventory from a lab cloud test CI
   hosts: localhost
   gather_facts: false
   vars_files:
