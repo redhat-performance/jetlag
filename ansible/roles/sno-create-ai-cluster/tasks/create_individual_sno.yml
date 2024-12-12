@@ -25,7 +25,7 @@
     status_code: [201]
     return_content: true
     body: {
-        "name": "{{ hostvars[item].inventory_hostname }}",
+        "name": "{{ cluster_name }}",
         "openshift_version": "{{ openshift_version }}",
         "high_availability_mode": "None",
         "base_dns_domain": "{{ base_dns_name }}",
