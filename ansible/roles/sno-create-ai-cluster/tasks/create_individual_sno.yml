@@ -7,8 +7,7 @@
     - network_yaml: "{{ lookup('template', 'nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
   when:
-  - lab in rh_labs
-  - use_bastion_registry
+  - lab in rh_labs and (use_bastion_registry or public_vlan)
 
 - name: (Cloud lab) Assemble SNO static network config
   set_fact:
@@ -17,6 +16,9 @@
       mac_interface_map: "{{ lookup('template', 'ibmcloud_mac_interface_map.json.j2')  }}"
   when: lab in cloud_labs
 
+- debug:
+    var: cluster_network_cidr
+- debug:
 - name: Create SNO cluster
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
@@ -78,7 +80,7 @@
     }
   when: use_bastion_registry
 
-- name: Patch infra-env for cloud labs with static network config
+- name: Patch infra-env for labs with static network config
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
     method: PATCH
@@ -88,7 +90,7 @@
     body: {
         "static_network_config": "{{ static_network_config }}"
     }
-  when: lab in cloud_labs
+  when: lab in cloud_labs or public_vlan
 
 - name: Append cluster ids
   set_fact:

@@ -42,7 +42,7 @@ bmc_password={{ bmc_password }}
 {%- if use_bastion_registry -%}
 {%-   set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + 5) -%}
 {%- elif public_vlan | bool -%}
-{%-   set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + 1) -%}
+{%-   set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + 3) -%}
 {%- else -%}
 {%- set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', sno.pm_addr | replace('mgmt-',''))|first).json.ip -%}
 {%- endif -%}
