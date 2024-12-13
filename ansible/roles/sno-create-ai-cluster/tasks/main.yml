@@ -27,7 +27,7 @@
 
 - name: set machine network cidr for public vlan
   set_fact:
-    machine_network_cidr: "{{ controlplane_pub_network_cidr }}"
+    machine_network_cidr: "{{ controlplane_network }}"
   when:
   - public_vlan | bool
 

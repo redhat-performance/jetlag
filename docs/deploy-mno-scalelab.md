@@ -404,9 +404,6 @@ use_bastion_registry: false
 # Network configuration for all mno cluster nodes
 controlplane_lab_interface: eno12399np0
 
-# Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr:
-controlplane_pub_network_gateway:
 jumbo_mtu: false
 
 ################################################################################
