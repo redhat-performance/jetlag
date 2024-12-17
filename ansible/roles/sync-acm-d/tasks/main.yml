@@ -102,10 +102,6 @@
   shell: |
     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ origin_kube_rbac_proxy_image }}:{{ origin_kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift/origin-kube-rbac-proxy:{{ origin_kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
 
-- name: Mirror kube-rbac-proxy image
-  shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ kube_rbac_proxy_image }}:{{ kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/kubebuilder/kube-rbac-proxy:{{ kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
-
 # Image needed for IBU
 - name: Mirror recert image
   shell: |
