@@ -21,8 +21,6 @@ cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-gr
 cluster_group_upgrades_operator_recovery_image_tag: 4.16.0
 origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy
 origin_kube_rbac_proxy_image_tag: 4.15
-kube_rbac_proxy_image: gcr.io/kubebuilder/kube-rbac-proxy
-kube_rbac_proxy_image_tag: v0.8.0
 
 # IBU - Image Based Upgrade recert image (Override-able in case of custom image for test)
 recert_image: quay.io/edge-infrastructure/recert
