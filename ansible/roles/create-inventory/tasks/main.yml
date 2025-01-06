@@ -13,7 +13,7 @@
 
 - name: Set ocp inventory download url from lab wiki - scalelab and performancelab
   set_fact:
-    ocp_inventory_url: "https://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
+    ocp_inventory_url: "http://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
   when:  ocp_inventory_override | string | length < 1 and (lab == 'scalelab' or lab == 'performancelab')
 
 - name: Set ocp inventory download url to override
@@ -51,7 +51,7 @@
       password: "{{ ocpinventory.json.nodes[0].pm_password }}"
       validate_certs: false
     register: quads_assignment
-    when: lab == "scalelab"
+    when: lab == "scalelab" or lab == "performancelab"
 
   - name: Public scalelab VLAN - Set addressing information
     set_fact:
@@ -59,22 +59,7 @@
       controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
-    when: lab == "scalelab"
-
-  - name: Get VLAN info from performancelab quads
-    shell: |
-      set -o pipefail
-      curl -sk https://wiki.rdu3.labs.perfscale.redhat.com/vlans/ | grep -B7 {{ lab_cloud }} | sed -E 's#</?td>##g'| tr '\n' ' ' | column -J --table-columns vlan_id,cidr,netmask,gateway,ipfree,owner,ticket,cloud
-    register: vlan_info
-    when: lab == "performancelab"
-
-  - name: Public performancelab VLAN - Set addressing information
-    set_fact:
-      controlplane_network: "{{ (vlan_info.stdout | from_json).table[0].cidr }}"
-      controlplane_network_prefix: "{{ (vlan_info.stdout | from_json).table[0].cidr | ipaddr('prefix') }}"
-      controlplane_network_gateway: "{{ (vlan_info.stdout | from_json).table[0].gateway }}"
-      cluster_name: "vlan{{ (vlan_info.stdout | from_json).table[0].vlan_id }}"
-    when: lab == "performancelab"
+    when: lab == "scalelab" or lab == "performancelab"
 
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
