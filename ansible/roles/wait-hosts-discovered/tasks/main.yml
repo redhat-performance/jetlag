@@ -54,6 +54,7 @@
   - "{{ cluster.json.hosts }}"
   loop_control:
     loop_var: discovered_host
+    label: "{{ discovered_host.id }}"
 
 - name: Patch cluster network settings
   uri:
