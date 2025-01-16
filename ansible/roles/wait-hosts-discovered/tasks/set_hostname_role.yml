@@ -6,21 +6,21 @@
     host_bmc: "{{ (discovered_host.inventory | from_json).bmc_address }}"
   when: lab in cloud_labs
 
-- name: Set the host ID
+- name: Set the host id and list of mac addresses
   set_fact:
-    host_interfaces: "{{ (discovered_host.inventory | from_json).interfaces }}"
     host_id: "{{ discovered_host.id }}"
+    host_macs: "{{ (discovered_host.inventory | from_json) | json_query('interfaces[].mac_address') | lower }}"
 
 - name: Set the hostname and role via mac address
   set_fact:
-    hostname: "{{ item.0 }}"
-    host_role: "{{ hostvars[item.0]['role'] }}"
+    hostname: "{{ item }}"
+    host_role: "{{ hostvars[item]['role'] }}"
   when:
     - lab in rh_labs
-    - hostvars[item.0]['lab_mac'] == item.1.mac_address
-  loop: "{{ inventory_nodes | product(host_interfaces) | list }}"
+    - hostvars[item]['mac_address'] | lower in host_macs
+  loop: "{{ inventory_nodes }}"
   loop_control:
-    label: "{{ hostvars[item.0]['bmc_address'] }}"
+    label: "{{ hostvars[item]['bmc_address'] }}"
 
 - name: Set the hostname and role via bmc address
   set_fact:
