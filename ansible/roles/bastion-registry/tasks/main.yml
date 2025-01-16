@@ -95,7 +95,7 @@
 
 - name: Mirror support-tools for toolbox (sosreport)
   shell: |
-    oc image mirror -a {{ registry_path }}/pull-secret-bastion.txt registry.redhat.io/rhel8/support-tools {{ registry_host }}:{{ registry_port }}/rhel8/support-tools --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ registry_path }}/pull-secret-bastion.txt registry.redhat.io/rhel8/support-tools:latest {{ registry_host }}:{{ registry_port }}/rhel8/support-tools --keep-manifest-list --continue-on-error=true
   register: result
   until: not result.failed
   retries: 3
