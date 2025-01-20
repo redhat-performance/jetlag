@@ -277,7 +277,7 @@ ocp_build: "ga"
 # Values accepted depended on the build chosen ('ga' or 'dev').
 # For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
-ocp_version: "latest-4.16"
+ocp_version: "latest-4.17"
 
 # Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
 networktype: OVNKubernetes
