@@ -12,6 +12,7 @@ ASSISTED_SERVICE_HOST={{ assisted_installer_host }}:{{ assisted_installer_port }
 IMAGE_SERVICE_BASE_URL=http://{{ assisted_installer_host }}:{{ assisted_image_service_port }}
 LISTEN_PORT={{ assisted_image_service_port }}
 DEPLOY_TARGET=onprem
+DEPLOY_TYPE="Podman"
 STORAGE=filesystem
 DUMMY_IGNITION=false
 
