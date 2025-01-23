@@ -35,6 +35,8 @@
     status_code: [200, 201]
     return_content: true
   loop: "{{ cluster.json.hosts | list }}"
+  loop_control:
+    label: "{{ item.id }}"
   register: host_data
   until: host_data.json.status != "discovering"
   retries: 30
@@ -50,8 +52,7 @@
 
 - name: Set hostname and role for discovered hosts
   include_tasks: set_hostname_role.yml
-  with_items:
-  - "{{ cluster.json.hosts }}"
+  loop: "{{ cluster.json.hosts }}"
   loop_control:
     loop_var: discovered_host
     label: "{{ discovered_host.id }}"
@@ -72,12 +73,15 @@
   loop: "{{ cluster.json.hosts | selectattr('role', 'eq', 'master') | list }}"
   loop_control:
     loop_var: mno_node
+    label: "{{ mno_node.requested_hostname }}"
 
 - name: Set install disk for worker nodes
   include_tasks: set_node_install_disk.yml
   loop: "{{ cluster.json.hosts | selectattr('role', 'eq', 'worker') | list }}"
   loop_control:
     loop_var: mno_node
+    label: "{{ mno_node.requested_hostname }}"
+
 
 - name: Wait for cluster to be ready for install
   uri:
