@@ -11,6 +11,10 @@
   vars_files:
   - vars/lab.yml
   - vars/hv.yml
+  pre_tasks:
+  - ansible.builtin.fail:
+      msg: "Hypervisors must be RHEL9"
+    when: ansible_facts['distribution_major_version'] is version('9', '<')
   roles:
   - name: install-tc
     when: install_tc
