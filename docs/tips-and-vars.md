@@ -3,12 +3,14 @@
 _**Table of Contents**_
 <!-- TOC -->
 - [Network interface to vars table](#network-interface-to-vars-table)
+- [Install disk by-path vars](#install-disk-by-path-vars)
+- [Updating the OCP version](#updating-the-ocp-version)
 - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
+- [Using other network interfaces](#using-other-network-interfaces)
+- [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
-- [Updating the OCP version](#updating-the-ocp-version)
-- [Add/delete contents to the bastion registry](#add-delete-contents-to-the-bastion-registry)
-- [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
+- [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
 <!-- /TOC -->
 
 
@@ -41,7 +43,7 @@ Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalela
 
 Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking).
 
-## Extra vars for by-path disk reference
+## Install disk by-path vars
 
 > [!TIP]
 > For multi node deployment of OCP 4.13 or greater it is advisable to
@@ -51,9 +53,12 @@ Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redha
 > all the machines, and isn't subject to change during discovery. Below are the
 > extra vars along with the hardware used.
 
-You can also set `sno_install_disk` for SNO deployments.
+For 3-node MNO deployments you only need to set `control_plane_install_disk`, if your
+MNO deployment has worker nodes then you will also need to set `worker_install_disk`.
 
-If the machine configurations in your cloud are not homogeneous, you'll need to
+For SNO deployments set `sno_install_disk`.
+
+If the machine configurations in your cloud are not homogeneous, you will need to
 edit the inventory file to set appropriate install paths for each machine.
 
 > [!CAUTION]
@@ -65,6 +70,7 @@ edit the inventory file to set appropriate install paths for each machine.
 
 | Hardware  | Install disk path
 | --------  | ----------------- |
+| Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1.0 |
 | Dell r660 | /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:1:0 |
 | Dell r650 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
@@ -110,104 +116,11 @@ nvme0n1                             259:0    0  1.5T  0 disk
 /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0
 ```
 
-## Override lab ocpinventory json file
-
-By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
-
-```yaml
-ocp_inventory_override: http://<http-server>/<inventory-file>.json
-```
-## DU Profile for SNOs
-
-Use var `du_profile` to apply the DU specific machine configurations to your SNOs. You must also define `reserved_cpus` and `isolated_cpus` when applying DU profile. Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml`.
-
-Example settings:
-
-```yaml
-du_profile: true
-# The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
-reserved_cpus: 0-1,40-41
-isolated_cpus: 2-39,42-79
-```
-
-As a result, the following machine configuration files will be added to the cluster during SNO install:
-* 01-container-mount-ns-and-kubelet-conf-master.yaml
-* 03-sctp-machine-config-master.yaml
-* 04-accelerated-container-startup-master.yaml
-* 05-kdump-config-master (when kdump is enabled)
-* 99-crio-disable-wipe-master
-* 99-master-workload-partitioning.yml
-* enable-crun-master.yaml
-
-When deploying DU profile on OCP 4.13 or higher, composable openshift feature will automatically be deployed and as a result, all unnecessary optional Cluster Operators will not be deployed.
-
-In addition to this, Network Diagnostics will be disabled, monitoring footprint will be reduced, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
-
-Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
-
-**About Reserved CPUs**
-
-Setting `reserved_cpus` would allow us to isolate the control plane services to run on a restricted set of CPUs.
-
-You can reserve cores, or threads, for operating system housekeeping tasks from a single NUMA node and put your workloads on another NUMA node. The reason for this is that the housekeeping processes might be using the CPUs in a way that would impact latency sensitive processes running on those same CPUs. Keeping your workloads on a separate NUMA node prevents the processes from interfering with each other. Additionally, each NUMA node has its own memory bus that is not shared.
-
-If you are unsure about which cpus to reserve for housekeeping-pods, the general rule is to identify any two processors and their siblings on separate NUMA nodes:
-
-```console
-# lscpu -e | head -n1
-CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
-
-# lscpu -e |  egrep "0:0:0:0|1:1:1:1"
-0   0    0      0    0:0:0:0       yes    3900.0000 800.0000
-1   1    1      1    1:1:1:1       yes    3900.0000 800.0000
-40  0    0      0    0:0:0:0       yes    3900.0000 800.0000
-41  1    1      1    1:1:1:1       yes    3900.0000 800.0000
-```
-
-## Post Deployment Tasks
-
-### SNO DU Profile
-
-#### Performance Profile
-
-The following vars are relevant to performance profile creation post SNO install:
-
-```yaml
-# Required vars
-du_profile: true
-# The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
-reserved_cpus: 0-1,48-49
-isolated_cpus: 2-47,50-95
-
-#Optional vars
-
-# Number of hugepages of size 1G to be allocated on the SNO
-hugepages_count: 16
-```
-
-#### Tuned Performance Patch
-
-After performance-profile is applied, the standard TunedPerformancePatch used for SNO DUs will also be applied post SNO install if DU profile is enabled.
-This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10.
-Further changes applied can be found in the template 'tunedPerformancePatch.yml.j2' under sno-post-cluster-install templates.
-
-#### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
-
-Performance Addon Operator must be installed for the usage of performance-profile in versions older than OCP 4.11.
-Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to install Performance Addon Operator to allow for low latency node performance tunings on your OCP 4.9 or 4.10 SNO.
-
-```yaml
-install_performance_addon_operator: true
-```
-
-> [!NOTE]
-> The Performance Addon Operator is not available in OCP 4.11 or higher. The PAO code was moved into the Node Tuning Operator in OCP 4.11
-
 ## Updating the OCP version
 
-Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift. Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16 or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would  be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
+Set `ocp_build` to one of `dev` (early candidate builds) or `ga` for Generally Available versions of OpenShift. Empty value results in playbook failing with an error message. Example of dev builds would be `candidate-4.17`, `candidate-4.16` or `latest` (which would point to the early candidate build of the latest in development release) and examples of `ga` builds would be explicit versions like `4.15.20` or `4.16.0` or you could also use things like `latest-4.16` to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/ for a list of `dev` releases.
 
-Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
+Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with an error message. Values accepted depended on the build chosen (`ga` or `dev`). For `ga` builds some examples of what you can use are `latest-4.13`, `latest-4.14` or explicit versions like `4.15.2`. For `dev` builds some examples of what you can use are `candidate-4.16` or just `latest`.
 
 ```yaml
 ocp_build: "ga"
@@ -215,8 +128,8 @@ ocp_version: "4.15.2"
 ```
 
 Ensure that your pull secrets are still valid.
-When worikng with OCP development builds/nightly releases, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they are bound to expire after a definite period. Follow these steps to update your pull secret:
-* Login to https://console-openshift-console.apps.ci.l2s4.p1.openshiftapps.com/ with your github id. You must be a member of Openshift Org to do this.
+When working with OCP development build or nightly release, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they expire after a definite period. Follow these steps to update your pull secret:
+* Login to https://console-openshift-console.apps.ci.l2s4.p1.openshiftapps.com/ with your github id. You must be a member of OpenShift Org to do this.
 * Select *Copy login command* from the drop-down list under your account name
 * Copy the oc login command and run it on your terminal
 * Execute the command shown below to print out the pull secret:
@@ -228,46 +141,12 @@ When worikng with OCP development builds/nightly releases, it might be required 
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
-## Add/delete contents to the bastion registry
-There might be use-cases when you want to add and delete images to/from the bastion registry. For example, for the single stack IPv6 disconnected deployment, the deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjunction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the bastion/mirror registry.
-For example, this policy will map images on quay.io/XXX/client-server to the mirror registry on perf176b, the bastion of this IPv6 disconnected cluster.
+## Override lab ocpinventory json file
+
+By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
+
 ```yaml
-apiVersion: operator.openshift.io/v1alpha1
-kind: ImageContentSourcePolicy
-metadata:
-  name: crucible-repo
-spec:
-  repositoryDigestMirrors:
-  - mirrors:
-    - perf176b.xxx.com:5000/XXX/client-server
-    source: quay.io/XXX/client-server
-```
-
-For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
-
-```console
-(.ansible) [root@<bastion> jetlag]# oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
-```
-Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
-
-For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
-
-```console
-### script
-#!/bin/bash
-registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
-name='XXX/client-server'
-auth='-u username:passwd'
-
-function rm_XXX_tag {
- ltag=$1
- curl $auth -X DELETE -sI -k "https://${registry}/v2/${name}/manifests/$(
-   curl $auth -sI -k \
-     -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-      "https://${registry}/v2/${name}/manifests/${ltag}" \
-   | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
- )"
-}
+ocp_inventory_override: http://<http-server>/<inventory-file>.json
 ```
 
 ## Using other network interfaces
@@ -356,4 +235,133 @@ lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
 RHEL9:
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1 -> ../../sda
 lrwxrwxrwx. 1 root root  9 Feb  5 19:22 pci-0000:00:11.5-ata-1.0 -> ../../sda  <---- Use this one
+```
+
+## DU Profile for SNOs
+
+Use var `du_profile` to apply the DU specific machine configurations to your SNOs. You must also define `reserved_cpus` and `isolated_cpus` when applying DU profile. Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml`.
+
+Example settings:
+
+```yaml
+du_profile: true
+# The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
+reserved_cpus: 0-1,40-41
+isolated_cpus: 2-39,42-79
+```
+
+As a result, the following machine configuration files will be added to the cluster during SNO install:
+* 01-container-mount-ns-and-kubelet-conf-master.yaml
+* 03-sctp-machine-config-master.yaml
+* 04-accelerated-container-startup-master.yaml
+* 05-kdump-config-master (when kdump is enabled)
+* 99-crio-disable-wipe-master
+* 99-master-workload-partitioning.yml
+* enable-crun-master.yaml
+
+When deploying DU profile on OCP 4.13 or higher, composable openshift feature will automatically be deployed and as a result, all unnecessary optional Cluster Operators will not be deployed.
+
+In addition to this, Network Diagnostics will be disabled, monitoring footprint will be reduced, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
+
+Refer to https://github.com/openshift-kni/cnf-features-deploy/tree/master/ztp/source-crs for config details.
+
+**About Reserved CPUs**
+
+Setting `reserved_cpus` would allow us to isolate the control plane services to run on a restricted set of CPUs.
+
+You can reserve cores, or threads, for operating system housekeeping tasks from a single NUMA node and put your workloads on another NUMA node. The reason for this is that the housekeeping processes might be using the CPUs in a way that would impact latency sensitive processes running on those same CPUs. Keeping your workloads on a separate NUMA node prevents the processes from interfering with each other. Additionally, each NUMA node has its own memory bus that is not shared.
+
+If you are unsure about which cpus to reserve for housekeeping-pods, the general rule is to identify any two processors and their siblings on separate NUMA nodes:
+
+```console
+# lscpu -e | head -n1
+CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
+
+# lscpu -e |  egrep "0:0:0:0|1:1:1:1"
+0   0    0      0    0:0:0:0       yes    3900.0000 800.0000
+1   1    1      1    1:1:1:1       yes    3900.0000 800.0000
+40  0    0      0    0:0:0:0       yes    3900.0000 800.0000
+41  1    1      1    1:1:1:1       yes    3900.0000 800.0000
+```
+
+## Post Deployment Tasks
+
+### SNO DU Profile
+
+#### Performance Profile
+
+The following vars are relevant to performance profile creation post SNO install:
+
+```yaml
+# Required vars
+du_profile: true
+# The reserved and isolated CPU pools must not overlap and together must span all available cores in the worker node.
+reserved_cpus: 0-1,48-49
+isolated_cpus: 2-47,50-95
+
+#Optional vars
+
+# Number of hugepages of size 1G to be allocated on the SNO
+hugepages_count: 16
+```
+
+#### Tuned Performance Patch
+
+After performance-profile is applied, the standard TunedPerformancePatch used for SNO DUs will also be applied post SNO install if DU profile is enabled.
+This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10.
+Further changes applied can be found in the template 'tunedPerformancePatch.yml.j2' under sno-post-cluster-install templates.
+
+#### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
+
+Performance Addon Operator must be installed for the usage of performance-profile in versions older than OCP 4.11.
+Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to install Performance Addon Operator to allow for low latency node performance tunings on your OCP 4.9 or 4.10 SNO.
+
+```yaml
+install_performance_addon_operator: true
+```
+
+> [!NOTE]
+> The Performance Addon Operator is not available in OCP 4.11 or higher. The PAO code was moved into the Node Tuning Operator in OCP 4.11
+
+## Add/delete contents to the bastion registry
+
+There might be use-cases when you want to add and delete images to/from the bastion registry. For example, for the single stack IPv6 disconnected deployment, the deployment cannot reach quay.io to get the image for your containers.  In this situation, you may use the ICSP (ImageContentSecurityPolicy) mechanism in conjunction with image mirroring. When the deployment requests an image on quay.io, cri-o will intercept the request, redirect and map it to an image on the bastion/mirror registry.
+For example, this policy will map images on quay.io/XXX/client-server to the mirror registry on perf176b, the bastion of this IPv6 disconnected cluster.
+```yaml
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  name: crucible-repo
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - perf176b.xxx.com:5000/XXX/client-server
+    source: quay.io/XXX/client-server
+```
+
+For on-demand mirroring, the next command run on the bastion will mirror the image from quay.io to perf176b's disconnected registry.
+
+```console
+(.ansible) [root@<bastion> jetlag]# oc image mirror -a /opt/registry/pull-secret-bastion.txt perf176b.xxx.com:5000/XXX/client-server:<tag> --keep-manifest-list --continue-on-error=true
+```
+Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
+
+For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
+
+```console
+### script
+#!/bin/bash
+registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
+name='XXX/client-server'
+auth='-u username:passwd'
+
+function rm_XXX_tag {
+ ltag=$1
+ curl $auth -X DELETE -sI -k "https://${registry}/v2/${name}/manifests/$(
+   curl $auth -sI -k \
+     -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+      "https://${registry}/v2/${name}/manifests/${ltag}" \
+   | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
+ )"
+}
 ```

@@ -5,27 +5,26 @@ _**Table of Contents**_
 <!-- TOC -->
 - [Common Issues](#common-issues)
   - [Running Jetlag after Jetski](#running-jetlag-after-jetski)
-  - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
   - [Intermittent failures by repos or container registry](#intermittent-failures-by-repos-or-container-registry)
-  - [Root disk too small on bastion](#root-disk-too-small-on-bastion)
+  - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
+  - [Failed on Wait for cluster to be ready ](#failed-on-wait-for-cluster-to-be-ready)
+  - [Failed on Adjust by-path selected install disk](#failed-on-adjust-by-path-selected-install-disk)
 - [Bastion](#bastion)
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
   - [Clean all container images from bastion registry](#clean-all-container-images-from-bastion-registry)
   - [Rebooted Bastion](#rebooted-bastion)
   - [ipv4 to ipv6 deployed cluster and vice-versa](#ipv4-to-ipv6-deployed-cluster)
+  - [Root disk too small](#root-disk-too-small)
 - [Generic Hardware](#generic-hardware)
   - [Minimum Firmware Versions](#minimum-firmware-versions)
 - [Dell](#dell)
   - [Reset BMC / iDrac](#reset-bmc--idrac)
-  - [Unable Mount Virtual Media](#unable-mount-virtual-media)
+  - [Unable to Insert/Mount Virtual Media](#unable-to-insertmount-virtual-media)
 - [Supermicro](#supermicro)
   - [Reset BMC / Resolving redfish connection error](#reset-bmc--resolving-redfish-connection-error)
   - [Missing Administrator IPMI privileges](#missing-administrator-ipmi-privileges)
   - [Failure of TASK SuperMicro Set Boot](#failure-of-task-supermicro-set-boot)
-- [Generic Lab](#generic-lab)
-  - [Boot mode](#boot-mode)
-  - [Lab network pre-configuration](#network-pre-configuration)
 - [Scalelab](#scalelab)
   - [Fix boot order of machines](#fix-boot-order-of-machines)
   - [Upgrade RHEL](#upgrade-rhel)
@@ -42,6 +41,10 @@ If Jetlag is run after attempting an installation with Jetski, there are several
 
 That may not be all of the conflicts, thus the preferred method to remediate this situation is to cleanly rebuild the RHEL OS running on the bastion machine for Jetlag.
 
+## Intermittent failures by repos or container registry
+
+Since Jetlag has external dependencies on repos available by your machines as well as container images hosted in a container registry, it is possible that an intermittent failure, service outage, or network failure can cause a failed deployment. Check that your machines have working repository server configurations and that container registries in use are not experiencing an outage. For example quay and Red Hat repos provide a public status check [status.redhat.com](https://status.redhat.com/)
+
 ## Failed on Wait up to 40 min for nodes to be discovered
 
 If the playbook failed on the task [Wait up to 40 min for nodes to be discovered](https://github.com/redhat-performance/jetlag/blob/main/ansible/roles/wait-hosts-discovered/tasks/main.yml#L20) then open the assisted-installer gui page (http://$BASTION:8080) and see if any of the cluster's machines were discovered. If the intended cluster is a multi-node OpenShift cluster and zero nodes were discovered, then likely there is an issue with the network setup. The next step would be to confirm if the machines are reachable over the intended network using (ping and ssh). If they are not, then reconfirm the correct values for the following vars:
@@ -56,13 +59,109 @@ If the machines are reachable, but never registered with the assisted-installer,
 
 If some nodes correctly registered but some did not, then the missing nodes need to be individually diagnosed. On a missing node, check if the BMC actually mounted the virtual media. Typically the machine just requires a BMC reset due to not booting virtual media which is described in below sections. Another possibility includes non-functional hardware and thus the machine does not boot into the discovery image.
 
-## Intermittent failures by repos or container registry
+## Failed on Wait for cluster to be ready 
 
-Since Jetlag has external dependencies on repos available by your machines as well as container images hosted in a container registry, it is possible that an intermittent failure, service outage, or network failure can cause a failed deployment. Check that your machines have working repository server configurations and that container registries in use are not experiencing an outage.  For example quay and Red Hat repos provide a public status check [status.redhat.com](https://status.redhat.com/)
+Check the "View cluster events" on the assisted-installer GUI to see if any validations
+are failing. If you see `Host xxxxx: validation sufficient-packet-loss-requirement-for-role that used to succeed is now failing`
+the most likely situation is a duplicate IP on the network causing packet loss. Check
+your environment and inventory file for any machines which may have a duplicated ip
+address.
 
-## Root disk too small on bastion
+## Failed on Adjust by-path selected install disk
 
-For disconnected environments, the bastion machine will serve all OCP, operator and additional container images from its local disconnected registry. Some machines in the lab have been found to have root disks which are on the order of only 70G and can easily fill with 1 or 2 OCP releases synced. If the bastion is one of those machines, relocate `/opt` to a separate larger disk so the machine does not run out of space on the root disk.
+In rare cases, jetlag is unable to set the install disk because there are leftover cruft
+partitions on the intended install disk that tricks assisted installer into believe the
+entire disk is an ISO or CD partition. In those cases you will see an error resembling:
+
+```console
+TASK [wait-hosts-discovered : Adjust by-path selected install disk] ************
+Tuesday 21 January 2025  22:00:02 +0000 (0:00:00.062)       0:15:26.342 *******
+fatal: [example.com]: FAILED! => {"changed": false, "connection": "close", "content": "{\"code\":\"409\",\"href\":\"\",\"id\":409,\"kind\":\"Error\",\"reason\":\"Requested installation disk is not part of the host's valid disks\"}\n", "content_length": "126", "content_type": "application/json", "date": "Tue, 21 Jan 2025 22:00:02 GMT", "elapsed": 0, "json": {"code": "409", "href": "", "id": 409, "kind": "Error", "reason": "Requested installation disk is not part of the host's valid disks"}, "msg": "Status code was 409 and not [201]: HTTP Error 409: Conflict", "redirected": false, "status": 409, "url": "http://example.com:8090/api/assisted-install/v2/infra-envs/2ba94792-10cc-41a0-a4c4-ba571d2acd1f/hosts/4108df44-c238-f427-77ff-64553785e097", "vary": "Accept-Encoding"}
+```
+
+You will also see in the assisted-installer GUI on an affected machine there is a
+limitation next to the intended install disk that displays
+`Disk is not eligible for installation. Disk appears to be an ISO installation media (has partition with type iso9660)`.
+In this case we can reuse the current booted discovery.iso to verify and wipe the cruft
+off the intended installation media to resolve this issue:
+
+```console
+[root@bastion ~]# ssh core@198.18.10.20
+...
+[core@localhost ~]$ sudo su -
+...
+[root@localhost ~]# lsblk
+NAME                               MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+loop0                                7:0    0 251.7G  0 loop /var/lib/containers/storage/overlay
+                                                             /var
+                                                             /etc
+                                                             /run/ephemeral
+loop1                                7:1    0   1.1G  1 loop /usr
+                                                             /boot
+                                                             /
+                                                             /sysroot
+sda                                  8:0    0 447.1G  0 disk
+├─sda1                               8:1    0     1M  0 part
+├─sda2                               8:2    0     1M  0 part
+├─sda3                               8:3    0   512M  0 part
+├─sda4                               8:4    0     1K  0 part
+└─sda5                               8:5    0 446.6G  0 part
+  ├─vg_d27--h31--000--r650-lv_swap 253:0    0     8G  0 lvm
+  └─vg_d27--h31--000--r650-lv_root 253:1    0 438.6G  0 lvm
+sdb                                  8:16   0   1.7T  0 disk
+sdc                                  8:32   0   1.7T  0 disk
+sr0                                 11:0    1   1.2G  0 rom  /run/media/iso
+nvme0n1                            259:0    0   2.9T  0 disk
+[root@localhost ~]# file -Ls /dev/sda1
+/dev/sda1: ISO 9660 CD-ROM filesystem data 'config-2'
+```
+
+Here we can see parition `/dev/sda1` is formated as an ISO 9660 CD-ROM and the cause of
+this isse. Depending on hardware this could actually be a different symbolic link. In
+order to resolve this we will wipe the disk by executing the following commands:
+
+```console
+[root@localhost ~]# vgs
+  VG                  #PV #LV #SN Attr   VSize   VFree
+  vg_d27-h31-000-r650   1   2   0 wz--n- 446.62g    0
+[root@localhost ~]# vgremove vg_d27-h31-000-r650
+Do you really want to remove active logical volume vg_d27-h31-000-r650/lv_swap? [y/n]: y
+  Logical volume "lv_swap" successfully removed.
+Do you really want to remove active logical volume vg_d27-h31-000-r650/lv_root? [y/n]: y
+  Logical volume "lv_root" successfully removed.
+  Volume group "vg_d27-h31-000-r650" successfully removed
+[root@localhost ~]# vgs
+[root@localhost ~]# pvs
+  PV         VG Fmt  Attr PSize    PFree
+  /dev/sda5     lvm2 ---  <446.63g <446.63g
+[root@localhost ~]# pvremove /dev/sda5
+  Labels on physical volume "/dev/sda5" successfully wiped.
+[root@localhost ~]# pvs
+[root@localhost ~]# lsblk
+NAME    MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+loop0     7:0    0 251.7G  0 loop /var/lib/containers/storage/overlay
+                                  /var
+                                  /etc
+                                  /run/ephemeral
+loop1     7:1    0   1.1G  1 loop /usr
+                                  /boot
+                                  /
+                                  /sysroot
+sda       8:0    0 447.1G  0 disk
+├─sda1    8:1    0     1M  0 part
+├─sda2    8:2    0     1M  0 part
+├─sda3    8:3    0   512M  0 part
+├─sda4    8:4    0     1K  0 part
+└─sda5    8:5    0 446.6G  0 part
+sdb       8:16   0   1.7T  0 disk
+sdc       8:32   0   1.7T  0 disk
+sr0      11:0    1   1.2G  0 rom  /run/media/iso
+nvme0n1 259:0    0   2.9T  0 disk
+[root@localhost ~]# wipefs -f -a /dev/sda
+/dev/sda: 2 bytes were erased at offset 0x000001fe (dos): 55 aa
+```
+
+Now the disk is wiped of the cruft partition. You can now retry a new deployment to verify this machine is now installable.
 
 # Bastion
 
@@ -170,6 +269,14 @@ When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead o
 # reboot
 ```
 
+## Root disk too small
+
+For disconnected environments, the bastion machine will serve all OCP, operator and
+additional container images from its local disconnected registry. Some machines in the
+lab have been found to have root disks which are on the order of only 70G and can fill
+with 1 or 2 OCP releases synced. If the bastion is one of those machines, relocate `/opt`
+to a separate larger disk so the machine does not run out of space on the root disk.
+
 # Generic Hardware
 
 ## Minimum Firmware Versions
@@ -188,10 +295,29 @@ sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example
 
 Substitute the user/password/hostname to perform the reset on a desired host. Note it will take a few minutes before the BMC will become available again.
 
-## Unable Mount Virtual Media
+## Unable to Insert/Mount Virtual Media
 
-In some cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual Console Plug-in Type being set as eHTML5 instead of HTML5.
-To change this, navigate to Configuration -> Virtual Console -> Plug-in Type and select HTML5 instead of eHTML5.
+There have been cases where specific versions of iDrac produce an error message resembling:
+
+```console
+TASK [boot-iso : DELL - Insert Virtual Media] *********************************************************************************************************************************************************************
+Tuesday 21 January 2025  00:34:48 +0000 (0:00:00.024)       0:04:10.771 *******
+fatal: [example.com]: FAILED! => {"changed": false, "msg": "HTTP Error 400 on POST request to 'https://example.com/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia', extended message: 'Unable to locate the ISO or IMG image file or folder in the network share location because the file or folder path or the user credentials entered are incorrect.'"}
+```
+
+In this case the iDrac firmware was the incorrect version. Working version of firmware
+has been `7.10.30.00` where as the above error message was produced with versions
+`7.10.70.10` and `7.10.50.10`.
+
+Firmware can be checked across many machines by scripting cli commands such as:
+
+```console
+echo -n "mgmt-computer.example.com: "; sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example.com "racadm getversion" | grep iDRAC
+```
+
+In other cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual
+Console Plug-in Type being set as eHTML5 instead of HTML5. To change this, navigate to
+Configuration -> Virtual Console -> Plug-in Type and select HTML5 instead of eHTML5.
 
 # Supermicro
 
@@ -273,36 +399,6 @@ The property Boot is not in the list of valid properties for the resource.
 This is caused by having an older BIOS version.
 
 When set to ignore the error, Jetlag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
-
-# Generic Lab
-
-## Boot mode
-
-In the Performance lab working with Dell machines, the boot mode of the nodes where OCP should be installed should be set to **UEFI** regardless of MNO or SNO cluster types. In the Scale lab there is no evidence of this issue, the machines are usually delivered with the **BIOS** mode set. This can be easily done with badfish:
-
-```console
-badfish -H mgmt-<fqdn> -u user -p password --set-bios-attribute --attribute BootMode --value Uefi
-```
-
-Symptoms to look for: The OCP installation will successfully write the RHEL CoreOS image to the node and boot it up, where the node will be discovered by the bastion. In the virtual console of the management interface during the booting step, you can see a banner indicating *virtual media*. However, the following steps, where the OCP installation happens, will fail with a jetlag retry timeout with an error similar to:
-
-```
-Expected the host to boot from disk, but it booted the installation image - please reboot and fix boot order to boot from disk ...
-```
-
-Other things to look at:
-
-1) Check the disk name (default in Jetlag is /dev/sda, but it could be sdb, sdl, etc.), depending on how the machine's disks are configured. Verify where OCP is being installed and booted up compared to jetlag's default disk name.
-
-2) Did the machine boot the virtual media (management interface, i.e., iDRAC for Dell machines)?
-If the virtual media did not boot, it is most likely a *boot order* issue.
-Three other things to consider, however less common, are: 1) An old firmware that requires an iDRAC/BMC reset, 2) the DNS settings in the BMC cannot resolve the bastion, and 3) Check for subnet address collision in your local inventory file.
-
-## Network pre-configuration
-
-You may receive machines from the lab team with some pre-assigned IP addresses, e.g., 198.xx.
-Before the OCP install and any boot order changes, ssh on the machines to nuke these IP addresses with the script *clean-interfaces.sh*.
-
 
 # Scalelab
 
