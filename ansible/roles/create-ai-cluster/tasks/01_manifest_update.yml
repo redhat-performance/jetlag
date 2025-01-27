@@ -11,4 +11,3 @@
     }
   when:
    - item.enabled | default(true) | bool
-   - not (item.enabled_pao | default(false) | bool)

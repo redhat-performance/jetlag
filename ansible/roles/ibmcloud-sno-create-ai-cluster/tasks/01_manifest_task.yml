@@ -2,13 +2,12 @@
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   with_items:
+  - file_name: 06-kdump-master.yaml
+    template_name: 06-kdump-master.yaml
+    enabled: "{{ kdump_master_config }}"
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
-    enabled: "{{ kubelet_config }}"
-    enabled_pao: "{{ du_profile }}"
-  - file_name: 99-master-kdump.yml
-    template_name: 99-master-kdump.yml
-    enabled: "{{ kdump_master_config }}"
+    enabled: "{{ kubelet_config and not du_profile }}"
   - file_name: 99-master-workload-partitioning.yml
     template_name: 99-master-workload-partitioning.yml
     enabled: "{{ du_profile }}"

@@ -1,5 +1,5 @@
 interfaces:
-- name: {{ hostvars[item]['network_interface'] }}
+- name: {{ hostvars[groups['sno'][0]]['network_interface'] }}
   type: ethernet
   state: up
   mtu: {{ 9000 if jumbo_mtu is defined and jumbo_mtu else 1500 }}
@@ -9,11 +9,11 @@ interfaces:
   ipv6:
 {% endif %}
     address:
-    - ip: {{ hostvars[item]['ip'] }}
-      prefix-length: {{ hostvars[item]['network_prefix'] }}
+    - ip: {{ hostvars[groups['sno'][0]]['ip'] }}
+      prefix-length: {{ hostvars[groups['sno'][0]]['network_prefix'] }}
     auto-dns: false
     enabled: true
-- name: {{ hostvars[item]['lab_interface']}}
+- name: {{ hostvars[groups['sno'][0]]['lab_interface']}}
   type: ethernet
   state: up
   ipv4:
@@ -22,9 +22,9 @@ interfaces:
 dns-resolver:
   config:
     server:
-    - {{ hostvars[item]['dns1'] }}
-{% if 'dns2' in hostvars[item] %}
-    - {{ hostvars[item]['dns2'] }}
+    - {{ hostvars[groups['sno'][0]]['dns1'] }}
+{% if 'dns2' in hostvars[groups['sno'][0]] %}
+    - {{ hostvars[groups['sno'][0]]['dns2'] }}
 {% endif %}
 routes:
   config:
@@ -33,5 +33,5 @@ routes:
 {% else %}
   - destination: ::/0
 {% endif %}
-    next-hop-address: {{ hostvars[item]['gateway'] }}
-    next-hop-interface: {{ hostvars[item]['network_interface'] }}
+    next-hop-address: {{ hostvars[groups['sno'][0]]['gateway'] }}
+    next-hop-interface: {{ hostvars[groups['sno'][0]]['network_interface'] }}

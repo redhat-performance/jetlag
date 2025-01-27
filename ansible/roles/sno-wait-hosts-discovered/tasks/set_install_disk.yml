@@ -3,20 +3,20 @@
 
 - name: Set SNO host id and current install disk
   set_fact:
-    sno_host_id: "{{ sno_cluster.json.hosts[0].id }}"
-    current_install_disk: "{{ sno_cluster.json.hosts[0].installation_disk_path }}"
-    sno_hostname: "{{ sno_cluster.json.hosts[0].requested_hostname | split('.') | first }}"
+    sno_host_id: "{{ cluster.json.hosts[0].id }}"
+    current_install_disk: "{{ cluster.json.hosts[0].installation_disk_path }}"
+    sno_hostname: "{{ cluster.json.hosts[0].requested_hostname | split('.') | first }}"
 
 # - debug:
 #     msg: "{{ item }}"
 #   loop:
 #     - "Host ID: {{ sno_host_id }}"
 #     - "Current Install Disk: {{ current_install_disk }}"
-#     - "Future Install Disk: {{ hostvars[sno_cluster.json.hosts[0].requested_hostname | split('.') | first].install_disk }}"
+#     - "Future Install Disk: {{ hostvars[cluster.json.hosts[0].requested_hostname | split('.') | first].install_disk }}"
 
 - name: Adjust non-by-path selected install disk
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_cluster_ids[sno_hostname].infraenv_id }}/hosts/{{ sno_host_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ sno_host_id }}"
     method: PATCH
     status_code: [201]
     return_content: true
@@ -39,14 +39,14 @@
 
 - name: Get by-path disk id
   set_fact:
-    new_disk_id: "{{ (sno_cluster.json.hosts[0].inventory | from_json | json_query(query) | first).id }}"
+    new_disk_id: "{{ (cluster.json.hosts[0].inventory | from_json | json_query(query) | first).id }}"
   vars:
     query: "disks[?by_path=='{{ hostvars[sno_hostname].install_disk }}']"
   when: '"by-path" in hostvars[sno_hostname].install_disk'
 
 - name: Adjust by-path selected install disk
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_cluster_ids[sno_hostname].infraenv_id }}/hosts/{{ sno_host_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ sno_host_id }}"
     method: PATCH
     status_code: [201]
     return_content: true

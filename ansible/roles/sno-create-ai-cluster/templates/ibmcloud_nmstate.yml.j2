@@ -4,26 +4,26 @@ interfaces:
   state: up
   ipv4:
     address:
-    - ip: {{ hostvars[item]['private_address'] }}
-      prefix-length: {{ hostvars[item]['private_network_prefix'] }}
+    - ip: {{ hostvars[groups['sno'][0]]['private_address'] }}
+      prefix-length: {{ hostvars[groups['sno'][0]]['private_network_prefix'] }}
     enabled: true
   link-aggregation:
     mode: 802.3ad
     options:
       miimon: '100'
     port:
-{% for interface in hostvars[item]['bond0_interfaces'] %}
+{% for interface in hostvars[groups['sno'][0]]['bond0_interfaces'] %}
     - {{ interface }}
 {% endfor %}
 dns-resolver:
   config:
     server:
-    - {{ hostvars[item]['dns1'] }}
-{% if 'dns2' in hostvars[item] %}
-    - {{ hostvars[item]['dns2'] }}
+    - {{ hostvars[groups['sno'][0]]['dns1'] }}
+{% if 'dns2' in hostvars[groups['sno'][0]] %}
+    - {{ hostvars[groups['sno'][0]]['dns2'] }}
 {% endif %}
 routes:
   config:
   - destination: 0.0.0.0/0
-    next-hop-address: {{ hostvars[item]['gateway'] }}
+    next-hop-address: {{ hostvars[groups['sno'][0]]['gateway'] }}
     next-hop-interface: bond0
