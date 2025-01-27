@@ -239,8 +239,6 @@ Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally A
 
 Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
-Only change `networktype` if you need to test something other than `OVNKubernetes`
-
 ### Bastion node vars
 
 Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
@@ -357,9 +355,6 @@ ocp_build: "ga"
 # For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
-
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
-networktype: OVNKubernetes
 
 # Lab Network type, applies to sno and mno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable

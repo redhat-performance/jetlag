@@ -55,7 +55,7 @@
         "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
         "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
         "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
-        "network_type": "{{ networktype }}"
+        "network_type": "OVNKubernetes"
     }
   register: create_cluster_return
 

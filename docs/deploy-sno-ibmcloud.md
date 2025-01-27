@@ -214,9 +214,6 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
-networktype: OVNKubernetes
-
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:

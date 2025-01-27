@@ -60,11 +60,6 @@
     msg: "Insufficient number of nodes in your allocation for number of SNOs to be deployed"
   when: (allocation_node_count is defined and cluster_type == "sno") and (1 > allocation_node_count | int  - 1)
 
-- name: Check if networktype is either "OVNKubernetes" or "OpenShiftSDN"
-  fail:
-    msg: "networktype can only be OVNKubernetes or OpenShiftSDN for MNO clusters"
-  when: (cluster_type == "mno") and (networktype not in mno_network_types)
-
 - name: Validate Red Hat lab vars
   when: lab in rh_labs
   block:

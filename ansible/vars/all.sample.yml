@@ -28,9 +28,6 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
 
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
-networktype: OVNKubernetes
-
 # Lab Network type, applies to sno and mno cluster_type only
 # Set this variable if you want to host your SNO cluster on lab public routable
 # VLAN network, set this ONLY if you have public routable VLAN enabled in your

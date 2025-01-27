@@ -199,8 +199,6 @@ Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally A
 
 Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
 
-Only change `networktype` if you need to test something other than `OVNKubernetes`
-
 Set `ssh_private_key_file` and `ssh_public_key_file` to the file location of the ssh key files to access your ibmcloud bare metal servers.
 
 ### Bastion node vars
@@ -260,9 +258,6 @@ ocp_build: "ga"
 # For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
-
-# Either "OVNKubernetes" or "OpenShiftSDN" (Only for MNO cluster type)
-networktype: OVNKubernetes
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub

@@ -21,7 +21,7 @@ capabilities:
 {% endif %}
 {% else %}
 networking:
-  networkType: {{ networktype }}
+  networkType: OVNKubernetes
 {% endif %}
 {% if enable_fips | default(false) %}
 fips: true
