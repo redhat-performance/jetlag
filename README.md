@@ -38,6 +38,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 
 | Hardware           | MNO | SNO |
 | ------------------ | --- | --- |
+| Dell r750          | Yes | No  |
 | Dell r660          | Yes | Yes |
 | Dell r650          | Yes | Yes |
 | Dell r640          | Yes | Yes |

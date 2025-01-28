@@ -16,3 +16,7 @@ assisted_postgres_image: quay.io/edge-infrastructure/postgresql-12-centos7
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 assisted_image_service_port: 8888
+
+# Enables longer timeouts due to r750s longer reboot timing
+enable_assisted_installer_long_timeouts: false
+assisted_installer_long_timeout: 140m

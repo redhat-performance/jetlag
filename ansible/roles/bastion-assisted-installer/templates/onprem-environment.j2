@@ -43,3 +43,23 @@ CONTROLLER_IMAGE={{ assisted_installer_controller_image.split(":")[0] }}@{{ assi
 CONTROLLER_IMAGE={{ assisted_installer_controller_image }}
 {% endif %}
 AGENT_DOCKER_IMAGE={{ assisted_installer_agent_image }}
+
+# Additional finalizing env variables to permit r750s with slow reboot time to join cluster
+{% if enable_assisted_installer_long_timeouts %}
+FINALIZING_STAGE_WAITING_FOR_CLUSTER_OPERATORS_TIMEOUT={{ assisted_installer_long_timeout }}
+FINALIZING_STAGE_ADDING_ROUTER_CA_TIMEOUT={{ assisted_installer_long_timeout }}
+FINALIZING_STAGE_APPLYING_OLM_MANIFESTS_TIMEOUT={{ assisted_installer_long_timeout }}
+FINALIZING_STAGE_WAITING_FOR_OLM_OPERATORS_CSV_INITIALIZATION_TIMEOUT={{ assisted_installer_long_timeout }}
+FINALIZING_STAGE_WAITING_FOR_OLM_OPERATORS_CSV_TIMEOUT={{ assisted_installer_long_timeout }}
+FINALIZING_STAGE_WAITING_FOR_OLM_OPERATOR_SETUP_JOBS_TIMEOUT={{ assisted_installer_long_timeout }}
+FINALIZING_STAGE_DONE_TIMEOUT={{ assisted_installer_long_timeout }}
+{% else %}
+# Set enable_assisted_installer_long_timeouts to true to enable during setup-bastion.yml
+# FINALIZING_STAGE_WAITING_FOR_CLUSTER_OPERATORS_TIMEOUT={{ assisted_installer_long_timeout }}
+# FINALIZING_STAGE_ADDING_ROUTER_CA_TIMEOUT={{ assisted_installer_long_timeout }}
+# FINALIZING_STAGE_APPLYING_OLM_MANIFESTS_TIMEOUT={{ assisted_installer_long_timeout }}
+# FINALIZING_STAGE_WAITING_FOR_OLM_OPERATORS_CSV_INITIALIZATION_TIMEOUT={{ assisted_installer_long_timeout }}
+# FINALIZING_STAGE_WAITING_FOR_OLM_OPERATORS_CSV_TIMEOUT={{ assisted_installer_long_timeout }}
+# FINALIZING_STAGE_WAITING_FOR_OLM_OPERATOR_SETUP_JOBS_TIMEOUT={{ assisted_installer_long_timeout }}
+# FINALIZING_STAGE_DONE_TIMEOUT={{ assisted_installer_long_timeout }}
+{% endif %}
