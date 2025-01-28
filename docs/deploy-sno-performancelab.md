@@ -62,18 +62,13 @@ should be executed from the bastion.
 You need to be running at least RHEL 8.6 to have the minimal `podman`. We recommend
 upgrading to RHEL 8.9 using the `/root/update-latest-rhel-release.sh` script
 provisioned by the QUADS system. You can determine the installed version by looking
-at `/etc/redhat-release`, and the update script allows you to ask what versions are available:
+at `/etc/redhat-release`.
 
 ```console
 [root@<bastion> ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.2 (Ootpa)
-[root@<bastion> ~]# /root/update-latest-rhel-release.sh list`
-8.2 8.6 8.9
-```
-
-```console
+Red Hat Enterprise Linux release 8.6 (Ootpa)
 [root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
-Changing repository from 8.2 to 8.9
+Changing repository from 8.6 to 8.9
 Cleaning dnf repo cache..
 
 -------------------------
