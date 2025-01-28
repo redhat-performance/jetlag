@@ -397,6 +397,9 @@ public_vlan: false
 # Enables FIPs security standard
 enable_fips: false
 
+# Enables Operators CNV and LSO install at deployment timeframe
+enable_cnv_install: false
+
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
 # Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
