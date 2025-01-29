@@ -25,7 +25,7 @@ _**Table of Contents**_
   - [Reset BMC / Resolving redfish connection error](#reset-bmc--resolving-redfish-connection-error)
   - [Missing Administrator IPMI privileges](#missing-administrator-ipmi-privileges)
   - [Failure of TASK SuperMicro Set Boot](#failure-of-task-supermicro-set-boot)
-- [Scalelab](#scalelab)
+- [Red Hat Labs](#red-hat-labs)
   - [Fix boot order of machines](#fix-boot-order-of-machines)
   - [Upgrade RHEL](#upgrade-rhel)
 <!-- /TOC -->
@@ -59,7 +59,7 @@ If the machines are reachable, but never registered with the assisted-installer,
 
 If some nodes correctly registered but some did not, then the missing nodes need to be individually diagnosed. On a missing node, check if the BMC actually mounted the virtual media. Typically the machine just requires a BMC reset due to not booting virtual media which is described in below sections. Another possibility includes non-functional hardware and thus the machine does not boot into the discovery image.
 
-## Failed on Wait for cluster to be ready 
+## Failed on Wait for cluster to be ready
 
 Check the "View cluster events" on the assisted-installer GUI to see if any validations
 are failing. If you see `Host xxxxx: validation sufficient-packet-loss-requirement-for-role that used to succeed is now failing`
@@ -400,11 +400,11 @@ This is caused by having an older BIOS version.
 
 When set to ignore the error, Jetlag can proceed, but you will need to manually unmount the ISO when the machines reboot the second time (as in not the reboot that happens immediately when Jetlag is run, but the one that happens after a noticeable delay). The unmount must be done as soon as the machines restart, as doing it too early can interrupt the process, and doing it after it boots into the ISO will be too late.
 
-# Scalelab
+# Red Hat Labs
 
 ## Fix boot order of machines
 
-If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
+If a machine needs to be rebuilt in the lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
 > [!NOTE]
 > The process for the Performance Lab is similar, however the GitLab `config/idrac_interfaces.yml`
@@ -412,9 +412,9 @@ If a machine needs to be rebuilt in the Scale Lab and refuses to correctly rebui
 > necessary modifications are not covered here.
 
 ```console
-badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
-badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
-badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
+podman run -it --rm quay.io/quads/badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
+podman run -it --rm quay.io/quads/badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --check-boot
+podman run -it --rm quay.io/quads/badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --power-cycle
 ```
 
 Substitute the user/password/hostname to allow the boot order to be fixed on the host machine. Note it will take a few minutes before the machine should reboot. If you previously triggered a rebuild, the machine will likely go straight into rebuild mode afterwards. You can learn more about [badfish here](https://github.com/redhat-performance/badfish).
@@ -434,10 +434,8 @@ The values in *config/idrac_interfaces.yml* are first of all for the Scale lab.
 - POLLING: [------------------->] 100% - Host state: On
 - INFO     - Command passed to On server, code return is 204.
 ```
-## Upgrade RHEL
 
-> [!TIP]
-> This applies to Scale lab and Performance lab.
+## Upgrade RHEL
 
 On the bastion machine:
 
