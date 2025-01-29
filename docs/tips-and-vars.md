@@ -45,13 +45,15 @@ Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redha
 
 ## Install disk by-path vars
 
+Setting the install disk to use a by-path link is required for multi-disk systems as a
+symbolic link can change which underlying disk is referenced and may refer to a
+non-bootable disk or disk later in the boot order of hard disks. If this occurs, the
+deployment will eventually fail as the installed OCP is unable to boot properly.
+
 > [!TIP]
-> For multi node deployment of OCP 4.13 or greater it is advisable to
-> set the extra vars for by-path reference for the installation as sometimes disk
-> names get swapped during boot discovery (e.g., sda and sdb). Using the PCI
-> paths (in a homogeneous Scale or Performance lab cloud) should be consistent across
-> all the machines, and isn't subject to change during discovery. Below are the
-> extra vars along with the hardware used.
+> Using the PCI paths (in a homogeneous Scale or Performance lab cloud) should be
+> consistent across all the machines, and isn't subject to change during discovery.
+> Below are the extra vars along with the hardware used.
 
 For 3-node MNO deployments you only need to set `control_plane_install_disk`, if your
 MNO deployment has worker nodes then you will also need to set `worker_install_disk`.
@@ -79,8 +81,14 @@ edit the inventory file to set appropriate install paths for each machine.
 
 | Hardware | Install disk path
 | - | - |
-| Dell r740xd | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
-| Dell r750  | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
+| Dell r740xd (SL-N, SL-G, SL-U, CL-N) | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+| Dell r740xd (CL-U, CL-G) | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
+| Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
+| Dell r7425 | /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0 |
+| Dell r7525 | /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0 |
+| SuperMicro 6029p | /dev/disk/by-path/pci-0000:00:11.5-ata-5 |
+| Dell xe8640  | /dev/disk/by-path/pci-0000:01:00.0-nvme-1 |
+| Dell xe9680  | /dev/disk/by-path/pci-0000:01:00.0-nvme-1 |
 
 To find your machine's by-path reference:
 
