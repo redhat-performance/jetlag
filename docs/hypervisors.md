@@ -33,6 +33,11 @@ The default VM resource configuration is:
 
 The number of vms per hypervisor type depends largely on if there are extra disks with the default resource configuration. The count of vms per machine type is hard-coded in the `vars/lab.yml` file. If you want to customize the count adjust the value per the machine type as desired in the `vars/lab.yml`.
 
+## Prerequisites
+
+Versions:
+* RHEL >= 9 (Hypervisors)
+
 ## Network
 
 The hypervisors bridge a network interface that was determined at the `create-inventory.yml` playbook timeframe. Review your inventory before running `hv-setup.yml` to ensure the interface you intended was selected.
