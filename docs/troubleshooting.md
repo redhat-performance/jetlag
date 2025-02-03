@@ -70,8 +70,10 @@ address.
 ## Failed on Adjust by-path selected install disk
 
 In rare cases, jetlag is unable to set the install disk because there are leftover cruft
-partitions on the intended install disk that tricks assisted installer into believe the
-entire disk is an ISO or CD partition. In those cases you will see an error resembling:
+partitions on the intended install disk that tricks assisted installer into believing the
+entire disk is an ISO or CD partition. The cruft partitions appear to survive a foreman
+rebuild and thus a more robust method of wiping is required while the node is booted from
+a discovery.iso or another LiveCD. The jetlag error you will see resembles:
 
 ```console
 TASK [wait-hosts-discovered : Adjust by-path selected install disk] ************
@@ -425,7 +427,7 @@ Also, watch for the output of **--boot-to-type foreman**, because the correct bo
 The values in *config/idrac_interfaces.yml* are first of all for the Scale lab.
 
 ```console
-[user@<local> badfish]$ ./src/badfish/badfish.py -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
+[user@<local> badfish]$ podman run -it --rm quay.io/quads/badfish -H mgmt-computer.example.com -u user -p password -i config/idrac_interfaces.yml -t foreman
 - INFO     - Job queue for iDRAC mgmt-computer.example.com successfully cleared.
 - INFO     - PATCH command passed to update boot order.
 - INFO     - POST command passed to create target config job.
