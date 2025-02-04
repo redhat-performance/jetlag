@@ -137,6 +137,7 @@ Make sure to set/review the following vars:
 | `lab_cloud` | the cloud within the lab environment for Red Hat Performance labs (Example: `cloud42`)
 | `cluster_type` | either `mno`, or `sno` for the respective cluster layout
 | `worker_node_count` | applies to mno cluster type for the desired worker count, ideal for leaving left over inventory hosts for other purposes
+| `hybrid_worker_count` | applies to mno cluster type for the desired virtual worker count, HV nodes and VMs are required to be setup.
 | `bastion_lab_interface` | set to the bastion machine's lab accessible interface
 | `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
 | `controlplane_lab_interface` | applies to mno cluster type and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)

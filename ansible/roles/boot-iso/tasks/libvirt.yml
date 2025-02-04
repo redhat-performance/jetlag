@@ -1,0 +1,85 @@
+---
+# Libvirt tasks for booting an iso
+# Couldn't use ansible redfish_command it requires username and password to be used.
+# URLs modeled from http://docs.openstack.org/sushy-tools/latest/user/dynamic-emulator.html
+
+- name: Libvirt - Power down machine prior to booting iso
+  uri:
+    url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}/Actions/ComputerSystem.Reset"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {"ResetType":"ForceOff"}
+    body_format: json
+    validate_certs: no
+    status_code: 204
+    return_content: yes
+  register: redfish_forceoff
+
+- name: Libvirt - Set OneTimeBoot VirtualCD
+  uri:
+    url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}"
+    method: PATCH
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: { "Boot": { "BootSourceOverrideTarget": "Cd", "BootSourceOverrideMode": "UEFI", "BootSourceOverrideEnabled": "Continuous" } }
+    body_format: json
+    validate_certs: no
+    status_code: 204
+    return_content: yes
+
+- name: Libvirt - Check for Virtual Media
+  uri:
+    url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}/VirtualMedia/Cd"
+    method: Get
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {}
+    body_format: json
+    validate_certs: no
+    status_code: 200
+    return_content: yes
+  register: check_virtual_media
+
+- name: Libvirt - Eject any CD Virtual Media
+  uri:
+    url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}/VirtualMedia/Cd/Actions/VirtualMedia.EjectMedia"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {}
+    body_format: json
+    validate_certs: no
+    status_code: 204
+    return_content: yes
+  when: check_virtual_media.json.Image
+
+- name: Libvirt - Insert virtual media
+  uri:
+    url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}/VirtualMedia/Cd/Actions/VirtualMedia.InsertMedia"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {"Image":"http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}", "Inserted": true}
+    body_format: json
+    validate_certs: no
+    status_code: 204
+    return_content: yes
+
+- name: Libvirt - Power on
+  uri:
+    url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}/Actions/ComputerSystem.Reset"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body: {"ResetType":"On"}
+    body_format: json
+    validate_certs: no
+    status_code: 204
+    return_content: yes

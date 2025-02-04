@@ -33,3 +33,7 @@ hv_vm_bandwidth_burst: 11750
 
 # Path for VMs on disk2
 disk2_mount_path: /mnt/disk2
+
+# If HV is setup, how many workers are VMs
+# This adds vm workers to the workers section of the inventory
+hybrid_worker_count: 0
