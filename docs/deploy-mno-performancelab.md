@@ -365,7 +365,7 @@ public_vlan: false
 # Enables FIPs security standard
 enable_fips: false
 
-# Enables Operators CNV and LSO install at deployment timeframe
+# Enables Operators CNV and LSO install at deployment timeframe (GA releases only)
 enable_cnv_install: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
