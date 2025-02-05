@@ -259,7 +259,7 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
 
-# Enables Operators CNV and LSO install at deployment timeframe
+# Enables Operators CNV and LSO install at deployment timeframe (GA releases only)
 enable_cnv_install: false
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
