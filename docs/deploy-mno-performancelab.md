@@ -253,7 +253,7 @@ bastion_controlplane_interface: ens3f0
 
 Here you can see a network diagram for the multi node metal cluster on Dell r650 with 3 workers and 3 master nodes:
 
-![BM Cluster](img/mno_cluster.png)
+![MNO Cluster](img/mno_cluster.png)
 
 Double check your nic names with your actual bastion machine.
 

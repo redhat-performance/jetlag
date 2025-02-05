@@ -11,7 +11,7 @@ sno_hardware_ids: []
 
 vendor_mapping: {}
 
-# Default install disks for bm
+# Default install disks for mno
 control_plane_install_disk: /dev/sda
 worker_install_disk: /dev/sda
 
