@@ -1,6 +1,10 @@
 ---
 # Dell tasks for booting an iso
 
+- name: Set Virtual Media ISO
+  set_fact:
+    _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
+
 - name: Dell - Power down machine prior to booting iso
   shell: |
     ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
@@ -80,7 +84,7 @@
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     virtual_media:
-      image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
+      image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}"
       media_types:
       - CD
       - DVD
