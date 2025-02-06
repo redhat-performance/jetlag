@@ -18,12 +18,97 @@
   register: mirror_cert
   when: use_bastion_registry
 
-- name: Create each SNO and infra-env
-  include_tasks: create_individual_sno.yml
-  loop: "{{ groups['sno'][:1] }}"
+- name: (RH Lab) Assemble SNO static network config
+  set_fact:
+    static_network_config:
+    - network_yaml: "{{ lookup('template', 'nmstate.yml.j2') }}"
+      mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
+  when:
+  - lab in rh_labs
+  - use_bastion_registry
+
+- name: (Cloud lab) Assemble SNO static network config
+  set_fact:
+    static_network_config:
+    - network_yaml: "{{ lookup('template', 'ibmcloud_nmstate.yml.j2') }}"
+      mac_interface_map: "{{ lookup('template', 'ibmcloud_mac_interface_map.json.j2')  }}"
+  when: lab in cloud_labs
 
 # - debug:
-#     msg: "{{ ai_cluster_ids }}"
+#     msg: "{{ static_network_config }}"
+
+- name: Create SNO cluster
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "name": "{{ groups['sno'][0] }}",
+        "openshift_version": "{{ openshift_version }}",
+        "high_availability_mode": "None",
+        "base_dns_domain": "{{ base_dns_name }}",
+        "cluster_network_cidr": "{{ cluster_network_cidr }}",
+        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
+        "service_network_cidr": "{{ service_network_cidr }}",
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
+        "additional_ntp_source": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}"
+    }
+  register: create_cluster_return
+
+- name: Set ai_cluster_id
+  set_fact:
+    ai_cluster_id: "{{ create_cluster_return.json.id }}"
+
+# No static_network_config as a connected SNO uses the DHCP lab interface
+- name: Create a connected infra-env
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs"
+    method: POST
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "name": "{{ groups['sno'][0] }}",
+        "additional_ntp_sources": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
+        "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
+        "pull_secret": "{{ pull_secret | to_json }}",
+        "image_type": "full-iso",
+        "cluster_id": "{{ ai_cluster_id }}",
+        "openshift_version": "{{ openshift_version }}",
+    }
+  register: create_infra_env_return
+
+- name: Set ai_infraenv_id
+  set_fact:
+    ai_infraenv_id: "{{ create_infra_env_return.json.id }}"
+
+- name: Patch infra-env for bastion registry with ignition config overrides
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "ignition_config_override": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}",
+        "static_network_config": "{{ static_network_config }}"
+    }
+  when: use_bastion_registry
+
+- name: Patch infra-env for cloud labs with static network config
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "static_network_config": "{{ static_network_config }}"
+    }
+  when: lab in cloud_labs
 
 - name: set machine network cidr for public vlan
   set_fact:
@@ -50,7 +135,7 @@
 
 - name: Update machine CIDR
   uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_ids[item].cluster_id }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
     method: PATCH
     body_format: json
     status_code: [201]
@@ -58,24 +143,22 @@
     body: {
         "machine_network_cidr": "{{ machine_network_cidr }}"
     }
-  with_items: "{{ ai_cluster_ids }}"
 
 - name: Add entries in /etc/hosts
   blockinfile:
     path: "/etc/hosts"
     backup: true
     block: |
-      {{ hostvars[item].ip }} api.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
-      {{ hostvars[item].ip }} api-int.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[groups['sno'][0]].ip }} api.{{ groups['sno'][0] }}.{{ base_dns_name }}
+      {{ hostvars[groups['sno'][0]].ip }} api-int.{{ groups['sno'][0] }}.{{ base_dns_name }}
       {% for route in etc_hosts_ingress_routes %}
-      {{ hostvars[item].ip }} {{ route }}.apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}
+      {{ hostvars[groups['sno'][0]].ip }} {{ route }}.apps.{{ groups['sno'][0] }}.{{ base_dns_name }}
       {% endfor %}
       {% if public_vlan %}
-      {{ hostvars[item].ip }} {{ hostvars[item].inventory_hostname }} # SNO node
+      {{ hostvars[groups['sno'][0]].ip }} {{ groups['sno'][0] }} # SNO node
       {%- endif %}
     insertafter: "EOF"
-    marker: "# {mark} {{ hostvars[item].inventory_hostname }} OCP CLUSTER MANAGED BLOCK"
-  loop: "{{ groups['sno'][:1] }}"
+    marker: "# {mark} {{ groups['sno'][0] }} OCP CLUSTER MANAGED BLOCK"
 
 - name: Restart dnsmasq after /etc/hosts update
   systemd:
@@ -86,7 +169,22 @@
   - not setup_coredns
 
 - name: Include custom manifests
-  include_tasks: 01_manifest_task.yml
-  with_items: "{{ ai_cluster_ids }}"
-  loop_control:
-    loop_var: outer_item
+  include_role:
+    name: create-ai-cluster
+    tasks_from: 01_manifest_update.yml
+  loop:
+  - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
+    template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
+    enabled: "{{ public_vlan | bool }}"
+  - file_name: 06-kdump-master.yaml
+    template_name: 06-kdump-master.yaml
+    enabled: "{{ kdump_master_config }}"
+  - file_name: kubeletconfig-max-pods.yml
+    template_name: kubeletconfig-max-pods.yml
+    enabled: "{{ kubelet_config and not du_profile }}"
+  vars:
+    kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"
+
+- name: Include DU Profile manifests
+  include_tasks: du_profile_manifest_tasks.yml
+  when: du_profile

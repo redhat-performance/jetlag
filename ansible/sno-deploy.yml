@@ -6,7 +6,7 @@
 # ansible-playbook -i ansible/inventory/cloud10.local ansible/sno-deploy.yml
 #
 
-- name: Create SNO cluster(s)
+- name: Create SNO cluster
   hosts: bastion
   vars_files:
   - vars/lab.yml

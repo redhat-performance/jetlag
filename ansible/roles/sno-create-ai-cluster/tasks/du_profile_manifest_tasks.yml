@@ -1,76 +1,67 @@
-- include_role:
+---
+# Manifests that are included with various versions of the DU Profile
+
+- name: All DU Profiles include these manifests
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   with_items:
-  - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
-    template_name: "50-controlplane-disable-lab-dhcp-interface.yml.j2"
-    enabled: "{{ public_vlan | bool }}"
-  - file_name: kubeletconfig-max-pods.yml
-    template_name: kubeletconfig-max-pods.yml
-    enabled: "{{ kubelet_config }}"
-    enabled_pao: "{{ du_profile }}"
-  - file_name: 06-kdump-master.yaml
-    template_name: 06-kdump-master.yaml
-    enabled: "{{ kdump_master_config }}"
   - file_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
     template_name: 01-container-mount-ns-and-kubelet-conf-master.yaml
-    enabled: "{{ du_profile }}"
   - file_name: 03-sctp-machine-config-master.yaml
     template_name: 03-sctp-machine-config-master.yaml
-    enabled: "{{ du_profile }}"
   - file_name: 99-crio-disable-wipe-master.yaml
     template_name: 99-crio-disable-wipe-master.yaml
-    enabled: "{{ du_profile }}"
 
-- include_role:
+- name: DU Profile manifests for 4.13 and older
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version is version('4.13', "<=")    
+  when: openshift_version is version('4.13', "<=")
   with_items:
   - file_name: 99-master-workload-partitioning.yml
     template_name: 99-master-workload-partitioning.yml
-    enabled: "{{ du_profile }}"
 
-- include_role:
+- name: DU Profile manifests for 4.12 and older
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   when: openshift_version is version('4.12', "<=")
   with_items:
   - file_name: 04-accelerated-container-startup-master.yaml
     template_name: 04-accelerated-container-startup-master.yaml
-    enabled: "{{ du_profile }}"
 
-- include_role:
+- name: DU Profile manifests for 4.14 and 4.15
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   when: openshift_version in ["4.14", "4.15"]
   with_items:
   - file_name: enable-cgroups-v1.yaml
     template_name: enable-cgroups-v1.yaml
-    enabled: "{{ du_profile }}"
 
-- include_role:
+- name: DU Profile manifests for 4.14 and newer
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   when: openshift_version is version('4.14', ">=")
   with_items:
   - file_name: 08-set-rcu-normal-master.yaml
     template_name: 08-set-rcu-normal-master.yaml
-    enabled: "{{ du_profile }}"
   - file_name: 99-sync-time-once-master.yaml
     template_name: 99-sync-time-once-master.yaml
-    enabled: "{{ du_profile }}"
 
-- include_role:
+- name: DU Profile manifests for 4.13 and newer
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   when: openshift_version is version('4.13', ">=")  
   with_items:
   - file_name: enable-crun-master.yaml
     template_name: enable-crun-master.yaml
-    enabled: "{{ du_profile }}"
 
-- include_role:
+- name: DU Profile manifests for 4.13 and 4.14
+  include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
   when: openshift_version in ["4.13", "4.14"]
@@ -78,7 +69,3 @@
   - file_name: 05-kdump-config-master.yaml
     template_name: 05-kdump-config-master.yaml
     enabled: "{{ kdump_master_config }}"
-
-  vars:
-    ai_cluster_id: "{{ ai_cluster_ids[outer_item].cluster_id }}"
-    kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"

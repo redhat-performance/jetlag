@@ -1,0 +1,109 @@
+---
+# Tasks that are included with various versions of the DU Profile
+
+- name: Place templated configuration items
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: DisableSnoNetworkDiag.yaml
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/DisableSnoNetworkDiag.yaml"
+  - src: ReduceMonitoringFootprint.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/ReduceMonitoringFootprint.yml"
+  - src: performance-addon-operator.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile/performance-addon-operator.yml"
+  - src: performance-profile.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile/performance-profile.yml"
+  - src: tunedPerformancePatch.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/tunedPerformancePatch/tunedPerformancePatch.yml"
+
+- name: Disable Network Diagnostics - Apply CR
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/DisableSnoNetworkDiag.yaml
+  register: netdiag_disable
+  retries: 120
+  delay: 2
+  until: not netdiag_disable.failed
+
+- name: Reduce Monitoring Footprint - Apply CR
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/ReduceMonitoringFootprint.yml
+  register: monitoring_footprint
+  retries: 120
+  delay: 2
+  until: not monitoring_footprint.failed
+
+- name: Install Performance-Addon-Operator - find channel
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get packagemanifest performance-addon-operator -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
+  register: channel
+  when: install_performance_addon_operator
+
+- name: Install Performance-Addon-Operator - Store channel in var
+  set_fact:
+    ocp_channel: "{{ channel.results[0].stdout }}"
+  when: install_performance_addon_operator
+
+- name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile/performance-addon-operator.yml
+  when: install_performance_addon_operator
+
+- name: Wait until MachineConfigPools are updated
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updated") | .status'
+  register: result
+  delay: 10
+  retries: 240
+  until: result.stdout == "True"
+
+- name: Apply the PerformanceProfile
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile/performance-profile.yml
+  register: perf_result
+  retries: 120
+  delay: 2
+  until: not perf_result.failed
+
+- name: Wait until MachineConfigPools are in Updating state
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updating") | .status'
+  register: result
+  delay: 2
+  retries: 30
+  until: result.stdout == "True"
+  ignore_errors: yes
+
+- name: Wait until MachineConfigPools are Updated
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updated") | .status'
+  register: result
+  delay: 10
+  retries: 240
+  until: result.stdout == "True"
+
+- name: Apply the TunedPerformancePatch
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/tunedPerformancePatch/tunedPerformancePatch.yml
+  register: tunedpatch_result
+  retries: 120
+  delay: 2
+  until: not tunedpatch_result.failed
+
+- name: Wait until MachineConfigPools are in Updating state
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updating") | .status'
+  register: result
+  delay: 2
+  retries: 30
+  until: result.stdout == "True"
+  when: openshift_version is version('4.12', "<=")
+  ignore_errors: yes
+
+- name: Wait until MachineConfigPools are in Updated state
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updated") | .status'
+  register: result
+  delay: 10
+  retries: 240
+  until: result.stdout == "True"

@@ -1,180 +1,109 @@
 ---
 # sno-post-cluster-install tasks
 
-- name: Create directory for sno cluster configuration items
+- name: Create directories for sno cluster configuration items
   file:
-    path: "{{ bastion_cluster_config_dir }}"
+    path: "{{ item }}"
     state: directory
+  loop:
+  - "{{ bastion_cluster_config_dir }}"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/tunedPerformancePatch"
 
-- name: Create directories per sno cluster inside of the above directory
-  file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}"
-    state: directory
-  loop: "{{ ai_cluster_ids | dict2items }}"
-
-- name: Create gitops directory per sno cluster
-  file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/gitops"
-    state: directory
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: setup_openshift_gitops
-
-- name: Create localstorage directory per sno cluster
-  file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage"
-    state: directory
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: sno_localstorage_configuration
-
-- name: Create minio directory per sno cluster
-  file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/minio"
-    state: directory
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: setup_minio | bool
-
-- name: Create performance-profile directory per sno cluster
-  file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile"
-    state: directory
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator or du_profile
-
-- name: Create tunedPerformancePatch directory per sno cluster
-  file:
-    path: "{{ bastion_cluster_config_dir }}/{{ item.key }}/tunedPerformancePatch"
-    state: directory
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator or du_profile
-
-- name: Place templated gitops
-  template:
-    src: openshift-gitops-operator.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/gitops/openshift-gitops-operator.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: setup_openshift_gitops
-
-- name: Place templated localstorage
-  template:
-    src: localstorage.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage/localstorage.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: sno_localstorage_configuration
-
-- name: Place templated localvolume
-  template:
-    src: localvolume.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage/localvolume.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: sno_localstorage_configuration
-
-- name: Place templated localvolume2
-  template:
-    src: localvolume2.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage/localvolume2.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: localvolume2_configuration
-
-- name: Place templated minio
-  template:
-    src: minio.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/minio/minio.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: setup_minio | bool
-
-- name: Place metal3 manifest
-  template:
-    src: metal3.yml
-    dest: "{{ bastion_cluster_config_dir }}/metal3.yml"
-  when: sno_metal3 | bool
-
-- name: Get credentials (kubeconfig) from installed cluster(s)
+- name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ item.value.cluster_id }}/downloads/credentials?file_name=kubeconfig"
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig"
-  loop: "{{ ai_cluster_ids | dict2items }}"
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/downloads/credentials?file_name={{ item.name }}"
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/{{ item.dest }}"
+  loop:
+  - name: kubeadmin-password
+    dest: kubeadmin-password
+  - name: kubeconfig
+    dest: kubeconfig
+  - name: kubeconfig
+    dest: kubeconfig.backup
 
-- name: Get credentials (kubeadmin-password) from installed cluster(s)
-  get_url:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ item.value.cluster_id }}/downloads/credentials?file_name=kubeadmin-password"
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/kubeadmin-password"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-
-- name: Apply a label to the worker node(s)
+- name: Apply a label to the SNO node
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc label no --all --overwrite jetlag=true
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc label no --all --overwrite jetlag=true
   register: jetlag_label
   retries: 120
   delay: 2
   until: not jetlag_label.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
+
+- name: Place templated configuration items
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+  - src: openshift-gitops-operator.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops/openshift-gitops-operator.yml"
+  - src: localstorage.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localstorage.yml"
+  - src: localvolume.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume.yml"
+  - src: localvolume2.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume2.yml"
+  - src: minio.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio/minio.yml"
+  - src: metal3.yml
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml"
+  - src: openshift-marketplace-ns.yaml
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-marketplace-ns.yaml"
 
 - name: Add kube-burner sa
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create sa kubeburner
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc create sa kubeburner
   register: kubeburner_sa
   retries: 120
   delay: 2
   until: not kubeburner_sa.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Add cluster-admin role to kube-burner sa
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
   register: kubeburner_role
   retries: 120
   delay: 2
   until: not kubeburner_role.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Disable default OperatorHub sources on bastion registry clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
   register: operator_hub_disable
   retries: 120
   delay: 2
   until: not operator_hub_disable.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when:
-    - use_bastion_registry | default(false)
-    - openshift_version is version('4.14', "<=")
-    - du_profile
-
-- name: Place openshift-marketplace-ns.yaml CR for ocp 4.15 and higher releases DUs
-  template:
-    src: openshift-marketplace-ns.yaml
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/openshift-marketplace-ns.yaml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when:
-    - use_bastion_registry | default(false)
-    - openshift_version is version('4.15', ">=")
-    - du_profile
+  - use_bastion_registry | default(false)
 
 - name: Create openshift-marketplace namespace for ocp 4.15 and higher releases DUs
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/openshift-marketplace-ns.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-marketplace-ns.yaml
   register: marketplace_ns
   retries: 120
   delay: 2
   until: not marketplace_ns.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when:
-    - use_bastion_registry | default(false)
-    - openshift_version is version('4.15', ">=")
-    - du_profile
+  - use_bastion_registry | default(false)
+  - openshift_version is version('4.15', ">=")
 
 - name: Apply olm-mirror imageContentSourcePolicy on bastion registry clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
   register: icsp_apply
   retries: 120
   delay: 2
   until: not icsp_apply.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when: use_bastion_registry | default(false)
 
+# Part of DU Profile (Not completely in du_profile_tasks.yml)
 - name: Annotate catalogSource.yaml to pin opm to reserved cores for DUs
   shell: |
     yq -i '.metadata.annotations."target.workload.openshift.io/management" = "{\"effect\": \"PreferredDuringScheduling\"}"' {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
@@ -182,206 +111,57 @@
   retries: 120
   delay: 2
   until: not catsource_annotate.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when: use_bastion_registry | default(false) and du_profile
 
 - name: Apply olm-mirror catalogSource on bastion registry clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
   register: catsource_apply
   retries: 120
   delay: 2
   until: not catsource_apply.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
   when: use_bastion_registry | default(false)
 
 - name: Install OpenShift-gitops-operator
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/gitops/openshift-gitops-operator.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops/openshift-gitops-operator.yml
   when: setup_openshift_gitops
-  loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Setup nodes localstorage
   when: sno_localstorage_configuration
   block:
   - name: Install local-storage operator
     shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage/localstorage.yml
-    loop: "{{ ai_cluster_ids | dict2items }}"
+      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localstorage.yml
 
   # The localvolume resource will not be instantly available, thus retry for around 2 minutes
   - name: Create localvolume resource
     shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage/localvolume.yml
+      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume.yml
     register: lv_result
     until: not lv_result.failed
     retries: 60
     delay: 2
-    loop: "{{ ai_cluster_ids | dict2items }}"
 
   - name: Create localvolume2 resource
     shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/localstorage/localvolume2.yml
+      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume2.yml
     register: lv_result
     until: not lv_result.failed
     retries: 60
     delay: 2
     when: localvolume2_configuration
-    loop: "{{ ai_cluster_ids | dict2items }}"
 
 - name: Setup Minio
   when: setup_minio | bool
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/minio/minio.yml
-  loop: "{{ ai_cluster_ids | dict2items }}"
-
-- name: Disable Network Diagnostics - Place DisableSnoNetworkDiag CR
-  template:
-    src: DisableSnoNetworkDiag.yaml
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/DisableSnoNetworkDiag.yaml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Disable Network Diagnostics - Apply CR
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/DisableSnoNetworkDiag.yaml
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  register: netdiag_disable
-  retries: 120
-  delay: 2
-  until: not netdiag_disable.failed
-  when: du_profile
-
-- name: Reduce Monitoring Footprint - Place ReduceMonitoringFootprint CR
-  template:
-    src: ReduceMonitoringFootprint.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Reduce Monitoring Footprint - Apply CR
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ item.key }}/ReduceMonitoringFootprint.yml
-  register: monitoring_footprint
-  retries: 120
-  delay: 2
-  until: not monitoring_footprint.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Install Performance-Addon-Operator - find channel
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get packagemanifest performance-addon-operator -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
-  register: channel
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
-
-- name: Install Performance-Addon-Operator - Store channel in var
-  set_fact:
-    ocp_channel: "{{ channel.results[0].stdout }}"
-  when: install_performance_addon_operator
-
-- name: Install Performance-Addon-Operator - Place templated PAO namespace, OperatorGroup and subscription
-  template:
-    src: performance-addon-operator.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-addon-operator.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
-
-- name: Install Performance-Addon-Operator - create PAO namespace, OperatorGroup and subscription
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-addon-operator.yml
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: install_performance_addon_operator
-
-- name: Place templated PerformanceProfile
-  template:
-    src: performance-profile.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-profile.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Place templated TunedPerformancePatch
-  template:
-    src: tunedPerformancePatch.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ item.key }}/tunedPerformancePatch/tunedPerformancePatch.yml"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Wait until MachineConfigPools are updated
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updated") | .status'
-  register: result
-  delay: 10
-  retries: 240
-  until: result.stdout == "True"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Apply the PerformanceProfile
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/performance-profile/performance-profile.yml
-  register: perf_result
-  retries: 120
-  delay: 2
-  until: not perf_result.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Wait until MachineConfigPools are in Updating state
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updating") | .status'
-  register: result
-  delay: 2
-  retries: 30
-  until: result.stdout == "True"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-  ignore_errors: yes
-
-- name: Wait until MachineConfigPools are Updated
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updated") | .status'
-  register: result
-  delay: 10
-  retries: 240
-  until: result.stdout == "True"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Apply the TunedPerformancePatch
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc create -f {{ bastion_cluster_config_dir }}/{{ item.key }}/tunedPerformancePatch/tunedPerformancePatch.yml
-  register: tunedpatch_result
-  retries: 120
-  delay: 2
-  until: not tunedpatch_result.failed
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
-
-- name: Wait until MachineConfigPools are in Updating state
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updating") | .status'
-  register: result
-  delay: 2
-  retries: 30
-  until: result.stdout == "True"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile and openshift_version is version('4.12', "<=")
-  ignore_errors: yes
-
-- name: Wait until MachineConfigPools are in Updated state
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc get mcp master -o json | jq -r '.status.conditions[] | select(.type == "Updated") | .status'
-  register: result
-  delay: 10
-  retries: 240
-  until: result.stdout == "True"
-  loop: "{{ ai_cluster_ids | dict2items }}"
-  when: du_profile
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio/minio.yml
 
 - name: Setup Metal3
   when: sno_metal3 | bool
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ item.key }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/metal3.yml
-  loop: "{{ ai_cluster_ids | dict2items }}"
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml
+
+- name: Include DU Profile tasks
+  include_tasks: du_profile_post_install_tasks.yml
+  when: du_profile

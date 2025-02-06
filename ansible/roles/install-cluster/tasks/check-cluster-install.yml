@@ -28,6 +28,7 @@
       return_content: true
     register: cluster
     failed_when: cluster.json.status == 'error' or cluster.json.status == 'cancelled'
+    no_log: true
 
   - name: Get cluster hosts
     uri:
@@ -38,6 +39,7 @@
       return_content: true
     register: get_hosts
     when: not cluster.json.status == 'installed'
+    no_log: true
 
   - name: Dell Fix hosts with incorrect boot order by unmounting virtual media
     include_tasks: dell-unmount-virtual-media.yml
