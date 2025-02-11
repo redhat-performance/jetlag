@@ -1,4 +1,7 @@
 ---
 # ocp-release default vars
 
-release_url: "{{ 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp' if ocp_build == 'ga' else 'https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview' }}"
+release_urls:
+  ga: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
+  dev: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview"
+  ci: "https://openshift-release-artifacts.apps.ci.l2s4.p1.openshiftapps.com"

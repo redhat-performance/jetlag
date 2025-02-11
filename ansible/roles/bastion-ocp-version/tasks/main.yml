@@ -44,7 +44,7 @@
 
 - name: Get the ocp client tar gunzip file
   get_url:
-    url: "{{ release_url }}/{{ocp_release_version}}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
+    url: "{{ release_urls[ocp_build] }}/{{ocp_release_version}}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
     dest: "{{ ocp_version_path }}"
     mode: 0700
   register: client_chk

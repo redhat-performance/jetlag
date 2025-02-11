@@ -3,7 +3,7 @@
 
 - name: Get release.txt file
   uri:
-    url: "{{ release_url }}/{{ ocp_version }}/release.txt"
+    url: "{{ release_urls[ocp_build] }}/{{ ocp_version }}/release.txt"
     return_content: yes
   register: result
   until: result.status == 200
