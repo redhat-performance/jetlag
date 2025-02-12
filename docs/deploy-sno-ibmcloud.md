@@ -12,10 +12,10 @@ _**Table of Contents**_
 <!-- /TOC -->
 
 <!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-bm-byol.md
-     - deploy-bm-ibmcloud.md
-     - deploy-bm-performancelab.md
-     - deploy-bm-scalelab.md
+     - deploy-mno-byol.md
+     - deploy-mno-ibmcloud.md
+     - deploy-mno-performancelab.md
+     - deploy-mno-scalelab.md
      - deploy-sno-ibmcloud.md
      - deploy-sno-scalelab.md
      - deploy-sno-performancelab.md

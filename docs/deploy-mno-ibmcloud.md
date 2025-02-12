@@ -349,17 +349,17 @@ Next run the `ibmcloud-setup-bastion.yml` playbook ...
 ...
 ```
 
-Lastly, run the `ibmcloud-bm-deploy.yml` playbook ...
+Lastly, run the `ibmcloud-mno-deploy.yml` playbook ...
 
 ```console
-(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-bm-deploy.yml
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/ibmcloud.local ansible/ibmcloud-mno-deploy.yml
 ...
 ```
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
 
 ```console
-(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/bm/kubeconfig
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/mno/kubeconfig
 (.ansible) [root@<bastion> jetlag]# oc get no
 NAME         STATUS   ROLES    AGE     VERSION
 jetlag-bm1   Ready    master   3h34m   v1.21.1+051ac4f
