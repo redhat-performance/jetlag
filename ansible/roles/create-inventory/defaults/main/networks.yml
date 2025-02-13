@@ -2,12 +2,13 @@
 # Index used to select mac address from ocpinventory control-plane interface.
 # Used for SNOs, MNO control-plane and worker nodes
 controlplane_network_interface_idx: 0
+
 # The assisted-installer actually does not need the exact nic name for our controlplane network. Eth0 is used
 # as a representative for the actual nic name. The actual nic is determined by the mac address which is
 # discovered by the ocpinventory.json file from the lab.
 controlplane_network_interface: eth0
-controlplane_network: 198.18.10.0/24
-controlplane_network_prefix: 24
+controlplane_network: 198.18.0.0/16
+controlplane_network_prefix: 16
 controlplane_network_gateway: "{{ controlplane_network | ansible.utils.nthhost(1) }}"
 controlplane_network_api: "{{ controlplane_network | ansible.utils.nthhost(3) }}"
 controlplane_network_ingress: "{{ controlplane_network | ansible.utils.nthhost(4) }}"
@@ -17,6 +18,7 @@ bastion_controlplane_ip: "{{ controlplane_network | ansible.utils.nthhost(1) }}"
 
 # OCP networks
 cluster_network_cidr: 10.128.0.0/14
+# The default cluster host prefix is /23, allowing 510 cluster nodes, and 510 pod IP addresses per node.
 cluster_network_host_prefix: 23
 service_network_cidr: 172.30.0.0/16
 
