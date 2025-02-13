@@ -3,28 +3,30 @@
 _**Table of Contents**_
 
 <!-- TOC -->
+- [Troubleshooting Jetlag](#troubleshooting-jetlag)
 - [Common Issues](#common-issues)
   - [Running Jetlag after Jetski](#running-jetlag-after-jetski)
+  - [Running Jetlag after a previous Jetlag deployment with a different cluster size](#running-jetlag-after-a-previous-jetlag-deployment-with-a-different-cluster-size)
   - [Intermittent failures by repos or container registry](#intermittent-failures-by-repos-or-container-registry)
   - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
-  - [Failed on Wait for cluster to be ready ](#failed-on-wait-for-cluster-to-be-ready)
+  - [Failed on Wait for cluster to be ready](#failed-on-wait-for-cluster-to-be-ready)
   - [Failed on Adjust by-path selected install disk](#failed-on-adjust-by-path-selected-install-disk)
 - [Bastion](#bastion)
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
   - [Clean all container images from bastion registry](#clean-all-container-images-from-bastion-registry)
   - [Rebooted Bastion](#rebooted-bastion)
-  - [ipv4 to ipv6 deployed cluster and vice-versa](#ipv4-to-ipv6-deployed-cluster)
+  - [Ipv4 to ipv6 deployed cluster](#ipv4-to-ipv6-deployed-cluster)
   - [Root disk too small](#root-disk-too-small)
 - [Generic Hardware](#generic-hardware)
   - [Minimum Firmware Versions](#minimum-firmware-versions)
 - [Dell](#dell)
-  - [Reset BMC / iDrac](#reset-bmc--idrac)
+  - [Reset BMC / iDRAC](#reset-bmc--idrac)
   - [Unable to Insert/Mount Virtual Media](#unable-to-insertmount-virtual-media)
 - [Supermicro](#supermicro)
   - [Reset BMC / Resolving redfish connection error](#reset-bmc--resolving-redfish-connection-error)
   - [Missing Administrator IPMI privileges](#missing-administrator-ipmi-privileges)
-  - [Failure of TASK SuperMicro Set Boot](#failure-of-task-supermicro-set-boot)
+  - [Failure of TASK Supermicro Set Boot](#failure-of-task-supermicro-set-boot)
 - [Red Hat Labs](#red-hat-labs)
   - [Fix boot order of machines](#fix-boot-order-of-machines)
   - [Upgrade RHEL](#upgrade-rhel)
@@ -40,6 +42,17 @@ If Jetlag is run after attempting an installation with Jetski, there are several
 * The Jetski configured virtual bridge network could cause additional networking headaches preventing successful install
 
 That may not be all of the conflicts, thus the preferred method to remediate this situation is to cleanly rebuild the RHEL OS running on the bastion machine for Jetlag.
+
+## Running Jetlag after a previous Jetlag deployment with a different cluster size
+
+When redeploying Jetlag in a cloud allocation where Jetlag was previously deployed it is recommended to shut down all the nodes of the allocation (except the bastion server).
+
+This is to avoid errors on the ***wait-hosts-discovered : Patch cluster ingress/api vip addresses*** task, i.e.:
+```
+ingress-vip <x.y.z.w> is already in use in cidr x.y.z.w/z
+```
+
+This error occurs (specially when changing the cluster size of the environment) because the  previously deployed cluster has some remaining nodes online and thus the "old" cluster's API VIP is still responsive.
 
 ## Intermittent failures by repos or container registry
 
@@ -171,16 +184,16 @@ Now the disk is wiped of the cruft partition. You can now retry a new deployment
 
 Several services are run on the bastion in order to automate the tasks that Jetlag performs. You can access them via the following ports:
 
-| Service | Port |
-| - | - |
-| On-prem `assisted-installer` GUI | 8080
-| On-prem `assisted-installer` API | 8090
-| On-prem `assisted-image-service` | 8888
-| HTTP server | 8081
-| Container Registry (When `setup_bastion_registry=true`) | 5000
-| HAProxy (When disconnected) | 6443, 443, 80
-| Gogs - Self-hosted Git (When `setup_bastion_gogs=true`) | 10881 (http), 10022 (git)
-| Dnsmasq / Coredns | 53
+| Service                                                 | Port                      |
+| ------------------------------------------------------- | ------------------------- |
+| On-prem `assisted-installer` GUI                        | 8080                      |
+| On-prem `assisted-installer` API                        | 8090                      |
+| On-prem `assisted-image-service`                        | 8888                      |
+| HTTP server                                             | 8081                      |
+| Container Registry (When `setup_bastion_registry=true`) | 5000                      |
+| HAProxy (When disconnected)                             | 6443, 443, 80             |
+| Gogs - Self-hosted Git (When `setup_bastion_gogs=true`) | 10881 (http), 10022 (git) |
+| Dnsmasq / Coredns                                       | 53                        |
 
 Example accessing the bastion registry and listing repositories:
 ```console
@@ -370,17 +383,17 @@ How to verify that ipmi privilege set to administrator level permissions
 [root@<bastion> ~]# SMCIPMITool x.x.x.x root xxxxxxxxx user list
 Maximum number of Users          : 10
 Count of currently enabled Users : 8
- User ID | User Name       | Privilege Level    | Enable
- ------- | -----------     | ---------------    | ------
-       3 | root            | Operator           | Yes
+ | User ID | User Name | Privilege Level | Enable |
+ | ------- | --------- | --------------- | ------ |
+ | 3       | root      | Operator        | Yes    |
 
 [root@<bastion> ~]# SMCIPMITool y.y.y.y root yyyyyyyy user list
 Maximum number of Users          : 10
 Count of currently enabled Users : 8
- User ID | User Name       | Privilege Level    | Enable
- ------- | -----------     | ---------------    | ------
-       2 | ADMIN           | Administrator      | Yes
-       3 | root            | Administrator      | Yes
+ | User ID | User Name | Privilege Level | Enable |
+ | ------- | --------- | --------------- | ------ |
+ | 2       | ADMIN     | Administrator   | Yes    |
+ | 3       | root      | Administrator   | Yes    |
 ```
 Machine `y.y.y.y` has the correct permissions.
 
