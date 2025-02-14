@@ -6,7 +6,7 @@ _**Table of Contents**_
 - [Troubleshooting Jetlag](#troubleshooting-jetlag)
 - [Common Issues](#common-issues)
   - [Running Jetlag after Jetski](#running-jetlag-after-jetski)
-  - [Running Jetlag after a previous Jetlag deployment with a different cluster size](#running-jetlag-after-a-previous-jetlag-deployment-with-a-different-cluster-size)
+  - [Ingress vip already in use](#ingress-vip-already-in-use)
   - [Intermittent failures by repos or container registry](#intermittent-failures-by-repos-or-container-registry)
   - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
   - [Failed on Wait for cluster to be ready](#failed-on-wait-for-cluster-to-be-ready)
@@ -43,7 +43,7 @@ If Jetlag is run after attempting an installation with Jetski, there are several
 
 That may not be all of the conflicts, thus the preferred method to remediate this situation is to cleanly rebuild the RHEL OS running on the bastion machine for Jetlag.
 
-## Running Jetlag after a previous Jetlag deployment with a different cluster size
+## Ingress vip already in use
 
 When redeploying Jetlag in a cloud allocation where Jetlag was previously deployed it is recommended to shut down all the nodes of the allocation (except the bastion server).
 
