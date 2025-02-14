@@ -16,7 +16,8 @@ _**Table of Contents**_
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
   - [Clean all container images from bastion registry](#clean-all-container-images-from-bastion-registry)
   - [Rebooted Bastion](#rebooted-bastion)
-  - [Ipv4 to ipv6 deployed cluster](#ipv4-to-ipv6-deployed-cluster)
+  - [Incorrect bastion controlplane interface](#incorrect-bastion-controlplane-interface)
+  - [Changed controlplane network on bastion](#changed-controlplane-network-on-bastion)
   - [Root disk too small](#root-disk-too-small)
 - [Generic Hardware](#generic-hardware)
   - [Minimum Firmware Versions](#minimum-firmware-versions)
@@ -132,7 +133,7 @@ nvme0n1                            259:0    0   2.9T  0 disk
 ```
 
 Here we can see parition `/dev/sda1` is formated as an ISO 9660 CD-ROM and the cause of
-this isse. Depending on hardware this could actually be a different symbolic link. In
+this issue. Depending on hardware this could actually be a different symbolic link. In
 order to resolve this we will wipe the disk by executing the following commands:
 
 ```console
@@ -270,19 +271,87 @@ If the bastion has been rebooted, you may experience ImagePullBackOff on contain
 * [Clean all container services / podman pods](troubleshooting.md#clean-all-container-services--podman-pods)
 * Rerun the setup-bastion.yml playbook
 
-## Ipv4 to ipv6 deployed cluster
+## Incorrect bastion controlplane interface
 
-When moving from an ipv4 cluster installation to ipv6 (or vice-versa), instead of rebuilding the bastion with foreman or badfish, use *nmcli* to disable one of the IP addresses. For example, the following commands disable ipv6:
+If the incorrect `bastion_controlplane_interface` was configured, you can remedy this by
+using NetworkManager CLI (`nmcli`).
+
+In the below example, `ens2f1` was incorrectly set as the
+`bastion_controlplane_interface`, and can be fixed by applying the correct ip address to
+`ens1f0`, the correct interface for an r650.
 
 ```console
-# nmcli c modify ens6f0 ipv6.method "disabled"
-# nmcli c show ens6f0
-# nmcli c show
-# sysctl -p /etc/sysctl.d/ipv6.conf
-# vi /etc/sysctl.conf
-# sysctl -p /etc/sysctl.d/ipv6.conf
-# reboot
+# ip a show ens2f1
+8: ens2f1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 08:c0:eb:ad:33:31 brd ff:ff:ff:ff:ff:ff
+    altname enp152s0f1
+    inet 198.18.0.1/16 brd 198.18.255.255 scope global noprefixroute ens2f1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5b87:8ca3:1a7f:2450/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+# nmcli c
+NAME                UUID                                  TYPE      DEVICE
+eno12399np0         5da5d1e4-e608-86ee-04c4-28f6e7b3513c  ethernet  eno12399np0
+cni-podman0         0aba285f-4713-4337-a6e1-f448dd0cc934  bridge    cni-podman0
+eno12409np1         d64216ea-ca07-4730-9fce-e74d191bde0a  ethernet  eno12409np1
+ens2f1              49fab00e-5bfd-45a8-b463-0085b1239cb9  ethernet  ens2f1
+Wired connection 1  bcc54b47-9a50-3be1-9b95-3d68aeee31f8  ethernet  ens2f0
+Wired connection 3  a6cdebcb-50da-314a-bbd4-11fbdefbc34c  ethernet  ens1f1
+eno8303             25c28842-d9fb-4f47-93ce-abacb899865f  ethernet  --
+eno8403             abadc7d9-f4be-4544-816e-ac46e3839d30  ethernet  --
+# nmcli c delete ens2f1
+Connection 'ens2f1' (49fab00e-5bfd-45a8-b463-0085b1239cb9) successfully deleted.
+# nmcli c
+NAME                UUID                                  TYPE      DEVICE
+eno12399np0         5da5d1e4-e608-86ee-04c4-28f6e7b3513c  ethernet  eno12399np0
+cni-podman0         0aba285f-4713-4337-a6e1-f448dd0cc934  bridge    cni-podman0
+eno12409np1         d64216ea-ca07-4730-9fce-e74d191bde0a  ethernet  eno12409np1
+Wired connection 1  bcc54b47-9a50-3be1-9b95-3d68aeee31f8  ethernet  ens2f0
+Wired connection 3  a6cdebcb-50da-314a-bbd4-11fbdefbc34c  ethernet  ens1f1
+eno8303             25c28842-d9fb-4f47-93ce-abacb899865f  ethernet  --
+eno8403             abadc7d9-f4be-4544-816e-ac46e3839d30  ethernet  --
+# nmcli con add con-name "ens1f0" ifname ens1f0 type ethernet ip4 198.18.0.1/16
+Connection 'ens1f0' (7d0ffc4e-ef0e-40e4-a3c7-4baaa045d01c) successfully added.
+# nmcli c
+NAME                UUID                                  TYPE      DEVICE
+...
+ens1f0              7d0ffc4e-ef0e-40e4-a3c7-4baaa045d01c  ethernet  ens1f0
+...
 ```
+
+## Changed controlplane network on bastion
+
+If you changed the subnet with the var `controlplane_network`, you will have to remove
+the previous ip address with `ip a del`
+
+```console
+# ip a show ens1f0
+7: ens1f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether b4:96:91:cb:ec:1e brd ff:ff:ff:ff:ff:ff
+    altname enp75s0f0
+    inet 198.18.10.1/24 brd 198.18.10.255 scope global noprefixroute ens1f0
+       valid_lft forever preferred_lft forever
+    inet 198.18.0.1/16 brd 198.18.255.255 scope global noprefixroute ens1f0
+       valid_lft forever preferred_lft forever
+    inet6 fc00:1005::1/64 scope global noprefixroute
+       valid_lft forever preferred_lft forever
+    inet6 fe80::84fa:3366:be96:72a4/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+# ip a del 198.18.10.1/24 dev ens1f0
+# ip a show ens1f0
+7: ens1f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether b4:96:91:cb:ec:1e brd ff:ff:ff:ff:ff:ff
+    altname enp75s0f0
+    inet 198.18.0.1/16 brd 198.18.255.255 scope global noprefixroute ens1f0
+       valid_lft forever preferred_lft forever
+    inet6 fc00:1005::1/64 scope global noprefixroute
+       valid_lft forever preferred_lft forever
+    inet6 fe80::84fa:3366:be96:72a4/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+```
+
+> [!TIP]
+> It is possible to have both ipv4 and ipv6 configured as shown above
 
 ## Root disk too small
 
@@ -309,6 +378,9 @@ sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example
 ```
 
 Substitute the user/password/hostname to perform the reset on a desired host. Note it will take a few minutes before the BMC will become available again.
+
+> [!CAUTION]
+> A Factory reset is not the same as a BMC reset or iDRAC reboot. Do not factory reset your machines.
 
 ## Unable to Insert/Mount Virtual Media
 
