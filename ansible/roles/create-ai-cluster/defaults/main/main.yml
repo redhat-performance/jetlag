@@ -18,7 +18,3 @@ override_kni_infra_haproxy: false
 # Manually override the openshift-kni-haproxy max connections via a machineconfig that replaces the
 # haproxy templatized config file with one with greater max connections (Original default 20000)
 openshift_kni_infra_haproxy_maxconn: 40000
-
-# If HV is setup, how many workers are VMs
-# This runs hosts from hv_vm through the normal workers workflow for deployment
-hybrid_worker_count: 0
