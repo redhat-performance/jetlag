@@ -41,7 +41,7 @@ Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalela
 | Dell r750          | eno8303               | ens3f0                         | eno8303                    |
 | Supermicro 6029p   | eno1                  | enp95s0f0                      | eno1                       |
 
-Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking).
+Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/Usage/#Private_Networking).
 
 ## Install disk by-path vars
 
