@@ -1,6 +1,6 @@
 # Deploy a Multi node cluster via Jetlag from a Performance Lab Bastion Machine quickstart
 
-Assuming you received an Performance lab allocation named `cloud99`, this guide will walk you through getting a multi node cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
+Assuming you received an Performance lab allocation named `cloud99`, this guide will walk you through getting a multi node cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r750s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
 [the Performance lab wiki](http://wiki.rdu3.labs.perfscale.redhat.com/)
 
 _**Table of Contents**_
@@ -215,8 +215,8 @@ with:
 Copy the sample vars file and edit it:
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
-(.ansible) [root@xxx-h01-000-r650 jetlag]# vi ansible/vars/all.yml
+(.ansible) [root@xxx-h01-000-r750 jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@xxx-h01-000-r750 jetlag]# vi ansible/vars/all.yml
 ```
 
 ### Lab & cluster infrastructure vars
@@ -251,7 +251,7 @@ bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens3f0
 ```
 
-Here you can see a network diagram for the multi node metal cluster on Dell r650 with 3 workers and 3 master nodes:
+Here you can see a network diagram for the multi node metal cluster on Dell r750 with 3 workers and 3 master nodes:
 
 ![MNO Cluster](img/mno_cluster.png)
 
@@ -280,12 +280,14 @@ controlplane_lab_interface: eno8303
 
 In order to deploy a cluster using the public VLAN, set the variable `public_vlan` in `all.yml` to `true`. Once enabled the following variables are automatically configured:
 
-- `controlplane_network_interface_idx`: Is set to the corresponding interface number
+- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
 - `base_dns_name` is set to `rdu3.lab.perfscale.redhat.com` in the inventory
+- `controlplane_network_interface_idx`: Is set to the corresponding interface number
 - `controlplane_network`: public VLAN subnet
 - `controlplane_network_prefix`: public VLAN network mask
 - `controlplane_network_gateway`: public VLAN default gateway
-- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
+
+You will still have to configure the proper `bastion_controlplane_interface` for public VLAN usage. For purposes of this quickstart and r750 hardware, the correct `bastion_controlplane_interface` is `ens6f1`. This is easily identifible in the table the performance lab provides as the last interface or in the case of r750s "EM4" interface.
 
 When the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
 
@@ -353,13 +355,10 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
 
-# Lab Network type, applies to sno and mno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
-# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
-# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
-# required in the public VLAN
+# Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
+# MNO clusters autoconfigure cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
+# controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
+# SNOs require manual configuration with additional variables.
 public_vlan: false
 
 # Enables FIPs security standard
@@ -431,16 +430,16 @@ allocation_node_count=16
 supermicro_nodes=False
 
 [bastion]
-xxx-h01-000-r650.rdu3.lab.perflab.redhat.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.rdu3.lab.perfscale.redhat.com
+xxx-h01-000-r750.rdu3.lab.perflab.redhat.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r750.rdu3.lab.perfscale.redhat.com
 
 [bastion:vars]
 bmc_user=quads
 bmc_password=XXXXXXX
 
 [controlplane]
-xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu3.lab.perfscale.redhat.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
-xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu3.lab.perfscale.redhat.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
-xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu3.lab.perfscale.redhat.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
+xxx-h02-000-r750 bmc_address=mgmt-xxx-h02-000-r750.rdu3.lab.perfscale.redhat.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.0.5 vendor=Dell install_disk=/dev/sda
+xxx-h03-000-r750 bmc_address=mgmt-xxx-h03-000-r750.rdu3.lab.perfscale.redhat.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.0.6 vendor=Dell install_disk=/dev/sda
+xxx-h05-000-r750 bmc_address=mgmt-xxx-h05-000-r750.rdu3.lab.perfscale.redhat.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.0.7 vendor=Dell install_disk=/dev/sda
 
 [controlplane:vars]
 role=master
@@ -449,9 +448,9 @@ bmc_user=quads
 bmc_password=XXXXXXX
 lab_interface=eno8303
 network_interface=eth0
-network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+network_prefix=16
+gateway=198.18.0.1
+dns1=198.18.0.1
 
 [worker]
 
@@ -463,8 +462,8 @@ bmc_password=XXXXXXX
 lab_interface=eno8303
 network_interface=eth0
 network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+gateway=198.18.0.1
+dns1=198.18.0.1
 
 [sno]
 # Unused
@@ -501,7 +500,7 @@ Finally run the `mno-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.rdu3.lab.perfscale.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r750.rdu3.lab.perfscale.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
 
@@ -509,9 +508,9 @@ If everything goes well you should have a cluster in about 60-70 minutes. You ca
 (.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/mno/kubeconfig
 (.ansible) [root@<bastion> jetlag]# oc get no
 NAME               STATUS   ROLES                         AGE    VERSION
-xxx-h02-000-r650   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
-xxx-h03-000-r650   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
-xxx-h05-000-r650   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
+xxx-h02-000-r750   Ready    control-plane,master,worker   73m    v1.25.7+eab9cc9
+xxx-h03-000-r750   Ready    control-plane,master,worker   103m   v1.25.7+eab9cc9
+xxx-h05-000-r750   Ready    control-plane,master,worker   105m   v1.25.7+eab9cc9
 (.ansible) [root@<bastion> jetlag]# cat /root/mno/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
 ```

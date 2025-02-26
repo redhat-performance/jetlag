@@ -280,12 +280,14 @@ controlplane_lab_interface: eno12399np0
 
 In order to deploy a cluster using the public VLAN, set the variable `public_vlan` in `all.yml` to `true`. Once enabled the following variables are automatically configured:
 
-- `controlplane_network_interface_idx`: Is set to the corresponding interface number
+- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
 - `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory
+- `controlplane_network_interface_idx`: Is set to the corresponding interface number
 - `controlplane_network`: public VLAN subnet
 - `controlplane_network_prefix`: public VLAN network mask
 - `controlplane_network_gateway`: public VLAN default gateway
-- `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
+
+You will still have to configure the proper `bastion_controlplane_interface` for public VLAN usage. For purposes of this quickstart and Dell r650 hardware, the correct `bastion_controlplane_interface` is `eno12409np1`. This is easily identifible in the table the scale lab provides as the last interface or in the case of r650s "Network 5" interface.
 
 When the deployment is completed, the cluster API and routes should be reachable directly from the VPN.
 
@@ -352,13 +354,10 @@ ocp_build: "ga"
 # For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
 ocp_version: "latest-4.17"
 
-# Lab Network type, applies to sno and mno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
-# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
-# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
-# required in the public VLAN
+# Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
+# MNO clusters autoconfigure cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
+# controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
+# SNOs require manual configuration with additional variables.
 public_vlan: false
 
 # Enables FIPs security standard
@@ -437,9 +436,9 @@ bmc_user=quads
 bmc_password=XXXXXXX
 
 [controlplane]
-xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.10.5 vendor=Dell install_disk=/dev/sda
-xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.10.6 vendor=Dell install_disk=/dev/sda
-xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.10.7 vendor=Dell install_disk=/dev/sda
+xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.0.5 vendor=Dell install_disk=/dev/sda
+xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.0.6 vendor=Dell install_disk=/dev/sda
+xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.0.7 vendor=Dell install_disk=/dev/sda
 
 [controlplane:vars]
 role=master
@@ -449,8 +448,8 @@ bmc_password=XXXXXXX
 lab_interface=eno12399np0
 network_interface=eth0
 network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+gateway=198.18.0.1
+dns1=198.18.0.1
 
 [worker]
 
@@ -462,8 +461,8 @@ bmc_password=XXXXXXX
 lab_interface=eno12399np0
 network_interface=eth0
 network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+gateway=198.18.0.1
+dns1=198.18.0.1
 
 [sno]
 # Unused

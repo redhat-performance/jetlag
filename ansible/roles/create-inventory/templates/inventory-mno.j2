@@ -1,16 +1,15 @@
 [all:vars]
 allocation_node_count={{ ocpinventory.json.nodes | length }}
 supermicro_nodes={{ has_supermicro | bool }}
-{% if public_vlan %}
 cluster_name={{ cluster_name }}
 controlplane_network={{ controlplane_network }}
+controlplane_network_prefix={{ controlplane_network_prefix }}
 {% if lab == "scalelab" %}
 base_dns_name=rdu2.scalelab.redhat.com
 {% elif lab == "performancelab" %}
 base_dns_name=rdu3.labs.perfscale.redhat.com
 {% else %}
 base_dns_name={{ base_dns_name }}
-{% endif %}
 {% endif %}
 
 [bastion]
