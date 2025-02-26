@@ -11,10 +11,7 @@ ibmcloud_cluster_types:
 - mno
 - sno
 
-mno_network_types:
-- OVNKubernetes
-- OpenShiftSDN
-
 ocp_build_types:
-- ga
+- ci
 - dev
+- ga
