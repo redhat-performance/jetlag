@@ -22,7 +22,7 @@ Make sure to set and append the following vars in the "extra vars" section of th
 | `hv_inventory` | Enables placing remaining cloud hardware into hypervisor host group in inventory file
 | `hv_ssh_pass` | The ssh password to the hypervisor machines
 | `hv_ip_offset` | Offsets hypervisor ip addresses to allow for future expansion of the "hub" cluster. For example, a setting of `10` allows the hub cluster to grow 10 nodes before the ip addresses will conflict with the hypervisors.
-| `hv_vm_prefix` | Set to a specific prefix. Defaults to `sno` which produces VMs with hostnames `sno00001`, `sno00002`, ... `snoXXXXX`
+| `hv_vm_prefix` | Set to a specific prefix. Defaults to `vm` which produces VMs with hostnames `vm00001`, `vm00002`, ... `vmXXXXX`
 | `hypervisor_nic_interface_idx` | Defaults to `1` and corresponds to Network 1 in the scalelab. The index is used to lookup which nic name will be bridged for the VMs.
 
 The default VM resource configuration is:
