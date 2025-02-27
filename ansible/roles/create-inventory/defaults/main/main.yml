@@ -17,7 +17,7 @@ hv_ssh_pass:
 
 hv_ip_offset: 0
 
-hv_vm_prefix: sno
+hv_vm_prefix: vm
 hv_vm_ip_offset: 1000
 
 # "Emulated bare-metal" VM Size
