@@ -11,10 +11,15 @@
   vars_files:
   - vars/lab.yml
   - vars/all.yml
+  pre_tasks:
+  - name: Validate deploying SNO
+    fail:
+      msg: "cluster_type is not 'sno'"
+    when: cluster_type != "sno"
   roles:
   - validate-vars
   - ocp-release
-  - sno-create-ai-cluster
+  - create-ai-cluster
   - role: generate-discovery-iso
     vars:
       iso_name: "{{ groups['sno'][0] }}"
@@ -22,7 +27,7 @@
     vars:
       inventory_group: sno
       index: "1"
-  - sno-wait-hosts-discovered
+  - wait-hosts-discovered
   - configure-local-storage
   - install-cluster
   - sno-post-cluster-install
