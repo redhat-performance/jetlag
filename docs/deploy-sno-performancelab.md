@@ -367,6 +367,10 @@ ocp_version: "latest-4.18"
 # SNOs require manual configuration with additional variables.
 public_vlan: false
 
+# SNOs only require a single IP address and can be deployed using the lab DHCP interface instead of a private or
+# public vlan network. Set to true to have your SNO deployed on the public lab DHCP network.
+sno_use_lab_dhcp: false
+
 # Enables FIPs security standard
 enable_fips: false
 
@@ -401,13 +405,8 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all mno cluster nodes
+# Network configuration for all mno/sno cluster nodes
 controlplane_lab_interface: eno8303
-
-# Network configuration for public VLAN based sno cluster_type deployment
-controlplane_pub_network_cidr:
-controlplane_pub_network_gateway:
-jumbo_mtu: false
 
 ################################################################################
 # Extra vars

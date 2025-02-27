@@ -12,11 +12,6 @@
   retries: 20
   delay: 60
 
-# Until the above race condition is fixed, allow some time for discovery to complete
-- name: Sleep to allow full discovery
-  pause:
-    minutes: 2
-
 - name: Set hostname
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}/hosts/{{ cluster.json.hosts[0].id }}"
