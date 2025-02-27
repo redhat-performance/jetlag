@@ -392,13 +392,10 @@ ocp_build: "ga"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
 ocp_version: "latest-4.17"
 
-# Lab Network type, applies to sno and mno cluster_type only
-# Set this variable if you want to host your SNO cluster on lab public routable
-# VLAN network, set this ONLY if you have public routable VLAN enabled in your
-# scalelab cloud
-# For mno clusters, enable this variable to autoconfigure controlplane_network_interface_idx,
-# base_dns_name, cluster_name, controlplane_network, network_prefix, gateway to the values
-# required in the public VLAN
+# Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
+# MNO clusters autoconfigure cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
+# controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
+# SNOs require manual configuration with additional variables.
 public_vlan: false
 
 # Enables FIPs security standard

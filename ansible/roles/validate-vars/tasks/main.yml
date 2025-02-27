@@ -23,6 +23,11 @@
     msg: "The version is undefined or empty. Use a value such as 'latest-4.15' or 'latest-4.16' or '4.16.1'."
   when: (ocp_version is undefined) or (ocp_version|length == 0)
 
+- name: Validate public_vlan
+  fail:
+    msg: "Public vlan can only be set with non-byol Red Hat Labs."
+  when: public_vlan and lab == "byol"
+
 - name: Check for RHEL/Centos (Bastion Validation)
   fail:
     msg: "Expecting RHEL or Centos for a Bastion OS"
