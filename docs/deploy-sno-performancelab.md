@@ -230,9 +230,21 @@ Change `lab_cloud` to `lab_cloud: cloud99`
 
 Change `cluster_type` to `cluster_type: sno`
 
-Set `ocp_build` to one of 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift. Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16 or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would  be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
+Set `ocp_build` to `ga` for Generally Available versions, `dev` (early candidate builds)
+of OpenShift, or `ci` to pick a specific nightly build.
 
-Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with error message. Values accepted depended on the build chosen ('ga' or 'dev'). For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2 For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'.
+`ocp_version` is used in conjunction with `ocp_build`. Examples of `ocp_version` with
+`ocp_build: ga` include explicit versions such as `4.17.17` or `4.16.35`, additionally
+`latest-4.17` or `latest-4.16` point to the latest z-stream of 4.17 and 4.16 ga builds.
+Examples of `ocp_version` with `ocp_build: dev` are `candidate-4.17`, `candidate-4.16`
+or `latest` which points to the early candidate build of the latest in development
+release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ for a list
+of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
+for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
+exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
+`4.19.0-0.nightly-2025-02-25-035256`.
+
+Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci` builds.
 
 For the ssh keys we have a chicken before the egg problem in that our bastion machine won't be defined or ensure that keys are created until after we run `create-inventory.yml` and `setup-bastion.yml` playbooks. We will revisit that a little bit later.
 
@@ -340,18 +352,13 @@ cluster_type: sno
 # Applies to mno clusters
 worker_node_count:
 
-# Enter whether the build should use 'dev' (early candidate builds) or 'ga' for Generally Available versions of OpenShift
-# Empty value results in playbook failing with error message. Example of dev builds would be 'candidate-4.17', 'candidate-4.16'
-# or 'latest' (which would point to the early candidate build of the latest in development release) and examples of 'ga' builds would
-# be explicit versions like '4.15.20' or '4.16.0' or you could also use things like latest-4.16 to point to the latest z-stream of 4.16.
-# Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp for a list of available builds for 'ga' releases and
-# https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview for a list of 'dev' releases.
+# Set ocp_build to "ga", `dev`, or `ci` to pick a specific nightly build
 ocp_build: "ga"
 
-# The version of the openshift-installer binary, undefined or empty results in the playbook failing with error message.
-# Values accepted depended on the build chosen ('ga' or 'dev').
-# For 'ga' builds some examples of what you can use are 'latest-4.13', 'latest-4.14' or explicit versions like 4.15.2
-# For 'dev' builds some examples of what you can use are 'candidate-4.16' or just 'latest'
+# ocp_version is used in conjunction with ocp_build
+# For "ga" builds, examples are "latest-4.17", "latest-4.16", "4.17.17" or "4.16.35"
+# For "dev" builds, examples are "candidate-4.17", "candidate-4.16" or "latest"
+# For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
 ocp_version: "latest-4.17"
 
 # Lab Network type, applies to sno and mno cluster_type only

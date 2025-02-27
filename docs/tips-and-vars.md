@@ -126,24 +126,42 @@ nvme0n1                             259:0    0  1.5T  0 disk
 
 ## Updating the OCP version
 
-Set `ocp_build` to one of `dev` (early candidate builds) or `ga` for Generally Available versions of OpenShift. Empty value results in playbook failing with an error message. Example of dev builds would be `candidate-4.17`, `candidate-4.16` or `latest` (which would point to the early candidate build of the latest in development release) and examples of `ga` builds would be explicit versions like `4.15.20` or `4.16.0` or you could also use things like `latest-4.16` to point to the latest z-stream of 4.16. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ for a list of available builds for 'ga' releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/ for a list of `dev` releases.
-
-Set `ocp_version` to the version of the openshift-installer binary, undefined or empty results in the playbook failing with an error message. Values accepted depended on the build chosen (`ga` or `dev`). For `ga` builds some examples of what you can use are `latest-4.13`, `latest-4.14` or explicit versions like `4.15.2`. For `dev` builds some examples of what you can use are `candidate-4.16` or just `latest`.
+Set `ocp_build` to `ga` for Generally Available versions, `dev` (early candidate builds)
+of OpenShift, or `ci` to pick a specific nightly build. Empty value results in playbook
+failing with an error message. `ocp_version` is used in conjunction with `ocp_build`.
+Examples of `ocp_version` with `ocp_build: ga` include explicit versions such as
+`4.17.17` or `4.16.35`, additionally `latest-4.17` or `latest-4.16` point to the latest
+z-stream of 4.17 and 4.16 ga builds. Examples of `ocp_version` with `ocp_build: dev`
+are `candidate-4.17`, `candidate-4.16` or `latest` which points to the early candidate
+build of the latest in development release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
+for a list of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
+for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
+exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is `4.19.0-0.nightly-2025-02-25-035256`.
 
 ```yaml
 ocp_build: "ga"
-ocp_version: "4.15.2"
+ocp_version: "4.17.17"
 ```
 
 Ensure that your pull secrets are still valid.
-When working with OCP development build or nightly release, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they expire after a definite period. Follow these steps to update your pull secret:
+When working with OCP development build or nightly release, it might be required to update your pull secret with fresh `registry.ci.openshift.org` credentials as they expire after a finite period. Follow these steps to update your pull secret:
 * Login to https://console-openshift-console.apps.ci.l2s4.p1.openshiftapps.com/ with your github id. You must be a member of OpenShift Org to do this.
 * Select *Copy login command* from the drop-down list under your account name
 * Copy the oc login command and run it on your terminal
 * Execute the command shown below to print out the pull secret:
 
 ```console
-(.ansible) [root@<bastion> jetlag]# oc registry login --to=-
+(.ansible) [root@<bastion> jetlag]# oc registry login --to ci_ps.json
+info: Using registry public hostname registry.ci.openshift.org
+Saved credentials for registry.ci.openshift.org into ci_ps.json
+(.ansible) [root@<bastion> jetlag]# cat ci_ps.json
+{
+	"auths": {
+		"registry.ci.openshift.org": {
+			"auth": "xxxxxxxxxxxxxxxxxxxxxxxxxxx"
+		}
+	}
+}
 ```
 * Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
 
