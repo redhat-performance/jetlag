@@ -5,7 +5,7 @@ nameserver {{ ansible_default_ipv4.address }}
 {% else %}
 nameserver {{ bastion_controlplane_ip }}
 {% endif %}
-{% if lab in rh_labs %}
+{% if lab in rh_labs or lab == "byol" %}
 {% for dns in labs[lab]['dns'] %}
 nameserver {{ dns }}
 {% endfor %}

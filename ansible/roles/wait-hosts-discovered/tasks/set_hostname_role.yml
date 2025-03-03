@@ -16,7 +16,7 @@
     hostname: "{{ item }}"
     host_role: "{{ hostvars[item]['role'] }}"
   when:
-    - lab in rh_labs
+    - lab in rh_labs or lab == "byol"
     - hostvars[item]['mac_address'] | lower in host_macs
   loop: "{{ inventory_nodes }}"
 

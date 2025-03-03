@@ -9,7 +9,6 @@ cloud_labs:
 rh_labs:
 - performancelab
 - scalelab
-- byol
 
 labs:
   performancelab:
