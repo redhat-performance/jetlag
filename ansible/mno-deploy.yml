@@ -11,6 +11,11 @@
   vars_files:
   - vars/lab.yml
   - vars/all.yml
+  pre_tasks:
+  - name: Validate deploying MNO
+    fail:
+      msg: "cluster_type is not 'mno'"
+    when: cluster_type != "mno"
   roles:
   - validate-vars
   - ocp-release
