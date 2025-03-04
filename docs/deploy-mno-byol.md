@@ -1,14 +1,12 @@
-# Deploy a Multi Node OpenShift cluster via Jetlag from a non-standard lab, BYOL (Bring Your Own Lab), quickstart
+# Deploy a Multi Node OpenShift cluster via Jetlag without create-inventory playbook, BYOL (Bring Your Own Lab), quickstart
 
-Assuming that you receive a set of machines to install OCP, this guide walks you through getting a multi node cluster installed on this allocation. For the purposes of the guide, the machines used are Dell r660s and r760s running RHEL 9.2. In a BYOL (or with any non-homogeneous allocation containing machines of different models) due to the non-standard interface names and NIC PCI slots, you must craft Jetlag's inventory file by hand.
-
-In other words, the `create-inventory` playbook is not used with BYOL. You must instead create your own inventory file manually, which means gathering information regarding the machines such as NIC names and MAC addresses. Therefore, thinking about simplifying this step, it is recommended to group machines of same/similar models wisely to be the cluster's control-plane and worker nodes.
+In a BYOL you will have to write your own Jetlag inventory file as the `create-inventory` playbook can not be used. You must gather information regarding the machines such as netwsork interface names, MAC addresses, dns servers and assemble an inventory file with the all.yml vars file. If you have a non-homogenous set of machines, it is recommended to group machines of same/similar models to be the cluster's control-plane and worker nodes.
 
 The bastion machine needs 2 interfaces:
 - The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
 - The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
 
-Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. One can, for instance, check for `firewalld` or `iptables`.
+Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. You should check both `firewalld` and/or `iptables`.
 
 The cluster machines need a minimum of 1 online private interface:
 - The control-plane interface, from which other cluster nodes are accessed.
@@ -198,11 +196,11 @@ Copy the vars file and edit it to create the inventory with your BYOL lab info:
 
 Change `lab` to `lab: byol`
 
-Change `lab_cloud` to `lab_cloud: na`
+Leave `lab_cloud` unset or empty.
 
 Change `cluster_type` to `cluster_type: mno`
 
-Set `worker_node_count` it must be correct, in this guide it is set to `2`. However, if you desire to limit the number of worker nodes. Set it to `0`, if you want a 3 node compact cluster.
+Set `worker_node_count` to count of workers available in the testbed, in this guide it is set to `2`. Set it to `0`, if you want a 3 node compact cluster.
 
 Set `ocp_build` to `ga` for Generally Available versions, `dev` (early candidate builds)
 of OpenShift, or `ci` to pick a specific nightly build.
@@ -226,10 +224,10 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 In case of BYOL, the lab itself determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-* `bastion_lab_interface` should be the L2 NIC interface
-* `bastion_controlplane_interface` should be the L3 network NIC interface
+* `bastion_lab_interface` should be the public lab network interface
+* `bastion_controlplane_interface` should be the private network inferface
 
-For Dell r660 from this guide, set those vars to the following:
+For the hardware in this guide, set those vars to the following (Your hardware will be different, and you must determine those values):
 
 ```yaml
 bastion_lab_interface: eno8303
@@ -238,11 +236,10 @@ bastion_controlplane_interface: ens1f0
 
 ### OCP node vars
 
-The system type determines the value of `controlplane_lab_interface`.
 
-* `controlplane_lab_interface` should be the L2 NIC interface
+* `controlplane_lab_interface` should be the public lab interface
 
-For Dell r660 from this guide, set this var to the following:
+For the hardware in this guide, set this var to the following (Your hardware will be different, and you must determine the correct interface):
 
 ```yaml
 controlplane_lab_interface: eno8303
@@ -250,9 +247,18 @@ controlplane_lab_interface: eno8303
 
 ### Extra vars
 
-No extra vars are needed for an ipv4 multi node cluster.
+BYOL requires dns and ntp servers to be set in extra vars in the follow data structure:
 
-Note that the `all.yml` and the `byol.local` inventory file following this section, only reflect that of an ipv4 connected install.
+```yaml
+labs:
+  byol:
+    dns:
+    - x.x.x.x
+    - y.y.y.y
+    ntp_server: clock.redhat.com
+```
+
+You can determine what your typical testbed';s dns servers are by reviewing `/etc/resolv.conf` on the bastion machine.
 
 ## Review vars `all.yml`
 
@@ -267,7 +273,7 @@ The `ansible/vars/all.yml` now resembles ...
 # Which lab to be deployed into (Ex byol)
 lab: byol
 # Which cloud in the lab environment (Ex cloud42)
-lab_cloud: na
+lab_cloud:
 
 # Either mno or sno
 cluster_type: mno
@@ -324,7 +330,7 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all mno cluster nodes
+# Network configuration for all mno/sno cluster nodes
 controlplane_lab_interface: eno8303
 
 # Network configuration for public VLAN based sno cluster_type deployment
@@ -336,6 +342,12 @@ jumbo_mtu: false
 # Extra vars
 ################################################################################
 # Append override vars below
+labs:
+  byol:
+    dns:
+    - x.x.x.x
+    - y.y.y.y
+    ntp_server: clock.redhat.com
 ```
 
 ## Create your custom inventory byol.yml
@@ -364,9 +376,9 @@ bmc_user=root
 bmc_password=password
 
 [controlplane]
-control-plane-0 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.5 vendor=Dell install_disk=/dev/disk/by-path/...
-control-plane-1 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.6 vendor=Dell install_disk=/dev/disk/by-path/...
-control-plane-2 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.7 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-0 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.5 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-1 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.6 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-2 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.7 vendor=Dell install_disk=/dev/disk/by-path/...
 
 [controlplane:vars]
 role=master
@@ -375,14 +387,14 @@ bmc_user=root
 bmc_password=password
 lab_interface=<lab_mac interface name>
 network_interface=<anything>
-network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+network_prefix=16
+gateway=198.18.0.1
+dns1=198.18.0.1
 dns2=<DNS ip_address>
 
 [worker]
-worker-0 bmc_address=172.29.170.219 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.8 vendor=Dell install_disk=/dev/disk/by-path/...
-worker-1 bmc_address=172.29.170.73 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.10.9 vendor=Dell install_disk=/dev/disk/by-path/...
+worker-0 bmc_address=172.29.170.219 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.8 vendor=Dell install_disk=/dev/disk/by-path/...
+worker-1 bmc_address=172.29.170.73 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.9 vendor=Dell install_disk=/dev/disk/by-path/...
 
 [worker:vars]
 role=worker
@@ -391,9 +403,9 @@ bmc_user=root
 bmc_password=password
 lab_interface=<lab_mac interface name>
 network_interface=<anything>
-network_prefix=24
-gateway=198.18.10.1
-dns1=198.18.10.1
+network_prefix=16
+gateway=198.18.0.1
+dns1=198.18.0.1
 dns2=<DNS ip_address>
 
 [sno]

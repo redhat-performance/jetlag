@@ -6,7 +6,7 @@
     item_network_config:
       network_yaml: "{{ lookup('template', 'nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'mac_interface_map.json.j2')  }}"
-  when: lab in rh_labs
+  when: lab in rh_labs or lab == "byol"
 
 - name: Assemble static network config for ibmcloud lab
   set_fact:
