@@ -3,11 +3,10 @@
 
 - name: Validate lab
   fail:
-    msg: "Invalid lab selected('{{ lab }}') Select from {{ rh_labs }}, {{ cloud_labs }} and 'byol'"
+    msg: "Invalid lab selected('{{ lab }}') Select from {{ rh_labs }} and {{ cloud_labs }}"
   when:
   - lab not in rh_labs
   - lab not in cloud_labs
-  - lab != "byol"
 
 - name: Check pull secret var is set
   fail:
