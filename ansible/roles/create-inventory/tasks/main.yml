@@ -39,9 +39,9 @@
 - name: Public VLAN in MNO cluster
   when: public_vlan and cluster_type == "mno"
   block:
-  - name: Public VLAN - Configuring controlplane_network_interface_idx to the last interface
+  - name: Public VLAN - Set controlplane_network_interface_idx to -1 for the last interface
     set_fact:
-      controlplane_network_interface_idx: "{{ ocpinventory.json.nodes[0].mac | length - 1 }}"
+      controlplane_network_interface_idx: "-1"
 
   - name: Get assignment from scalelab quads
     uri:
