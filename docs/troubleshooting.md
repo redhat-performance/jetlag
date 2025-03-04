@@ -81,6 +81,31 @@ the most likely situation is a duplicate IP on the network causing packet loss. 
 your environment and inventory file for any machines which may have a duplicated ip
 address.
 
+If the cluster events shows `Cluster validation 'machine-cidr-defined' failed` or `Cluster validation 'machine-cidr-equals-to-calculated-cidr' failed` then it is likely the `controlplane_network` had been changed and the previous IP address had not been removed off the bastion's `bastion_controlplane_interface`.
+
+For Example:
+
+```console
+# ip a show ens2f0
+4: ens2f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether b4:83:51:0b:bb:2e brd ff:ff:ff:ff:ff:ff
+    altname enp139s0f0
+    inet 198.18.10.1/24 brd 198.18.10.255 scope global noprefixroute ens2f0
+       valid_lft forever preferred_lft forever
+    inet 198.18.0.1/16 brd 198.18.255.255 scope global noprefixroute ens2f0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::b683:51ff:fe0b:bb2e/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+```
+
+We can see two IP addresses on `ens2f0` which in this case is the bastion's `bastion_controlplane_interface`. The default `controlplane_network` is `198.18.0.0/16` so we need to remove `198.18.10.1/24`:
+
+```console
+# ip a del 198.18.10.1/24 dev ens2f0
+```
+
+After removing the extra IP address, we can rerun a deployment and the cluster will succeed. Additionally, you should investigate what occured to lead up to accidently causing an extra IP address to be assigned to your bastion's `bastion_controlplane_interface`. The most likely reason is either upgrading or downgrading jetlag versions or changing your `controlplane_network` without removing the previous IP addresses.
+
 ## Failed on Adjust by-path selected install disk
 
 In rare cases, jetlag is unable to set the install disk because there are leftover cruft
