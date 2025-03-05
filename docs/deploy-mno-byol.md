@@ -1,15 +1,17 @@
 # Deploy a Multi Node OpenShift cluster via Jetlag without create-inventory playbook, BYOL (Bring Your Own Lab), quickstart
 
-In a BYOL you will have to write your own Jetlag inventory file as the `create-inventory` playbook can not be used. You must gather information regarding the machines such as netwsork interface names, MAC addresses, dns servers and assemble an inventory file with the all.yml vars file. If you have a non-homogenous set of machines, it is recommended to group machines of same/similar models to be the cluster's control-plane and worker nodes.
+In a BYOL you will have to write your own Jetlag inventory file as the `create-inventory.yml` playbook can **not** be used. You must gather information regarding the machines such as network interface names, bmc addresses, MAC addresses, and dns servers in order to assemble an inventory file and all.yml vars file. If you have a non-homogenous set of machines, it is recommended to group machines of same/similar models to be the cluster's control-plane and worker nodes. If you have 2 or more types/configurations of machines, you should use only one type/configuration for control-plane nodes and the remaining types/configurations all as worker nodes.
 
 The bastion machine needs 2 interfaces:
-- The interface connected to the network, i.e., with an IP assigned, a L3 network. This interface usually referred to as *lab_network* as it provides the connectivity into the bastion machine.
-- The control-plane interface, from which the cluster nodes are accessed (this is a L2 network, i.e., it does not have an IP assigned).
+- `bastion_lab_interface` - The "lab network" interface, from which you can ssh into your bastion machine (connected to the lab/public network usually a L3 network with an IP assigned).
+- `bastion_controlplane_interface` - The "control-plane network" interface, from which the cluster nodes are accessed (this is a L2 network and it does not usually have an IP assigned). This is typically a private network connecting all machines.
 
-Sometimes the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. You should check both `firewalld` and/or `iptables`.
+Depending on the lab, the bastion machine may have firewall rules in place that prevent proper connectivity from the target cluster machines to the assisted-service API hosted on the bastion. Depending on the lab setup, you might need to add rules to allow this traffic, or if the bastion machine is already behind a firewall, the firewall could be disabled. You should check both `firewalld` and/or `iptables`.
 
-The cluster machines need a minimum of 1 online private interface:
-- The control-plane interface, from which other cluster nodes are accessed.
+The public interface to each of your OpenShift cluster machines needs to be identified so jetlag can disable the interfaces via both the interface name (`controlplane_lab_interface` in all.yml) and mac address in the inventory file per node (Ex `lab_mac=ec:2a:72:33:15:f0`).
+
+The OpenShift cluster machines need a minimum of 1 online private interface:
+- The control-plane interface, from which other cluster nodes are accessed. The mac address for each node is set in the inventory per host (Ex. `mac_address=40:a6:b7:83:98:b0`)
 
 Since each node's NIC is on a L2 network, choose whichever L2 network is available as the control-plane network. See the network diagram below as an example:
 
@@ -20,8 +22,8 @@ _**Table of Contents**_
 <!-- TOC -->
 - [Bastion setup](#bastion-setup)
 - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
-- [Review vars all.yml](#review-vars-allyml)
-- [Create your custom inventory byol.yml](#create-your-custom-inventory-byolyml)
+- [Review vars `all.yml`](#review-vars-allyml)
+- [Create your custom inventory `byol.local`](#create-your-custom-inventory-byollocal)
 - [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
 - [Appendix - Troubleshooting, etc.](#appendix---troubleshooting-etc)
 <!-- /TOC -->
@@ -222,10 +224,8 @@ Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci
 
 Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
-In case of BYOL, the lab itself determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
-
-* `bastion_lab_interface` should be the public lab network interface
-* `bastion_controlplane_interface` should be the private network inferface
+* `bastion_lab_interface` should be the public lab network interface for your bastion
+* `bastion_controlplane_interface` should be the private network interface that connects your bastion to the OCP cluster nodes
 
 For the hardware in this guide, set those vars to the following (Your hardware will be different, and you must determine those values):
 
@@ -236,8 +236,7 @@ bastion_controlplane_interface: ens1f0
 
 ### OCP node vars
 
-
-* `controlplane_lab_interface` should be the public lab interface
+* `controlplane_lab_interface` should be the public lab interface on your OCP cluster nodes
 
 For the hardware in this guide, set this var to the following (Your hardware will be different, and you must determine the correct interface):
 
@@ -258,7 +257,7 @@ labs:
     ntp_server: clock.redhat.com
 ```
 
-You can determine what your typical testbed';s dns servers are by reviewing `/etc/resolv.conf` on the bastion machine.
+You can determine what your typical testbed's dns servers are by reviewing `/etc/resolv.conf` on the bastion machine.
 
 ## Review vars `all.yml`
 
@@ -279,7 +278,7 @@ lab_cloud:
 cluster_type: mno
 
 # Applies to mno clusters
-worker_node_count:
+worker_node_count: 2
 
 # Set ocp_build to "ga", `dev`, or `ci` to pick a specific nightly build
 ocp_build: "ga"
@@ -350,35 +349,40 @@ labs:
     ntp_server: clock.redhat.com
 ```
 
-## Create your custom inventory byol.yml
+## Create your custom inventory `byol.local`
 
 Choose wisely which server for which role: bastion, masters and workers. Make sure to group machines by, e.g., number of cores, NIC types (and names), etc.
 
-- Record the names and MACs of their L3 network NIC to be used for the inventory.
-- Choose the control-plane NICs, the L2 NIC interface.
-- Record the interface names and MACs of the chosen control-plane interfaces.
-- The correct DNS needs to be changed in `ansible/vars/lab.yml`. Otherwise some tasks, e.g., pulling images from quay.io when Jetlag has already touched `/etc/resolv.conf`, will fail.
+- Record the names and MACs of the L3 network interfaces to be used for the inventory.
+- Record the names and MACs of the L2 network interfaces for the control-plane network.
 - Make sure you have root access to the BMC, i.e., iDRAC for Dell. In the example below, the *bmc_user* and *bmc_password* are set to root and password.
 
-Now, create the `/ansible/inventory/byol.local` inventory file and edit it with the info from above manually from your BYOL lab:
+Copy the sample byol inventory file and edit it:
+
+```console
+(.ansible) [root@<bastion> jetlag]# cp ansible/inventory/byol-mno.sample ansible/inventory/byol.local
+(.ansible) [root@<bastion> jetlag]# vi ansible/inventory/byol.local
+```
+
+Make sure to replace the IP addresses, mac addresses, install disk by-paths, interface names, and dns servers with correct values for your environment.
 
 ```
-# Create inventory playbook will generate this for you much easier
+# Bring Your Own Lab (BYOL) Sample Inventory
 [all:vars]
 allocation_node_count=6
 supermicro_nodes=False
 
 [bastion]
-<IP or FQDN> ansible_ssh_user=root bmc_address=<IP or FQDN>
+<FQDN> ansible_ssh_user=root bmc_address=<IP or FQDN>
 
 [bastion:vars]
 bmc_user=root
 bmc_password=password
 
 [controlplane]
-control-plane-0 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.5 vendor=Dell install_disk=/dev/disk/by-path/...
-control-plane-1 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.6 vendor=Dell install_disk=/dev/disk/by-path/...
-control-plane-2 bmc_address=<IP or FQDN> mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.7 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-0 bmc_address=<IP or FQDN> mac_address=<L2 NIC> lab_mac=<L3 NIC> ip=198.18.0.5 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-1 bmc_address=<IP or FQDN> mac_address=<L2 NIC> lab_mac=<L3 NIC> ip=198.18.0.6 vendor=Dell install_disk=/dev/disk/by-path/...
+control-plane-2 bmc_address=<IP or FQDN> mac_address=<L2 NIC> lab_mac=<L3 NIC> ip=198.18.0.7 vendor=Dell install_disk=/dev/disk/by-path/...
 
 [controlplane:vars]
 role=master
@@ -393,8 +397,8 @@ dns1=198.18.0.1
 dns2=<DNS ip_address>
 
 [worker]
-worker-0 bmc_address=172.29.170.219 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.8 vendor=Dell install_disk=/dev/disk/by-path/...
-worker-1 bmc_address=172.29.170.73 mac_address=<L3 NIC> lab_mac=<L2 NIC> ip=198.18.0.9 vendor=Dell install_disk=/dev/disk/by-path/...
+worker-0 bmc_address=<IP or FQDN> mac_address=<L2 NIC> lab_mac=<L3 NIC> ip=198.18.0.8 vendor=Dell install_disk=/dev/disk/by-path/...
+worker-1 bmc_address=<IP or FQDN> mac_address=<L2 NIC> lab_mac=<L3 NIC> ip=198.18.0.9 vendor=Dell install_disk=/dev/disk/by-path/...
 
 [worker:vars]
 role=worker
@@ -415,7 +419,7 @@ dns2=<DNS ip_address>
 [hv_vm]
 [hv_vm:vars]
 ```
-You can see the real example file for the above inventory [here](https://github.com/redhat-performance/jetlag/blob/main/ansible/inventory/inventory-mno-byol.sample).
+You can see the real example file for the above inventory [here](https://github.com/redhat-performance/jetlag/blob/main/ansible/inventory/byol-mno.sample).
 
 Next run the `setup-bastion.yml` playbook ...
 
@@ -435,7 +439,7 @@ Finally run the `mno-deploy.yml` playbook ...
 
 You should monitor the first deployment to see if anything hangs on boot, or if the virtual media is incorrect according to the BMC. You can monitor the deployment by opening the bastion's `assisted-installer` GUI (port 8080, ex `http://<bastion>:8080/clusters`), opening the consoles via the BMC, i.e., iDRAC for Dell, of each machine, and once the machines are booted, you can directly connect to them and tail log files.
 
-If everything goes well, you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion.
+If everything goes well, you should have a cluster in about 40-70 minutes (Dependent upon reboot timings). You can interact with the cluster from the bastion.
 
 ```console
 (.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/mno/kubeconfig
@@ -448,13 +452,11 @@ worker-0          Ready    worker                 38m   v1.27.6+f67aeb3
 worker-1          Ready    worker                 39m   v1.27.6+f67aeb3
 ```
 
-## Appendix - Troubleshooting, etc.:
+## Appendix - Troubleshooting, etc.
 
-There are a few peculiarities that need to be mentioned for a non-standard lab allocation and/or different versions of software, e.g., RHEL:
+In BYOL, the cluster installation process is divided into two phases: (1) Setup the bastion machine and (2) the OCP installation.
 
-In Jetlag, the cluster installation process is divided into two phases: (1) Setup the bastion machine and (2) the actual OCP installation.
-
-### (1) Setup bastion:
+### (1) Setup bastion
 - Make sure that the base operating system (in the case of this guide it was RHEL 9.2) in the bastion machine has repositories added and an active subscription, since Jetlag requires some packages, such as: `dnsmasq`, `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
 
 - Sometimes the setup bastion process may fail, because it is not able to have connectivity between the assisted-service API and the target cluster machines. Check for `firewalld` or `iptables` with rules in place that prevent traffic between these machines. A quick test that fixes the problem is to silence and/or disable `firewalld` and clean `iptables` rules.
@@ -463,9 +465,9 @@ In Jetlag, the cluster installation process is divided into two phases: (1) Setu
 
 - The installation disks on the machines could vary from SATA/SAS to NVME, and therefore the `/dev/disk/by-path` IDs will vary.
 
-- The task ''Stop and disable iptables'' can fail because `dnf install iptables-services` and `systemctl start` need to be done.
+- The task ''Stop and disable iptables'' can fail because `dnf install iptables-services` and `systemctl start` need to be performed.
 
-### (2) MNO-Deploy:
+### (2) MNO-Deploy
 - The task "Dell - Insert Virtual Media" may fail. Silencing `firewalld` and `iptables` fixed it.
 
 - The task "Dell - Power down machine prior to booting iso" executes the `ipmi` command against the machines, where OCP will be installed. It may fail in some cases, where [reseting idrac](https://github.com/redhat-performance/jetlag/blob/main/docs/troubleshooting.md#dell---reset-bmc--idrac) is not enough. As a workaround, one can set the machines to boot from the .iso, via the virtual console.
@@ -473,7 +475,7 @@ In Jetlag, the cluster installation process is divided into two phases: (1) Setu
 - The task "Wait up to 40 min for nodes to be discovered" is the last most important step. Make sure that the *boot order* (via the *boot type*) is correct:
   - Check the virtual console in the BMC, i.e., iDRAC for Dell, if the machines are booting correctly from the .iso image.
 
-  - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. Jetlag will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.10.18.x address and RHCOS, which is correct according to the `byol.local` above.
+  - Make sure to inspect the 'BIOS Settings' in the machine for both, the *boot order* and *boot type*. Jetlag will mount the .iso and instruct the machines for a one-time boot, where, later, they should be able to boot from the disk. Check if the string in the boot order field contains the hard disk. Once booted, in the virtual console, you will see the L3 NIC interface with an 198.18.0.x address and RHCOS, which is correct according to the `byol.local` above.
   - If the machines boot from the .iso image, but they cannot reach the bastion, it is most likely a networking issue, i.e. double check L2 and L3 NIC interfaces again.
      - [badfish](https://github.com/redhat-performance/badfish) could be used for this purpose, however, it is limited to use only FQDN, and, by the time of writing, the configuration for Del R660 and R760 in the interface config file was missing.
 
