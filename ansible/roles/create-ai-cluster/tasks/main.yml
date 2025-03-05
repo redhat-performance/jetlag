@@ -22,43 +22,115 @@
   set_fact:
     static_network_config: []
 
-- name: Populate static network configuration with controlplane nodes
-  include_tasks: static_network_config.yml
-  loop: "{{ groups['controlplane'] }}"
+- name: SNO Cluster Creation
+  block:
+  - name: SNO - Populate static network configuration with SNO node
+    include_tasks: static_network_config.yml
+    when: not sno_use_lab_dhcp
+    loop: "{{ groups['sno'] }}"
 
-- name: MNO - Populate static network configuration with worker nodes
-  include_tasks: static_network_config.yml
+  - name: SNO - Set cluster_name
+    set_fact:
+      cluster_name: "{{ groups['sno'][0] }}"
+
+  - name: SNO - Create cluster
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
+      method: POST
+      body_format: json
+      status_code: [201]
+      return_content: true
+      body: {
+          "name": "{{ cluster_name }}",
+          "openshift_version": "{{ openshift_version }}",
+          "high_availability_mode": "None",
+          "base_dns_domain": "{{ base_dns_name }}",
+          "cluster_network_cidr": "{{ cluster_network_cidr }}",
+          "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
+          "service_network_cidr": "{{ service_network_cidr }}",
+          "pull_secret": "{{ pull_secret | to_json }}",
+          "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
+          "additional_ntp_source": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}"
+      }
+    register: create_cluster_return
+
+  - name: SNO - Add entries in /etc/hosts
+    blockinfile:
+      path: "/etc/hosts"
+      backup: true
+      block: |
+        {{ hostvars[cluster_name]['ip'] }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ hostvars[cluster_name]['ip'] }} api-int.{{ cluster_name }}.{{ base_dns_name }}
+        {% for route in etc_hosts_ingress_routes %}
+        {{ hostvars[cluster_name]['ip'] }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {% endfor %}
+      insertafter: "EOF"
+      marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
+
+  - name: SNO - Set ai_cluster_id
+    set_fact:
+      ai_cluster_id: "{{ create_cluster_return.json.id }}"
+  when: cluster_type == "sno"
+
+- name: MNO Cluster Creation
+  block:
+  - name: MNO - Populate static network configuration with controlplane nodes
+    include_tasks: static_network_config.yml
+    loop: "{{ groups['controlplane'] }}"
+
+  - name: MNO - Populate static network configuration with worker nodes
+    include_tasks: static_network_config.yml
+    loop: "{{ groups['worker'] }}"
+
+  - name: MNO - Create cluster
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
+      method: POST
+      body_format: json
+      status_code: [201]
+      return_content: true
+      body: {
+          "name": "{{ cluster_name }}",
+          "openshift_version": "{{ openshift_version }}",
+          "base_dns_domain": "{{ base_dns_name }}",
+          "cluster_network_cidr": "{{ cluster_network_cidr }}",
+          "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
+          "service_network_cidr": "{{ service_network_cidr }}",
+          "pull_secret": "{{ pull_secret | to_json }}",
+          "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
+          "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
+          "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
+          "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
+          "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
+          "network_type": "OVNKubernetes"
+      }
+    register: create_cluster_return
+
+  - name: MNO - Add entries in /etc/hosts
+    blockinfile:
+      path: "/etc/hosts"
+      backup: true
+      block: |
+        {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network_api }} api-int.{{ cluster_name }}.{{ base_dns_name }}
+        {% for route in etc_hosts_ingress_routes %}
+        {{ controlplane_network_ingress }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {% endfor %}
+      insertafter: "EOF"
+      marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
+
+  - name: MNO - Set ai_cluster_id
+    set_fact:
+      ai_cluster_id: "{{ create_cluster_return.json.id }}"
+  when: cluster_type == "mno"
+
+- name: Restart dnsmasq after /etc/hosts update
+  systemd:
+    state: restarted
+    name: dnsmasq
   when:
-  - cluster_type == "mno"
-  loop: "{{ groups['worker'] }}"
-
-- name: Create MNO cluster
-  uri:
-    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
-    method: POST
-    body_format: json
-    status_code: [201]
-    return_content: true
-    body: {
-        "name": "{{ cluster_name }}",
-        "openshift_version": "{{ openshift_version }}",
-        "base_dns_domain": "{{ base_dns_name }}",
-        "cluster_network_cidr": "{{ cluster_network_cidr }}",
-        "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-        "service_network_cidr": "{{ service_network_cidr }}",
-        "pull_secret": "{{ pull_secret | to_json }}",
-        "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-        "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-        "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
-        "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
-        "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
-        "network_type": "OVNKubernetes"
-    }
-  register: create_cluster_return
-
-- name: Set ai_cluster_id
-  set_fact:
-    ai_cluster_id: "{{ create_cluster_return.json.id }}"
+  - controlplane_bastion_as_dns
+  - not setup_coredns
 
 - name: Patch cluster network settings
   uri:
@@ -82,6 +154,9 @@
           }
         ]
     }
+
+# - debug:
+#     msg: "{{ static_network_config }}"
 
 - name: Create a connected infra-env
   uri:
@@ -118,43 +193,53 @@
     }
   when: use_bastion_registry | default(false)
 
-- name: Add entries in /etc/hosts
-  blockinfile:
-    path: "/etc/hosts"
-    backup: true
-    block: |
-      {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
-      {{ controlplane_network_api }} api-int.{{ cluster_name }}.{{ base_dns_name }}
-      {% for route in etc_hosts_ingress_routes %}
-      {{ controlplane_network_ingress }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
-      {% endfor %}
-    insertafter: "EOF"
-    marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
-
-- name: Restart dnsmasq after /etc/hosts update
-  systemd:
-    state: restarted
-    name: dnsmasq
-  when:
-  - controlplane_bastion_as_dns
-  - not setup_coredns
-
-- name: Include custom manifests
+# Disable lab interface manifests, skip if SNO has sno_use_lab_dhcp=true
+- name: Include custom manifests to disable the lab interface
   include_tasks: 01_manifest_update.yml
-  with_items:
+  when: (cluster_type == "mno") or (cluster_type == "sno" and not sno_use_lab_dhcp)
+  loop:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
     template_name: 50-controlplane-disable-lab-dhcp-interface.yml.j2
   - file_name: 50-worker-disable-lab-dhcp-interface.yaml
     template_name: 50-worker-disable-lab-dhcp-interface.yml.j2
-  - file_name: 50-controlplane-tune-kni-haproxy.yaml
-    template_name: 50-controlplane-tune-kni-haproxy.yml.j2
-    enabled: "{{ override_kni_infra_haproxy }}"
+
+# MNO and SNO Custom manifests
+- name: Include custom manifests
+  include_tasks: 01_manifest_update.yml
+  loop:
   - file_name: 06-kdump-master.yaml
     template_name: 06-kdump-master.yaml
     enabled: "{{ kdump_master_config }}"
-  - file_name: kubeletconfig-max-pods.yml
-    template_name: kubeletconfig-max-pods.yml
-    enabled: "{{ kubelet_config }}"
   - file_name: 99-disconnected-dns-workaround.yml
     template_name: 99-disconnected-dns-workaround.yml
     enabled: "{{ use_bastion_registry }}"
+
+# MNO Custom manifests only
+- name: MNO - Include custom manifests
+  include_tasks: 01_manifest_update.yml
+  when: cluster_type == "mno"
+  loop:
+  - file_name: 50-controlplane-tune-kni-haproxy.yaml
+    template_name: 50-controlplane-tune-kni-haproxy.yml.j2
+    enabled: "{{ override_kni_infra_haproxy }}"
+  - file_name: kubeletconfig-max-pods.yml
+    template_name: kubeletconfig-max-pods.yml
+    enabled: "{{ kubelet_config }}"
+
+# SNO Custom manifests only
+- name: SNO - Include custom manifests
+  include_tasks: 01_manifest_update.yml
+  when: cluster_type == "sno"
+  loop:
+  - file_name: kubeletconfig-max-pods.yml
+    template_name: kubeletconfig-max-pods.yml
+    enabled: "{{ kubelet_config }}"
+  vars:
+    kubelet_config_max_pods_label: "pools.operator.machineconfiguration.openshift.io/master: ''"
+
+# SNO with DU profile manifests
+- name: SNO - Include DU Profile manifests
+  include_tasks: du_profile_manifest_tasks.yml
+  when:
+  - cluster_type == "sno"
+  - du_profile
