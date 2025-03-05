@@ -3,6 +3,10 @@
 # Couldn't use ansible redfish_command it requires username and password to be used.
 # URLs modeled from http://docs.openstack.org/sushy-tools/latest/user/dynamic-emulator.html
 
+- name: Set Virtual Media ISO
+  set_fact:
+    _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
+
 - name: Libvirt - Power down machine prior to booting iso
   uri:
     url: "http://{{ hostvars[item]['ansible_host'] }}:9000/redfish/v1/Systems/{{ hostvars[item]['domain_uuid'] }}/Actions/ComputerSystem.Reset"
@@ -65,7 +69,7 @@
     headers:
       content-type: application/json
       Accept: application/json
-    body: {"Image":"http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}", "Inserted": true}
+    body: {"Image":"http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}", "Inserted": true}
     body_format: json
     validate_certs: no
     status_code: 204
