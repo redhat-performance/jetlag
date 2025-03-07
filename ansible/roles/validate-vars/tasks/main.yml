@@ -61,6 +61,14 @@
     msg: "Insufficient number of nodes in your allocation for number of SNOs to be deployed"
   when: (allocation_node_count is defined and cluster_type == "sno") and (1 > allocation_node_count | int  - 1)
 
+- name: Validate SNO inventory count equals 1
+  fail:
+    msg: "Only one SNO should be uncommented in the inventory under '[sno]' per sno-deploy run, currently {{ groups['sno'] | length }} SNO(s) uncommented"
+  when:
+  - cluster_type == "sno"
+  - groups['sno'] is defined
+  - groups['sno'] | length != 1
+
 - name: Validate Red Hat lab vars
   when: lab in rh_labs
   block:

@@ -16,8 +16,8 @@
     hostname: "{{ item }}"
     host_role: "{{ hostvars[item]['role'] }}"
   when:
-    - lab in rh_labs or lab == "byol"
-    - hostvars[item]['mac_address'] | lower in host_macs
+  - lab in rh_labs or lab == "byol"
+  - hostvars[item]['mac_address'] | lower in host_macs
   loop: "{{ inventory_nodes }}"
 
 - name: Set the hostname and role via bmc address
@@ -25,8 +25,8 @@
     hostname: "{{ item }}"
     host_role: "{{ hostvars[item]['role'] }}"
   when:
-    - lab in cloud_labs
-    - hostvars[item]['bmc_address'] == host_bmc
+  - lab in cloud_labs
+  - hostvars[item]['bmc_address'] == host_bmc
   loop: "{{ inventory_nodes }}"
 
 - name: Set hostname and role for {{ hostname }}
