@@ -59,10 +59,15 @@
       path: "/etc/hosts"
       backup: true
       block: |
-        {{ hostvars[cluster_name]['ip'] }} api.{{ cluster_name }}.{{ base_dns_name }}
-        {{ hostvars[cluster_name]['ip'] }} api-int.{{ cluster_name }}.{{ base_dns_name }}
+        {% if (lab in rh_labs or lab == 'byol') %}
+        {% set etc_hosts_ip = hostvars[cluster_name]['ip'] %}
+        {% else %}
+        {% set etc_hosts_ip = hostvars[cluster_name]['private_address'] %}
+        {% endif %}
+        {{ etc_hosts_ip }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ etc_hosts_ip }} api-int.{{ cluster_name }}.{{ base_dns_name }}
         {% for route in etc_hosts_ingress_routes %}
-        {{ hostvars[cluster_name]['ip'] }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ etc_hosts_ip }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
         {% endfor %}
       insertafter: "EOF"
       marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
@@ -99,7 +104,7 @@
           "pull_secret": "{{ pull_secret | to_json }}",
           "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
           "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-          "additional_ntp_source": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
+          "additional_ntp_source": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
           "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
           "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
           "network_type": "OVNKubernetes"
@@ -167,7 +172,7 @@
     return_content: true
     body: {
         "name": "{{ cluster_name }}",
-        "additional_ntp_sources": "{{ bastion_controlplane_ip if use_bastion_registry else labs[lab]['ntp_server'] }}",
+        "additional_ntp_sources": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
         "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "static_network_config": "{{ static_network_config }}",
@@ -194,9 +199,11 @@
   when: use_bastion_registry | default(false)
 
 # Disable lab interface manifests, skip if SNO has sno_use_lab_dhcp=true
-- name: Include custom manifests to disable the lab interface
+- name: Include custom manifests to disable the lab interface (RH Labs & BYOL)
   include_tasks: 01_manifest_update.yml
-  when: (cluster_type == "mno") or (cluster_type == "sno" and not sno_use_lab_dhcp)
+  when:
+  - lab in rh_labs or lab == "byol"
+  - (cluster_type == "mno") or (cluster_type == "sno" and not sno_use_lab_dhcp)
   loop:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
     template_name: 50-controlplane-disable-lab-dhcp-interface.yml.j2

@@ -6,26 +6,14 @@
     item_network_config:
       network_yaml: "{{ lookup('template', 'rhlab_nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'rhlab_mac_interface_map.json.j2')  }}"
-  when:
-  - lab in rh_labs or lab == "byol"
+  when: lab in rh_labs or lab == "byol"
 
-- name: SNO - Cloud Lab Populate static network configuration
+- name: Cloud Lab Populate static network configuration
   set_fact:
     item_network_config:
-    - network_yaml: "{{ lookup('template', 'ibmcloud_sno_nmstate.yml.j2') }}"
-      mac_interface_map: "{{ lookup('template', 'ibmcloud_sno_mac_interface_map.json.j2')  }}"
-  when:
-  - cluster_type == "sno"
-  - lab in cloud_labs
-
-- name: MNO - Cloud Lab Populate static network configuration
-  set_fact:
-    item_network_config:
-      network_yaml: "{{ lookup('template', 'ibmcloud_mno_nmstate.yml.j2') }}"
-      mac_interface_map: "{{ lookup('template', 'ibmcloud_mno_mac_interface_map.json.j2')  }}"
-  when:
-  - cluster_type == "mno"
-  - lab in cloud_labs
+      network_yaml: "{{ lookup('template', 'ibmcloud_nmstate.yml.j2') }}"
+      mac_interface_map: "{{ lookup('template', 'ibmcloud_mac_interface_map.json.j2')  }}"
+  when: lab in cloud_labs
 
 - name: Add {{ item }} ip config
   set_fact:

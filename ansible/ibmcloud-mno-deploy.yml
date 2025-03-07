@@ -14,10 +14,17 @@
   vars:
     assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
     http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
+    sno_use_lab_dhcp: false
+    use_bastion_registry: false
+  pre_tasks:
+  - name: Validate deploying MNO
+    fail:
+      msg: "cluster_type is not 'mno'"
+    when: cluster_type != "mno"
   roles:
   - validate-vars
   - ocp-release
-  - ibmcloud-create-ai-cluster
+  - create-ai-cluster
   - generate-discovery-iso
   - role: boot-iso
     vars:
