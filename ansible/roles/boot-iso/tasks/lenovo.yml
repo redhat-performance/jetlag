@@ -1,6 +1,10 @@
 ---
 # Lenovo tasks for booting an iso
 
+- name: Set Virtual Media ISO
+  set_fact:
+    _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
+
 - name: Lenovo - Power off
   community.general.redfish_command:
     category: Systems
@@ -26,7 +30,7 @@
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     virtual_media:
-      image_url: "http://{{ http_store_host }}:{{ http_store_port }}/iso/{{ hostvars[item]['boot_iso'] }}"
+      image_url: "http://{{ http_store_host }}:{{ http_store_port }}/iso/{{ _virtual_media_iso }}"
       media_types:
         - CD
         - DVD

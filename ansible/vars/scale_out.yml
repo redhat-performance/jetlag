@@ -1,0 +1,11 @@
+---
+# Set this to the number of already deployed worker nodes
+# This assumes they are all listed in the worker inventory
+# group. This varable is an offset used to skip worker node
+# records in the worker inventory group.
+current_worker_count: 120
+
+# Set this to the number of worker nodes being added to the
+# cluster. At minimum, current_worker_count + scale_out_count
+# inventory records must exist in the inventory file.
+scale_out_count: 100
