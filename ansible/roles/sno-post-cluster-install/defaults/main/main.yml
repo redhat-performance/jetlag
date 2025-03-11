@@ -5,6 +5,11 @@
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 
+# Wait until cluster is stable vars
+wait_until_cluster_stable: true
+minimum_stable_period: 2m
+wait_until_cluster_stable_timeout: 20m
+
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
 gitops_channel: stable
