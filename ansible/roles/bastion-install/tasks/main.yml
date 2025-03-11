@@ -17,7 +17,6 @@
     - httpd-tools
     - ipmitool
     - iproute-tc
-    - iptables-services
     - jq
     - make
     - net-tools
@@ -33,6 +32,22 @@
     update_cache: true
     disable_gpg_check: yes
 
+- name: Install iptables packages for RHEL8
+  yum:
+    name: iptables-services
+    state: present
+    update_cache: false
+    disable_gpg_check: yes
+  when: ansible_facts['distribution_major_version'] is version('9', '<')
+
+- name: Install iptables packages for RHEL9
+  yum:
+    name: iptables-nft-services
+    state: present
+    update_cache: false
+    disable_gpg_check: yes
+  when: ansible_facts['distribution_major_version'] is version('9', '>=')
+
 - name: Install python
   pip:
     name: python-hpilo
@@ -43,9 +58,11 @@
     - lab in rh_labs
     - 'not lab == "byol"'
   block:
+  # Ignore errors here because on RHEL9 the script errors if the interface doesn't exist
   - name: Clean lab interfaces
     shell: |
       /root/clean-interfaces.sh --nuke
+    ignore_errors: true
 
   - name: Restart NetworkManager to remove lab interfaces
     systemd:
