@@ -27,13 +27,14 @@
   - name: kubeconfig
     dest: kubeconfig.backup
 
+- name: Wait until cluster is stable
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm wait-for-stable-cluster --minimum-stable-period={{ minimum_stable_period }} --timeout={{ wait_until_cluster_stable_timeout }}
+  when: wait_until_cluster_stable
+
 - name: Apply a label to the SNO node
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc label no --all --overwrite jetlag=true
-  register: jetlag_label
-  retries: 120
-  delay: 2
-  until: not jetlag_label.failed
 
 - name: Place templated configuration items
   template:
@@ -58,38 +59,21 @@
 - name: Add kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc create sa kubeburner
-  register: kubeburner_sa
-  retries: 120
-  delay: 2
-  until: not kubeburner_sa.failed
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Add cluster-admin role to kube-burner sa
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
-  register: kubeburner_role
-  retries: 120
-  delay: 2
-  until: not kubeburner_role.failed
   when: setup_kube_burner_sa | default(true) | bool
 
 - name: Disable default OperatorHub sources on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-  register: operator_hub_disable
-  retries: 120
-  delay: 2
-  until: not operator_hub_disable.failed
-  when:
-  - use_bastion_registry | default(false)
+  when: use_bastion_registry | default(false)
 
 - name: Create openshift-marketplace namespace for ocp 4.15 and higher releases DUs
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-marketplace-ns.yaml
-  register: marketplace_ns
-  retries: 120
-  delay: 2
-  until: not marketplace_ns.failed
   when:
   - use_bastion_registry | default(false)
   - openshift_version is version('4.15', ">=")
@@ -97,29 +81,17 @@
 - name: Apply olm-mirror imageContentSourcePolicy on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/imageContentSourcePolicy.yaml
-  register: icsp_apply
-  retries: 120
-  delay: 2
-  until: not icsp_apply.failed
   when: use_bastion_registry | default(false)
 
 # Part of DU Profile (Not completely in du_profile_tasks.yml)
 - name: Annotate catalogSource.yaml to pin opm to reserved cores for DUs
   shell: |
     yq -i '.metadata.annotations."target.workload.openshift.io/management" = "{\"effect\": \"PreferredDuringScheduling\"}"' {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
-  register: catsource_annotate
-  retries: 120
-  delay: 2
-  until: not catsource_annotate.failed
   when: use_bastion_registry | default(false) and du_profile
 
 - name: Apply olm-mirror catalogSource on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}/catalogSource.yaml
-  register: catsource_apply
-  retries: 120
-  delay: 2
-  until: not catsource_apply.failed
   when: use_bastion_registry | default(false)
 
 - name: Install OpenShift-gitops-operator

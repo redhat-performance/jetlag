@@ -13,6 +13,11 @@ http_store_port: 8081
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
+# Wait until cluster is stable vars
+wait_until_cluster_stable: true
+minimum_stable_period: 2m
+wait_until_cluster_stable_timeout: 20m
+
 # Deploy performance-dashboards
 setup_performance_dashboards: false
 
