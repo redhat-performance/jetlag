@@ -362,13 +362,15 @@ ocp_build: "ga"
 ocp_version: "latest-4.18"
 
 # Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
-# MNO clusters autoconfigure cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
+# Autoconfigures cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
 # controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
-# SNOs require manual configuration with additional variables.
+# SNO configures only the first cluster on the api dns resolvable address
+# MNO/SNO still requires the correct value for bastion_controlplane_interface
 public_vlan: false
 
 # SNOs only require a single IP address and can be deployed using the lab DHCP interface instead of a private or
 # public vlan network. Set to true to have your SNO deployed on the public lab DHCP network.
+# Cannot combine public_vlan and sno_use_lab_dhcp
 sno_use_lab_dhcp: false
 
 # Enables FIPs security standard

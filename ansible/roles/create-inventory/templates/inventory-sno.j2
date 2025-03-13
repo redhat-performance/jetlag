@@ -41,15 +41,19 @@ bmc_password={{ bmc_password }}
 # one at a time by rerunning the SNO deploy playbook after changing which inventory line
 # is uncommented
 {% for sno in ocpinventory_sno_nodes %}
-{% set sno_long_hostname=sno.pm_addr | replace('mgmt-','') %}
-{% set sno_short_hostname=(sno_long_hostname.split('.')[0]) %}
-{% set lab_mac=(sno_foreman_data.results|selectattr('json.name', 'eq', sno_long_hostname)|first) | json_query(mac_query) | join(', ') %}
-{% if sno_use_lab_dhcp %}
-{%   set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', sno_long_hostname)|first).json.ip %}
-{% else %}
-{%   set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + 5) %}
-{% endif %}
-{% if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} mac_address={{ sno.mac[controlplane_network_interface_idx] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ sno_install_disk }} boot_iso={{ sno_short_hostname }}.iso
+{%   set sno_long_hostname=sno.pm_addr | replace('mgmt-','') %}
+{%   if public_vlan and loop.first %}
+{%     set sno_short_hostname=cluster_name %}
+{%   else %}
+{%     set sno_short_hostname=(sno_long_hostname.split('.')[0]) %}
+{%   endif %}
+{%   set lab_mac=(sno_foreman_data.results|selectattr('json.name', 'eq', sno_long_hostname)|first) | json_query(mac_query) | join(', ') %}
+{%   if sno_use_lab_dhcp %}
+{%     set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', sno_long_hostname)|first).json.ip %}
+{%   else %}
+{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + 3) %}
+{%   endif %}
+{%   if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} mac_address={{ sno.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ sno_install_disk }} boot_iso={{ sno_short_hostname }}.iso
 {% endfor %}
 
 [sno:vars]
