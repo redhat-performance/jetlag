@@ -36,14 +36,14 @@
     ocpinventory_sno_nodes: []
     ocpinventory_hv_nodes: []
 
-- name: Public VLAN in MNO cluster
-  when: public_vlan and cluster_type == "mno"
+- name: Public VLAN autoconfiguration
+  when: public_vlan
   block:
   - name: Public VLAN - Set controlplane_network_interface_idx to -1 for the last interface
     set_fact:
       controlplane_network_interface_idx: "-1"
 
-  - name: Get assignment from scalelab quads
+  - name: Public VLAN - Get assignment from quads
     uri:
       url: "https://{{ labs[lab]['quads'] }}/api/v3/assignments/active/{{ lab_cloud }}"
       force_basic_auth: yes
@@ -51,15 +51,13 @@
       password: "{{ ocpinventory.json.nodes[0].pm_password }}"
       validate_certs: false
     register: quads_assignment
-    when: lab == "scalelab" or lab == "performancelab"
 
-  - name: Public scalelab VLAN - Set addressing information
+  - name: Public VLAN - Set addressing information
     set_fact:
       controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
       controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
-    when: lab == "scalelab" or lab == "performancelab"
 
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
