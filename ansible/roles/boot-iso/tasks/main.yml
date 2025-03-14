@@ -4,29 +4,29 @@
 - name: Boot iso on dell hardware
   include_tasks: dell.yml
   with_items:
-    - "{{ groups[inventory_group][:index|int] }}"
+    - "{{ groups[inventory_group][offset|int:index|int] }}"
   when: hostvars[item]['vendor'] == 'Dell'
 
 - name: Boot iso on hp hardware
   include_tasks: hp.yml
   with_items:
-    - "{{ groups[inventory_group][:index|int] }}"
+    - "{{ groups[inventory_group][offset|int:index|int] }}"
   when: hostvars[item]['vendor'] == 'Hp'
 
 - name: Boot iso on supermicro hardware
   include_tasks: supermicro.yml
   with_items:
-    - "{{ groups[inventory_group][:index|int] }}"
+    - "{{ groups[inventory_group][offset|int:index|int] }}"
   when: hostvars[item]['vendor'] == 'Supermicro'
 
 - name: Boot iso on lenovo hardware
   include_tasks: lenovo.yml
   with_items:
-    - "{{ groups[inventory_group][:index|int] }}"
+    - "{{ groups[inventory_group][offset|int:index|int] }}"
   when: hostvars[item]['vendor'] == 'Lenovo'
 
 - name: Boot iso on libvirt vm
   include_tasks: libvirt.yml
   with_items:
-    - "{{ groups[inventory_group][:index|int] }}"
+    - "{{ groups[inventory_group][offset|int:index|int] }}"
   when: hostvars[item]['vendor'] == 'Libvirt'

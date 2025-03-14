@@ -1,6 +1,10 @@
 ---
 # HP tasks for booting an iso
 
+- name: Set Virtual Media ISO
+  set_fact:
+    _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
+
 - name: HP - Power off
   hpilo_boot:
     host: "{{ hostvars[item]['bmc_address'] }}"
@@ -20,5 +24,5 @@
     host: "{{ hostvars[item]['bmc_address'] }}"
     login: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
-    image: "http://{{ http_store_host }}:{{ http_store_port }}/{{ hostvars[item]['boot_iso'] }}"
+    image: "http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}"
     media: cdrom
