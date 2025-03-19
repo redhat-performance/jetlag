@@ -4,3 +4,8 @@
 # This will be your bastion machine (if you run setup-bastion playbook)
 http_store_host: "{{ groups['bastion'][0] }}"
 http_store_port: 8081
+
+# This is always 0 for a deploy
+# For a scale out it indicates how many worker nodes are already deployed
+# and should not be included in the scale out from the inventory.
+offset: 0

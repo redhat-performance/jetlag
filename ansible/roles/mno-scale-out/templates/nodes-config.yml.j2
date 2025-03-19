@@ -1,0 +1,44 @@
+---
+hosts:
+{% for worker in workers %}
+- hostname: {{ worker }}
+  rootDeviceHints:
+   deviceName: {{ hostvars[worker].install_disk }}
+  interfaces:
+{% if hostvars[worker].lab_mac | default(False) %}
+   - macAddress: {{ hostvars[worker].lab_mac }}
+     name: {{ hostvars[worker].lab_interface }}
+{% endif %}
+   - macAddress: {{ hostvars[worker].mac_address }}
+     name: {{ hostvars[worker].network_interface }}
+  networkConfig:
+   interfaces:
+     - name: {{ hostvars[worker].network_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].mac_address }}
+       ipv4:
+         enabled: true
+         address:
+           - ip: {{ hostvars[worker].ip }}
+             prefix-length: {{ hostvars[worker].network_prefix }}
+         auto-dns: false
+{% if hostvars[worker].lab_mac | default(False) %}
+     - name: {{ hostvars[worker].lab_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].lab_interface }}
+       ipv4:
+         enabled: false
+         auto-dns: false
+{% endif %}
+   dns-resolver:
+     config:
+       server:
+       - {{ hostvars[worker].dns1 }}
+   routes:
+     config:
+     - destination: 0.0.0.0/0
+       next-hop-address: {{ hostvars[worker].gateway }}
+       next-hop-interface: eth0
+{% endfor %}

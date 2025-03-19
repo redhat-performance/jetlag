@@ -1,0 +1,12 @@
+---
+- name: Approve node-bootstrapper CSRs and wait for nodes to join cluster
+  include_tasks: check_nodes_joined.yml
+  vars:
+    qry: "items[?status.conditions==null && spec.username == 'system:serviceaccount:openshift-machine-config-operator:node-bootstrapper']"
+    worker_counter: "grep -c worker"
+
+- name: Approve Kublet-serving CSRs and wait for nodes to join cluster
+  include_tasks: check_nodes_joined.yml
+  vars:
+    qry: "items[?status.conditions==null && spec.signerName == 'kubernetes.io/kubelet-serving']"
+    worker_counter: "grep worker | grep -c -v NotReady"
