@@ -3,7 +3,7 @@
 
 coredns_url: https://github.com/coredns/coredns/releases/download/v1.10.1/coredns_1.10.1_linux_amd64.tgz
 grpcurl_url: https://github.com/fullstorydev/grpcurl/releases/download/v1.8.1/grpcurl_1.8.1_linux_x86_64.tar.gz
-kubeburner_url: https://github.com/cloud-bulldozer/kube-burner/releases/download/v1.7.6/kube-burner-V1.7.6-linux-arm64.tar.gz
+kubeburner_url: https://github.com/kube-burner/kube-burner/releases/download/v1.15.0/kube-burner-V1.15.0-linux-x86_64.tar.gz
 minio_client_url: https://dl.min.io/client/mc/release/linux-amd64/mc
 yq_url: https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64.tar.gz
 
