@@ -1,10 +1,10 @@
 ---
 # wait-hosts-discovered tasks
 
-- name: MNO - Create list of nodes to be discovered
+- name: MNO / VMNO - Create list of nodes to be discovered
   set_fact:
     inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
-  when: cluster_type == "mno"
+  when: cluster_type in ["mno", "vmno"]
 
 - name: SNO - Set the list of one node to be discovered
   set_fact:

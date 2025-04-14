@@ -12,12 +12,14 @@ interfaces:
       prefix-length: {{ hostvars[item]['network_prefix'] }}
     auto-dns: false
     enabled: true
+{% if 'lab_mac' in hostvars[item] %}
 - name: {{ hostvars[item]['lab_interface']}}
   type: ethernet
   state: up
   ipv4:
     auto-dns: false
     enabled: false
+{% endif %}
 dns-resolver:
   config:
     server:
