@@ -35,11 +35,19 @@
       <target dev='sda' bus='scsi'/>
       <address type='drive' controller='0' bus='0' target='0' unit='0'/>
     </disk>
+{% if 'disk2_location' in hostvars[inventory_hostname] %}
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' discard='unmap'/>
+      <source file='{{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2'/>
+      <target dev='sdb' bus='scsi'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='1'/>
+    </disk>
+{% endif %}
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
-      <target dev='sdb' bus='sata'/>
+      <target dev='sdc' bus='sata'/>
       <readonly/>
-      <address type='drive' controller='0' bus='0' target='0' unit='1'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='2'/>
     </disk>
     <controller type='scsi' index='0' model='virtio-scsi'>
       <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
