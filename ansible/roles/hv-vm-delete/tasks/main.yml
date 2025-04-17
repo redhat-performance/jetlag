@@ -25,6 +25,13 @@
     state: absent
   ignore_errors: true
 
+- name: Delete 2nd VM disk
+  file:
+    path: "{{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2"
+    state: absent
+  when: "'disk2_location' in hostvars[inventory_hostname]"
+  ignore_errors: true
+
 - name: Remove VM definition file
   file:
     path: "{{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml"
