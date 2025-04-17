@@ -184,8 +184,15 @@
     has_supermicro: false
   when: has_supermicro is not defined
 
+- name: Virtual Multi node cluster type tasks
+  when: cluster_type == "vmno"
+  block:
+  - name: VMNO - Set ocpinventory hv nodes
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[1:] }}"
+
 - name: Hypervisor tasks to determine if there is a 2nd disk available
-  when: hv_inventory
+  when: hv_inventory or cluster_type == "vmno"
   block:
   - name: Disable disk2 for all hypervisor machines
     set_fact:
@@ -230,7 +237,7 @@
     set_fact:
       ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
-    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r660', 'r750', 'r730xd', 'r930']
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r660', 'r750', 'r730xd', 'r740xd', 'r930']
     loop: "{{ ocpinventory_hv_nodes }}"
     loop_control:
       index_var: idx

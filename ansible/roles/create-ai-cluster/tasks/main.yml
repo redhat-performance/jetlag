@@ -77,17 +77,17 @@
       ai_cluster_id: "{{ create_cluster_return.json.id }}"
   when: cluster_type == "sno"
 
-- name: MNO Cluster Creation
+- name: MNO / VMNO Cluster Creation
   block:
-  - name: MNO - Populate static network configuration with controlplane nodes
+  - name: MNO / VMNO - Populate static network configuration with controlplane nodes
     include_tasks: static_network_config.yml
     loop: "{{ groups['controlplane'] }}"
 
-  - name: MNO - Populate static network configuration with worker nodes
+  - name: MNO / VMNO - Populate static network configuration with worker nodes
     include_tasks: static_network_config.yml
     loop: "{{ groups['worker'] }}"
 
-  - name: MNO - Create cluster
+  - name: MNO / VMNO - Create cluster
     uri:
       url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
       method: POST
@@ -111,7 +111,7 @@
       }
     register: create_cluster_return
 
-  - name: MNO - Add entries in /etc/hosts
+  - name: MNO / VMNO - Add entries in /etc/hosts
     blockinfile:
       path: "/etc/hosts"
       backup: true
@@ -124,10 +124,10 @@
       insertafter: "EOF"
       marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
 
-  - name: MNO - Set ai_cluster_id
+  - name: MNO / VMNO - Set ai_cluster_id
     set_fact:
       ai_cluster_id: "{{ create_cluster_return.json.id }}"
-  when: cluster_type == "mno"
+  when: cluster_type in ["mno", "vmno"]
 
 - name: Restart dnsmasq after /etc/hosts update
   systemd:
@@ -222,9 +222,9 @@
     enabled: "{{ use_bastion_registry }}"
 
 # MNO Custom manifests only
-- name: MNO - Include custom manifests
+- name: MNO / VMNO - Include custom manifests
   include_tasks: 01_manifest_update.yml
-  when: cluster_type == "mno"
+  when: cluster_type in ["mno", "vmno"]
   loop:
   - file_name: 50-controlplane-tune-kni-haproxy.yaml
     template_name: 50-controlplane-tune-kni-haproxy.yml.j2

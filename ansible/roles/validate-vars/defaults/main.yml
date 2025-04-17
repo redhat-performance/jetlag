@@ -6,6 +6,7 @@
 rh_lab_cluster_types:
 - mno
 - sno
+- vmno
 
 ibmcloud_cluster_types:
 - mno
