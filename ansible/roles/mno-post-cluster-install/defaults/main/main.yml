@@ -39,6 +39,10 @@ gitops_channel: stable
 migrate_ingresscontrollers: false
 migrate_monitoring: false
 
+# Apply the cluster-monitoring-config that uses the localstorage class name created either
+# by controlplane_localstorage_configuration or worker_localstorage_configuration
+apply_cluster_monitoring_config: false
+
 # Set the rention period for prometheus to allow up to 15 days of data by default
 prometheus_retention_period: 15d
 
