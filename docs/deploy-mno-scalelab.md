@@ -53,45 +53,7 @@ Now log in to the bastion (with `ssh root@<bastion>` if you copied your public k
 or using the bastion root account password if not), because the remaining commands
 should be executed from the bastion.
 
-3. Upgrade RHEL to at least RHEL 8.6
-
-You need to be running at least RHEL 8.6 to have the minimal `podman`. By default,
-the Scale lab installs RHEL 8.6. We recommend upgrading to RHEL 8.9
-using the `/root/update-latest-rhel-release.sh` script provisioned by the QUADS
-system. You can determine the installed version by looking at `/etc/redhat-release`.
-
-```console
-[root@<bastion> ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.2 (Ootpa)
-[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
-Changing repository from 8.2 to 8.9
-Cleaning dnf repo cache..
-
--------------------------
-Run dnf update to upgrade to RHEL 8.9
-
-[root@<bastion> ~]# dnf update -y
-Updating Subscription Management repositories.
-Unable to read consumer identity
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-rhel89 AppStream                                                                                                                                              245 MB/s | 7.8 MB     00:00
-rhel89 BaseOS                                                                                                                                                 119 MB/s | 2.4 MB     00:00
-Extra Packages for Enterprise Linux 8 - x86_64                                                                                                                 14 MB/s |  14 MB     00:00
-Last metadata expiration check: 0:00:01 ago on Tue 02 May 2023 06:58:15 PM UTC.
-Dependencies resolved.
-...
-Complete!
-[root@<bastion> ~]# reboot
-Connection to <bastion> closed by remote host.
-Connection to <bastion> closed.
-...
-[user@<local> ~]$ ssh root@<bastion>
-...
-[root@<bastion> ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.9 (Ootpa)
-```
-
-4. Install some additional tools to help after reboot
+3. Install some additional tools to assist you.
 
 ```console
 [root@<bastion> ~]# dnf install tmux git python3-pip sshpass -y
@@ -100,7 +62,7 @@ Updating Subscription Management repositories.
 Complete!
 ```
 
-5. Setup ssh keys for the bastion root account and copy to itself to permit
+4. Setup ssh keys for the bastion root account and copy to itself to permit
 local ansible interactions:
 
 ```console
@@ -134,7 +96,7 @@ Now try logging into the machine and check to make sure that only the key(s) you
 [root@<bastion> ~]#
 ```
 
-6. Clone the `jetlag` GitHub repo
+5. Clone the `jetlag` GitHub repo
 
 ```console
 [root@<bastion> ~]# git clone https://github.com/redhat-performance/jetlag.git
@@ -159,7 +121,7 @@ for subsequent steps:
 [root@<bastion> jetlag]#
 ```
 
-7. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
+6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
 the long downloads page, in the section labeled "Tokens". You can either click the "Download" button, and then copy the
 downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
 file will download with a hyphen (`-`)); *or* click on the "Copy" button, and then paste the clipboard into the terminal
@@ -189,7 +151,7 @@ If you are deploying nightly builds then you will need to add a ci token and an 
 `registry.ci.openshift.org`. If you plan on deploying an ACM downstream build be sure to
 include an entry for `quay.io:443`.
 
-8. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
+7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
 This will activate a local virtual Python environment configured with the Jetlag and
 Ansible dependencies.
 

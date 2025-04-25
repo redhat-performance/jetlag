@@ -66,22 +66,6 @@ Versions:
 * RHEL >= 8.6 (Bastion)
 * podman 3 / 4 (Bastion)
 
-Update to RHEL 8.9
-
-```console
-[root@<bastion> ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.2 (Ootpa)
-
-[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
-...
-[root@<bastion> ~]# dnf update -y
-...
-[root@<bastion> ~]# reboot
-...
-[root@<bastion> ~]# cat /etc/redhat-release
-Red Hat Enterprise Linux release 8.9 (Ootpa)
-```
-
 Installing Ansible via bootstrap (requires python3-pip)
 
 ```console
