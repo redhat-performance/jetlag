@@ -549,15 +549,20 @@ The values in *config/idrac_interfaces.yml* are first of all for the Scale lab.
 
 ## Upgrade RHEL
 
+> [!NOTE]
+> Both Scale Lab and Performance Lab ALIAS default to RHEL9.4 now.
+>
+> This is likely not necessary unless you want to be on a newer U-release of RHEL9
+
 On the bastion machine:
 
 ```console
-[root@<bastion> ~]# ./update-latest-rhel-release.sh 8.9
-Changing repository from 8.2 to 8.9
+[root@<bastion> ~]# ./update-latest-rhel-release.sh 9.5
+Changing repository from 9.4 to 9.5
 Cleaning dnf repo cache..
 
 -------------------------
-Run dnf update to upgrade to RHEL 8.9
+Run dnf update to upgrade to RHEL 9.5
 
 [root@<bastion> ~]# dnf update -y
 ...
