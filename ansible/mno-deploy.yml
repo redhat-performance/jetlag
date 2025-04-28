@@ -14,8 +14,8 @@
   pre_tasks:
   - name: Validate deploying MNO
     fail:
-      msg: "cluster_type is not 'mno'"
-    when: cluster_type != "mno"
+      msg: "cluster_type is not 'mno' or 'vmno'"
+    when: cluster_type != "mno" and cluster_type != "vmno"
   roles:
   - validate-vars
   - ocp-release

@@ -158,6 +158,13 @@ hw_nic_name:
     - ens2f1
     - ens1f0
     - ens1f1
+  performancelab:
+    r740xd:
+    - eno3
+    - eno1
+    - eno2
+    - ens7f0
+    - ens7f1
 
 # Based on VM Size (8vCPU, 18GiB Memory, 120G Disk)
 hw_vm_counts:
@@ -209,6 +216,10 @@ hw_vm_counts:
     dl360:
       default: 8
       sdc: 12
+  performancelab:
+    r740xd:
+      default: 4
+      nvme0n1: 5
 
 # # Based on VM Size (8vCPU, 28GiB Memory, 120G Disk)
 # hw_vm_counts:
