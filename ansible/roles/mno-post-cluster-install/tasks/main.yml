@@ -124,7 +124,7 @@
   block:
   - name: Label the control-plane nodes
     shell: |
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true prometheus=true
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true
     with_items: "{{ groups['controlplane'] }}"
 
   - name: Install local-storage operator
@@ -149,16 +149,12 @@
     delay: 2
     when: localvolume2_configuration
 
-  - name: Configure OpenShift-Monitoring Prometheus to use localstorage
-    shell:
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
-
 - name: Setup worker nodes localstorage
   when: worker_localstorage_configuration
   block:
   - name: Label the worker nodes
     shell: |
-      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true prometheus=true
+      KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true
     with_items: "{{ groups['worker'] }}"
 
   - name: Install local-storage operator
@@ -194,7 +190,7 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch ingresscontrollers/default --type merge -n openshift-ingress-operator -p '{"spec": {"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/master": "" }}, "tolerations": [{"effect": "NoSchedule", "key": "node-role.kubernetes.io/master"}]} }}'
 
 - name: Apply OpenShift-Monitoring configuration options
-  when: migrate_monitoring or worker_localstorage_configuration
+  when: migrate_monitoring or (apply_cluster_monitoring_config and (controlplane_localstorage_configuration or worker_localstorage_configuration))
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
 
