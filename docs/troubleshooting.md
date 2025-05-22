@@ -11,6 +11,7 @@ _**Table of Contents**_
   - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
   - [Failed on Wait for cluster to be ready](#failed-on-wait-for-cluster-to-be-ready)
   - [Failed on Adjust by-path selected install disk](#failed-on-adjust-by-path-selected-install-disk)
+  - [Failed on Insert Virtual Media](#failed-on-insert-virtual-media)
 - [Bastion](#bastion)
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
@@ -203,6 +204,40 @@ nvme0n1 259:0    0   2.9T  0 disk
 ```
 
 Now the disk is wiped of the cruft partition. You can now retry a new deployment to verify this machine is now installable.
+
+## Failed on Insert Virtual Media
+
+On failure to insert/mount virtual media tasks such as:
+
+```
+TASK [boot-iso : Insert Virtual Media]
+fatal: [server_name.redhat.com]: FAILED! => {"changed": false, "msg": "HTTP Error 400 on POST request to 'https://10.10.1.1/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia', extended message: 'Unable to locate the ISO or IMG image file or folder in the network share location because the file or folder path or the user credentials entered are incorrect.'"}
+```
+
+It likely indicates a DNS resolution issue related to the bastion server.
+
+To debug it:
+
+- Verify BMC DNS Configuration
+
+Ensure that the **DNS server configured on the BMC** (Baseboard Management Controller) is able to resolve hostnames, especially the **Bastion’s Fully Qualified Domain Name (FQDN)**.
+
+The issue is often **not** with the Bastion host itself, but rather with the BMC's DNS server failing to resolve the Bastion FQDN to an IP address.
+
+- Bypass DNS Using Bastion IP
+
+To determine if the BMC's DNS is the root cause, bypass DNS resolution by replacing the Bastion's FQDN with its IP address in the discovery ISO URL:
+  `http://SERVER_IP:8081/discovery.iso`
+
+This ensures the BMC does not rely on DNS resolution to access the ISO.
+
+-  Test DNS Server Responsiveness
+
+You can validate whether the BMC’s DNS server is functioning correctly by running DNS diagnostic tools (from a system using the same DNS server):
+    - `dig <bastion_fqdn>`
+    - `nslookup <bastion_fqdn>`
+    - `host <bastion_fqdn>` 
+These tools help confirm whether the DNS server is responsive and capable of resolving the Bastion FQDN.
 
 # Bastion
 
