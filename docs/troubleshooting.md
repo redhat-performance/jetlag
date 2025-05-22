@@ -11,6 +11,7 @@ _**Table of Contents**_
   - [Failed on Wait up to 40 min for nodes to be discovered](#failed-on-wait-up-to-40-min-for-nodes-to-be-discovered)
   - [Failed on Wait for cluster to be ready](#failed-on-wait-for-cluster-to-be-ready)
   - [Failed on Adjust by-path selected install disk](#failed-on-adjust-by-path-selected-install-disk)
+  - [BMC DNS server issue](#bmc-dns-server-issue)
 - [Bastion](#bastion)
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
@@ -203,6 +204,25 @@ nvme0n1 259:0    0   2.9T  0 disk
 ```
 
 Now the disk is wiped of the cruft partition. You can now retry a new deployment to verify this machine is now installable.
+
+## BMC DNS Server Issue
+
+On failure to insert/mount virtual media tasks such as:
+
+```
+TASK [boot-iso : Insert Virtual Media]
+fatal: [server_name.redhat.com]: FAILED! => {"changed": false, "msg": "HTTP Error 400 on POST request to 'https://10.10.1.1/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia', extended message: 'Unable to locate the ISO or IMG image file or folder in the network share location because the file or folder path or the user credentials entered are incorrect.'"}
+```
+It likely indicates a DNS resolution issue related to the bastion server:
+
+To debug it:
+
+- Check that the DNS server is properly resolving addresses.
+- If that fails, try using the bastion server IP instead:  
+  `http://SERVER_IP:8081/discovery.iso`
+
+**Solution:**  
+ Fix the DNS server that the BMC is using or switch to one that is working properly.
 
 # Bastion
 
