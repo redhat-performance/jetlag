@@ -11,7 +11,6 @@ _**Table of Contents**_
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
-- [Using a local ocpinventory file][#using-a-local-ocpinventory-file]
 <!-- /TOC -->
 
 
@@ -170,10 +169,15 @@ You must stop and remove all assisted-installer containers on the bastion with [
 
 ## Override lab ocpinventory json file
 
-By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used:
+By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used, or 
+specify a local path for the file:
 
 ```yaml
 ocp_inventory_override: http://<http-server>/<inventory-file>.json
+
+# or
+
+ocp_inventory_override: <LOCAL_FILE_PATH>
 ```
 
 ## Using other network interfaces
@@ -391,12 +395,4 @@ function rm_XXX_tag {
    | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
  )"
 }
-```
-
-# Using a local ocpinventory file
-
-If you require using a local ocpinventory file instead of downloading one,
-you can specify the file path in `ansible/vars/all.yaml`:
-```
-ocp_inventory_override: <FILE_PATH>
 ```
