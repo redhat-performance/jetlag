@@ -11,6 +11,7 @@ _**Table of Contents**_
 - [DU Profile for SNOs](#du-profile-for-snos)
 - [Post Deployment Tasks](#post-deployment-tasks)
 - [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
+- [Using a local ocpinventory file][#using-a-local-ocpinventory-file]
 <!-- /TOC -->
 
 
@@ -390,4 +391,12 @@ function rm_XXX_tag {
    | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
  )"
 }
+```
+
+# Using a local ocpinventory file
+
+If you require using a local ocpinventory file instead of downloading one,
+you can specify the file path in `ansible/vars/all.yaml`:
+```
+ocp_inventory_override: <FILE_PATH>
 ```

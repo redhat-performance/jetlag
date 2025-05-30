@@ -32,7 +32,7 @@
   set_fact:
     ocpinventory:
       json: "{{ lookup('file', ocp_inventory_url) }}"
-  when: ocp_inventory_url | regex_search('^/')
+  when: "'skipped' in ocpinventory"
 
 - name: Set inventory variables
   set_fact:
