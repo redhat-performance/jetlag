@@ -26,6 +26,13 @@
     url: "{{ ocp_inventory_url }}"
     return_content: true
   register: ocpinventory
+  when: ocp_inventory_url | regex_search('^http')
+
+- name: Load {{ ocp_inventory_url }}
+  set_fact:
+    ocpinventory:
+      json: "{{ lookup('file', ocp_inventory_url) }}"
+  when: "'skipped' in ocpinventory"
 
 - name: Set inventory variables
   set_fact:
