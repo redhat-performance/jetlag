@@ -169,8 +169,7 @@ You must stop and remove all assisted-installer containers on the bastion with [
 
 ## Override lab ocpinventory json file
 
-By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used, or 
-specify a local path for the file:
+By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used, or specify a local path for the file:
 
 ```yaml
 ocp_inventory_override: http://<http-server>/<inventory-file>.json
