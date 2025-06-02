@@ -101,4 +101,7 @@
     baseuri: "{{ hostvars[item]['bmc_address'] }}"
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
+  register: result
+  until: result.rc == 0
   retries: 5
+  delay: 30
