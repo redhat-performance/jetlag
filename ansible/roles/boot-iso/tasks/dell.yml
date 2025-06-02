@@ -25,7 +25,11 @@
     headers:
       content-type: application/json
       Accept: application/json
-    body: {"ShareParameters":{"Target":"ALL"},"ImportBuffer":"<SystemConfiguration><Component FQDD=\"iDRAC.Embedded.1\"><Attribute Name=\"ServerBoot.1#BootOnce\">Enabled</Attribute><Attribute Name=\"ServerBoot.1#FirstBootDevice\">VCD-DVD</Attribute></Component></SystemConfiguration>"}
+    body:
+      {
+        "ShareParameters": { "Target": "ALL" },
+        "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>',
+      }
     body_format: json
     validate_certs: no
     status_code: 202
@@ -86,8 +90,8 @@
     virtual_media:
       image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}"
       media_types:
-      - CD
-      - DVD
+        - CD
+        - DVD
     resource_id: iDRAC.Embedded.1
 
 - name: DELL - Power ON
@@ -97,3 +101,7 @@
     baseuri: "{{ hostvars[item]['bmc_address'] }}"
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 30
