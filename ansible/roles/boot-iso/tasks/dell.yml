@@ -93,6 +93,10 @@
         - CD
         - DVD
     resource_id: iDRAC.Embedded.1
+  register: result
+  until: not result.failed
+  retries: 5
+  delay: 30
 
 - name: DELL - Power ON
   community.general.redfish_command:
@@ -102,6 +106,6 @@
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
   register: result
-  until: result.return_values is defined and result.return_values is mapping
+  until: not result.failed
   retries: 5
   delay: 30
