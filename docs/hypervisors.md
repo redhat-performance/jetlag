@@ -7,6 +7,7 @@ _**Table of Contents**_
 - [Network](#network)
 - [Setup Hypervisors](#setup-hypervisors)
 - [Hypervisor Network-Impairments](#hypervisor-network-impairments)
+- [vNUMA configuration for your VMs](#vnuma-configuration-for-your-vms)
 - [Create/Delete/Replace VMs](#create-delete-replace-vms)
 - [Manifests](#manifests)
 <!-- /TOC -->
@@ -100,6 +101,27 @@ Remove impairments:
 ```
 
 Note, egress impairments are applied directly to the impaired nic. Ingress impairments are applied to an ifb interface that handles ingress traffic for the impaired nic.
+
+## vNUMA configuration for your VMs
+
+Check if the servers in your allocation support NUMA config:
+
+```console
+# Verify NUMA nodes are available and check CPU-to-NUMA mapping
+[root@<hv>]# lscpu | grep NUMA
+```
+
+Example output indicating NUMA support:
+NUMA node(s):          2
+NUMA node0 CPU(s):     0-11,24-35
+NUMA node1 CPU(s):     12-23,36-47
+
+Add this var to your ansible/vars/all.yml file to enable vnuma config for virtual deployments:
+```yaml
+vnuma_enabled: true
+```
+
+Refer to ansible/roles/hv-vm-create/defaults/main.yml for other vNUMA configuration options.
 
 ## Create/Delete/Replace VMs
 

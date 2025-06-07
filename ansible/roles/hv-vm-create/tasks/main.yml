@@ -16,6 +16,46 @@
     qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2 {{ hostvars[inventory_hostname]['disk2_size'] }}G
   when: "'disk2_location' in hostvars[inventory_hostname]"
 
+- name: Set VM CPU count from host variables
+  set_fact:
+    hv_vm_cpu_count: "{{ hostvars[inventory_hostname]['cpus'] }}"
+
+- name: Set vNUMA configuration tasks
+  when: vnuma_enabled
+  block:
+    - name: Gather host NUMA topology information
+      shell: |
+        lscpu | grep "NUMA node(s):" | awk '{print $3}'
+      register: host_numa_nodes
+
+    - name: Calculate vNUMA node count
+      set_fact:
+        vm_numa_nodes: "{{ host_numa_nodes.stdout | int if host_numa_nodes.stdout | int <= (hv_vm_cpu_count | int // 2) else (hv_vm_cpu_count | int // 2) }}"
+
+    - name: Calculate vNUMA memory per node
+      set_fact:
+        vm_numa_memory_per_node: "{{ (hostvars[inventory_hostname]['memory'] | int // vm_numa_nodes | int) }}"
+
+    - name: Calculate VM CPU sockets
+      set_fact:
+        vm_sockets: "{{ 1 if hv_vm_cpu_count | int < 8 else 2 if hv_vm_cpu_count | int <= 16 else 4 }}"
+
+    - name: Calculate VM CPU cores and threads
+      set_fact:
+        vm_cores: "{{ (hv_vm_cpu_count | int // vm_sockets | int // 2) }}"
+        vm_threads: 2
+
+    - name: Calculate VM CPU topology
+      set_fact:
+        vm_sockets: "{{ 1 if hv_vm_cpu_count | int < 8 else 2 if hv_vm_cpu_count | int <= 16 else 4 }}"
+        vm_cores: "{{ (hv_vm_cpu_count | int // vm_sockets | int // 2) }}"
+        vm_threads: 2
+
+    - name: Generate vNUMA CPU ranges
+      set_fact:
+        vm_numa_cpu_ranges: "{{ vm_numa_cpu_ranges | default([]) + [item ~ '-' ~ (item + (hv_vm_cpu_count | int // vm_numa_nodes | int) - 1)] }}"
+      loop: "{{ range(0, hv_vm_cpu_count | int, hv_vm_cpu_count | int // vm_numa_nodes | int) | list }}"
+
 - name: Template out kvm definition file
   template:
     src: kvm-def.xml.j2

@@ -4,3 +4,21 @@
 hv_kvm_def_path: /opt/hv
 
 hv_bmc_port: 9000
+
+# vNUMA Configuration
+vnuma_enabled: false
+vnuma_memory_placement: "static"
+vnuma_cpu_placement: "static"
+
+# Manual vNUMA configuration 
+# vnuma_nodes:
+#   - id: 0
+#     cpus: "0-3"
+#     memory: "4194304"  # 4GB in KB
+#   - id: 1
+#     cpus: "4-7"
+#     memory: "4194304"  # 4GB in KB
+
+# vNUMA topology settings
+vnuma_memory_mode: "strict"  # strict, preferred, interleave
+vnuma_cpu_mode: "strict"     # strict, preferred                                                

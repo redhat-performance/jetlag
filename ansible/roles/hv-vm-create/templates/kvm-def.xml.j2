@@ -3,7 +3,7 @@
   <uuid>{{ hostvars[inventory_hostname]['domain_uuid'] }}</uuid>
   <memory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</memory>
   <currentMemory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</currentMemory>
-  <vcpu placement='static'>{{ hostvars[inventory_hostname]['cpus'] }}</vcpu>
+  <vcpu placement='static'>{{ hv_vm_cpu_count | int }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-q35-rhel7.6.0'>hvm</type>
     <boot dev='hd'/>
@@ -12,9 +12,31 @@
     <acpi/>
     <apic/>
   </features>
+{% if vnuma_enabled %}
+  <cpu mode='host-model' check='partial'>
+    <model fallback='allow'/>
+    <topology sockets='{{ vm_sockets | int }}' cores='{{ vm_cores | int }}' threads='{{ vm_threads | int }}'/>
+    <numa>
+{%    for node in range(vm_numa_nodes | int) %}
+      <cell id='{{ node }}' cpus='{{ vm_numa_cpu_ranges[node] }}' memory='{{ vm_numa_memory_per_node }}' unit='GiB'/>
+{%    endfor %}
+    </numa>
+  </cpu>
+  <numatune>
+{%  if vnuma_memory_placement == 'static' %}
+    <memory mode='{{ vnuma_memory_mode }}' placement='static' nodeset='{{ range(vm_numa_nodes|int)|join(",") }}'/>
+{%    for node in range(vm_numa_nodes|int) %}
+    <memnode cellid='{{ node }}' mode='{{ vnuma_memory_mode }}' nodeset='{{ node }}'/>
+{%    endfor %}
+{%  else %}
+    <memory mode='{{ vnuma_memory_mode }}' placement='{{ vnuma_memory_placement }}'/>
+{%  endif %}
+  </numatune>
+{% else %}
   <cpu mode='host-model' check='partial'>
     <model fallback='allow'/>
   </cpu>
+{% endif %}
   <clock offset='utc'>
     <timer name='rtc' tickpolicy='catchup'/>
     <timer name='pit' tickpolicy='delay'/>
