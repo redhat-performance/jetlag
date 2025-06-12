@@ -6,9 +6,7 @@ allocation. For purposes of the guide the systems in `cloud99` will be
 Supermicro 1029U. You should run Jetlag directly on the bastion machine. Jetlag
 picks the first machine in an allocation as the bastion. You can
 [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file)
-but that is beyond the scope of this quickstart. You can find the machines in
-your cloud allocation on
-[the Performance lab wiki](http://wiki.rdu3.lab.perfscale.redhat.com/)
+but that is beyond the scope of this quickstart.
 
 _**Table of Contents**_
 
@@ -218,7 +216,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [Performance lab](https://wiki.rdu3.labs.perfscale.redhat.com/usage/#Private_Networking), determine the names of the nic per network for EL8.
+Using the performance lab networking table, determine the names of the nic per network.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
 * `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
@@ -397,7 +395,7 @@ allocation_node_count=6
 supermicro_nodes=True
 
 [bastion]
-f12-h05-000-1029u.rdu3.lab.perfscale.redhat.com ansible_ssh_user=root bmc_address=mgmt-f12-h05-000-1029u.rdu3.lab.perfscale.redhat.com
+f12-h05-000-1029u.example.com ansible_ssh_user=root bmc_address=mgmt-f12-h05-000-1029u.example.com
 
 [bastion:vars]
 bmc_user=quads
@@ -417,7 +415,7 @@ bmc_password=xxxx
 
 [sno]
 # Single Node OpenShift Clusters
-f12-h06-000-1029u bmc_address=mgmt-f12-h06-000-1029u.rdu3.lab.perfscale.redhat.com boot_iso=f12-h06-000-1029u.iso ip_address=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e mac_address=00:25:90:5f:5f:5b
+f12-h06-000-1029u bmc_address=mgmt-f12-h06-000-1029u.example.com boot_iso=f12-h06-000-1029u.iso ip_address=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e mac_address=00:25:90:5f:5f:5b
 
 [sno:vars]
 bmc_user=quads
@@ -464,7 +462,7 @@ Finally run the `sno-deploy.yml` playbook from the bastion ...
 ...
 ```
 
-A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.rdu3.lab.perfscale.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+A typical deployment will require around 60-70 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `f12-h05-000-1029u.example.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion. Look for the kubeconfig file under `/root/sno/...`
 

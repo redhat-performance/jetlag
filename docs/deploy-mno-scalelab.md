@@ -1,7 +1,6 @@
 # Deploy a Multi Node OpenShift cluster via Jetlag from a Scale Lab Bastion Machine quickstart
 
-Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a multi node cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart. You can find the machines in your cloud allocation on
-[the scale lab wiki](http://wiki.rdu2.scalelab.redhat.com/)
+Assuming you received a scale lab allocation named `cloud99`, this guide will walk you through getting a multi node cluster up in your allocation. For purposes of the guide the systems in `cloud99` will be Dell r650s. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. You can [trick Jetlag into picking a different machine as the bastion](tips-and-vars.md#override-lab-ocpinventory-json-file) but that is beyond the scope of this quickstart.
 
 _**Table of Contents**_
 
@@ -213,7 +212,7 @@ Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Sinc
 
 The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [scale lab here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces), determine the names of the nic per network for EL8.
+Using the scale lab networking table, determine the names of the nic per network.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public Network"
 * `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
@@ -253,7 +252,7 @@ controlplane_lab_interface: eno12399np0
 In order to deploy a cluster using the public VLAN, set the variable `public_vlan` in `all.yml` to `true`. Once enabled the following variables are automatically configured:
 
 - `cluster_name`: cluster name according to the pre-existing DNS records in the public VLAN, i.e: `vlan604`
-- `base_dns_name` is set to `rdu2.scalelab.redhat.com` in the inventory
+- `base_dns_name` is set to the proper base dns name in the inventory
 - `controlplane_network_interface_idx`: Is set to the corresponding interface number
 - `controlplane_network`: public VLAN subnet
 - `controlplane_network_prefix`: public VLAN network mask
@@ -397,16 +396,16 @@ allocation_node_count=16
 supermicro_nodes=False
 
 [bastion]
-xxx-h01-000-r650.rdu2.scalelab.redhat.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.rdu2.scalelab.redhat.com
+xxx-h01-000-r650.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.example.com
 
 [bastion:vars]
 bmc_user=quads
 bmc_password=XXXXXXX
 
 [controlplane]
-xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.0.5 vendor=Dell install_disk=/dev/sda
-xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.0.6 vendor=Dell install_disk=/dev/sda
-xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.rdu2.scalelab.redhat.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.0.7 vendor=Dell install_disk=/dev/sda
+xxx-h02-000-r650 bmc_address=mgmt-xxx-h02-000-r650.example.com mac_address=b4:96:91:cb:ec:02 lab_mac=5c:6f:69:75:c0:70 ip=198.18.0.5 vendor=Dell install_disk=/dev/sda
+xxx-h03-000-r650 bmc_address=mgmt-xxx-h03-000-r650.example.com mac_address=b4:96:91:cc:e5:80 lab_mac=5c:6f:69:56:dd:c0 ip=198.18.0.6 vendor=Dell install_disk=/dev/sda
+xxx-h05-000-r650 bmc_address=mgmt-xxx-h05-000-r650.example.com mac_address=b4:96:91:cc:e6:40 lab_mac=5c:6f:69:56:b0:50 ip=198.18.0.7 vendor=Dell install_disk=/dev/sda
 
 [controlplane:vars]
 role=master
@@ -467,7 +466,7 @@ Finally run the `mno-deploy.yml` playbook ...
 
 ## Monitor install and interact with cluster
 
-It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.rdu2.scalelab.redhat.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h01-000-r650.example.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
 
 If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
 

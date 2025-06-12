@@ -29,7 +29,7 @@ Values here reflect the default (Network 1 which maps to `controlplane_network_i
 | Supermicro 1029p   | eno1                  | ens2f0                         | eno1                       |
 | Supermicro 5039ms  | enp2s0f0              | enp1s0f0                       | enp2s0f0                   |
 
-Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces).
+Scale lab network table is available on the scale lab wiki.
 
 **Performance Lab**
 
@@ -41,7 +41,7 @@ Scale lab chart is available [here](http://docs.scalelab.redhat.com/trac/scalela
 | Dell r750          | eno8303               | ens3f0                         | eno8303                    |
 | Supermicro 6029p   | eno1                  | enp95s0f0                      | eno1                       |
 
-Performance lab chart is available [here](https://wiki.rdu3.labs.perfscale.redhat.com/Usage/#Private_Networking).
+Performance lab network table is available on the performance lab wiki.
 
 ## Install disk by-path vars
 
@@ -184,7 +184,7 @@ ocp_inventory_override: <LOCAL_FILE_PATH>
 If you want to use a NIC other than the default, you need to override the `controlplane_network_interface_idx` variable in the `Extra vars` section of `ansible/vars/all.yml` and run from the `create-inventory.yml` playbook.
 In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
-2. Look for your server model number in [your labs wiki page](http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces) then select the network you want configured as your primary network using the following mapping:
+2. Look for your server model number in your lab's network table/chart then select the network you want configured as your primary network using the following mapping:
 
 | Network | YAML variable |
 | ------- | ------------- |

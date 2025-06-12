@@ -12,12 +12,14 @@ rh_labs:
 
 labs:
   performancelab:
+    base_dns_name: rdu3.labs.perfscale.redhat.com
     dns:
     - 10.6.60.1
     foreman: foreman.rdu3.labs.perfscale.redhat.com
     ntp_server: clock.redhat.com
     quads: quads2.rdu3.labs.perfscale.redhat.com
   scalelab:
+    base_dns_name: rdu2.scalelab.redhat.com
     dns:
     - 10.1.36.1
     - 10.1.36.2
@@ -56,9 +58,8 @@ hw_vendor:
   6049p: Supermicro
   dl360: Hp
 
-# This dictionary contains the expected nic names for networks in the scale lab. This determines the name of the
-# nic for hypervisors. Expected OS is always RHEL 8.
-# http://docs.scalelab.redhat.com/trac/scalelab/wiki/ScaleLabTipsAndTricks#RDU2ScaleLabPrivateNetworksandInterfaces
+# This dictionary contains the expected nic names for networks in the scale/performance lab. This determines the name of the
+# nic for hypervisors.
 hw_nic_name:
   #$lab:
   #  $hw_name:
