@@ -8,3 +8,7 @@ lvcreate -l 99%VG -T vg_ls/lv_tp_ls
 {% for i in range(sno_localstorage_lv_count) %}
 lvcreate -V {{ sno_localstorage_lv_size }} -T vg_ls/lv_tp_ls -n lv_sno_tv{{ '%02d' % i }}
 {% endfor %}
+{% if localvolume2_configuration %}
+echo "Cleaning {{ localvolume2_device }}"
+wipefs --all --force {{ localvolume2_device }}
+{% endif %}
