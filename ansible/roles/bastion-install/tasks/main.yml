@@ -262,12 +262,15 @@
 - name: Download Red Hat Crucible
   ansible.builtin.git:
     repo: "{{ rh_crucible_url }}"
-    dest: /tmp/crucible
+    dest: /root/crucible
     force: true
   environment:
     GIT_SSL_NO_VERIFY: "False"
   when: install_rh_crucible | bool
 
 - name: Install Red Hat Crucible
-  command: chdir=/tmp/crucible bash rh-install-crucible.sh
+  command: chdir=/root/crucible bash rh-install-crucible.sh
+  environment:
+    CRUCIBLE_NAME: "jetlag"
+    CRUCIBLE_EMAIL: "none"
   when: install_rh_crucible | bool
