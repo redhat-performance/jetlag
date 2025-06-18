@@ -16,7 +16,7 @@ LABEL operators.operatorframework.io.index.configs.v1=/configs
 {% else %}
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-{% if ose_operator_registry_tag in ["v4.15", "v4.16"] %}
+{% if ose_operator_registry_tag in ["v4.15", "v4.16", "v4.17", "v4.18", "v4.19"] %}
 FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:{{ ose_operator_registry_tag }}
 {% else %}
 FROM registry.redhat.io/openshift4/ose-operator-registry:{{ ose_operator_registry_tag }}
