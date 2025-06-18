@@ -1,20 +1,36 @@
 ---
 # ocp-release tasks
 
-- name: Get release.txt file
-  uri:
-    url: "{{ release_urls[ocp_build] }}/{{ ocp_version }}/release.txt"
-    return_content: yes
-  register: result
-  until: result.status == 200
-  retries: 3
-  delay: 5
-  failed_when: result.content|length == 0 or result.status >= 400
+- name: Regular provisioning host
+  when: lookup('env', 'RELEASE_IMAGE_LATEST') == ''
+  block:
 
-- name: Set facts for release version and image
-  set_fact:
-    ocp_release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
-    ocp_release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+  - name: Get release.txt file
+    uri:
+      url: "{{ release_urls[ocp_build] }}/{{ ocp_version }}/release.txt"
+      return_content: yes
+    register: result
+    until: result.status == 200
+    retries: 3
+    delay: 5
+    failed_when: result.content|length == 0 or result.status >= 400
+
+  - name: Set facts for release payload URL and version
+    set_fact:
+      ocp_release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
+      ocp_release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+
+- name: Prow job provisioning host
+  when: lookup('env', 'RELEASE_IMAGE_LATEST') != ''
+  block:
+
+  - name: Set facts for release payload URL
+    set_fact:
+      ocp_release_image: "{{ lookup('env', 'RELEASE_IMAGE_LATEST') }}"
+
+  - name: Set fact for OpenShift version
+    set_fact:
+      ocp_release_version: "{{ ocp_release_image.split(':')[1] }}"
 
 - name: Set fact for OpenShift major version
   set_fact:
