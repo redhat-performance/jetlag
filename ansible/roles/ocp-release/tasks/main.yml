@@ -2,7 +2,7 @@
 # ocp-release tasks
 
 - name: Regular provisioning host
-  when: lookup('env', 'RELEASE_IMAGE_LATEST') == ''
+  when: lookup('env', 'PROW_IMAGE') == ''
   block:
 
   - name: Get release.txt file
@@ -21,12 +21,12 @@
       ocp_release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
 
 - name: Prow job provisioning host
-  when: lookup('env', 'RELEASE_IMAGE_LATEST') != ''
+  when: lookup('env', 'PROW_IMAGE') != ''
   block:
 
   - name: Set facts for release payload URL
     set_fact:
-      ocp_release_image: "{{ lookup('env', 'RELEASE_IMAGE_LATEST') }}"
+      ocp_release_image: "{{ lookup('env', 'PROW_IMAGE') }}"
 
   - name: Set fact for OpenShift version
     set_fact:
