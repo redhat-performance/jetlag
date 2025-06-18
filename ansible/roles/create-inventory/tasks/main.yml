@@ -136,7 +136,7 @@
       max_nodes: "{{ worker_node_count|int + 4 }}"
     when: worker_node_count != None
 
-  - name: MNO - Set ocpinventory mno nodes
+  - name: MNO - Set ocpinventory mno worker nodes
     set_fact:
       ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[4:max_nodes|int] }}"
 
@@ -160,10 +160,6 @@
   when: cluster_type == "sno"
   block:
 
-  - name: SNO - Set max number of nodes
-    set_fact:
-      max_nodes: "1"
-
   - name: SNO - Set ocpinventory sno nodes
     set_fact:
       ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
@@ -181,6 +177,12 @@
   - name: set json query fact
     set_fact:
       mac_query: "json.interfaces[?type=='interface'].mac"
+
+  # Start at 2 because 1st is bastion, 2nd is SNO, rest are hypervisors
+  # Commented out until implementation is a requirement
+  # - name: SNO - Set ocpinventory hv nodes
+  #   set_fact:
+  #     ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[2:] }}"
 
 - name: Loop over all OCP nodes to find Supermicro hardware
   include_tasks: find_supermicro.yml

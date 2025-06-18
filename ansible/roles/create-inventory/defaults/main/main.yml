@@ -6,6 +6,11 @@ ocp_inventory_override: ''
 # Master nodes "consume" the first 7 address out of the controlplane_network, workers start after this offset
 mno_worker_node_offset: 7
 
+# SNOs ip address start at the 3 address, this is because by default we want the address to land on the address
+# that an api dns record exists when using a public routable vlan network. If you intend to have the *.apps dns
+# record match for the SNO while using a public routable vlan network, then set this to 4.
+sno_controlplane_ip_offset: 3
+
 ################################################################################
 # Var(s) for hypervisors and hypervisor hosted VMs
 ################################################################################
