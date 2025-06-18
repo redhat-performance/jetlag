@@ -246,7 +246,7 @@ ssh_public_key_file: ~/.ssh/id_rsa.pub
 install_tc: true
 
 # Setup and use coredns instead of dnsmasq
-setup_coredns: true
+setup_coredns: false
 
 # Enables using DHCP instead of relying on static network configuration for VMs
 setup_hv_vm_dhcp: false

@@ -92,7 +92,7 @@ metadata:
   annotations:
 {% if siteconfig_sno_du_profile == "4.15" %}
     agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"},"capabilities":{"baselineCapabilitySet":"None","additionalEnabledCapabilities":["OperatorLifecycleManager","NodeTuning"]}}'
-{% elif siteconfig_sno_du_profile in ["4.16", "4.17"] %}
+{% elif siteconfig_sno_du_profile in ["4.16", "4.17", "4.18", "4.19"] %}
     agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"},"capabilities":{"baselineCapabilitySet":"None","additionalEnabledCapabilities":["OperatorLifecycleManager","Ingress","NodeTuning"]}}'
 {% else %}
     agent-install.openshift.io/install-config-overrides: '{"networking":{"networkType":"OVNKubernetes"}}'
@@ -184,7 +184,7 @@ metadata:
   name: {{ inventory_hostname }}
   labels:
     common: 'true'
-{% if siteconfig_sno_du_profile in ["4.12", "4.13", "4.14", "4.15", "4.16", "4.17"] %}
+{% if siteconfig_sno_du_profile in ["4.12", "4.13", "4.14", "4.15", "4.16", "4.17", "4.18", "4.19"] %}
     du-profile: "{{ siteconfig_sno_du_profile }}"
 {% endif %}
     group-du-sno: ''

@@ -22,7 +22,7 @@ isolated_cpus: 2-47,50-95
 
 du_profile: false
 operator_index_name: redhat-operator-index
-operator_index_tag: v4.16
+operator_index_tag: v4.18
 
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false
