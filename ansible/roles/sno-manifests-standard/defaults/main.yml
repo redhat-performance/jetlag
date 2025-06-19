@@ -1,0 +1,47 @@
+---
+# hv-vm-manifests-standard default vars
+
+hv_vm_manifests_directory: /root/_radez_
+
+# 64 is a prefix for ipv6, 24 would work for ipv4
+standard_cluster_network_host_prefix: 64
+
+registry_path: /opt/registry
+
+# Used with bmc-secret
+bmc_username_base64: "{{ bmc_user | b64encode }}"
+bmc_password_base64: "{{ bmc_password | b64encode }}"
+
+# Used in conjunction with including the PerformanceProfile in the DU profile
+siteconfig_enable_cpuset: false
+siteconfig_cpuset: "0-3"
+
+# Used in conjuntion with converged flow
+siteconfig_baremetalhost_override_converged_flow: false
+
+# Exclude manifests to sync time once via chronyd
+siteconfig_exclude_sync_time_once: false
+
+# Enable fips via installConfigOverrides
+siteconfig_fips: false
+
+# Used when converged flow is enabled
+siteconfig_ironic_inspect: true
+
+# One or the other, not both enabled as they each create the same configmap
+# One creates the configmap from data within the siteconfig (4.15 ZTP Site Generate required) as the other creates the
+# configmap from siteconfig-resource yaml data
+siteconfig_map_site_data: false
+siteconfig_resource_site_data: false
+# Place the site specific configmap data in this namespace
+siteconfig_site_data_namespace: ztp-group
+
+# Used to enable observability in siteconfigs
+siteconfig_observability: true
+
+# Include the staticpod fix for https://issues.redhat.com/browse/OCPBUGS-2474
+siteconfig_staticpod_fix: false
+
+# Standard cluster manifest features
+manifest_observability: true
+manifest_searchcollector_enabled: true

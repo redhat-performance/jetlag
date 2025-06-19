@@ -1,0 +1,15 @@
+---
+# Creates VMs on hypervisors
+#
+# Example Usage:
+#
+- name: Create compact/standard/jumbo cluster manifests
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
+  - role: sno-manifests-standard
+    when:
+    - hv_vm_generate_manifests
+    - hv_vm_manifest_type == "standard" or hv_vm_manifest_type == "mixed"

@@ -85,14 +85,39 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 {%   endif %}
 {% endif %}
 
+{% if hv_inventory %}
 [hv]
-# Unused
+{% for hv in ocpinventory_hv_nodes %}
+{{ hv.pm_addr | replace('mgmt-','') }} bmc_address={{ hv.pm_addr }} vendor={{ hw_vendor[(hv.pm_addr.split('.')[0]).split('-')[-1]] }} ip={{ controlplane_network | ansible.utils.nthhost(loop.index + ocpinventory_worker_nodes|length + bm_worker_node_offset + hv_ip_offset) }} mac_address={{ hv.mac[hypervisor_nic_interface_idx] }} nic={{ hw_nic_name[lab][(hv.pm_addr.split('.')[0]).split('-')[-1]][hypervisor_nic_interface_idx] if lab == 'scalelab' }} disk2_enable={{ hv.disk2_enable }} disk2_device={{ hv.disk2_device }}
+{% endfor %}
 
 [hv:vars]
-# Unused
+ansible_user=root
+ansible_ssh_pass={{ hv_ssh_pass }}
+base_domain={{ base_dns_name }}
+machine_network={{ controlplane_network }}
+bmc_user={{ bmc_user }}
+bmc_password={{ bmc_password }}
+network_prefix={{ controlplane_network_prefix }}
+gateway={{ controlplane_network_gateway }}
 
 [hv_vm]
 # Unused
 
 [hv_vm:vars]
 # Unused
+
+{% else %}
+[hv]
+# Set `hv_inventory: true` to populate
+
+[hv:vars]
+# Set `hv_inventory: true` to populate
+
+[hv_vm]
+# Set `hv_inventory: true` to populate
+
+[hv_vm:vars]
+# Set `hv_inventory: true` to populate
+
+{% endif %}
