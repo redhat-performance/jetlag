@@ -22,7 +22,7 @@
 - name: Validate ocp_version
   fail:
     msg: "The version is undefined or empty. Use a value such as 'latest-4.15' or 'latest-4.16' or '4.16.1'."
-  when: lookup('env', 'PROW_IMAGE') == '' and (ocp_version is undefined) or (ocp_version|length == 0)
+  when: lookup('env', 'PROW_IMAGE') == '' and (ocp_version is undefined or ocp_version|length == 0)
 
 - name: Validate public_vlan
   fail:
