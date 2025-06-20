@@ -19,7 +19,7 @@
   block:
   - name: Set prow_image fact
     set_fact:
-      prow_image: lookup('env', 'PROW_IMAGE')
+      prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
 
   - name: Get release info
     shell: oc adm release info {{ prow_image }} --registry-config /root/.docker/config.json
