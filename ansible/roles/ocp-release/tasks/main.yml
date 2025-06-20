@@ -1,17 +1,44 @@
 ---
 # ocp-release tasks
 
-- name: Get release.txt file
-  uri:
-    url: "{{ release_urls[ocp_build] }}/{{ ocp_version }}/release.txt"
-    return_content: yes
-  register: result
-  until: result.status == 200
-  retries: 3
-  delay: 5
-  failed_when: result.content|length == 0 or result.status >= 400
+# Set bastion rhel version for ocp 4.15 and newer
+- name: RHEL version rhel9 check
+  set_fact:
+    bastion_rhel_version: "rhel9"
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
 
-- name: Set facts for release version and image
+- name: RHEL version rhel8 check
+  set_fact:
+    bastion_rhel_version: "rhel8"
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
+
+- name: Get latest stable Openshift client
+  shell: curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-amd64-{{ bastion_rhel_version}}.tar.gz | tar xz -C /usr/local/bin/ oc
+
+- when: lookup('env', 'PROW_IMAGE') != ''
+  block:
+  - name: Set prow_image fact
+    set_fact:
+      prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
+
+  - name: Get release info
+    shell: oc adm release info {{ prow_image }} --registry-config /root/.docker/config.json
+    register: result
+
+- when: prow_image == ''
+  block:
+
+  - name: Get release.txt file
+    uri:
+      url: "{{ release_urls[ocp_build] }}/{{ ocp_version }}/release.txt"
+      return_content: yes
+    register: result
+    until: result.status == 200
+    retries: 3
+    delay: 5
+    failed_when: result.content|length == 0 or result.status >= 400
+
+- name: Set facts for release payload URL and version
   set_fact:
     ocp_release_version: "{{ result.content | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
     ocp_release_image: "{{ result.content | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
