@@ -51,7 +51,7 @@ bmc_password={{ bmc_password }}
 {%   if sno_use_lab_dhcp %}
 {%     set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', sno_long_hostname)|first).json.ip %}
 {%   else %}
-{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + 3) %}
+{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset) %}
 {%   endif %}
 {%   if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} mac_address={{ sno.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(sno.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ sno_install_disk }} boot_iso={{ sno_short_hostname }}.iso
 {% endfor %}
