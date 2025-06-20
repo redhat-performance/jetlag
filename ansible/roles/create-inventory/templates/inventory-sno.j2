@@ -9,10 +9,8 @@ supermicro_nodes={{ has_supermicro | bool }}
 controlplane_network={{ controlplane_network }}
 controlplane_network_prefix={{ controlplane_network_prefix }}
 {% endif %}
-{% if (sno_use_lab_dhcp or public_vlan) and (lab == "scalelab") %}
-base_dns_name=rdu2.scalelab.redhat.com
-{% elif (sno_use_lab_dhcp or public_vlan) and (lab == "performancelab") %}
-base_dns_name=rdu3.labs.perfscale.redhat.com
+{% if public_vlan and (lab == "scalelab" or lab == "performancelab") %}
+base_dns_name={{ labs[lab]['base_dns_name'] }}
 {% else %}
 base_dns_name={{ base_dns_name }}
 {% endif %}

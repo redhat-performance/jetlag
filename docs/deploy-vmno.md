@@ -83,7 +83,7 @@ Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci
 
 The bastion system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
 
-Using the chart provided by the [performance lab here](https://wiki.rdu3.labs.perfscale.redhat.com/Usage/#Private_Networking), determine the names of the nic per network.
+Using the performance lab networking table, determine the names of the nic per network.
 
 * `bastion_lab_interface` will always be set to the nic name under "Public"
 * `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
