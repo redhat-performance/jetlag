@@ -22,13 +22,13 @@
       prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
 
   - name: Get release info
-    shell: oc adm release info {{ prow_image }} --registry-config /root/.docker/config.json
+    command: oc adm release info {{ prow_image }} --registry-config /root/.docker/config.json
     register: result
 
   - name: Set facts for release payload URL and version
     set_fact:
-      ocp_release_version: "{{ result | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
-      ocp_release_image: "{{ result | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
+      ocp_release_version: "{{ result.stdout | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
+      ocp_release_image: "{{ result.stdout | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
 
 - when: prow_image == ''
   block:
