@@ -10,6 +10,7 @@ _**Table of Contents**_
   - [Bastion setup](#bastion-setup)
   - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
     - [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)
+    - [Prow integration](#prow-integration)
     - [Bastion node vars](#bastion-node-vars)
     - [OCP node vars](#ocp-node-vars)
     - [Deploy in the public VLAN](#deploy-in-the-public-vlan)
@@ -206,6 +207,14 @@ exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
 `4.19.0-0.nightly-2025-02-25-035256`.
 
 Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci` builds.
+
+### Prow integration
+
+Jetlag has been enhanced to support releases specified by a Prow job configuration, thanks to this integration, Jetlag can be used to deploy a cluster using the information specified by the `releases` key in the [Prow's job configuration](https://docs.ci.openshift.org/docs/architecture/ci-operator/#testing-with-an-existing-openshift-release).
+
+Jetlag automatically detects if its running from a Prow job (By checking if the environment variable `RELEASE_IMAGE_LATEST` is set), and if so it will use it to get the installer and required tools from the payload, making neither `ocp_version` nor `ocp_build` variables required.
+
+Note that Jetlag requires pull-secrets to pull images from the OpenShift build registries. They can be extracted by login into the build cluster and then login into its image with `oc registry login --to=file_to_store_pull_secret`
 
 ### Bastion node vars
 
