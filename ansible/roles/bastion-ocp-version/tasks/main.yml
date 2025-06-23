@@ -4,16 +4,6 @@
 # Sets  all of the version string data up and downloads images as needed
 #
 
-- name: Create directory for pull secret
-  file:
-    path: /root/.docker
-    state: directory
-
-- name: Copy pull secret to bastion
-  ansible.builtin.copy:
-    content: "{{ pull_secret }}"
-    dest: "/root/.docker/config.json"
-
 - name: Cleanup {{ ocp_version_path }}
   file:
     path: "{{ ocp_version_path }}"
@@ -43,7 +33,7 @@
           ternary('openshift-client-linux-amd64-' + bastion_rhel_version, 'openshift-client-linux') }}
 
 - name: Get OpenShift tools
-  shell: oc adm release extract --tools {{ ocp_release_image }} --to {{ ocp_version_path }} --registry-config /root/.docker/config.json
+  shell: oc adm release extract --tools {{ ocp_release_image }} --to {{ ocp_version_path }}
 
 - name: Unarchive the clients
   unarchive:

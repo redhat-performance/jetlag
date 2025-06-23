@@ -1,6 +1,16 @@
 ---
 # ocp-release tasks
 
+- name: Create directory for pull secret
+  file:
+    path: /root/.docker
+    state: directory
+
+- name: Copy pull secret to bastion
+  ansible.builtin.copy:
+    content: "{{ pull_secret }}"
+    dest: "/root/.docker/config.json"
+
 # Set bastion rhel version for ocp 4.15 and newer
 - name: RHEL version rhel9 check
   set_fact:
@@ -22,7 +32,7 @@
       prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
 
   - name: Get release info
-    command: oc adm release info {{ prow_image }} --registry-config /root/.docker/config.json
+    command: oc adm release info {{ prow_image }}
     register: result
 
   - name: Set facts for release payload URL and version
