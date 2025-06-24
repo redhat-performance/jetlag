@@ -25,11 +25,12 @@
 - name: Get latest stable Openshift client
   shell: curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-amd64-{{ bastion_rhel_version}}.tar.gz | tar xz -C /usr/local/bin/ oc
 
-- when: lookup('env', 'PROW_IMAGE') != ''
+- name: Set prow_image fact
+  set_fact:
+    prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
+
+- when: prow_image != ''
   block:
-  - name: Set prow_image fact
-    set_fact:
-      prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
 
   - name: Get release info
     command: oc adm release info {{ prow_image }}
