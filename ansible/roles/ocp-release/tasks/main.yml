@@ -1,47 +1,10 @@
 ---
 # ocp-release tasks
 
-- name: Create directory for pull secret
-  file:
-    path: /root/.docker
-    state: directory
+- include_tasks: payload_url.yml
+  when: payload_url != ''
 
-- name: Copy pull secret to bastion
-  ansible.builtin.copy:
-    content: "{{ pull_secret }}"
-    dest: "/root/.docker/config.json"
-
-# Set bastion rhel version for ocp 4.15 and newer
-- name: RHEL version rhel9 check
-  set_fact:
-    bastion_rhel_version: "rhel9"
-  when: ansible_facts['distribution_major_version'] is version('9', '==')
-
-- name: RHEL version rhel8 check
-  set_fact:
-    bastion_rhel_version: "rhel8"
-  when: ansible_facts['distribution_major_version'] is version('8', '==')
-
-- name: Get latest stable Openshift client
-  shell: curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-amd64-{{ bastion_rhel_version}}.tar.gz | tar xz -C /usr/local/bin/ oc
-
-- name: Set prow_image fact
-  set_fact:
-    prow_image: "{{ lookup('env', 'PROW_IMAGE') }}"
-
-- when: prow_image != ''
-  block:
-
-  - name: Get release info
-    command: oc adm release info {{ prow_image }}
-    register: result
-
-  - name: Set facts for release payload URL and version
-    set_fact:
-      ocp_release_version: "{{ result.stdout | regex_search('Version:.*') | regex_replace('Version:\\s*(.*)', '\\1') }}"
-      ocp_release_image: "{{ result.stdout | regex_search('Pull From:.*') | regex_replace('Pull From:\\s*(.*)', '\\1') }}"
-
-- when: prow_image == ''
+- when: payload_url == ''
   block:
 
   - name: Get release.txt file

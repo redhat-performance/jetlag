@@ -212,9 +212,9 @@ Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci
 
 Jetlag has been enhanced to support releases specified by a Prow job configuration, thanks to this integration, Jetlag can be used to deploy a cluster using the information specified by the `releases` key in the [Prow's job configuration](https://docs.ci.openshift.org/docs/architecture/ci-operator/#testing-with-an-existing-openshift-release).
 
-Jetlag can detect if its running from a Prow job (By checking if the environment variable `PROW_IMAGE` is set), and if so it will use it to get the installer and required tools from the payload, making neither `ocp_version` nor `ocp_build` variables required.
+The variable `payload_url` can be set to a specific payload URL, Jetlag will download the OpenShift installer and extract the required tools from this payload, so that neither `ocp_version` nor `ocp_build` variables are required.
 
-Note that Jetlag requires pull-secrets to pull images from the OpenShift build registries. They can be extracted by login into the build cluster and then login into its image with `oc registry login --to=file_to_store_pull_secret`
+Note that Jetlag requires pull-secrets to pull images from the OpenShift build registries used in Prow. They can be extracted by login into the build cluster and then login into its image with `oc registry login --to=file_to_store_pull_secret`
 
 ### Bastion node vars
 
