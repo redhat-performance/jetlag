@@ -1,12 +1,13 @@
 ---
 # ocp-release tasks
 
-- include_tasks: payload_url.yml
+- name: Prow - Include Prow integration tasks
+  include_tasks: payload_url.yml
   when: payload_url != ''
 
-- when: payload_url == ''
+- name: Non-Prow Obtain OpenShift version from release.txt
+  when: payload_url == ''
   block:
-
   - name: Get release.txt file
     uri:
       url: "{{ release_urls[ocp_build] }}/{{ ocp_version }}/release.txt"
