@@ -3,8 +3,15 @@ hosts {
     # Bastion
     {{ bastion_controlplane_ip }} {{ groups['bastion'][0] }}
 
-    # Hub Cluster API
+{% if cluster_type in ["mno", "vmno"] %}
+    # MNO Cluster API
     {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+{% else %}
+{%   for sno in groups['sno'] %}
+    # SNO Cluster API
+    {{ hostvars[sno].ip }} api.{{ sno }}.{{ base_dns_name }}
+{%   endfor %}
+{% endif %}
 
     # VM
 {% for vm in groups['hv_vm'] %}
@@ -18,38 +25,49 @@ hosts {
     {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }} api.jumbocluster00.{{ base_dns_name }}
 
     # Standard cluster DNS ({{ standard_cluster_dns_count }} Entries)
-{% for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
+{%   for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
     {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }} standard-{{ '%05d' | format(cluster) }}
     {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }} api.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
-{% endfor %}
+{%   endfor %}
 
     # Compact cluster DNS ({{ compact_cluster_dns_count }} Entries)
-{% for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
+{%   for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
     {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }} compact-{{ '%05d' | format(cluster) }}
     {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }} api.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
-{% endfor %}
+{%   endfor %}
 {% endif %}
     fallthrough
 }
 
 # *.apps All Clusters
 {% if bastion_controlplane_ip | ansible.utils.ipv6 %}
+{%   if cluster_type in ["mno", "vmno"] %}
 # *.apps for hub cluster
 template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
     fallthrough
 }
+{%   else %}
+{%     for sno in groups['sno'] %}
+# *.apps for {{ sno }} SNO
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ip }}"
+    fallthrough
+}
+{%     endfor %}
+{%   endif %}
 
 # *.apps for VMs
-{% for vm in groups['hv_vm'] %}
+{%   for vm in groups['hv_vm'] %}
 template IN AAAA {{ vm }}.{{ base_dns_name }} {
     match .*.apps.{{ vm }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
     fallthrough
 }
-{% endfor %}
-{% if groups['hv_vm'] | length > 0 %}
+{%   endfor %}
+{%   if groups['hv_vm'] | length > 0 %}
 
 # *.apps for jumbocluster00
 template IN AAAA jumbocluster00.{{ base_dns_name }} {
@@ -59,41 +77,51 @@ template IN AAAA jumbocluster00.{{ base_dns_name }} {
 }
 
 # *.apps for standard clusters
-{% for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
+{%     for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
 template IN AAAA standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}"
     fallthrough
 }
-{% endfor %}
+{%     endfor %}
 
 # *.apps for compact clusters
-{% for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
+{%     for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
 template IN AAAA compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
     fallthrough
 }
-{% endfor %}
-{% endif %}
+{%     endfor %}
+{%   endif %}
 {% else %}
-
-# *.apps for hub cluster
+{%   if cluster_type in ["mno", "vmno"] %}
+# *.apps for mno cluster
 template IN A {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
     fallthrough
 }
+{%   else %}
+{%     for sno in groups['sno'] %}
+# *.apps for {{ sno }} SNO
+template IN A {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ip }}"
+    fallthrough
+}
+{%     endfor %}
+{%   endif %}
 
 # *.apps for VMs
-{% for vm in groups['hv_vm'] %}
+{%   for vm in groups['hv_vm'] %}
 template IN A {{ vm }}.{{ base_dns_name }} {
     match .*.apps.{{ vm }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
     fallthrough
 }
-{% endfor %}
-{% if groups['hv_vm'] | length > 0 %}
+{%   endfor %}
+{%   if groups['hv_vm'] | length > 0 %}
 
 # *.apps for jumbocluster00
 template IN A jumbocluster00.{{ base_dns_name }} {
@@ -103,21 +131,21 @@ template IN A jumbocluster00.{{ base_dns_name }} {
 }
 
 # *.apps for standard clusters
-{% for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
+{%     for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
 template IN A standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}"
     fallthrough
 }
-{% endfor %}
+{%     endfor %}
 
 # *.apps for compact clusters
-{% for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
+{%     for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
 template IN A compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
     fallthrough
 }
-{% endfor %}
-{% endif %}
+{%     endfor %}
+{%   endif %}
 {% endif %}
