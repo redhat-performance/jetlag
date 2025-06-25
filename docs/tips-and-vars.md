@@ -21,10 +21,11 @@ Values here reflect the default (Network 1 which maps to `controlplane_network_i
 **Scale Lab**
 
 | Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
-| ------------------ | --------------------- | ------------------------------ | -------------------------- |
+| - | - | - | - |
 | Dell r660          | eno12399np0           | ens1f0                         | eno12399np0                |
 | Dell r650          | eno12399np0           | ens1f0                         | eno12399np0                |
 | Dell r640          | eno1np0               | ens1f0                         | eno1np0                    |
+| Dell r630          | enp129s0f0            | eno1                           | enp129s0f0                 |
 | Dell fc640         | eno1                  | eno2                           | eno1                       |
 | Supermicro 1029p   | eno1                  | ens2f0                         | eno1                       |
 | Supermicro 5039ms  | enp2s0f0              | enp1s0f0                       | enp2s0f0                   |
@@ -34,7 +35,7 @@ Scale lab network table is available on the scale lab wiki.
 **Performance Lab**
 
 | Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
-| ------------------ | --------------------- | ------------------------------ | -------------------------- |
+| - | - | - | - |
 | Dell r740xd        | eno3                  | eno1                           | eno3                       |
 | Dell r7425         | eno3                  | eno1                           | eno3                       |
 | Dell r7525         | eno1                  | enp33np0                       | eno1                       |
@@ -52,7 +53,7 @@ deployment will eventually fail as the installed OCP is unable to boot properly.
 
 > [!TIP]
 > Using the PCI paths (in a homogeneous Scale or Performance lab cloud) should be
-> consistent across all the machines, and isn't subject to change during discovery.
+> consistent across all the machines, and is not subject to change during discovery.
 > Below are the extra vars along with the hardware used.
 
 For 3-node MNO deployments you only need to set `control_plane_install_disk`, if your
@@ -64,14 +65,14 @@ If the machine configurations in your cloud are not homogeneous, you will need t
 edit the inventory file to set appropriate install paths for each machine.
 
 > [!CAUTION]
-> Editing your inventory file is not recommended unless absolutely
-> necessary, as you won't be able to use the `create-inventory.yml` playbook again
-> without overwriting your customizations!
+> Editing your inventory file is not recommended unless absolutely necessary, as
+> you will not be able to use the `create-inventory.yml` playbook again without
+> overwriting your customizations!
 
 **Scale Lab**
 
-| Hardware  | Install disk path
-| --------  | ----------------- |
+| Hardware  | Install disk path |
+| - | - |
 | Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1.0 |
 | Dell r660 | /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:1:0 |
 | Dell r650 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
@@ -79,7 +80,7 @@ edit the inventory file to set appropriate install paths for each machine.
 
 **Performance Lab**
 
-| Hardware | Install disk path
+| Hardware | Install disk path |
 | - | - |
 | Dell r740xd (SL-N, SL-G, SL-U, CL-N) | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 | Dell r740xd (CL-U, CL-G) | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
