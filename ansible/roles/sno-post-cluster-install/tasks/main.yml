@@ -100,7 +100,7 @@
   when: setup_openshift_gitops
 
 - name: Setup nodes localstorage
-  when: sno_localstorage_configuration
+  when: controlplane_localstorage_configuration
   block:
   - name: Install local-storage operator
     shell:
