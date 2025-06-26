@@ -42,6 +42,7 @@ The listed hardware has been used for cluster deployments successfully. Potentia
 | Dell r660          | Yes | Yes |
 | Dell r650          | Yes | Yes |
 | Dell r640          | Yes | Yes |
+| Dell r630          | Yes | Yes |
 | Dell fc640         | Yes | Yes |
 | Supermicro 1029p   | Yes | No  |
 | Supermicro 1029U   | Yes | Yes |
