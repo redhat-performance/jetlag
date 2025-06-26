@@ -236,7 +236,7 @@ This ensures the BMC does not rely on DNS resolution to access the ISO.
 You can validate whether the BMC’s DNS server is functioning correctly by running DNS diagnostic tools (from a system using the same DNS server):
     - `dig <bastion_fqdn>`
     - `nslookup <bastion_fqdn>`
-    - `host <bastion_fqdn>` 
+    - `host <bastion_fqdn>`
 These tools help confirm whether the DNS server is responsive and capable of resolving the Bastion FQDN.
 
 # Bastion
@@ -444,7 +444,7 @@ Substitute the user/password/hostname to perform the reset on a desired host. No
 
 ## Unable to Insert/Mount Virtual Media
 
-There have been cases where specific versions of iDrac produce an error message resembling:
+If your allocation produces an error related to mounting virtul media such as
 
 ```console
 TASK [boot-iso : DELL - Insert Virtual Media] *********************************************************************************************************************************************************************
@@ -452,15 +452,40 @@ Tuesday 21 January 2025  00:34:48 +0000 (0:00:00.024)       0:04:10.771 *******
 fatal: [example.com]: FAILED! => {"changed": false, "msg": "HTTP Error 400 on POST request to 'https://example.com/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia', extended message: 'Unable to locate the ISO or IMG image file or folder in the network share location because the file or folder path or the user credentials entered are incorrect.'"}
 ```
 
-In this case the iDrac firmware was the incorrect version. Working version of firmware
-has been `7.10.30.00` where as the above error message was produced with versions
-`7.10.70.10` and `7.10.50.10`.
-
-Firmware can be checked across many machines by scripting cli commands such as:
+Login into the iDrac web GUI and Navigate to Configuration -> Virtual Media tab and
+check under the "Remote File Share 1" fields for an ISO URL configured in field
+"Directory/File Path". If there is an ISO URL configured that is not connected and
+you can not remove it or replace it with a working URL to an ISO then you will have
+to use racadm commands to remove the "cruft" configuration. To remove it, use ssh to
+the bmc and run several racadm commands:
 
 ```console
-echo -n "mgmt-computer.example.com: "; sshpass -p "password" ssh -o StrictHostKeyChecking=no user@mgmt-computer.example.com "racadm getversion" | grep iDRAC
+$ ssh quads@mgmt-example.com
+(quads@mgmt-example.com) Password:
+racadm>>remoteimage -s
+Remote File Share is Disabled
+UserName
+Password
+ShareName
+racadm>>remoteimage -c -u "" -p "" -l http://$BASTION_IP:8081/discovery.iso
+Remote Image is now Configured
+racadm>>remoteimage -d
+Disable Remote File Started. Please check status using -s
+option to know Remote File Share is ENABLED or DISABLED.
+racadm>>remoteimage -s
+Remote File Share is Disabled
+UserName
+Password
+ShareName
+racadm>>exit
+
+Connection to mgmt-example.com closed.
 ```
+
+Make sure to use a working URL to a hosted ISO file. More than likely you can just use
+an ISO file hosted on the bastion machine in your allocation. After running the above
+racadm commands, observe in the iDrac web GUI that there is no longer an ISO URL
+configured.
 
 In other cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual
 Console Plug-in Type being set as eHTML5 instead of HTML5. To change this, navigate to
