@@ -42,35 +42,21 @@
           bastion_rhel_version == 'rhel8') |
           ternary('openshift-client-linux-amd64-' + bastion_rhel_version, 'openshift-client-linux') }}
 
-- name: Get OpenShift tools when payload_url is not set
-  get_url:
-    url: "{{ release_urls[ocp_build] }}/{{ocp_release_version}}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
-    dest: "{{ ocp_version_path }}"
-    mode: 0700
-  register: client_chk
-  retries: 3
-  delay: 5
-  until: client_chk is not failed
-  when: payload_url == ''
+- when: payload_url == ''
+  block:
 
-- name: Unarchive the clients
-  unarchive:
-    src: "{{ ocp_version_path }}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
-    dest: "{{ ocp_version_path }}"
-    remote_src: yes
+  - name: Get OpenShift tools when payload_url is not set
+    get_url:
+      url: "{{ release_urls[ocp_build] }}/{{ocp_release_version}}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
+      dest: "{{ ocp_version_path }}"
+      mode: 0700
+    register: client_chk
+    retries: 3
+    delay: 5
+    until: client_chk is not failed
 
-- name: Copy correctly versioned oc/kubectl clients into a pathed directory
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    remote_src: true
-    mode: 0700
-  loop:
-  - src: "{{ ocp_version_path }}/oc"
-    dest: /usr/local/bin/oc
-  - src: "{{ ocp_version_path }}/kubectl"
-    dest: /usr/local/bin/kubectl
-  when: setup_bastion | default(true)
+  - name: Unarchive clients - payload_url not set
+    include_tasks: unarchive_clients.yml
 
 - name: Extract/Download the openshift-install binary for the specific release
   shell: |
@@ -78,6 +64,12 @@
     tar -xvf openshift-install-linux-*.tar.gz openshift-install
   args:
     chdir: "{{ ocp_version_path }}"
+
+# We need to unarchive the clients here to align their versions cluster version
+
+- name: Unarchive clients - payload_url set
+  include_tasks: unarchive_clients.yml
+  when: payload_url != ''
 
 # Prevents errors when attempting to get the display/release name/version and the cluster
 # auth-ed by the config is inaccessible

@@ -1,0 +1,20 @@
+---
+
+- name: Unarchive the clients
+  unarchive:
+    src: "{{ ocp_version_path }}/{{ installer_oc_installer_prefix }}-{{ ocp_release_version }}.tar.gz"
+    dest: "{{ ocp_version_path }}"
+    remote_src: yes
+
+- name: Copy correctly versioned oc/kubectl clients into a pathed directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    mode: 0700
+  loop:
+  - src: "{{ ocp_version_path }}/oc"
+    dest: /usr/local/bin/oc
+  - src: "{{ ocp_version_path }}/kubectl"
+    dest: /usr/local/bin/kubectl
+  when: setup_bastion | default(true)
