@@ -10,6 +10,6 @@ spec:
     volumeMode: Filesystem
     fsType: xfs
     devicePaths:
-{% for i in range(sno_localstorage_lv_count) %}
-      - "/dev/vg_ls/lv_sno_tv{{ '%02d' % i }}"
+{% for i in range(controlplane_localstorage_lv_count) %}
+      - "/dev/vg_ls/lv_cp_tv{{ '%02d' % i }}"
 {% endfor %}
