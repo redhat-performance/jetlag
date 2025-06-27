@@ -64,7 +64,11 @@
       controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
       controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
+
+  - name: Public VLAN - Set cluster_name if was set as default
+    set_fact:
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
+    when: cluster_name == "mno"
 
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
