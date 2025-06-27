@@ -42,7 +42,8 @@
           bastion_rhel_version == 'rhel8') |
           ternary('openshift-client-linux-amd64-' + bastion_rhel_version, 'openshift-client-linux') }}
 
-- when: payload_url == ''
+- name: Non-Prow - Get and Unpack OpenShift clients
+  when: payload_url == ''
   block:
 
   - name: Get OpenShift tools when payload_url is not set
@@ -67,7 +68,7 @@
 
 # We need to unarchive the clients here to align their versions cluster version
 
-- name: Unarchive clients - payload_url set
+- name: Prow - Unarchive clients - payload_url set
   include_tasks: unarchive_clients.yml
   when: payload_url != ''
 
