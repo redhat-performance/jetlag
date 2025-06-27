@@ -21,8 +21,14 @@
     bastion_rhel_version: "rhel8"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
+- name: Check if oc exists
+  stat:
+    path: /usr/local/bin/oc
+  register: oc_exists
+
 - name: Get latest stable Openshift client
   shell: curl -L https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux-amd64-{{ bastion_rhel_version}}.tar.gz | tar xz -C /usr/local/bin/ oc
+  when: not oc_exists.stat.exists
   
 - name: Get release info
   command: oc adm release info {{ payload_url }}
