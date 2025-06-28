@@ -61,7 +61,7 @@
 
 - name: Extract/Download the openshift-install binary for the specific release
   shell: |
-    oc adm release extract --tools {{ ocp_release_image }}
+    oc adm release extract --tools {{ ocp_release_image }} --to {{ ocp_version_path }} --registry-config /root/.docker/config.json
     tar -xvf openshift-install-linux-*.tar.gz openshift-install
   args:
     chdir: "{{ ocp_version_path }}"
