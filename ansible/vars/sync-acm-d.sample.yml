@@ -3,6 +3,12 @@
 
 # ACM Build to sync
 rhacm_build: 2.11.0-DOWNSTREAM-2024-06-26-14-32-34
+mce_build: 2.9.0-DOWNSTREAM-2025-06-30-08-20-19
+
+acm_channel: release-2.14
+mce_channel: stable-2.9
+
+is_konflux_build: false
 
 # ZTP - Zero-Touch Provisioning Site Generator Image
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate

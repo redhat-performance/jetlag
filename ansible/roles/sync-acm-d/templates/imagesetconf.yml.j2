@@ -1,0 +1,14 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  operators:
+  - catalog: quay.io:443/acm-d/acm-dev-catalog:{{ rhacm_build }}
+    packages:
+    - name: advanced-cluster-management
+      channels:
+      - name: {{ acm_channel}}
+  - catalog: quay.io:443/acm-d/mce-dev-catalog:{{ mce_build }}
+    packages:
+    - name: multicluster-engine
+      channels:
+      - name: {{ mce_channel }}
