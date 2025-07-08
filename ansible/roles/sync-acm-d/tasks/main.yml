@@ -21,7 +21,7 @@
     jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm_d.txt > {{ sync_path }}/pull-secret-bastion.acm_d.txt
 
 - name: Download acm mapping file from stolostron/deploy repo
-  when: download_mapping_file_from_deploy_repo and (not is_konflux_build)
+  when: not is_konflux_build
   block:
   - name: Download the acm mapping file from github
     get_url:
@@ -39,35 +39,6 @@
     loop:
     - regexp: "__DESTINATION_ORG__"
       replace: "{{ registry_host }}:{{ registry_port }}/acm-d"
-
-- name: Generate acm mapping file from acm-custom-registry image
-  when: not download_mapping_file_from_deploy_repo and (not is_konflux_build)
-  block:
-  - name: Copy acm-custom-registry to bastion registry
-    shell: |
-      skopeo copy --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt --all docker://quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} docker://{{ registry_host }}:{{ registry_port }}/acm-d/acm-custom-registry:{{ rhacm_build }}
-
-  - name: Copy acm-operator-bundle to bastion registry
-    shell: |
-      skopeo copy --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt --all docker://quay.io:443/acm-d/acm-operator-bundle:{{ acm_operator_bundle }} docker://{{ registry_host }}:{{ registry_port }}/acm-d/acm-operator-bundle:{{ acm_operator_bundle }}
-
-  - name: Generate acm container image mapping.txt
-    shell: |
-      oc adm catalog mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} {{ registry_host }}:{{ registry_port }} --manifests-only --to-manifests={{ sync_path }}/acm/
-
-  - name: Replacements in acm mapping file
-    replace:
-      path: "{{ sync_path }}/acm/mapping.txt"
-      regexp: "{{ item.regexp }}"
-      replace: "{{ item.replace }}"
-      backup: true
-    loop:
-    - regexp: registry.redhat.io/rhacm2/
-      replace: quay.io:443/acm-d/
-    - regexp: "{{ registry_host }}:{{ registry_port }}/rhel8/postgresql-12"
-      replace: "{{ registry_host }}:{{ registry_port }}/acm-d/postgresql-12"
-    - regexp: rhacm2
-      replace: acm-d
 
 # If this errors, you won't be able to install ACM later, so retries are added incase of issues with the registry
 - name: Mirror acm images onto the bastion registry
