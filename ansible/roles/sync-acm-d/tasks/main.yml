@@ -50,41 +50,41 @@
   retries: 3
   delay: 1
 
-- name: Add or update a block of acm/mce in registries.conf 
+- name: Mirro ACM/MCE from konflux build
   when: is_konflux_build
-  blockinfile:
-    path: /etc/containers/registries.conf
-    block: |
-      [[registry]]
-      location="registry.redhat.io/multicluster-engine"
-      [[registry.mirror]]
-      location="quay.io:443/acm-d"
-      mirror-by-digest-only = false
-      pull-from-mirror = "all"
+  block:
+  - name: Add or update a block of acm/mce in registries.conf 
+    blockinfile:
+      path: /etc/containers/registries.conf
+      block: |
+        [[registry]]
+        location="registry.redhat.io/multicluster-engine"
+        [[registry.mirror]]
+        location="quay.io:443/acm-d"
+        mirror-by-digest-only = false
+        pull-from-mirror = "all"
 
-      [[registry]]
-      location="registry.redhat.io/rhacm2"
-      [[registry.mirror]]
-      location="quay.io:443/acm-d"
-      mirror-by-digest-only = false
-      pull-from-mirror = "all"
-    marker_begin: "<!-- Ansible Begin -->"
-    marker_end: "<!-- Ansible End -->"
+        [[registry]]
+        location="registry.redhat.io/rhacm2"
+        [[registry.mirror]]
+        location="quay.io:443/acm-d"
+        mirror-by-digest-only = false
+        pull-from-mirror = "all"
+      marker_begin: "<!-- Ansible Begin -->"
+      marker_end: "<!-- Ansible End -->"
   
-- name: Create ImageSetConfiguration
-  when: is_konflux_build
-  template:
-    src: imagesetconf.yml.j2 
-    dest: "{{ sync_path }}/acm/imagesetconf.yml"
+  - name: Create ImageSetConfiguration
+    template:
+      src: imagesetconf.yml.j2 
+      dest: "{{ sync_path }}/acm/imagesetconf.yml"
 
-- name: Mirror acm images from konflux build onto the bastion registry
-  when: is_konflux_build
-  shell: |
-    oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
-  register: result
-  until: not result.failed
-  retries: 3
-  delay: 1
+  - name: Mirror acm images from konflux build onto the bastion registry
+    shell: |
+      oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
+    register: result
+    until: not result.failed
+    retries: 3
+    delay: 1
 
 - name: Mirror ztp-site-generator image
   shell: |
