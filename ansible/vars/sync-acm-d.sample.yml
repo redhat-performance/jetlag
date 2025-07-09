@@ -35,9 +35,6 @@ recert_image_tag: latest
 minio_image: quay.io/minio/minio
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 
-# Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
-acm_operator_bundle: v2.3.0-185
-
 acm_d_pull_secret: "{{ lookup('file', '../pull_secret.acm_d.txt') }}"
 
 download_mapping_file_from_deploy_repo: true
