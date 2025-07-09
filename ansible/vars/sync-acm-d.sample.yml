@@ -2,7 +2,12 @@
 # Sample sync-acm-d vars file
 
 # ACM Build to sync
-rhacm_build: 2.11.0-DOWNSTREAM-2024-06-26-14-32-34
+rhacm_build: 2.14.0-DOWNSTREAM-2025-07-07-22-56-58
+#for konflux build only
+mce_build: 2.9.0-DOWNSTREAM-2025-07-07-22-58-18
+acm_channel: release-2.14
+mce_channel: stable-2.9
+is_konflux_build: false
 
 # ZTP - Zero-Touch Provisioning Site Generator Image
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
@@ -29,9 +34,6 @@ recert_image_tag: latest
 # Minio provides an S3 storage service for ACM's OBS and s3 storage for OADP
 minio_image: quay.io/minio/minio
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
-
-# Bundle only needs to be set if "download_mapping_file_from_deploy_repo" is false
-acm_operator_bundle: v2.3.0-185
 
 acm_d_pull_secret: "{{ lookup('file', '../pull_secret.acm_d.txt') }}"
 

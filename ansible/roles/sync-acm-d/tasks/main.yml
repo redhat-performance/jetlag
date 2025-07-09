@@ -21,7 +21,7 @@
     jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm_d.txt > {{ sync_path }}/pull-secret-bastion.acm_d.txt
 
 - name: Download acm mapping file from stolostron/deploy repo
-  when: download_mapping_file_from_deploy_repo
+  when: not is_konflux_build
   block:
   - name: Download the acm mapping file from github
     get_url:
@@ -40,43 +40,50 @@
     - regexp: "__DESTINATION_ORG__"
       replace: "{{ registry_host }}:{{ registry_port }}/acm-d"
 
-- name: Generate acm mapping file from acm-custom-registry image
-  when: not download_mapping_file_from_deploy_repo
-  block:
-  - name: Copy acm-custom-registry to bastion registry
-    shell: |
-      skopeo copy --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt --all docker://quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} docker://{{ registry_host }}:{{ registry_port }}/acm-d/acm-custom-registry:{{ rhacm_build }}
-
-  - name: Copy acm-operator-bundle to bastion registry
-    shell: |
-      skopeo copy --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt --all docker://quay.io:443/acm-d/acm-operator-bundle:{{ acm_operator_bundle }} docker://{{ registry_host }}:{{ registry_port }}/acm-d/acm-operator-bundle:{{ acm_operator_bundle }}
-
-  - name: Generate acm container image mapping.txt
-    shell: |
-      oc adm catalog mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt quay.io:443/acm-d/acm-custom-registry:{{ rhacm_build }} {{ registry_host }}:{{ registry_port }} --manifests-only --to-manifests={{ sync_path }}/acm/
-
-  - name: Replacements in acm mapping file
-    replace:
-      path: "{{ sync_path }}/acm/mapping.txt"
-      regexp: "{{ item.regexp }}"
-      replace: "{{ item.replace }}"
-      backup: true
-    loop:
-    - regexp: registry.redhat.io/rhacm2/
-      replace: quay.io:443/acm-d/
-    - regexp: "{{ registry_host }}:{{ registry_port }}/rhel8/postgresql-12"
-      replace: "{{ registry_host }}:{{ registry_port }}/acm-d/postgresql-12"
-    - regexp: rhacm2
-      replace: acm-d
-
 # If this errors, you won't be able to install ACM later, so retries are added incase of issues with the registry
-- name: Mirror acm images onto the bastion registry
-  shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
-  register: result
-  until: not result.failed
-  retries: 3
-  delay: 1
+  - name: Mirror acm images onto the bastion registry
+    shell: |
+      oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
+    register: result
+    until: not result.failed
+    retries: 3
+    delay: 1
+
+- name: Mirro ACM/MCE from konflux build
+  when: is_konflux_build
+  block:
+  - name: Add or update a block of acm/mce in registries.conf 
+    blockinfile:
+      path: /etc/containers/registries.conf
+      block: |
+        [[registry]]
+        location="registry.redhat.io/multicluster-engine"
+        [[registry.mirror]]
+        location="quay.io:443/acm-d"
+        mirror-by-digest-only = false
+        pull-from-mirror = "all"
+
+        [[registry]]
+        location="registry.redhat.io/rhacm2"
+        [[registry.mirror]]
+        location="quay.io:443/acm-d"
+        mirror-by-digest-only = false
+        pull-from-mirror = "all"
+      marker_begin: "<!-- Ansible Begin -->"
+      marker_end: "<!-- Ansible End -->"
+  
+  - name: Create ImageSetConfiguration
+    template:
+      src: imagesetconf.yml.j2 
+      dest: "{{ sync_path }}/acm/imagesetconf.yml"
+
+  - name: Mirror acm images from konflux build onto the bastion registry
+    shell: |
+      oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
+    register: result
+    until: not result.failed
+    retries: 3
+    delay: 1
 
 - name: Mirror ztp-site-generator image
   shell: |
