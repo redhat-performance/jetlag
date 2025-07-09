@@ -41,14 +41,13 @@
       replace: "{{ registry_host }}:{{ registry_port }}/acm-d"
 
 # If this errors, you won't be able to install ACM later, so retries are added incase of issues with the registry
-- name: Mirror acm images onto the bastion registry
-  when: not is_konflux_build
-  shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
-  register: result
-  until: not result.failed
-  retries: 3
-  delay: 1
+  - name: Mirror acm images onto the bastion registry
+    shell: |
+      oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
+    register: result
+    until: not result.failed
+    retries: 3
+    delay: 1
 
 - name: Mirro ACM/MCE from konflux build
   when: is_konflux_build
