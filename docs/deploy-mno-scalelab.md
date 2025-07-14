@@ -405,7 +405,7 @@ allocation_node_count=16
 supermicro_nodes=False
 
 [bastion]
-xxx-h01-000-r650.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.example.com
+xxx-h01-000-r650.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h01-000-r650.example.com lab_ip=10.1.x.x
 
 [bastion:vars]
 bmc_user=quads

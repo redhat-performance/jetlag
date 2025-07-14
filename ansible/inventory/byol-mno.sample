@@ -4,7 +4,7 @@ allocation_node_count=6
 supermicro_nodes=False
 
 [bastion]
-fqdn.example.com ansible_ssh_user=root bmc_address=mgmt-fqdn.example.com
+fqdn.example.com ansible_ssh_user=root bmc_address=mgmt-fqdn.example.com lab_ip=10.1.x.x
 
 [bastion:vars]
 bmc_user=redhat
