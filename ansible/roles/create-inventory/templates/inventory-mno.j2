@@ -11,7 +11,7 @@ base_dns_name={{ base_dns_name }}
 {% endif %}
 
 [bastion]
-{{ bastion_machine }} ansible_ssh_user=root bmc_address=mgmt-{{ bastion_machine }}
+{{ bastion_machine }} ansible_ssh_user=root bmc_address=mgmt-{{ bastion_machine }} lab_ip={{ bastion_foreman_data.json.ip }}
 
 [bastion:vars]
 bmc_user={{ bmc_user }}

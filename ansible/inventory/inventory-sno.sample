@@ -1,9 +1,13 @@
 # Create inventory playbook will generate this for you much easier
 [all:vars]
-allocation_node_count=10
+allocation_node_count=3
+supermicro_nodes=False
+controlplane_network=198.18.0.0/16
+controlplane_network_prefix=16
+base_dns_name=example.com
 
 [bastion]
-example.com ansible_ssh_user=root bmc_address=mgmt-example.com
+bastion.example.com ansible_ssh_user=root bmc_address=mgmt-bastion.example.com lab_ip=10.1.x.x
 
 [bastion:vars]
 bmc_user=quads
@@ -22,15 +26,21 @@ bmc_password=password
 # Unused
 
 [sno]
-# Single Node OpenShift Clusters
-sno-0 bmc_address=mgmt-sno-0.example.com boot_iso=sno-0.iso ip=10.0.0.1 vendor=Dell lab_mac=00:4e:01:3d:e6:9e mac_address=40:a6:b7:00:63:61 install_disk=/dev/sda
-#sno-1 bmc_address=mgmt-sno-1.example.com boot_iso=sno-1.iso ip=10.0.0.2 vendor=Dell lab_mac=00:4e:01:3d:e6:ab mac_address=40:a6:b7:00:53:81 install_disk=/dev/sda
+# Only one can be uncommented and deployed at a time, but you can deploy additional SNOs
+# one at a time by rerunning the SNO deploy playbook after changing which inventory line
+# is uncommented
+sno-0 bmc_address=mgmt-sno-0.example.com mac_address=40:a6:b7:00:63:61 lab_mac=00:4e:01:3d:e6:9e ip=198.18.0.3 vendor=Dell install_disk=/dev/sda boot_iso=sno-0.iso
+# sno-1 bmc_address=mgmt-sno-1.example.com mac_address=40:a6:b7:00:53:81 lab_mac=00:4e:01:3d:e6:ab ip=198.18.0.4 vendor=Dell install_disk=/dev/sda boot_iso=sno-1.iso
 
 [sno:vars]
+role=master
 bmc_user=quads
 bmc_password=password
-dns1=8.8.8.8
-dns2=8.8.4.4
+lab_interface=eno1np0
+network_interface=eth0
+network_prefix=16
+gateway=198.18.0.1
+dns1=198.18.0.1
 
 [hv]
 # Unused

@@ -310,7 +310,7 @@ controlplane_network_prefix=16
 base_dns_name=example.com
 
 [bastion]
-xxx-h31-000-r740xd.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h31-000-r740xd.example.com
+xxx-h31-000-r740xd.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h31-000-r740xd.example.com lab_ip=10.1.x.x
 
 [bastion:vars]
 bmc_user=quads

@@ -43,6 +43,15 @@
     ocpinventory_sno_nodes: []
     ocpinventory_hv_nodes: []
 
+- name: Get bastion foreman data (For lab ip address)
+  uri:
+    url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ bastion_machine }}"
+    force_basic_auth: yes
+    user: "{{ lab_cloud }}"
+    password: "{{ bmc_password }}"
+    validate_certs: false
+  register: bastion_foreman_data
+
 - name: Public VLAN autoconfiguration
   when: public_vlan
   block:
