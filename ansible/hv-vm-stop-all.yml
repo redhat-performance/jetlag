@@ -1,0 +1,5 @@
+---
+- name: destroy all VMs
+  hosts: hv
+  roles:
+  - hv-vm-destroy

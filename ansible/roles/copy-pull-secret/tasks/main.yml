@@ -1,0 +1,11 @@
+---
+- name: Copy pull secret
+  copy:
+    src: pull-secret.json
+    dest: "/var/lib/kubelet/config.json"
+  become: true
+- name: touch force update
+  file:
+    path: /run/machine-config-daemon-force
+    state: touch
+  become: true

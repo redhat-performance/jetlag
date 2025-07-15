@@ -1,0 +1,5 @@
+---
+- name: Start one vm
+  shell:
+    for i in in $(virsh list --all | grep vm | grep "shut off" |head -1| awk '{ print $2 }') ; do virsh start $i ; done
+  become: true

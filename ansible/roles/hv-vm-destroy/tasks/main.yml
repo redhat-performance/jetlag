@@ -1,0 +1,5 @@
+---
+- name: Stop all vms
+  shell:
+    for i in in $(virsh list --all | grep vm | awk '{ print $2 }') ; do virsh destroy $i ; done
+  become: true
