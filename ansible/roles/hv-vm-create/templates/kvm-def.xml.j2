@@ -3,6 +3,13 @@
   <uuid>{{ hostvars[inventory_hostname]['domain_uuid'] }}</uuid>
   <memory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</memory>
   <currentMemory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</currentMemory>
+{% if enable_vm_hugepages %}
+  <memoryBacking>
+    <hugepages>
+      <page size='{{ vm_hugepage_size[:-1] }}' unit='{{ vm_hugepage_size[-1] }}'/>
+    </hugepages>
+  </memoryBacking>
+{% endif %}
   <vcpu placement='static'>{{ hv_vm_cpu_count | int }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-q35-rhel7.6.0'>hvm</type>
