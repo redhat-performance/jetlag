@@ -21,6 +21,43 @@
     name: sushy-tools
     version: 1.2.0
 
+- name: Configure hugepages support
+  when: enable_hugepages
+  block:
+  - name: Read current grub configuration
+    slurp:
+      src: "{{ grub_config_file }}"
+    register: current_grub_config
+
+  - name: Parse current GRUB_CMDLINE_LINUX
+    set_fact:
+      current_cmdline: "{{ (current_grub_config.content | b64decode | regex_search('GRUB_CMDLINE_LINUX=\"([^\"]+)\"', '\\1') | first) | default('') }}"
+
+  - name: Build hugepages kernel parameters
+    set_fact:
+      hugepage_params: "hugepagesz={{ hugepage_size }} hugepages={{ hugepage_count }}"
+
+  - name: Build complete kernel command line
+    set_fact:
+      new_cmdline: "{{ ([current_cmdline] + [hugepage_params] + additional_kernel_params) | reject('equalto', '') | join(' ') }}"
+
+  - name: Update grub configuration for hugepages
+    lineinfile:
+      path: "{{ grub_config_file }}"
+      regexp: '^GRUB_CMDLINE_LINUX='
+      line: 'GRUB_CMDLINE_LINUX="{{ new_cmdline }}"'
+      backup: true
+    register: grub_updated
+
+  - name: Regenerate grub configuration
+    command: grub2-mkconfig -o /boot/grub2/grub.cfg
+    when: grub_updated.changed
+
+  - name: Set reboot required flag
+    set_fact:
+      hugepages_reboot_required: true
+    when: grub_updated.changed
+
 - name: Get coredns
   get_url:
     validate_certs: false
@@ -65,3 +102,21 @@
     state: started
     enabled: true
     name: ksmtuned
+
+- name: Reboot hypervisor for hugepages configuration
+  when: 
+  - enable_hugepages
+  - hugepages_reboot_required | default(false)
+  block:
+  - name: Reboot hypervisor
+    reboot:
+      msg: "Rebooting to apply hugepages configuration"
+      reboot_timeout: 600
+      
+  - name: Verify hugepages are configured
+    shell: cat /proc/meminfo | grep -E "HugePages_Total|HugePages_Free|Hugepagesize"
+    register: hugepages_status
+    
+  - name: Display hugepages status
+    debug:
+      msg: "{{ hugepages_status.stdout_lines }}"
