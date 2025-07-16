@@ -2,7 +2,7 @@
 # boot-iso default vars
 
 # This will be your bastion machine (if you run setup-bastion playbook)
-http_store_host: "{{ groups['bastion'][0] }}"
+http_store_host: "{{ hostvars[groups['bastion'][0]]['lab_ip'] if lab in rh_labs or lab == 'byol' else groups['bastion'][0] }}"
 http_store_port: 8081
 
 # This is always 0 for a deploy

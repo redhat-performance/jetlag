@@ -372,9 +372,13 @@ Make sure to replace the IP addresses, mac addresses, install disk by-paths, int
 [all:vars]
 allocation_node_count=6
 supermicro_nodes=False
+cluster_name=mno
+controlplane_network=198.18.0.0/16
+controlplane_network_prefix=16
+base_dns_name=example.com
 
 [bastion]
-<FQDN> ansible_ssh_user=root bmc_address=<IP or FQDN>
+<FQDN> ansible_ssh_user=root bmc_address=<IP or FQDN> lab_ip=<public reachable ip of bastion>
 
 [bastion:vars]
 bmc_user=root
