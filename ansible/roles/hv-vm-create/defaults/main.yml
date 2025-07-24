@@ -10,7 +10,7 @@ vnuma_enabled: false
 vnuma_memory_placement: "static"
 vnuma_cpu_placement: "static"
 
-# Manual vNUMA configuration 
+# Manual vNUMA configuration
 # vnuma_nodes:
 #   - id: 0
 #     cpus: "0-3"
@@ -26,11 +26,11 @@ vnuma_cpu_mode: "strict"     # strict, preferred
 # Hugepages configuration for VMs
 enable_vm_hugepages: false
 
-# Hugepage size for VMs: 2M or 1G  
+# Hugepage size for VMs: 2M or 1G
 vm_hugepage_size: "1G"
 
 # Number of hugepages to allocate per VM (auto-calculated based on VM memory if not specified)
-vm_hugepage_count: 
+vm_hugepage_count:
 
 # Hugepage mount path in VMs
 vm_hugepage_mount: "/mnt/hugepages"
