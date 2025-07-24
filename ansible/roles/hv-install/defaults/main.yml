@@ -13,5 +13,5 @@ hugepage_count: 32
 # Additional kernel parameters for performance tuning
 additional_kernel_params: []
 
-# Path to grub configuration file
-grub_config_file: "/etc/default/grub" 
+# Number of hugepages per node (e.g. total / 2)
+hugepages_count_per_node: 190

@@ -15,4 +15,5 @@ out
 gen
 .idea/
 .idea/workspace.xml
-
+*.log
+*.orig

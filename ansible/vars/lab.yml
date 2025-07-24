@@ -179,7 +179,7 @@ hw_vm_counts:
       nvme0n1: 12
     r650:
       default: 4
-      nvme0n1: 23
+      nvme0n1: 16
     r660:
       default: 4
       nvme0n1: 23
