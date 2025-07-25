@@ -207,7 +207,7 @@ Now the disk is wiped of the cruft partition. You can now retry a new deployment
 
 ## Failed on Insert Virtual Media
 
-On failure to insert/mount virtual media tasks such as:
+### Unable to locate the ISO:
 
 ```
 TASK [boot-iso : Insert Virtual Media]
@@ -238,6 +238,40 @@ You can validate whether the BMC’s DNS server is functioning correctly by runn
     - `nslookup <bastion_fqdn>`
     - `host <bastion_fqdn>`
 These tools help confirm whether the DNS server is responsive and capable of resolving the Bastion FQDN.
+
+### Virtual Media is detached or Virtual Media devices are already in use: 
+
+```
+FAILED! => {"attempts": 5, "changed": false, "msg": "HTTP Error 500 on POST request to 'https://mgmt-xxx.com/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia', extended message: 'Virtual Media is detached or Virtual Media devices are already in use.'"}
+```
+To debug it:
+```
+ssh quads@mgmt-xxx.redhat.com
+```
+
+Verify if VirtualMedia is indeed detached or disabled
+```
+racadm>>get iDRAC.VirtualMedia
+[Key=iDRAC.Embedded.1#VirtualMedia.1]
+#ActiveSessions=0
+Attached=Detached
+BootOnce=Disabled
+Enable=Disabled
+EncryptEnable=Enabled
+FloppyEmulation=Disabled
+KeyEnable=Disabled
+#MaxSessions=1
+```
+
+Enable virtual media and set it to attached
+```
+racadm>>set iDRAC.VirtualMedia.Enable Enabled
+[Key=iDRAC.Embedded.1#VirtualMedia.1]
+Object value modified successfully
+racadm>>set iDRAC.VirtualMedia.Attached Attached
+[Key=iDRAC.Embedded.1#VirtualMedia.1]
+Object value modified successfully
+```
 
 # Bastion
 
