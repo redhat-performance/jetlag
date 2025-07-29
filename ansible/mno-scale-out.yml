@@ -3,6 +3,7 @@
   hosts: bastion
   vars_files:
   - vars/all.yml
+  - vars/lab.yml
   - vars/scale_out.yml
   roles:
   - mno-scale-out
