@@ -1,12 +1,11 @@
 ---
-- name: Approve node-bootstrapper CSRs and wait for nodes to join cluster
+- name: Approve CSRs
   include_tasks: check_nodes_joined.yml
-  vars:
-    qry: "items[?status.conditions==null && spec.username == 'system:serviceaccount:openshift-machine-config-operator:node-bootstrapper']"
-    worker_counter: "grep -c worker"
 
-- name: Approve Kublet-serving CSRs and wait for nodes to join cluster
-  include_tasks: check_nodes_joined.yml
-  vars:
-    qry: "items[?status.conditions==null && spec.signerName == 'kubernetes.io/kubelet-serving']"
-    worker_counter: "grep worker | grep -c -v NotReady"
+- name: Wait for expected number of workers to be Ready
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get nodes --no-headers -l node-role.kubernetes.io/worker | grep -c -v NotReady
+  register: oc_get_nodes_workers
+  until: oc_get_nodes_workers.stdout|int < current_worker_count+scale_out_count
+  retries: 540
+  delay: 30
