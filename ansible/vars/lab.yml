@@ -166,6 +166,12 @@ hw_nic_name:
     - eno2
     - ens7f0
     - ens7f1
+    r760:
+    - eno12399
+    - ens3f0
+    - ens3f1
+    - ens6f0
+    - ens6f1
 
 # Based on VM Size (8vCPU, 18GiB Memory, 120G Disk)
 hw_vm_counts:
