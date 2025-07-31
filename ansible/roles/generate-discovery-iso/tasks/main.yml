@@ -15,6 +15,10 @@
     url: "{{ infraenv_image_url.json.url }}"
     dest: "{{ http_store_path }}/data/{{ iso_name }}.iso"
     timeout: 60
+  retries: 5
+  register: iso_download
+  until: iso_download is success
+  delay: 20
 
 - name: Symlink discovery ISO into "iso" subdirectory
   ansible.builtin.file:
