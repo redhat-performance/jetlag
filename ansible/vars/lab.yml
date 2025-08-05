@@ -81,6 +81,7 @@ hw_nic_name:
     - ens1f1
     - ens2f0
     - ens2f1
+    - eno2np1
     r650:
     - eno12399np0
     - ens1f0
