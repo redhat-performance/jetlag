@@ -54,8 +54,10 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 
 smcipmitool_url:
 
-bastion_lab_interface: eno1np0
-bastion_controlplane_interface: ens1f0
+# Network interfaces - these will be auto-configured based on lab and machine type
+# if not explicitly set. To override auto-configuration, uncomment and set values:
+# bastion_lab_interface: eno1np0
+# bastion_controlplane_interface: ens1f0
 
 # Sets up Gogs a self-hosted git service on the bastion
 setup_bastion_gogs: false
@@ -70,7 +72,9 @@ use_bastion_registry: false
 # OCP node vars
 ################################################################################
 # Network configuration for all mno/sno cluster nodes
-controlplane_lab_interface: eno1np0
+# This will be auto-configured based on lab and machine type if not explicitly set
+# To override auto-configuration, uncomment and set value:
+# controlplane_lab_interface: eno1np0
 
 ################################################################################
 # Extra vars
