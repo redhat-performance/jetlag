@@ -18,7 +18,9 @@
     status_code: [200, 201]
     return_content: true
   register: cluster
-  until: cluster.json.hosts | length == inventory_nodes | length
+  until:
+    - cluster.json is defined
+    - cluster.json.hosts | length == inventory_nodes | length
   retries: 40
   delay: 60
 
