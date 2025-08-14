@@ -45,3 +45,15 @@
   loop:
   - "{{ disk2_mount_path }}/libvirt"
   - "{{ disk2_mount_path }}/libvirt/images"
+
+- name: Get root logical volume VG and LV names
+  shell: lvs --noheadings --nosuffix --units g -o vg_name,lv_name $(df / | tail -1 | awk '{print $1}')
+  register: root_lv_info
+  changed_when: false
+
+- name: Extend root logical volume to maximum available space
+  lvol:
+    vg: "{{ root_lv_info.stdout_lines[0].split()[0] }}"
+    lv: "{{ root_lv_info.stdout_lines[0].split()[1] }}"
+    size: +100%FREE
+    resizefs: true

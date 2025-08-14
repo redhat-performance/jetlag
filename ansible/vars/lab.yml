@@ -230,7 +230,7 @@ hw_vm_counts:
       nvme0n1: 5
     r760:
       default: 4
-      nvme0n1: 23
+      nvme0n1: 30
 
 # # Based on VM Size (8vCPU, 28GiB Memory, 120G Disk)
 # hw_vm_counts:
