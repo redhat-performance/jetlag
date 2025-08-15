@@ -17,6 +17,7 @@ _**Table of Contents**_
 ## Network interface to vars table
 
 Values here reflect the default (Network 1 which maps to `controlplane_network_interface_idx: 0`). See this [section](#using-other-network-interfaces) to generate the proper inventory for a different network.
+Note that if these variables are not explicitely set then Jetlag auto configures them.
 
 **Scale Lab**
 

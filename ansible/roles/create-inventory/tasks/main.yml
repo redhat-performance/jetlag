@@ -52,12 +52,24 @@
     validate_certs: false
   register: bastion_foreman_data
 
+- name: Determine machine type for automatic interface configuration
+  set_fact:
+    machine_type: "{{ (ocpinventory.json.nodes[0].pm_addr.split('.')[0]).split('-')[-1] }}"
+
 - name: Public VLAN autoconfiguration
   when: public_vlan
   block:
   - name: Public VLAN - Set controlplane_network_interface_idx to -1 for the last interface
     set_fact:
       controlplane_network_interface_idx: "-1"
+
+  - name: Public VLAN - Update bastion_controlplane_interface to use last interface
+    set_fact:
+      bastion_controlplane_interface: "{{ hw_nic_name[lab][machine_type][-1] }}"
+    when:
+      - bastion_controlplane_interface is not defined
+      - lab in hw_nic_name
+      - machine_type in hw_nic_name[lab]
 
   - name: Public VLAN - Get assignment from quads
     uri:
@@ -78,6 +90,31 @@
     set_fact:
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
     when: cluster_name == "mno"
+
+- name: Auto-configure bastion lab interface (only when not explicitly set)
+  set_fact:
+    bastion_lab_interface: "{{ hw_nic_name[lab][machine_type][0] }}"
+  when:
+    - bastion_lab_interface is not defined
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
+
+- name: Auto-configure bastion controlplane interface (only when not explicitly set)
+  set_fact:
+    bastion_controlplane_interface: "{{ hw_nic_name[lab][machine_type][controlplane_network_interface_idx|int+1] }}"
+  when:
+    - bastion_controlplane_interface is not defined
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
+    - not public_vlan
+
+- name: Auto-configure controlplane lab interface (only when not explicitly set)
+  set_fact:
+    controlplane_lab_interface: "{{ hw_nic_name[lab][machine_type][0] }}"
+  when:
+    - controlplane_lab_interface is not defined
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
 
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
@@ -293,6 +330,32 @@
     loop: "{{ ocpinventory_hv_nodes }}"
     loop_control:
       index_var: idx
+
+- name: Validate network interface variables are properly configured
+  block:
+  - name: Validate bastion_lab_interface is defined
+    assert:
+      that:
+        - bastion_lab_interface is defined
+        - bastion_lab_interface != ""
+      fail_msg: "bastion_lab_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
+      success_msg: "bastion_lab_interface is configured: {{ bastion_lab_interface }}"
+
+  - name: Validate bastion_controlplane_interface is defined
+    assert:
+      that:
+        - bastion_controlplane_interface is defined
+        - bastion_controlplane_interface != ""
+      fail_msg: "bastion_controlplane_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
+      success_msg: "bastion_controlplane_interface is configured: {{ bastion_controlplane_interface }}"
+
+  - name: Validate controlplane_lab_interface is defined
+    assert:
+      that:
+        - controlplane_lab_interface is defined
+        - controlplane_lab_interface != ""
+      fail_msg: "controlplane_lab_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
+      success_msg: "controlplane_lab_interface is configured: {{ controlplane_lab_interface }}"
 
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
