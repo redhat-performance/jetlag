@@ -292,11 +292,11 @@
     loop_control:
       index_var: idx
 
-  - name: Enable disk2_enable for r660, r650, r750, r730xd, and r930 with nvme0n1
+  - name: Enable disk2_enable for r660, r650, r750, r760, r730xd, and r930 with nvme0n1
     set_fact:
       ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme0n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
     when:
-    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r660', 'r750', 'r730xd', 'r740xd', 'r930']
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r650', 'r660', 'r750', 'r760', 'r730xd', 'r740xd', 'r930']
     loop: "{{ ocpinventory_hv_nodes }}"
     loop_control:
       index_var: idx
