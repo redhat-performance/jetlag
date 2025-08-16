@@ -40,3 +40,4 @@
         "host_name": "{{ hostname }}",
         "host_role": "{{ host_role }}"
     }
+  ignore_errors: yes
