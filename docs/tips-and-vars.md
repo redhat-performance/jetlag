@@ -83,8 +83,8 @@ edit the inventory file to set appropriate install paths for each machine.
 
 | Hardware | Install disk path |
 | - | - |
-| Dell r740xd (SL-N, SL-G, SL-U, CL-N) | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
-| Dell r740xd (CL-U, CL-G) | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
+| Dell r740xd (SL-N, SL-G, SL-U, CL-N, CL-U-2, CL-G-2) | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+| Dell r740xd (CL-U-1, CL-G-1) | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
 | Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
 | Dell r7425 | /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0 |
 | Dell r7525 | /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0 |
@@ -125,6 +125,8 @@ nvme0n1                             259:0    0  1.5T  0 disk
 (.ansible) [root@<bastion> jetlag]# find /dev/disk/by-path -lname \*sda
 /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0
 ```
+
+You can also identify your machine's specific type by logging into the lab's foreman instance, viewing all your hosts and enabling the "model" field to show which type by host is in your cloud allocation.
 
 ## Updating the OCP version
 
