@@ -1,20 +1,20 @@
 ---
 # hv-vm-create tasks
 
-- name: Check if vm disk file exists
-  stat:
-    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
-  register: vm_disk_stat
-
-- name: Create vm disk
-  shell: |
-    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2 {{ hostvars[inventory_hostname]['disk_size'] }}G
-  when: not vm_disk_stat.stat.exists
-
-- name: Create 2nd vm disk
-  shell: |
-    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2 {{ hostvars[inventory_hostname]['disk2_size'] }}G
-  when: "'disk2_location' in hostvars[inventory_hostname]"
+#- name: Check if vm disk file exists
+#  stat:
+#    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
+#  register: vm_disk_stat
+#
+#- name: Create vm disk
+#  shell: |
+#    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2 {{ hostvars[inventory_hostname]['disk_size'] }}G
+#  when: not vm_disk_stat.stat.exists
+#
+#- name: Create 2nd vm disk
+#  shell: |
+#    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2 {{ hostvars[inventory_hostname]['disk2_size'] }}G
+#  when: "'disk2_location' in hostvars[inventory_hostname]"
 
 - name: Set VM CPU count from host variables
   set_fact:

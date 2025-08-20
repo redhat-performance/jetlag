@@ -18,6 +18,7 @@
   <features>
     <acpi/>
     <apic/>
+    <ioapic driver='qemu'/>
   </features>
 {% if vnuma_enabled %}
   <cpu mode='host-model' check='partial'>
@@ -132,6 +133,18 @@
 {% endif %}
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>
+{% for i in range(1, 7) %}
+    <interface type='bridge'>
+{% set mac_prefix = "%s:%02x" | format('52:54:00',i) %}
+      <mac address='{{ mac_prefix | community.general.random_mac(seed=inventory_hostname) }}'/>
+      <source bridge='br0'/>
+      <model type='igb'/>
+      <address type='pci' domain='0x0000' bus='{{ "0x%02x" | format(i + 4) }}' slot='0x00' function='0x0'/>
+    </interface>
+{% endfor %}
+    <iommu model='intel'>
+      <driver intremap='on'/>
+    </iommu>
     <serial type='pty'>
       <target type='isa-serial' port='0'>
         <model name='isa-serial'/>
