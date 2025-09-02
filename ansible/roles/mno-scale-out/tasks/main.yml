@@ -25,6 +25,7 @@
   ansible.builtin.copy:
     src: /root/mno-scale-out/node.x86_64.iso
     dest: /opt/http_store/data/mno-scale-out.x86_64.iso
+    remote_src: true
 
 - name: Delete mno-scale-out directory
   ansible.builtin.file:
