@@ -212,6 +212,7 @@ xxxxx-xxxxx-xxxxx-xxxxx
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag on IBMcloud ](docs/deploy-sno-ibmcloud.md)
 * [Deploy a VMNO](docs/deploy-vmno.md)
 * [Scale up MNO](docs/scale-out-mno.md)
+* [Scale up SNO](docs/scale-out-sno.md)
 
 ## Tips and Troubleshooting
 
