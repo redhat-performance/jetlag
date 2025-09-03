@@ -9,7 +9,7 @@ assisted_installer_image: quay.io/edge-infrastructure/assisted-installer:{{ assi
 assisted_installer_agent_image: quay.io/edge-infrastructure/assisted-installer-agent:{{ assisted_installer_tag }}
 assisted_installer_controller_image: quay.io/edge-infrastructure/assisted-installer-controller:{{ assisted_installer_tag }}
 assisted_installer_ui_image: quay.io/edge-infrastructure/assisted-installer-ui:{{ assisted_installer_ui_tag }}
-assisted_service_image: quay.io/edge-infrastructure/assisted-service:{{ assisted_installer_tag }}
+assisted_service_image: quay.io/lhadad/assisted-service:modifyPreNetServiceV1
 assisted_postgres_image: quay.io/edge-infrastructure/postgresql-12-centos7
 
 # This will be your bastion machine (if you run setup-bastion playbook)

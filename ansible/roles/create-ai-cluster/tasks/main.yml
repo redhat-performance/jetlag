@@ -177,6 +177,7 @@
         "pull_secret": "{{ pull_secret | to_json }}",
         "static_network_config": "{{ static_network_config }}",
         "image_type": "full-iso",
+#        "image_type": "minimal-iso",
         "cluster_id": "{{ ai_cluster_id }}",
         "openshift_version": "{{ openshift_version }}",
     }
