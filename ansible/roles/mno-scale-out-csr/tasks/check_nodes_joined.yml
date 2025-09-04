@@ -19,6 +19,7 @@
       shell: |
         KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get csr -o json
       register: oc_get_csr
+      when: cluster_type != 'sno'
     
     - name: Approve pending CSRs
       shell: |
@@ -26,11 +27,33 @@
       loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
       loop_control:
         label: "{{ item.metadata.name }}"
+      when: cluster_type != 'sno'
     
     - name: Get worker node count
       shell: |
         KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get nodes | {{ worker_counter }}
       register: oc_get_nodes_workers
+      when: cluster_type != 'sno'
+
+    - name: Get CSRs (For SNO Cluster)
+      shell: |
+        KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get csr -o json
+      register: oc_get_csr
+      when: cluster_type == 'sno'
+
+    - name: Approve pending CSRs (For SNO Cluster)
+      shell: |
+        KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm certificate approve {{ item.metadata.name }}
+      loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+      when: cluster_type == 'sno'
+
+    - name: Get worker node count (For SNO Cluster)
+      shell: |
+        KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get nodes | {{ worker_counter }}
+      register: oc_get_nodes_workers
+      when: cluster_type == 'sno'
 
     - name: Current Worker Node Count
       debug:
