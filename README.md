@@ -211,8 +211,8 @@ xxxxx-xxxxx-xxxxx-xxxxx
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Performance Lab Bastion Machine](docs/deploy-sno-performancelab.md)
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag on IBMcloud ](docs/deploy-sno-ibmcloud.md)
 * [Deploy a VMNO](docs/deploy-vmno.md)
-* [Scale up MNO](docs/scale-out-mno.md)
-* [Scale up SNO](docs/scale-out-sno.md)
+* [Scale out MNO](docs/scale-out-mno.md)
+* [Scale out SNO](docs/scale-out-sno.md)
 
 ## Tips and Troubleshooting
 

@@ -24,7 +24,7 @@ There are two variables in ansible/vars/scale_out.yml that indicate which entrie
 Example: If the initial OCP deployment had three baremetal workers and the intended worker count was ten, current_worker_count would be 3 and scale_out_count would be 7. Scale out from three existing workers, adding seven new workers, for a total of ten worker nodes.
 
 ## Run mno-scale-out.yml
-Once the new worker records are added and Worker node variables are properly populatedt to the inventory and the scale_out.yml file has the proper values. The final step is to run the mno-scale-out.yml playbook.
+Once the new worker records are added and Worker node variables are properly populated to the inventory and the scale_out.yml file has the proper values. The final step is to run the mno-scale-out.yml playbook.
 
 ```console
 (.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/mno-scale-out.yml
@@ -35,6 +35,6 @@ This playbook will:
 - Generate node configuration yml
 - Invoke ```oc adm node-image create``` with the node configuration, which generates a discovery ISO
 - Boot the new worker nodes off of the generated discovery ISO
-- Approved generated CSRs
+- Approve generated CSRs
 
 This workflow can be run repeatedly to add more workers to the existing cluster.
