@@ -27,7 +27,7 @@
       Accept: application/json
     body:
       {
-        "ShareParameters": { "Target": "ALL" },
+        "ShareParameters": { "Target": ["ALL"] },
         "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>',
       }
     body_format: json
@@ -37,7 +37,7 @@
 
 - name: Dell - Check for Virtual Media
   uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1"
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     method: Get
@@ -53,7 +53,7 @@
 
 - name: Dell - Eject any CD Virtual Media
   uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia"
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     method: POST
