@@ -16,17 +16,16 @@
   vars:
     workers: "{{ groups['worker'][current_worker_count:current_worker_count+scale_out_count] }}"
 
-- name: Add Nodes to cluster and generate boot iso for non-SNO clusters (Takes a min or two)
-  command: oc adm node-image create --kubeconfig {{ bastion_cluster_config_dir }}/kubeconfig 
-  args:
-    chdir: /root/mno-scale-out/
-  when: cluster_type != 'sno'
+- name: Set KUBECONFIG path based on cluster type
+  set_fact:
+    cluster_kubeconfig: "{{ bastion_cluster_config_dir }}/{{ 'kubeconfig' if cluster_type != 'sno' else groups['sno'][0] + '/kubeconfig' }}"
 
-- name: Add Nodes to cluster and generate boot iso for SNO clusters (Takes a min or two)
-  command: oc adm node-image create --kubeconfig {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig
+- name: Add Nodes to cluster and generate boot iso (Takes a min or two)
+  command: oc adm node-image create
   args:
     chdir: /root/mno-scale-out/
-  when: cluster_type == 'sno'
+  environment:
+    KUBECONFIG: "{{ cluster_kubeconfig }}"
 
 - name: Copy scale out discovery iso to http server
   ansible.builtin.copy:

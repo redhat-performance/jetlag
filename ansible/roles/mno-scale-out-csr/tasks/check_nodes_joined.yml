@@ -4,6 +4,10 @@
     r_qry: "{{ qry }}"
     r_worker_counter: "{{ worker_counter }}"
 
+- name: Set KUBECONFIG path based on cluster type
+  set_fact:
+    cluster_kubeconfig: "{{ bastion_cluster_config_dir }}/{{ 'kubeconfig' if cluster_type != 'sno' else groups['sno'][0] + '/kubeconfig' }}"
+
 - name: approve CSRs and check if nodes have joined the cluster
   block:
     - name: Increment the retry count
@@ -16,44 +20,24 @@
       when: retry|int > 0
 
     - name: Get CSRs
-      shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get csr -o json
+      shell: oc get csr -o json
       register: oc_get_csr
-      when: cluster_type != 'sno'
+      environment:
+        KUBECONFIG: "{{ cluster_kubeconfig }}"
     
     - name: Approve pending CSRs
-      shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm certificate approve {{ item.metadata.name }}
+      shell: oc adm certificate approve {{ item.metadata.name }}
       loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
       loop_control:
         label: "{{ item.metadata.name }}"
-      when: cluster_type != 'sno'
+      environment:
+        KUBECONFIG: "{{ cluster_kubeconfig }}"
     
     - name: Get worker node count
-      shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get nodes | {{ worker_counter }}
+      shell: oc get nodes | {{ worker_counter }}
       register: oc_get_nodes_workers
-      when: cluster_type != 'sno'
-
-    - name: Get CSRs (For SNO Cluster)
-      shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get csr -o json
-      register: oc_get_csr
-      when: cluster_type == 'sno'
-
-    - name: Approve pending CSRs (For SNO Cluster)
-      shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm certificate approve {{ item.metadata.name }}
-      loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
-      loop_control:
-        label: "{{ item.metadata.name }}"
-      when: cluster_type == 'sno'
-
-    - name: Get worker node count (For SNO Cluster)
-      shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get nodes | {{ worker_counter }}
-      register: oc_get_nodes_workers
-      when: cluster_type == 'sno'
+      environment:
+        KUBECONFIG: "{{ cluster_kubeconfig }}"
 
     - name: Current Worker Node Count
       debug:
