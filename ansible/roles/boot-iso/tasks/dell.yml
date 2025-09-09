@@ -27,8 +27,8 @@
       Accept: application/json
     body:
       {
-        "ShareParameters": { "Target": "ALL" },
-        "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>',
+        "ShareParameters": { "Target": ["ALL"] },
+        "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VNF-2</Attribute></Component></SystemConfiguration>',
       }
     body_format: json
     validate_certs: no
@@ -37,7 +37,7 @@
 
 - name: Dell - Check for Virtual Media
   uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2"
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     method: Get
@@ -53,7 +53,7 @@
 
 - name: Dell - Eject any CD Virtual Media
   uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2/Actions/VirtualMedia.EjectMedia"
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     method: POST
@@ -80,21 +80,24 @@
 #     resource_id: iDRAC.Embedded.1
 #   ignore_errors: yes
 
-- name: DELL - Insert Virtual Media
-  community.general.redfish_command:
-    category: Manager
-    command: VirtualMediaInsert
-    baseuri: "{{ hostvars[item]['bmc_address'] }}"
-    username: "{{ hostvars[item]['bmc_user'] }}"
+- name: DELL - Insert Virtual Media (using ansible.builtin.uri)
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/2/Actions/VirtualMedia.InsertMedia"
+    method: POST
+    user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
-    virtual_media:
-      image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}"
-      media_types:
-        - CD
-        - DVD
-    resource_id: iDRAC.Embedded.1
+    force_basic_auth: true
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      Image: "http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}"
+      Inserted: true
+      WriteProtected: true
+    status_code: [200, 204]
   register: result
-  until: not result.failed
+  until: result.status != -1
   retries: 5
   delay: 30
 
