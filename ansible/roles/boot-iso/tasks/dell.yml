@@ -51,34 +51,41 @@
     return_content: yes
   register: check_virtual_media
 
-- name: Dell - Eject any CD Virtual Media
-  uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
-    method: POST
-    headers:
-      content-type: application/json
-      Accept: application/json
-    body: {}
-    body_format: json
-    validate_certs: no
-    status_code: 204
-    return_content: yes
+- name: Block to rescue incase of stuck virtual media
   when: check_virtual_media.json.Image
+  block:
+  - name: Dell - Eject any CD Virtual Media
+    uri:
+      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
+      user: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      method: POST
+      headers:
+        content-type: application/json
+        Accept: application/json
+      body: {}
+      body_format: json
+      validate_certs: no
+      status_code: 204
+      return_content: yes
 
-# # Eject just the found image
-# - name: DELL - Eject Virtual Media
-#   community.general.redfish_command:
-#     category: Manager
-#     command: VirtualMediaEject
-#     baseuri: "{{ hostvars[item]['bmc_address'] }}"
-#     username: "{{ hostvars[item]['bmc_user'] }}"
-#     password: "{{ hostvars[item]['bmc_password'] }}"
-#     virtual_media:
-#       image_url: "{{ check_virtual_media.json.Image  }}"
-#     resource_id: iDRAC.Embedded.1
-#   ignore_errors: yes
+  rescue:
+    # Use racadm to address the failed redfish unmount of old virtual media
+    - name: Force mount of a existing image
+      raw: racadm remoteimage -c -u "" -p "" -l http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}
+      delegate_to: "{{ hostvars[item]['bmc_address'] }}"
+      vars:
+        ansible_user: "{{ hostvars[item]['bmc_user'] }}"
+        ansible_password: "{{ hostvars[item]['bmc_password'] }}"
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+    - name: Force unmount of the existing image
+      raw: racadm remoteimage -d
+      delegate_to: "{{ hostvars[item]['bmc_address'] }}"
+      vars:
+        ansible_user: "{{ hostvars[item]['bmc_user'] }}"
+        ansible_password: "{{ hostvars[item]['bmc_password'] }}"
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 - name: DELL - Insert Virtual Media
   community.general.redfish_command:

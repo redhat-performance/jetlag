@@ -10,6 +10,10 @@ interfaces:
     address:
     - ip: {{ hostvars[item]['ip'] }}
       prefix-length: {{ hostvars[item]['network_prefix'] }}
+{% if cluster_type == "sno" and public_vlan and groups['sno'] | default([]) | length == 1  %}
+    - ip: {{ controlplane_network_ingress }}
+      prefix-length: {{ hostvars[item]['network_prefix'] }}
+{% endif %}
     auto-dns: false
     enabled: true
 {% if 'lab_mac' in hostvars[item] %}
