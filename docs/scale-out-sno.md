@@ -9,11 +9,19 @@ _**Steps to Scale Out:**_
 
 ## Add Nodes to Worker Inventory
 
-You can add new entries to the worker inventory section manually. Place them at the end of the list of worker entries.
+To add new node entries to the worker inventory there are two potential options.
 
-The new nodes, baremetal or virtual, must be placed at the end of the worker nodes inventory. The scale out playbook is designed to use the last n nodes in the inventory.
+1. New bare metal nodes are to be added to SNO Cluster
 
-Populate the worker node vars([worker:vars]) same as SNO node vars ([sno:vars]) and update the role parameter as worker in [worker:vars].
+   If more nodes were added to be added to SNO Cluster, update worker_node_count in the ansible/vars/all.yml file and rerun the create-inventory playbook. Be sure to compare the previous inventory file to the new one to ensure that everything is the same except the new nodes added to the worker section. Make sure to populate the extra vars related to Worker nodes.
+
+2. Manual entry
+
+   You can add new entries to the worker inventory section manually. Place them at the end of the list of worker entries.
+
+   The new bare metal nodes, must be placed at the end of the worker nodes inventory. The scale out playbook is designed to use the last n nodes in the inventory.
+
+   Populate the worker node vars([worker:vars]) same as SNO node vars ([sno:vars]) and update the role parameter as worker in [worker:vars].
 
 ## Update scale_out.yml
 There are two variables in ansible/vars/scale_out.yml that indicate which entries from the worker inventory section should be added to the existing cluster.
