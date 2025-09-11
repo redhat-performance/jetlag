@@ -32,11 +32,37 @@ bmc_password={{ bmc_password }}
 [controlplane:vars]
 # Unused
 
+{% if ocpinventory_worker_nodes is defined and ocpinventory_worker_nodes|length > 0 %}
 [worker]
-# Unused
+{% for worker in ocpinventory_worker_nodes %}
+{% if sno_worker_foreman_data is defined and sno_worker_foreman_data.results is defined %}
+{{ worker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ ( (sno_worker_foreman_data.results| selectattr('json.name', 'eq', worker.pm_addr | replace('mgmt-',''))|first).json.interfaces | selectattr('primary', 'eq', True)|first).mac }} ip={{ controlplane_network | ansible.utils.nthhost(loop.index + sno_controlplane_ip_offset) }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
+{% else %}
+# {{ worker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac=UNDEFINED ip={{ controlplane_network | ansible.utils.nthhost(loop.index + sno_controlplane_ip_offset) }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
+{% endif %}
+{% endfor %}
 
 [worker:vars]
-# Unused
+role=worker
+bmc_user={{ bmc_user }}
+bmc_password={{ bmc_password }}
+lab_interface={{ controlplane_lab_interface }}
+network_interface={{ controlplane_network_interface }}
+network_prefix={{ controlplane_network_prefix }}
+gateway={{ controlplane_network_gateway }}
+{% if controlplane_bastion_as_dns %}
+dns1={{ bastion_controlplane_ip }}
+{% else %}
+dns1={{ labs[lab]['dns'][0] }}
+dns2={{ labs[lab]['dns'][1] | default('') }}
+{% endif %}
+{% else %}
+[worker]
+# No worker nodes configured
+
+[worker:vars]
+# No worker nodes configured
+{% endif %}
 
 [sno]
 # Only one can be uncommented and deployed at a time, but you can deploy additional SNOs
