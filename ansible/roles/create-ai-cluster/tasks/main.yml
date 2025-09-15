@@ -176,7 +176,7 @@
         "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
         "pull_secret": "{{ pull_secret | to_json }}",
         "static_network_config": "{{ static_network_config }}",
-        "image_type": "full-iso",
+        "image_type": "{{ image_type }}",
         "cluster_id": "{{ ai_cluster_id }}",
         "openshift_version": "{{ openshift_version }}",
     }

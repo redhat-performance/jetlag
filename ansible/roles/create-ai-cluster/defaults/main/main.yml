@@ -5,6 +5,9 @@
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 
+# Image type for assisted installer (full-iso or minimal-iso)
+image_type: "full-iso"
+
 # Manifest for KubeletConfig to adjust max pods
 kubelet_config: false
 kubelet_config_max_pods: 530
