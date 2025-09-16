@@ -1,0 +1,15 @@
+[
+{% for bond_interface in hostvars[item]['bond0_interfaces'] %}
+    {
+        "mac_address": "{{ hostvars[item]['bond0_mac_addresses'][loop.index0] }}",
+        "logical_nic_name": "{{ bond_interface }}"
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+{% if 'lab_mac' in hostvars[item] %}
+    ,
+    {
+        "mac_address": "{{ hostvars[item]['lab_mac'] }}",
+        "logical_nic_name": "{{ hostvars[item]['lab_interface'] }}"
+    }
+{% endif %}
+]

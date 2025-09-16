@@ -116,6 +116,20 @@
     - lab in hw_nic_name
     - machine_type in hw_nic_name[lab]
 
+- name: Bond configuration for scale/performance labs
+  when: 
+    - enable_private_bond | default(false)
+    - lab in rh_labs
+    - not public_vlan
+  block:
+  - name: Override bastion controlplane interface for bond
+    set_fact:
+      bastion_controlplane_interface: bond0
+
+  - name: Override controlplane network interface for bond
+    set_fact:
+      controlplane_network_interface: bond0
+
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
   block:
@@ -127,6 +141,25 @@
       controlplane0_mac_address: "{{ ocpinventory.json.nodes[1].mac[controlplane_network_interface_idx | int] }}"
       controlplane1_mac_address: "{{ ocpinventory.json.nodes[2].mac[controlplane_network_interface_idx | int] }}"
       controlplane2_mac_address: "{{ ocpinventory.json.nodes[3].mac[controlplane_network_interface_idx | int] }}"
+
+  - name: MNO - Set bond MAC addresses for controlplane nodes
+    set_fact:
+      controlplane0_bond0_mac_addresses:
+        - "{{ ocpinventory.json.nodes[1].mac[bond0_port1 | int] }}"
+        - "{{ ocpinventory.json.nodes[1].mac[bond0_port2 | int] }}"
+      controlplane1_bond0_mac_addresses:
+        - "{{ ocpinventory.json.nodes[2].mac[bond0_port1 | int] }}"
+        - "{{ ocpinventory.json.nodes[2].mac[bond0_port2 | int] }}"
+      controlplane2_bond0_mac_addresses:
+        - "{{ ocpinventory.json.nodes[3].mac[bond0_port1 | int] }}"
+        - "{{ ocpinventory.json.nodes[3].mac[bond0_port2 | int] }}"
+    when: 
+      - enable_private_bond | default(false)
+      - lab in rh_labs
+      - not public_vlan
+
+  - name: MNO - Set vendor information
+    set_fact:
       controlplane0_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[1].pm_addr.split('.')[0]).split('-')[-1]] }}"
       controlplane1_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[2].pm_addr.split('.')[0]).split('-')[-1]] }}"
       controlplane2_vendor: "{{ hw_vendor[(ocpinventory.json.nodes[3].pm_addr.split('.')[0]).split('-')[-1]] }}"
@@ -194,6 +227,15 @@
     set_fact:
       ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[max_nodes|int:] }}"
 
+  - name: MNO - Set bond MAC addresses for worker nodes
+    set_fact:
+      worker_bond_mac_addresses: "{{ worker_bond_mac_addresses | default({}) | combine({item.pm_addr: [item.mac[bond0_port1 | int], item.mac[bond0_port2 | int]]}) }}"
+    loop: "{{ ocpinventory_worker_nodes }}"
+    when: 
+      - enable_private_bond | default(false)
+      - lab in rh_labs
+      - not public_vlan
+
 - name: MNO - Get lab mac address
   uri:
     url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
@@ -227,6 +269,17 @@
   - name: set json query fact
     set_fact:
       mac_query: "json.interfaces[?type=='interface'].mac"
+
+  - name: SNO - Set bond MAC addresses for each SNO node
+    set_fact:
+      sno_bond_mac_addresses: "{{ sno_bond_mac_addresses | default({}) | combine({item.pm_addr: [ocpinventory.json.nodes[ansible_loop.index].mac[bond0_port1 | int], ocpinventory.json.nodes[ansible_loop.index].mac[bond0_port2 | int]]}) }}"
+    loop: "{{ ocpinventory_sno_nodes }}"
+    loop_control:
+      extended: true
+    when: 
+      - enable_private_bond | default(false)
+      - lab in rh_labs
+      - not public_vlan
 
   # Start at 2 because 1st is bastion, 2nd is SNO, rest are hypervisors
   # Commented out until implementation is a requirement
