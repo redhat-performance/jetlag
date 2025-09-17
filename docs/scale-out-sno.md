@@ -13,7 +13,7 @@ To add new node entries to the worker inventory there are two potential options.
 
 1. New bare metal nodes are to be added to SNO Cluster
 
-   If more nodes were added to be added to SNO Cluster, update worker_node_count in the ansible/vars/all.yml file and rerun the create-inventory playbook. Be sure to compare the previous inventory file to the new one to ensure that everything is the same except the new nodes added to the worker section. Make sure to populate the extra vars related to Worker nodes.
+   If more nodes were added to SNO Cluster, update worker_node_count in the ansible/vars/all.yml file and rerun the create-inventory playbook. Be sure to compare the previous inventory file to the new one to ensure that everything is the same except the new nodes added to the worker section. Make sure to populate the extra vars related to Worker nodes.
 
 2. Manual entry
 
