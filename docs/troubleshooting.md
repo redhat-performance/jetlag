@@ -24,6 +24,7 @@ _**Table of Contents**_
   - [Minimum Firmware Versions](#minimum-firmware-versions)
 - [Dell](#dell)
   - [Reset BMC / iDRAC](#reset-bmc--idrac)
+  - [Clear Job Queue](#clear-job-queue)
   - [Unable to Insert/Mount Virtual Media](#unable-to-insertmount-virtual-media)
 - [Supermicro](#supermicro)
   - [Reset BMC / Resolving redfish connection error](#reset-bmc--resolving-redfish-connection-error)
@@ -239,7 +240,7 @@ You can validate whether the BMC’s DNS server is functioning correctly by runn
     - `host <bastion_fqdn>`
 These tools help confirm whether the DNS server is responsive and capable of resolving the Bastion FQDN.
 
-### Virtual Media is detached or Virtual Media devices are already in use: 
+### Virtual Media is detached or Virtual Media devices are already in use:
 
 ```
 FAILED! => {"attempts": 5, "changed": false, "msg": "HTTP Error 500 on POST request to 'https://mgmt-xxx.com/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.InsertMedia', extended message: 'Virtual Media is detached or Virtual Media devices are already in use.'"}
@@ -476,6 +477,41 @@ Substitute the user/password/hostname to perform the reset on a desired host. No
 > [!CAUTION]
 > A Factory reset is not the same as a BMC reset or iDRAC reboot. Do not factory reset your machines.
 
+## Clear Job Queue
+
+In some cases the Dell iDRAC might need the job queue cleared. One observed side
+effect of a "jammed" job queue is a Dell machine not becoming discovered because
+it never booted virtual media despite it showing as mounted. The job queue can be
+listed via [badfish](https://github.com/redhat-performance/badfish):
+
+```console
+# podman run -it --rm quay.io/quads/badfish -H $mgmt-hostname -u $user -p $password --ls-jobs
+- INFO     - Found active jobs:
+- INFO     -     JobID: JID_579812811580
+- INFO     -     JobID: JID_556613531967
+- INFO     -     JobID: JID_580054266666
+- INFO     -     JobID: JID_579920438478
+- INFO     -     JobID: JID_581196577037
+- INFO     -     JobID: JID_579130066868
+- INFO     -     JobID: JID_581229467609
+- INFO     -     JobID: JID_581189701262
+- INFO     -     JobID: JID_579949895609
+- INFO     -     JobID: JID_579581755936
+- INFO     -     JobID: JID_578914794229
+...
+```
+
+If there are many jobs in the queue, you can clear them via badfish as well:
+
+```console
+# podman run -it --rm quay.io/quads/badfish -H $mgmt-hostname -u $user -p $password --clear-jobs
+- WARNING  - iDRAC version installed does not support DellJobService
+- WARNING  - Clearing job queue for job IDs: ['JID_579812811580', 'JID_556613531967', 'JID_580054266666', 'JID_579920438478', 'JID_581196577037', 'JID_579130066868', 'JID_581229467609', 'JID_581189701262', 'JID_579949895609', 'JID_579581755936', 'JID_578914794229', 'JID_581210549255', 'JID_580621612581', 'JID_579612459316', 'JID_581161414362', 'JID_579123290570', 'JID_578786615286', 'JID_578850089483', 'JID_581199316774', 'JID_581214564587', 'JID_580500812306', 'JID_579792818418', 'JID_578828622381', 'JID_579029522360', 'JID_578880423533', 'JID_578859270460', 'JID_579802543200', 'JID_581274028498', 'JID_581287810640', 'JID_581305262145', 'JID_581542907002'].
+- INFO     - Job queue for iDRAC $mgmt-hostname successfully cleared.
+```
+
+Clearing jobs will take some time.
+
 ## Unable to Insert/Mount Virtual Media
 
 If your allocation produces an error related to mounting virtul media such as
@@ -524,6 +560,8 @@ configured.
 In other cases, the Dell iDRAC is unable to mount Virtual Media due to the Virtual
 Console Plug-in Type being set as eHTML5 instead of HTML5. To change this, navigate to
 Configuration -> Virtual Console -> Plug-in Type and select HTML5 instead of eHTML5.
+Lastly, if you found that a machine seems to have mounted virtual media but never
+actually booted it, then you may just need to [clear the job queue](#clear-job-queue).
 
 # Supermicro
 
