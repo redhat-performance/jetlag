@@ -59,6 +59,22 @@ smcipmitool_url:
 # bastion_lab_interface: eno1np0
 # bastion_controlplane_interface: ens1f0
 
+# Enable bonding for private network in scale/performance labs
+# Uses OVS balance-slb mode with first two interfaces (no switch configuration needed)
+enable_private_bond: false
+
+# Bond configuration for scale/performance labs (similar to IBM Cloud)
+# Index of the ports for bond0. Bond0 is the intended private network bond name.
+# For scale/perf labs, typically ports 0 & 1 are bonded to bond0 (Private network)
+bond0_port1: 0
+bond0_port2: 1
+
+# The assisted-installer does not need exact nic names for our private bond. These names are used
+# as representatives for the actual nic names, the actual nics are determined by the mac addresses
+private_bond_interfaces:
+- eth0
+- eth1
+
 # Sets up Gogs a self-hosted git service on the bastion
 setup_bastion_gogs: false
 
