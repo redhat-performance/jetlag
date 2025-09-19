@@ -56,6 +56,13 @@
   set_fact:
     machine_type: "{{ (ocpinventory.json.nodes[0].pm_addr.split('.')[0]).split('-')[-1] }}"
 
+- name: Set Controlplane network gateway
+  set_fact:
+    controlplane_network_gateway: "{{ controlplane_network | ansible.utils.nthhost(1) }}"
+  when:
+    - controlplane_network_gateway is not defined
+    - not public_vlan
+
 - name: Public VLAN autoconfiguration
   when: public_vlan
   block:
@@ -84,7 +91,12 @@
     set_fact:
       controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
       controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
+
+  - name: Public VLAN - Set Controlplane network gateway
+    set_fact:
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
+    when:
+      - controlplane_network_gateway is not defined
 
   - name: Public VLAN - Set cluster_name if was set as default
     set_fact:
