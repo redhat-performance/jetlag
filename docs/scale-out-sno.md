@@ -2,12 +2,28 @@
 
 A JetLag deployed Single-Node Openshift deployment can be scaled out via JetLag. Workers can be added using JetLag Inventory and Playbooks. This guide assumes you have an existing Single-Node OCP cluster deployed via JetLag. The worker section in the JetLag inventory file should contain records that represent the worker nodes currently joined to the running cluster.
 
+## Addtional step in case of Multi SNO Environments
+
+⚠️ A potential risk exists wherein a user who deploys a second Single Node OpenShift (SNO) instance could accidentally overwrite it if they later attempt to expand the first SNO with a worker node.
+
+⚠️ In Multi SNO Environment, You can create a new json file with the bastion host and desired hosts in a order where Bastion node follows other desired hosts for each SNO Cluster. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used, or specify a local path for the file:
+
+```yaml
+ocp_inventory_override: http://<http-server>/<inventory-file>.json
+
+# or
+
+ocp_inventory_override: <LOCAL_FILE_PATH>
+```
+
+Update the above parameter in `ansible/vars/all.yml` and follow SNO deploy and SNO scale out steps for each SNO Cluster.
+
 _**Steps to Scale Out:**_
 - [Add New Node Entries to Worker Inventory](#add-new-node-entries-to-worker-inventory)
 - [Update scale_out.yml](#update-scale_out.yml)
 - [Run mno-scale-out.yml](#run-mno-scale-out.yml)
 
-## Add Nodes to Worker Inventory
+## Add New Node Entries to Worker Inventory
 
 There are two methods for adding new worker node entries to the inventory. Choose one based on your workflow:
 
@@ -76,4 +92,4 @@ This playbook will:
 - Boot the new worker nodes off of the generated discovery ISO
 - Approve generated CSRs
 
-This workflow can be run repeatedly to add more workers to the existing cluster.
+This workflow can be run repeatedly to add more workers to the existing cluster. A typical scale-out will require around 30-40 minutes to complete mostly depending upon how fast your systems reboot. It is suggested to monitor your deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc.
