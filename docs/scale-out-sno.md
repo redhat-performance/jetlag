@@ -9,19 +9,42 @@ _**Steps to Scale Out:**_
 
 ## Add Nodes to Worker Inventory
 
-To add new node entries to the worker inventory there are two potential options.
+There are two methods for adding new worker node entries to the inventory. Choose one based on your workflow:
 
-1. New bare metal nodes are to be added to SNO Cluster
+### Option 1: Regenerate Inventory via Ansible (Recommended for SNO Additions)
 
-   If more nodes were added to SNO Cluster, update worker_node_count in the ansible/vars/all.yml file and rerun the create-inventory playbook. Be sure to compare the previous inventory file to the new one to ensure that everything is the same except the new nodes added to the worker section. Make sure to populate the extra vars related to Worker nodes.
+Use this method if you're adding new bare metal nodes to a **Single Node OpenShift (SNO)** cluster.
 
-2. Manual entry
+1. Update the `worker_node_count` value in `ansible/vars/all.yml` to reflect the new total number of worker nodes.
+2. Rerun the `create-inventory` playbook.
+3. After generation, compare the updated inventory file with the previous version to ensure only the new nodes were added to the `[worker]` section.
+4. Ensure all required worker-related variables are set in `[worker:vars]`.
 
-   You can add new entries to the worker inventory section manually. Place them at the end of the list of worker entries.
+### Option 2: Manual Inventory Update
 
-   The new bare metal nodes, must be placed at the end of the worker nodes inventory. The scale out playbook is designed to use the last n nodes in the inventory.
+Use this method to manually add new nodes without rerunning the playbook.
 
-   Populate the worker node vars([worker:vars]) same as SNO node vars ([sno:vars]) and update the role parameter as worker in [worker:vars].
+1. Append the new worker nodes to the **end** of the `[worker]` section in the inventory.
+   - ⚠️ The **scale-out playbook** uses the **last `n` nodes** in the list, so order matters.
+2. In the `[worker:vars]` section:
+   - Populate the required variables just as you would in `[sno:vars]`.
+   - Set the `role` parameter to `worker`.
+Here is an example:
+
+    [worker]
+    e29-xxx-xxxx-r640 bmc_address=**REDACTED** mac_address=**REDACTED**       lab_mac=**REDACTED** ip=**REDACTED** vendor=Dell install_disk=/dev/sda
+
+    [worker:vars]
+    role=worker
+    bmc_user=**REDACTED**
+    bmc_password=**REDACTED**
+    lab_interface=**REDACTED**
+    network_interface=**REDACTED**
+    network_prefix=**REDACTED**
+    gateway=**REDACTED**
+    dns1=**REDACTED**
+
+
 
 ## Update scale_out.yml
 There are two variables in ansible/vars/scale_out.yml that indicate which entries from the worker inventory section should be added to the existing cluster.
