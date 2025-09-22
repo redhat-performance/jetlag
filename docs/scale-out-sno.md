@@ -41,7 +41,7 @@ Once the new worker records are added and Worker node variables are properly pop
 
 This playbook will:
 - Generate node configuration yml
-- Invoke ```oc adm node-image create``` with the node configuration, which generates a discovery ISO
+- Invoke `oc adm node-image create` with the node configuration, which generates a discovery ISO
 - Boot the new worker nodes off of the generated discovery ISO
 - Approve generated CSRs
 
