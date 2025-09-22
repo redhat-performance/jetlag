@@ -201,8 +201,7 @@
     user: "{{ lab_cloud }}"
     password: "{{ bmc_password }}"
     validate_certs: false
-  with_items:
-    - "{{ ocpinventory_worker_nodes }}"
+  loop: "{{ ocpinventory_worker_nodes }}"
   when: cluster_type == "mno"
   register: mno_foreman_data
 
@@ -245,8 +244,7 @@
       user: "{{ lab_cloud }}"
       password: "{{ bmc_password }}"
       validate_certs: false
-    with_items:
-      - "{{ ocpinventory_worker_nodes }}"
+    loop: "{{ ocpinventory_worker_nodes }}"
     when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
     register: sno_worker_foreman_data
 
