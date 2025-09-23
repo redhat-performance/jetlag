@@ -202,20 +202,14 @@
     block:
     - name: MNO - Set controlplane0 bond mac addresses
       set_fact:
-        controlplane0_bond0_mac1: "{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }}"
-        controlplane0_bond0_mac2: "{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
         controlplane0_bond0_macs: "{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
 
     - name: MNO - Set controlplane1 bond mac addresses
       set_fact:
-        controlplane1_bond0_mac1: "{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }}"
-        controlplane1_bond0_mac2: "{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
         controlplane1_bond0_macs: "{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
 
     - name: MNO - Set controlplane2 bond mac addresses
       set_fact:
-        controlplane2_bond0_mac1: "{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }}"
-        controlplane2_bond0_mac2: "{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
         controlplane2_bond0_macs: "{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
 
   - name: MNO - Set max number of nodes

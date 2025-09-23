@@ -87,7 +87,10 @@
 
 # Bond configuration for scale/performance labs
 - name: Setup bastion bond configuration
-  when: enable_bond | default(false) and not (public_vlan | default(false)) and (lab in rh_labs)
+  when:
+    - enable_bond | default(false)
+    - not (public_vlan | default(false))
+    - lab in rh_labs
   block:
   - name: Set bastion bond interface names from hardware mapping
     set_fact:
@@ -149,7 +152,10 @@
 
 # Single interface configuration for non-bonded setups
 - name: Setup bastion single interface configuration
-  when: not (enable_bond | default(false) and not (public_vlan | default(false)) and (lab in rh_labs))
+  when:
+    - not enable_bond | default(false)
+    - not public_vlan | default(false)
+    - lab in rh_labs
   block:
   # Connections can end up named "Wired Connection X" and prevent the bastion controlplane interface from being configured
   - name: Get NetworkManager connection name for bastion control-plane interface
