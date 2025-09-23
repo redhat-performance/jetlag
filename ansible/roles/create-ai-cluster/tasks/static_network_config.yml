@@ -6,14 +6,19 @@
     item_network_config:
       network_yaml: "{{ lookup('template', 'rhlab_bond_nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'rhlab_bond_mac_interface_map.json.j2')  }}"
-  when: (lab in rh_labs or lab == "byol") and enable_bond | default(false) and not (public_vlan | default(false))
+  when:
+    - lab in rh_labs or lab == "byol"
+    - enable_bond | default(false)
+    - not (public_vlan | default(false))
 
 - name: RH Lab and BYOL Populate static network configuration (single interface)
   set_fact:
     item_network_config:
       network_yaml: "{{ lookup('template', 'rhlab_nmstate.yml.j2') }}"
       mac_interface_map: "{{ lookup('template', 'rhlab_mac_interface_map.json.j2')  }}"
-  when: (lab in rh_labs or lab == "byol") and (not (enable_bond | default(false)) or (public_vlan | default(false)))
+  when:
+    - lab in rh_labs or lab == "byol"
+    - not (enable_bond | default(false) or (public_vlan | default(false))
 
 - name: Cloud Lab Populate static network configuration
   set_fact:
