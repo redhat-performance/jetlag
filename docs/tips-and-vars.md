@@ -222,7 +222,7 @@ In case you are bringing your own lab, set `controlplane_network_interface` to t
 ### Bonding in the scale/perf labs
 To support some particular use cases jetlag implements the option for LACP bonding through the var `enable_bond`.
 When enabled, uses the first two network interfaces by default (indices 1 & 2).
-Only works with private VLANs (`public_vlan: false`) and homogeneous hardware.
+Only works with private networks (`public_vlan: false`) and homogeneous hardware.
 At the moment QUADS does not expose any APIs for this kind of networking setup in the labs, so unless you have discussed your particular use case with the DevOps team and the network setup of your cloud allocation is ready to accommodate this config, please disconsider this option.
 
 ## Configuring NVMe install and etcd disks
