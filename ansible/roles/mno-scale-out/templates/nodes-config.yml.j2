@@ -5,14 +5,21 @@ hosts:
   rootDeviceHints:
    deviceName: {{ hostvars[worker].install_disk }}
   interfaces:
-{% if hostvars[worker].lab_mac | default(False) %}
+{% if hostvars[worker].lab_interface | default(False) %}
    - macAddress: {{ hostvars[worker].lab_mac }}
      name: {{ hostvars[worker].lab_interface }}
 {% endif %}
+{% if hostvars[worker].network_interface | default(False) %}
    - macAddress: {{ hostvars[worker].mac_address }}
      name: {{ hostvars[worker].network_interface }}
+{% endif %}
+{% if sno_use_lab_dhcp %}
+   - macAddress: {{ hostvars[worker].lab_mac }}
+     name: {{ controlplane_lab_interface }}
+{% endif %}
   networkConfig:
    interfaces:
+{% if hostvars[worker].network_interface | default(False) %}
      - name: {{ hostvars[worker].network_interface }}
        type: ethernet
        state: up
@@ -23,15 +30,33 @@ hosts:
            - ip: {{ hostvars[worker].ip }}
              prefix-length: {{ hostvars[worker].network_prefix }}
          auto-dns: false
-{% if hostvars[worker].lab_mac | default(False) %}
+{% endif %}
+{% if hostvars[worker].lab_interface | default(False) %}
      - name: {{ hostvars[worker].lab_interface }}
        type: ethernet
        state: up
-       mac-address: {{ hostvars[worker].lab_interface }}
+       mac-address: {{ hostvars[worker].lab_mac }}
        ipv4:
          enabled: false
          auto-dns: false
 {% endif %}
+{% if sno_use_lab_dhcp %}
+     - name: {{ controlplane_lab_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].lab_mac }}
+       ipv4:
+         enabled: true
+         dhcp: true
+         auto-dns: false
+         auto-gateway: true
+         auto-routes: true
+   dns-resolver:
+     config:
+       server:
+       - {{ hostvars[groups['sno'][0]].ip }}
+{% endif %}
+{% if hostvars[worker].network_interface | default(False) %}
    dns-resolver:
      config:
        server:
@@ -40,5 +65,6 @@ hosts:
      config:
      - destination: 0.0.0.0/0
        next-hop-address: {{ hostvars[worker].gateway }}
-       next-hop-interface: eth0
+       next-hop-interface: {{ hostvars[worker].network_interface }}
+{% endif %}
 {% endfor %}
