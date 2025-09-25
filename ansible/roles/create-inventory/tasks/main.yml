@@ -116,6 +116,19 @@
     - lab in hw_nic_name
     - machine_type in hw_nic_name[lab]
 
+- name: Bond configuration for scale/performance labs
+  when: (lab in rh_labs) and enable_bond | default(false) and not (public_vlan | default(false))
+  block:
+
+  - name: Auto-configure bond interface names from hardware mapping
+    set_fact:
+      bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
+      bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
+    when:
+      - lab in hw_nic_name
+      - machine_type in hw_nic_name[lab]
+      - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
+
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
   block:
@@ -176,6 +189,21 @@
     with_items: "{{ controlplane2_foreman_data.json.interfaces }}"
     when: item.primary|bool
 
+  - name: MNO - Set bond MAC addresses for controlplane nodes (when bonding is enabled)
+    when: enable_bond | default(false) and not (public_vlan | default(false))
+    block:
+    - name: MNO - Set controlplane0 bond mac addresses
+      set_fact:
+        controlplane0_bond0_macs: "{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
+
+    - name: MNO - Set controlplane1 bond mac addresses
+      set_fact:
+        controlplane1_bond0_macs: "{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
+
+    - name: MNO - Set controlplane2 bond mac addresses
+      set_fact:
+        controlplane2_bond0_macs: "{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
+
   - name: MNO - Set max number of nodes
     set_fact:
       max_nodes: "{{ ocpinventory.json.nodes|length }}"
@@ -204,6 +232,22 @@
   loop: "{{ ocpinventory_worker_nodes }}"
   when: cluster_type == "mno"
   register: mno_foreman_data
+
+- name: MNO - Add bond MAC addresses to worker nodes (when bonding is enabled)
+  when: cluster_type == "mno" and enable_bond | default(false) and not (public_vlan | default(false))
+  set_fact:
+    ocpinventory_worker_nodes: >-
+      {{
+        ocpinventory_worker_nodes | zip(mno_foreman_data.results) |
+        map('combine') |
+        map('combine', {
+          'bond0_macs': ((item.1.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac + ',' + (item.1.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac)
+        }) |
+        list
+      }}
+  loop: "{{ ocpinventory_worker_nodes | zip(mno_foreman_data.results) | list }}"
+  loop_control:
+    loop_var: item
 
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"
@@ -247,6 +291,22 @@
     loop: "{{ ocpinventory_worker_nodes }}"
     when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
     register: sno_worker_foreman_data
+    
+  - name: SNO - Add bond MAC addresses to SNO nodes (when bonding is enabled)
+    when: enable_bond | default(false) and not (public_vlan | default(false))
+    set_fact:
+      ocpinventory_sno_nodes: >-
+        {{
+          ocpinventory_sno_nodes | zip(sno_foreman_data.results) |
+          map('combine') |
+          map('combine', {
+            'bond0_macs': ((item.1.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac + ',' + (item.1.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac)
+          }) |
+          list
+        }}
+    loop: "{{ ocpinventory_sno_nodes | zip(sno_foreman_data.results) | list }}"
+    loop_control:
+      loop_var: item
 
   - name: set json query fact
     set_fact:

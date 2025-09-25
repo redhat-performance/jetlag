@@ -2,15 +2,22 @@
 
 _**Table of Contents**_
 <!-- TOC -->
-- [Network interface to vars table](#network-interface-to-vars-table)
-- [Install disk by-path vars](#install-disk-by-path-vars)
-- [Updating the OCP version](#updating-the-ocp-version)
-- [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
-- [Using other network interfaces](#using-other-network-interfaces)
-- [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
-- [DU Profile for SNOs](#du-profile-for-snos)
-- [Post Deployment Tasks](#post-deployment-tasks)
-- [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
+- [Jetlag Tips and additional Vars](#jetlag-tips-and-additional-vars)
+  - [Network interface to vars table](#network-interface-to-vars-table)
+  - [Install disk by-path vars](#install-disk-by-path-vars)
+  - [Updating the OCP version](#updating-the-ocp-version)
+  - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
+  - [Using other network interfaces](#using-other-network-interfaces)
+    - [Alternative method](#alternative-method)
+    - [Bonding in the scale/perf labs](#bonding-in-the-scaleperf-labs)
+  - [Configuring NVMe install and etcd disks](#configuring-nvme-install-and-etcd-disks)
+  - [DU Profile for SNOs](#du-profile-for-snos)
+  - [Post Deployment Tasks](#post-deployment-tasks)
+    - [SNO DU Profile](#sno-du-profile)
+      - [Performance Profile](#performance-profile)
+      - [Tuned Performance Patch](#tuned-performance-patch)
+      - [Installing Performance Addon Operator on OCP 4.9 or OCP 4.10](#installing-performance-addon-operator-on-ocp-49-or-ocp-410)
+  - [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
 <!-- /TOC -->
 
 
@@ -21,27 +28,27 @@ Note that if these variables are not explicitely set then Jetlag auto configures
 
 **Scale Lab**
 
-| Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
-| - | - | - | - |
-| Dell r660          | eno12399np0           | ens1f0                         | eno12399np0                |
-| Dell r650          | eno12399np0           | ens1f0                         | eno12399np0                |
-| Dell r640          | eno1np0               | ens1f0                         | eno1np0                    |
-| Dell r630          | enp129s0f0            | eno1                           | enp129s0f0                 |
-| Dell fc640         | eno1                  | eno2                           | eno1                       |
-| Supermicro 1029p   | eno1                  | ens2f0                         | eno1                       |
-| Supermicro 5039ms  | enp2s0f0              | enp1s0f0                       | enp2s0f0                   |
+| Hardware          | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
+| ----------------- | --------------------- | ------------------------------ | -------------------------- |
+| Dell r660         | eno12399np0           | ens1f0                         | eno12399np0                |
+| Dell r650         | eno12399np0           | ens1f0                         | eno12399np0                |
+| Dell r640         | eno1np0               | ens1f0                         | eno1np0                    |
+| Dell r630         | enp129s0f0            | eno1                           | enp129s0f0                 |
+| Dell fc640        | eno1                  | eno2                           | eno1                       |
+| Supermicro 1029p  | eno1                  | ens2f0                         | eno1                       |
+| Supermicro 5039ms | enp2s0f0              | enp1s0f0                       | enp2s0f0                   |
 
 Scale lab network table is available on the scale lab wiki.
 
 **Performance Lab**
 
-| Hardware           | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
-| - | - | - | - |
-| Dell r740xd        | eno3                  | eno1                           | eno3                       |
-| Dell r7425         | eno3                  | eno1                           | eno3                       |
-| Dell r7525         | eno1                  | enp33np0                       | eno1                       |
-| Dell r750          | eno8303               | ens3f0                         | eno8303                    |
-| Supermicro 6029p   | eno1                  | enp95s0f0                      | eno1                       |
+| Hardware         | bastion_lab_interface | bastion_controlplane_interface | controlplane_lab_interface |
+| ---------------- | --------------------- | ------------------------------ | -------------------------- |
+| Dell r740xd      | eno3                  | eno1                           | eno3                       |
+| Dell r7425       | eno3                  | eno1                           | eno3                       |
+| Dell r7525       | eno1                  | enp33np0                       | eno1                       |
+| Dell r750        | eno8303               | ens3f0                         | eno8303                    |
+| Supermicro 6029p | eno1                  | enp95s0f0                      | eno1                       |
 
 Performance lab network table is available on the performance lab wiki.
 
@@ -72,25 +79,25 @@ edit the inventory file to set appropriate install paths for each machine.
 
 **Scale Lab**
 
-| Hardware  | Install disk path |
-| - | - |
-| Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1.0 |
+| Hardware  | Install disk path                               |
+| --------- | ----------------------------------------------- |
+| Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1.0      |
 | Dell r660 | /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:1:0 |
 | Dell r650 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
 
 **Performance Lab**
 
-| Hardware | Install disk path |
-| - | - |
+| Hardware                                             | Install disk path                               |
+| ---------------------------------------------------- | ----------------------------------------------- |
 | Dell r740xd (SL-N, SL-G, SL-U, CL-N, CL-U-2, CL-G-2) | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
-| Dell r740xd (CL-U-1, CL-G-1) | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
-| Dell r750 | /dev/disk/by-path/pci-0000:05:00.0-ata-1 |
-| Dell r7425 | /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0 |
-| Dell r7525 | /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0 |
-| SuperMicro 6029p | /dev/disk/by-path/pci-0000:00:11.5-ata-5 |
-| Dell xe8640  | /dev/disk/by-path/pci-0000:01:00.0-nvme-1 |
-| Dell xe9680  | /dev/disk/by-path/pci-0000:01:00.0-nvme-1 |
+| Dell r740xd (CL-U-1, CL-G-1)                         | /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0 |
+| Dell r750                                            | /dev/disk/by-path/pci-0000:05:00.0-ata-1        |
+| Dell r7425                                           | /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0 |
+| Dell r7525                                           | /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0 |
+| SuperMicro 6029p                                     | /dev/disk/by-path/pci-0000:00:11.5-ata-5        |
+| Dell xe8640                                          | /dev/disk/by-path/pci-0000:01:00.0-nvme-1       |
+| Dell xe9680                                          | /dev/disk/by-path/pci-0000:01:00.0-nvme-1       |
 
 To find your machine's by-path reference:
 
@@ -190,8 +197,8 @@ In this example using nic `ens2f0` in a cluster of r650 nodes is shown.
 1. Select which NIC you want to use instead of the default, in this example, `ens2f0`.
 2. Look for your server model number in your lab's network table/chart then select the network you want configured as your primary network using the following mapping:
 
-| Network | YAML variable |
-| ------- | ------------- |
+| Network   | YAML variable                           |
+| --------- | --------------------------------------- |
 | Network 1 | `controlplane_network_interface_idx: 0` |
 | Network 2 | `controlplane_network_interface_idx: 1` |
 | Network 3 | `controlplane_network_interface_idx: 2` |
@@ -211,6 +218,12 @@ controlplane_network_interface_idx: 2
 
 ### Alternative method
 In case you are bringing your own lab, set `controlplane_network_interface` to the desired name, eg. `controlplane_network_interface: ens2f0`.
+
+### Bonding in the scale/perf labs
+To support some particular use cases jetlag implements the option for LACP bonding through the var `enable_bond`.
+When enabled, uses the first two network interfaces by default (indices 1 & 2).
+Only works with private networks (`public_vlan: false`) and homogeneous hardware.
+At the moment QUADS does not expose any APIs for this kind of networking setup in the labs, so unless you have discussed your particular use case with the DevOps team and the network setup of your cloud allocation is ready to accommodate this config, please disconsider this option.
 
 ## Configuring NVMe install and etcd disks
 
