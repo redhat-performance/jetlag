@@ -119,14 +119,6 @@
 - name: Bond configuration for scale/performance labs
   when: (lab in rh_labs) and enable_bond | default(false) and not (public_vlan | default(false))
   block:
-  - name: Set default bond port indices (only when not explicitly set)
-    set_fact:
-      bond0_port1: "{{ bond0_port1 | default(1) }}"
-      bond0_port2: "{{ bond0_port2 | default(2) }}"
-
-  - name: Set default private bond interfaces (only when not explicitly set)
-    set_fact:
-      private_bond_interfaces: "{{ private_bond_interfaces | default(['eth0', 'eth1']) }}"
 
   - name: Auto-configure bond interface names from hardware mapping
     set_fact:
