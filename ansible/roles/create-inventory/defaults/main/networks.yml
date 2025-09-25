@@ -9,7 +9,6 @@ controlplane_network_interface_idx: 0
 controlplane_network_interface: eth0
 controlplane_network: 198.18.0.0/16
 controlplane_network_prefix: 16
-controlplane_network_gateway: "{{ controlplane_network | ansible.utils.nthhost(1) }}"
 controlplane_network_api: "{{ controlplane_network | ansible.utils.nthhost(3) }}"
 controlplane_network_ingress: "{{ controlplane_network | ansible.utils.nthhost(4) }}"
 # Sets "bastion_controlplane_ip" as primary dns
