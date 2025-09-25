@@ -33,7 +33,7 @@ Note that if these variables are not explicitely set then Jetlag auto configures
 | Dell r660         | eno12399np0           | ens1f0                         | eno12399np0                |
 | Dell r650         | eno12399np0           | ens1f0                         | eno12399np0                |
 | Dell r640         | eno1np0               | ens1f0                         | eno1np0                    |
-| Dell r630         | enp129s0f0            | eno1                           | enp129s0f0                 |
+| Dell r630         | enp3s0f0              | eno1                           | enp3s0f0                   |
 | Dell fc640        | eno1                  | eno2                           | eno1                       |
 | Supermicro 1029p  | eno1                  | ens2f0                         | eno1                       |
 | Supermicro 5039ms | enp2s0f0              | enp1s0f0                       | enp2s0f0                   |
@@ -85,6 +85,7 @@ edit the inventory file to set appropriate install paths for each machine.
 | Dell r660 | /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:1:0 |
 | Dell r650 | /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0 |
 | Dell r640 | /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0 |
+| Dell r630 | /dev/disk/by-path/pci-0000:02:00.0-scsi-0:2:0:0 |
 
 **Performance Lab**
 
