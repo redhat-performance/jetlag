@@ -1,0 +1,44 @@
+interfaces:
+- name: bond0
+  type: bond
+  state: up
+{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
+  ipv4:
+{% else %}
+  ipv6:
+{% endif %}
+    address:
+    - ip: {{ hostvars[item]['ip'] }}
+      prefix-length: {{ hostvars[item]['network_prefix'] }}
+    auto-dns: false
+    enabled: true
+  link-aggregation:
+    mode: 802.3ad
+    options:
+      miimon: '100'
+    port:
+{% for interface in hostvars[item]['bond0_interfaces'] %}
+    - {{ interface }}
+{% endfor %}
+- name: {{ hostvars[item]['lab_interface']}}
+  type: ethernet
+  state: up
+  ipv4:
+    auto-dns: false
+    enabled: false
+dns-resolver:
+  config:
+    server:
+    - {{ hostvars[item]['dns1'] }}
+{% if 'dns2' in hostvars[item] %}
+    - {{ hostvars[item]['dns2'] }}
+{% endif %}
+routes:
+  config:
+{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
+  - destination: 0.0.0.0/0
+{% else %}
+  - destination: ::/0
+{% endif %}
+    next-hop-address: {{ hostvars[item]['gateway'] }}
+    next-hop-interface: bond0
