@@ -1,22 +1,14 @@
 # Scale Out a Single-Node Openshift Deployment
 
-A JetLag deployed Single-Node Openshift deployment can be scaled out via JetLag. Workers can be added using JetLag Inventory and Playbooks. This guide assumes you have an existing Single-Node OCP cluster deployed via JetLag. The worker section in the JetLag inventory file should contain records that represent the worker nodes currently joined to the running cluster.
+A JetLag deployed Single-Node Openshift deployment can be scaled out via JetLag. Workers can be added using JetLag Inventory and Playbooks. This guide assumes you have an existing Single-Node OCP cluster deployed via JetLag. The worker section in the JetLag inventory file should contain records that represent the worker nodes that will be joined to the running cluster.
 
 ## Addtional step in case of Multi SNO Environments
 
 ⚠️ A potential risk exists wherein a user who deploys a second Single Node OpenShift (SNO) instance could accidentally overwrite it if they later attempt to expand the first SNO with a worker node.
 
-⚠️ In Multi SNO Environment, You can create a new json file with the bastion host and desired hosts in a order where Bastion node follows other desired hosts for each SNO Cluster. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used, or specify a local path for the file:
+⚠️ In Multi SNO Environment, You can create a new json file with the bastion host and desired hosts in a order where Bastion node follows other desired hosts for each SNO Cluster. See [tips and vars](tips-and-vars.md#override-lab-ocpinventory-json-file) for more information how to override lab ocpinventory json file.
 
-```yaml
-ocp_inventory_override: http://<http-server>/<inventory-file>.json
-
-# or
-
-ocp_inventory_override: <LOCAL_FILE_PATH>
-```
-
-Update the above parameter in `ansible/vars/all.yml` and follow SNO deploy and SNO scale out steps for each SNO Cluster.
+Once the inventory files are properly prepared,follow SNO deploy and SNO scale out steps for each SNO Cluster.
 
 _**Steps to Scale Out:**_
 - [Add New Node Entries to Worker Inventory](#add-new-node-entries-to-worker-inventory)
@@ -73,7 +65,7 @@ There are two variables in ansible/vars/scale_out.yml that indicate which entrie
 
 Example: If the initial OCP deployment had three baremetal workers and the intended worker count was ten, current_worker_count would be 3 and scale_out_count would be 7. Scale out from three existing workers, adding seven new workers, for a total of ten worker nodes.
 
-   ```ini
+   ```yaml
    current_worker_count: 3
    scale_out_count: 7
    ```

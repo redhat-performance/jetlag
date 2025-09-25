@@ -60,7 +60,7 @@ deployment will eventually fail as the installed OCP is unable to boot properly.
 For 3-node MNO deployments you only need to set `control_plane_install_disk`, if your
 MNO deployment has worker nodes then you will also need to set `worker_install_disk`.
 
-For SNO deployments set `sno_install_disk`, if your SNO deployment has worker nodes then you will also need to set `worker_install_disk`.
+For SNO deployments set `sno_install_disk`. If you scale out your SNO deployment with worker nodes then you will also need to set `worker_install_disk`.
 
 If the machine configurations in your cloud are not homogeneous, you will need to
 edit the inventory file to set appropriate install paths for each machine.
