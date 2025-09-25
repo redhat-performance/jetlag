@@ -27,3 +27,17 @@ vip_dhcp_allocation: false
 # This index var corresponds to the index in hw_nic_name in labs.yml for which network to use as the impaired nic for
 # the hypervisor impairments playbook
 hypervisor_nic_interface_idx: 1
+
+# Bonding
+
+# Index of the ports for bond0. Bond0 is the intended private network bond name.
+# Typically the first two non-lab interfaces are bonded to bond0 (Private network)
+# Default behavior uses interfaces at indices 1 and 2 from hw_nic_name mapping
+bond0_port1: 1
+bond0_port2: 2
+
+# The assisted-installer doesn't need exact nic names for the private bond. These names are used
+# as representatives for the actual nic names, the actual nics are determined by the mac addresses
+private_bond_interfaces:
+- eth0
+- eth1

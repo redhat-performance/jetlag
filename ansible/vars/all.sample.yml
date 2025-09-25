@@ -76,6 +76,12 @@ use_bastion_registry: false
 # To override auto-configuration, uncomment and set value:
 # controlplane_lab_interface: eno1np0
 
+# Bond configuration for private network (optional for scale/performance labs)
+# Enable bonding for bastion, controlplane, and worker nodes using 802.3ad mode
+# When enabled, uses the first two network interfaces by default (indices 1 & 2)
+# Only works with private VLANs (public_vlan: false) and homogeneous hardware
+enable_bond: false
+
 ################################################################################
 # Extra vars
 ################################################################################

@@ -22,9 +22,15 @@ bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 
 [controlplane]
+{% if enable_bond | default(false) %}
+{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} bond0_macs={{ controlplane0_bond0_macs }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(5) }} vendor={{ controlplane0_vendor }} install_disk={{ control_plane_install_disk }}
+{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} bond0_macs={{ controlplane1_bond0_macs }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(6) }} vendor={{ controlplane1_vendor }} install_disk={{ control_plane_install_disk }}
+{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} bond0_macs={{ controlplane2_bond0_macs }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(7) }} vendor={{ controlplane2_vendor }} install_disk={{ control_plane_install_disk }}
+{% else %}
 {{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} mac_address={{ controlplane0_mac_address }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(5) }} vendor={{ controlplane0_vendor }} install_disk={{ control_plane_install_disk }}
 {{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} mac_address={{ controlplane1_mac_address }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(6) }} vendor={{ controlplane1_vendor }} install_disk={{ control_plane_install_disk }}
 {{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} mac_address={{ controlplane2_mac_address }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network | ansible.utils.nthhost(7) }} vendor={{ controlplane2_vendor }} install_disk={{ control_plane_install_disk }}
+{% endif %}
 
 [controlplane:vars]
 role=master
@@ -32,7 +38,11 @@ boot_iso=discovery.iso
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 lab_interface={{ controlplane_lab_interface }}
+{% if enable_bond | default(false) %}
+bond0_interfaces={{ private_bond_interfaces }}
+{% else %}
 network_interface={{ controlplane_network_interface }}
+{% endif %}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
 {% if controlplane_bastion_as_dns %}
@@ -44,7 +54,11 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 
 [worker]
 {% for worker in ocpinventory_worker_nodes %}
+{% if enable_bond | default(false) %}
+{{ worker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ worker.pm_addr }} bond0_macs={{ worker.bond0_macs }} lab_mac={{ ( (mno_foreman_data.results| selectattr('json.name', 'eq', worker.pm_addr | replace('mgmt-',''))|first).json.interfaces | selectattr('primary', 'eq', True)|first).mac }} ip={{ controlplane_network | ansible.utils.nthhost(loop.index + mno_worker_node_offset) }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
+{% else %}
 {{ worker.pm_addr.split('.')[0] | replace('mgmt-','') }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ ( (mno_foreman_data.results| selectattr('json.name', 'eq', worker.pm_addr | replace('mgmt-',''))|first).json.interfaces | selectattr('primary', 'eq', True)|first).mac }} ip={{ controlplane_network | ansible.utils.nthhost(loop.index + mno_worker_node_offset) }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
+{% endif %}
 {% endfor %}
 {% if hybrid_worker_count > 0 %}
 {%   set ctr = namespace(vm=1) %}
@@ -73,7 +87,11 @@ boot_iso=discovery.iso
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 lab_interface={{ controlplane_lab_interface }}
+{% if enable_bond | default(false) %}
+bond0_interfaces={{ private_bond_interfaces }}
+{% else %}
 network_interface={{ controlplane_network_interface }}
+{% endif %}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
 {% if controlplane_bastion_as_dns %}

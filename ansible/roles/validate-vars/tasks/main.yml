@@ -38,6 +38,20 @@
   - public_vlan | default(false)
   - sno_use_lab_dhcp | default(false)
 
+- name: Validate public_vlan and enable_bond
+  fail:
+    msg: "public_vlan and enable_bond can not both be true, only enable one or the other"
+  when:
+  - public_vlan | default(false)
+  - enable_bond | default(false)
+
+- name: Validate enable_bond and sno_use_lab_dhcp
+  fail:
+    msg: "enable_bond and sno_use_lab_dhcp can not both be true, only enable one or the other"
+  when:
+  - enable_bond | default(false)
+  - sno_use_lab_dhcp | default(false)
+
 - name: Check for RHEL/Centos (Bastion Validation)
   fail:
     msg: "Expecting RHEL or Centos for a Bastion OS"
