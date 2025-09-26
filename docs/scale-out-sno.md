@@ -13,7 +13,7 @@ Once the inventory files are properly prepared,follow SNO deploy and SNO scale o
 _**Steps to Scale Out:**_
 - [Add New Node Entries to Worker Inventory](#add-new-node-entries-to-worker-inventory)
 - [Update scale_out.yml](#update-scale_out.yml)
-- [Run mno-scale-out.yml](#run-mno-scale-out.yml)
+- [Run ocp-scale-out.yml](#run-ocp-scale-out.yml)
 
 ## Add New Node Entries to Worker Inventory
 
@@ -74,7 +74,7 @@ Example: If the initial OCP deployment had three baremetal workers and the inten
 Once the new worker records are added and Worker node variables are properly populated in the inventory and the scale_out.yml file has the proper values. The final step is to run the mno-scale-out.yml playbook.
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/mno-scale-out.yml
+(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/ocp-scale-out.yml
 ...
 ```
 

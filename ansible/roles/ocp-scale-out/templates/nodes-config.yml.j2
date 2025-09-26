@@ -5,43 +5,21 @@ hosts:
   rootDeviceHints:
    deviceName: {{ hostvars[worker].install_disk }}
   interfaces:
-{% if hostvars[worker].lab_interface | default(False) %}
-   - macAddress: {{ hostvars[worker].lab_mac }}
-     name: {{ hostvars[worker].lab_interface }}
-{% endif %}
 {% if hostvars[worker].network_interface | default(False) %}
    - macAddress: {{ hostvars[worker].mac_address }}
      name: {{ hostvars[worker].network_interface }}
 {% endif %}
 {% if sno_use_lab_dhcp %}
    - macAddress: {{ hostvars[worker].lab_mac }}
-     name: {{ controlplane_lab_interface }}
+     name: {{ hostvars[worker].lab_dhcp_interface }}
+{% elif hostvars[worker].lab_interface | default(False) %}
+   - macAddress: {{ hostvars[worker].lab_mac }}
+     name: {{ hostvars[worker].lab_interface }}
 {% endif %}
   networkConfig:
    interfaces:
-{% if hostvars[worker].network_interface | default(False) %}
-     - name: {{ hostvars[worker].network_interface }}
-       type: ethernet
-       state: up
-       mac-address: {{ hostvars[worker].mac_address }}
-       ipv4:
-         enabled: true
-         address:
-           - ip: {{ hostvars[worker].ip }}
-             prefix-length: {{ hostvars[worker].network_prefix }}
-         auto-dns: false
-{% endif %}
-{% if hostvars[worker].lab_interface | default(False) %}
-     - name: {{ hostvars[worker].lab_interface }}
-       type: ethernet
-       state: up
-       mac-address: {{ hostvars[worker].lab_mac }}
-       ipv4:
-         enabled: false
-         auto-dns: false
-{% endif %}
 {% if sno_use_lab_dhcp %}
-     - name: {{ controlplane_lab_interface }}
+     - name: {{ hostvars[worker].lab_dhcp_interface }}
        type: ethernet
        state: up
        mac-address: {{ hostvars[worker].lab_mac }}
@@ -55,8 +33,26 @@ hosts:
      config:
        server:
        - {{ hostvars[groups['sno'][0]].ip }}
+{% elif hostvars[worker].lab_interface | default(False) %}
+     - name: {{ hostvars[worker].lab_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].lab_mac }}
+       ipv4:
+         enabled: false
+         auto-dns: false
 {% endif %}
 {% if hostvars[worker].network_interface | default(False) %}
+     - name: {{ hostvars[worker].network_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].mac_address }}
+       ipv4:
+         enabled: true
+         address:
+           - ip: {{ hostvars[worker].ip }}
+             prefix-length: {{ hostvars[worker].network_prefix }}
+         auto-dns: false
    dns-resolver:
      config:
        server:
