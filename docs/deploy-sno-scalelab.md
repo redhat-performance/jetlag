@@ -351,7 +351,7 @@ ocp_build: "ga"
 # For "ga" builds, examples are "latest-4.17", "latest-4.16", "4.17.17" or "4.16.35"
 # For "dev" builds, examples are "candidate-4.17", "candidate-4.16" or "latest"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
-ocp_version: "latest-4.18"
+ocp_version: "latest-4.19"
 
 # Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
 # Autoconfigures cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
