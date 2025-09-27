@@ -296,6 +296,16 @@
     when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
     register: sno_worker_foreman_data
     
+  - name: SNO - Auto-configure bond interface names from hardware mapping (when bonding is enabled)
+    set_fact:
+      bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
+      bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
+    when:
+      - enable_bond | default(false) and not (public_vlan | default(false))
+      - lab in hw_nic_name
+      - machine_type in hw_nic_name[lab]
+      - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
+
   - name: SNO - Add bond MAC addresses to SNO nodes (when bonding is enabled)
     when: enable_bond | default(false) and not (public_vlan | default(false))
     set_fact:
