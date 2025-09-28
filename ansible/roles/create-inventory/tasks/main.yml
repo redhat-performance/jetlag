@@ -198,15 +198,15 @@
     block:
     - name: MNO - Set controlplane0 bond mac addresses
       set_fact:
-        controlplane0_bond0_macs: "{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane0_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
+        controlplane0_bond0_macs: "{{ ocpinventory.json.nodes[1].mac[bond0_port1|int] }},{{ ocpinventory.json.nodes[1].mac[bond0_port2|int] }}"
 
     - name: MNO - Set controlplane1 bond mac addresses
       set_fact:
-        controlplane1_bond0_macs: "{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane1_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
+        controlplane1_bond0_macs: "{{ ocpinventory.json.nodes[2].mac[bond0_port1|int] }},{{ ocpinventory.json.nodes[2].mac[bond0_port2|int] }}"
 
     - name: MNO - Set controlplane2 bond mac addresses
       set_fact:
-        controlplane2_bond0_macs: "{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac }},{{ (controlplane2_foreman_data.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac }}"
+        controlplane2_bond0_macs: "{{ ocpinventory.json.nodes[3].mac[bond0_port1|int] }},{{ ocpinventory.json.nodes[3].mac[bond0_port2|int] }}"
 
   - name: MNO - Set max number of nodes
     set_fact:
@@ -242,14 +242,13 @@
   set_fact:
     ocpinventory_worker_nodes: >-
       {{
-        ocpinventory_worker_nodes | zip(mno_foreman_data.results) |
-        map('combine') |
+        ocpinventory_worker_nodes |
         map('combine', {
-          'bond0_macs': ((item.1.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac + ',' + (item.1.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac)
+          'bond0_macs': (item.mac[bond0_port1|int] + ',' + item.mac[bond0_port2|int])
         }) |
         list
       }}
-  loop: "{{ ocpinventory_worker_nodes | zip(mno_foreman_data.results) | list }}"
+  loop: "{{ ocpinventory_worker_nodes }}"
   loop_control:
     loop_var: item
 
@@ -306,19 +305,19 @@
       - machine_type in hw_nic_name[lab]
       - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
+
   - name: SNO - Add bond MAC addresses to SNO nodes (when bonding is enabled)
     when: enable_bond | default(false) and not (public_vlan | default(false))
     set_fact:
       ocpinventory_sno_nodes: >-
         {{
-          ocpinventory_sno_nodes | zip(sno_foreman_data.results) |
-          map('combine') |
+          ocpinventory_sno_nodes |
           map('combine', {
-            'bond0_macs': ((item.1.json.interfaces | selectattr('name', 'eq', bond0_interface1) | first).mac + ',' + (item.1.json.interfaces | selectattr('name', 'eq', bond0_interface2) | first).mac)
+            'bond0_macs': (item.mac[bond0_port1|int] + ',' + item.mac[bond0_port2|int])
           }) |
           list
         }}
-    loop: "{{ ocpinventory_sno_nodes | zip(sno_foreman_data.results) | list }}"
+    loop: "{{ ocpinventory_sno_nodes }}"
     loop_control:
       loop_var: item
 
