@@ -106,10 +106,9 @@
       conn_name: bond0
       ifname: bond0
       ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
+      mode: 802.3ad
+      miimon: 100
       state: present
-      bond:
-        mode: 802.3ad
-        miimon: 100
     when: bastion_controlplane_ip | ansible.utils.ipv4
 
   - name: Create bond0 connection for bastion (ipv6)
@@ -118,10 +117,9 @@
       conn_name: bond0
       ifname: bond0
       ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
+      mode: 802.3ad
+      miimon: 100
       state: present
-      bond:
-        mode: 802.3ad
-        miimon: 100
     when: bastion_controlplane_ip | ansible.utils.ipv6
 
   - name: Add first interface as bond slave
