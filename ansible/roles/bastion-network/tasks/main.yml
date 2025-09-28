@@ -90,14 +90,6 @@
   when:
     - enable_bond | default(false)
   block:
-  - name: Set bastion bond interface names from hardware mapping
-    set_fact:
-      bastion_bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
-      bastion_bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
-    when:
-      - lab in hw_nic_name
-      - machine_type in hw_nic_name[lab]
-      - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
   - name: Remove existing connections for bond slave interfaces
     nmcli:

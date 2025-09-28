@@ -120,6 +120,16 @@
     - lab in hw_nic_name
     - machine_type in hw_nic_name[lab]
 
+- name: Auto-configure bastion bond interfaces (only when bonding is enabled)
+  set_fact:
+    bastion_bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
+    bastion_bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
+  when:
+    - enable_bond | default(false) and not (public_vlan | default(false))
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
+    - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
+
 - name: Bond configuration for scale/performance labs
   when: (lab in rh_labs) and enable_bond | default(false) and not (public_vlan | default(false))
   block:
