@@ -11,10 +11,5 @@ yq_url: https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64
 install_rh_crucible: false
 rh_crucible_url: https://github.com/perftool-incubator/crucible
 
-
 # Since the use of tc on the bastion machine is rare, we disable rebooting the bastion machine by default
 bastion_install_tc_reboot: false
-
-# promdump
-promdump_url: https://github.com/ihcsim/promdump/releases/download/v0.2.5/kubectl-promdump-linux-amd64-v0.2.5.tar.gz
-promdump_tarball: /tmp/kubectl-promdump-linux-amd64.tar.gz
