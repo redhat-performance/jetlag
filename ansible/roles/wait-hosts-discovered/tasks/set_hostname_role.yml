@@ -22,6 +22,20 @@
   - hostvars[item]['mac_address'] | lower in host_macs
   loop: "{{ inventory_nodes }}"
 
+- name: Debug bond MAC address matching
+  debug:
+    msg:
+      - "Checking host: {{ item }}"
+      - "bond0_macs: {{ hostvars[item]['bond0_macs'] | default('undefined') }}"
+      - "host_macs: {{ host_macs }}"
+      - "MAC1 ({{ hostvars[item]['bond0_macs'].split(',')[0] | lower if hostvars[item]['bond0_macs'] is defined else 'N/A' }}) in host_macs: {{ hostvars[item]['bond0_macs'].split(',')[0] | lower in host_macs if hostvars[item]['bond0_macs'] is defined else 'N/A' }}"
+      - "MAC2 ({{ hostvars[item]['bond0_macs'].split(',')[1] | lower if hostvars[item]['bond0_macs'] is defined else 'N/A' }}) in host_macs: {{ hostvars[item]['bond0_macs'].split(',')[1] | lower in host_macs if hostvars[item]['bond0_macs'] is defined else 'N/A' }}"
+  when:
+  - lab in rh_labs or lab == "byol"
+  - enable_bond | default(false)
+  - hostvars[item]['bond0_macs'] is defined
+  loop: "{{ inventory_nodes }}"
+
 - name: Set the hostname and role via bond mac addresses (bonded)
   set_fact:
     hostname: "{{ item }}"
