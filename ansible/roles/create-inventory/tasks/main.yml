@@ -316,20 +316,22 @@
       - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
 
+
   - name: SNO - Add bond MAC addresses to SNO nodes (when bonding is enabled)
     when: enable_bond | default(false) and not (public_vlan | default(false))
     set_fact:
       ocpinventory_sno_nodes: >-
         {{
-          ocpinventory_sno_nodes |
-          map('combine', {
+          ocpinventory_sno_nodes[:idx] +
+          [ocpinventory_sno_nodes[idx] | combine({
             'bond0_macs': (item.mac[bond0_port1|int] + ',' + item.mac[bond0_port2|int])
-          }) |
-          list
+          })] +
+          ocpinventory_sno_nodes[idx + 1:]
         }}
     loop: "{{ ocpinventory_sno_nodes }}"
     loop_control:
       loop_var: item
+      index_var: idx
 
   - name: set json query fact
     set_fact:
