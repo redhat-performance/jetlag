@@ -91,6 +91,10 @@
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
     when: cluster_name == "mno"
 
+  - name: Public VLAN - Set hypervisor_nic_interface_idx to -1 for the last interface
+    set_fact:
+      hypervisor_nic_interface_idx: "-1"
+
 - name: Auto-configure bastion lab interface (only when not explicitly set)
   set_fact:
     bastion_lab_interface: "{{ hw_nic_name[lab][machine_type][0] }}"
