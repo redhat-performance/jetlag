@@ -201,7 +201,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.14/opm-linux.tar.gz"
+  -  url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
@@ -212,7 +212,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
+  -  url: "{{ release_urls['ga'] }}/latest/opm-linux-rhel9.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('9', '==')
 
@@ -228,6 +228,20 @@
   - "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+
+- name: Symlink RHEL8 opm
+  ansible.builtin.file:
+    src: /usr/local/bin/opm-rhel8
+    dest: /usr/local/bin/opm
+    state: link
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
+
+- name: Symlink RHEL9 opm
+  ansible.builtin.file:
+    src: /usr/local/bin/opm-rhel9
+    dest: /usr/local/bin/opm
+    state: link
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
 
 - name: Untar yq tool
   unarchive:
