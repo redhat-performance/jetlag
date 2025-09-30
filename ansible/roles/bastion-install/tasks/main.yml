@@ -58,16 +58,30 @@
     - lab in rh_labs
     - 'not lab == "byol"'
   block:
+  - name: Check if clean lab interfaces tombstone exists
+    stat:
+      path: /root/.cleaned_interfaces
+    register: stat_cleaned_interfaces
+
   # Ignore errors here because on RHEL9 the script errors if the interface doesn't exist
   - name: Clean lab interfaces
     shell: |
       /root/clean-interfaces.sh --nuke
     ignore_errors: true
+    when: not stat_cleaned_interfaces.stat.exists
+    register: clean_lab_interfaces
+
+  - name: Create tombstone file
+    file:
+      path: /root/.cleaned_interfaces
+      state: touch
+    when: clean_lab_interfaces.changed
 
   - name: Restart NetworkManager to remove lab interfaces
     systemd:
       state: restarted
       name: NetworkManager
+    when: clean_lab_interfaces.changed
 
   - name: Check if ssh keys exists
     stat:
