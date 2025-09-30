@@ -9,4 +9,4 @@ gogs_ipv6_port: 10880
 gogs_username: testadmin
 gogs_password: testadmin
 
-gogs_image: gogs/gogs
+gogs_image: quay.io/redhat-performance/gogs:0.13
