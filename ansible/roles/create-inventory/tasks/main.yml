@@ -252,15 +252,16 @@
   set_fact:
     ocpinventory_worker_nodes: >-
       {{
-        ocpinventory_worker_nodes |
-        map('combine', {
+        ocpinventory_worker_nodes[:idx] +
+        [ocpinventory_worker_nodes[idx] | combine({
           'bond0_macs': (item.mac[bond0_port1|int] + ',' + item.mac[bond0_port2|int])
-        }) |
-        list
+        })] +
+        ocpinventory_worker_nodes[idx + 1:]
       }}
   loop: "{{ ocpinventory_worker_nodes }}"
   loop_control:
     loop_var: item
+    index_var: idx
 
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"
