@@ -233,8 +233,7 @@
     user: "{{ lab_cloud }}"
     password: "{{ bmc_password }}"
     validate_certs: false
-  with_items:
-    - "{{ ocpinventory_worker_nodes }}"
+  loop: "{{ ocpinventory_worker_nodes }}"
   when: cluster_type == "mno"
   register: mno_foreman_data
 
@@ -262,6 +261,20 @@
     set_fact:
       ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
 
+  - name: SNO - Set max number of nodes
+    set_fact:
+      max_nodes: "{{ ocpinventory.json.nodes|length }}"
+    when: worker_node_count == None
+
+  - name: SNO - Set max number of nodes (worker_node_count set)
+    set_fact:
+      max_nodes: "{{ worker_node_count|int + 2 }}"
+    when: worker_node_count != None
+
+  - name: SNO - Set ocpinventory worker nodes (for scale-out scenarios)
+    set_fact:
+      ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[2:max_nodes|int] }}"
+
   - name: SNO - Get lab data for each sno
     uri:
       url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
@@ -272,6 +285,17 @@
     register: sno_foreman_data
     loop: "{{ ocpinventory_sno_nodes }}"
 
+  - name: SNO - Get lab mac address for worker nodes
+    uri:
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
+      force_basic_auth: yes
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    loop: "{{ ocpinventory_worker_nodes }}"
+    when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
+    register: sno_worker_foreman_data
+    
   - name: SNO - Add bond MAC addresses to SNO nodes (when bonding is enabled)
     when: enable_bond | default(false) and not (public_vlan | default(false))
     set_fact:
