@@ -11,21 +11,21 @@ is_konflux_build: false
 
 # ZTP - Zero-Touch Provisioning Site Generator Image
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
-ztp_site_generator_image_tag: v4.18.1-1
+ztp_site_generator_image_tag: v4.19.0-3
 
 # ACM - Advanced Cluster Management Policy Generator Image
-rhacm_policy_generator_image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel9
-rhacm_policy_generator_image_tag: v2.10
+# rhacm_policy_generator_image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel9
+# rhacm_policy_generator_image_tag: v2.10
 
 # TALM - Topology Aware Lifecycle Manager Images (Orchestrates DU Profile Policies and Upgrade Policies)
 cluster_group_upgrades_operator_image: quay.io/openshift-kni/cluster-group-upgrades-operator
-cluster_group_upgrades_operator_image_tag: 4.18.0
+cluster_group_upgrades_operator_image_tag: 4.19.0
 cluster_group_upgrades_operator_precache_image: quay.io/openshift-kni/cluster-group-upgrades-operator-precache
-cluster_group_upgrades_operator_precache_image_tag: 4.18.0
+cluster_group_upgrades_operator_precache_image_tag: 4.19.0
 cluster_group_upgrades_operator_recovery_image: quay.io/openshift-kni/cluster-group-upgrades-operator-recovery
-cluster_group_upgrades_operator_recovery_image_tag: 4.18.0
+cluster_group_upgrades_operator_recovery_image_tag: 4.19.0
 origin_kube_rbac_proxy_image: quay.io/openshift/origin-kube-rbac-proxy
-origin_kube_rbac_proxy_image_tag: 4.15
+origin_kube_rbac_proxy_image_tag: 4.17
 
 # IBU - Image Based Upgrade recert image (Override-able in case of custom image for test)
 recert_image: quay.io/edge-infrastructure/recert
@@ -36,5 +36,3 @@ minio_image: quay.io/minio/minio
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 
 acm_d_pull_secret: "{{ lookup('file', '../pull_secret.acm_d.txt') }}"
-
-download_mapping_file_from_deploy_repo: true
