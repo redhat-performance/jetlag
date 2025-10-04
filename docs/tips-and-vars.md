@@ -107,6 +107,9 @@ To find your machine's by-path reference:
 2. Use `find` to find the PCI path to that disk, which in this example is
 `/dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0`.
 
+> [!TIP]
+> You can use use [this playbook](https://github.com/sadsfae/ansible-dbp) to generate a YAML file with all of your systems `/dev/disk/by-path` for every detected disk.  Ideally run this when you first receive machines if you are using a [QUADS-managed](https://github.com/redhat-performance/quads) lab.
+
 > [!WARNING]
 > This assumes that the bastion hardware configuration is homogeneous: in
 > a heterogeneous cluster you may need to execute these commands on each host in
