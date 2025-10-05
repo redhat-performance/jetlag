@@ -248,6 +248,7 @@
     src: /usr/local/bin/opm-rhel8
     dest: /usr/local/bin/opm
     state: link
+    force: yes
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
 - name: Symlink RHEL9 opm
@@ -255,6 +256,7 @@
     src: /usr/local/bin/opm-rhel9
     dest: /usr/local/bin/opm
     state: link
+    force: yes
   when: ansible_facts['distribution_major_version'] is version('9', '==')
 
 - name: Untar yq tool
