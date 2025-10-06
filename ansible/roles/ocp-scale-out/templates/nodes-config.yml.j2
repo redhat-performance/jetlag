@@ -9,17 +9,14 @@ hosts:
    - macAddress: {{ hostvars[worker].mac_address }}
      name: {{ hostvars[worker].network_interface }}
 {% endif %}
-{% if sno_use_lab_dhcp %}
-   - macAddress: {{ hostvars[worker].lab_mac }}
-     name: {{ hostvars[worker].lab_dhcp_interface }}
-{% elif hostvars[worker].lab_interface | default(False) %}
+{% if hostvars[worker].lab_interface | default(False) %}
    - macAddress: {{ hostvars[worker].lab_mac }}
      name: {{ hostvars[worker].lab_interface }}
 {% endif %}
   networkConfig:
    interfaces:
 {% if sno_use_lab_dhcp %}
-     - name: {{ hostvars[worker].lab_dhcp_interface }}
+     - name: {{ hostvars[worker].lab_interface }}
        type: ethernet
        state: up
        mac-address: {{ hostvars[worker].lab_mac }}

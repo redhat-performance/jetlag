@@ -44,9 +44,7 @@ bmc_password={{ bmc_password }}
 {%     set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset) %}
 {%   endif %}
 {% if sno_worker_foreman_data is defined and sno_worker_foreman_data.results is defined %}
-{{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} lab_dhcp_interface={{ controlplane_lab_interface}} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
-{% else %}
-# {{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac=UNDEFINED ip={{ ip }} lab_dhcp_interface={{ controlplane_lab_interface}} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
+{{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
 {% endif %}
 {% endfor %}
 
@@ -54,9 +52,9 @@ bmc_password={{ bmc_password }}
 role=worker
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
+lab_interface={{ controlplane_lab_interface }}
 {% if sno_use_lab_dhcp %}
 # Commented out because sno_use_lab_dhcp is set to true
-# lab_interface={{ controlplane_lab_interface }}
 # network_interface={{ controlplane_network_interface }}
 # network_prefix={{ controlplane_network_prefix }}
 # gateway={{ controlplane_network_gateway }}
@@ -67,7 +65,6 @@ bmc_password={{ bmc_password }}
 # dns2={{ labs[lab]['dns'][1] | default('') }}
 {% endif %}
 {% else %}
-lab_interface={{ controlplane_lab_interface }}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix }}
 gateway={{ controlplane_network_gateway }}
