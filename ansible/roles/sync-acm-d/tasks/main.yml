@@ -49,7 +49,7 @@
     retries: 3
     delay: 1
 
-- name: Mirro ACM/MCE from konflux build
+- name: Mirror ACM/MCE from konflux build
   when: is_konflux_build
   block:
   - name: Add or update a block of acm/mce in registries.conf 
@@ -89,9 +89,10 @@
   shell: |
     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ ztp_site_generator_image }}:{{ ztp_site_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/ztp-site-generator:{{ ztp_site_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
-- name: Mirror rhacm policy generator image
-  shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/{{ rhacm_policy_generator_image.split("/")[-1] }}:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+# Use the rhacm policy generator included with the build intended
+# - name: Mirror rhacm policy generator image
+#   shell: |
+#     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/{{ rhacm_policy_generator_image.split("/")[-1] }}:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror cluster-group-upgrades-operator image
   shell: |

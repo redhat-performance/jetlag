@@ -15,11 +15,18 @@
   set_fact:
     ipv6: "{{controlplane_network | ansible.utils.ipv6}}"
 
-- name: Configure podman network
-  template:
-    src: 88-podman6-bridge.conflist
-    dest: /etc/cni/net.d/88-podman6-bridge.conflist
+- name: Check if podman6.json exists
+  stat:
+    path: /etc/containers/networks/podman6.json
   when: ipv6
+  register: stat_podman6_json
+
+- name: Create podman6 network
+  shell: |
+    podman network create --ipv6 podman6
+  when:
+  - ipv6
+  - not stat_podman6_json.stat.exists
 
 - name: Set podman network IPv6
   set_fact:
@@ -29,8 +36,7 @@
 - name: Set podman network IPv4
   set_fact:
     podman_network: podman
-  when: ipv6 == False
-
+  when: not ipv6
 
 - name: Configure gogs app.ini
   template:

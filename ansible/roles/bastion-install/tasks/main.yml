@@ -58,16 +58,30 @@
     - lab in rh_labs
     - 'not lab == "byol"'
   block:
+  - name: Check if clean lab interfaces tombstone exists
+    stat:
+      path: /root/.cleaned_interfaces
+    register: stat_cleaned_interfaces
+
   # Ignore errors here because on RHEL9 the script errors if the interface doesn't exist
   - name: Clean lab interfaces
     shell: |
       /root/clean-interfaces.sh --nuke
     ignore_errors: true
+    when: not stat_cleaned_interfaces.stat.exists
+    register: clean_lab_interfaces
+
+  - name: Create tombstone file
+    file:
+      path: /root/.cleaned_interfaces
+      state: touch
+    when: clean_lab_interfaces.changed
 
   - name: Restart NetworkManager to remove lab interfaces
     systemd:
       state: restarted
       name: NetworkManager
+    when: clean_lab_interfaces.changed
 
   - name: Check if ssh keys exists
     stat:
@@ -201,7 +215,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.14/opm-linux.tar.gz"
+  -  url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
@@ -212,7 +226,7 @@
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
+  -  url: "{{ release_urls['ga'] }}/latest/opm-linux-rhel9.tar.gz"
      dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('9', '==')
 
@@ -229,6 +243,22 @@
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 
+- name: Symlink RHEL8 opm
+  ansible.builtin.file:
+    src: /usr/local/bin/opm-rhel8
+    dest: /usr/local/bin/opm
+    state: link
+    force: yes
+  when: ansible_facts['distribution_major_version'] is version('8', '==')
+
+- name: Symlink RHEL9 opm
+  ansible.builtin.file:
+    src: /usr/local/bin/opm-rhel9
+    dest: /usr/local/bin/opm
+    state: link
+    force: yes
+  when: ansible_facts['distribution_major_version'] is version('9', '==')
+
 - name: Untar yq tool
   unarchive:
     src: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
@@ -242,22 +272,6 @@
     dest: /usr/local/bin/yq
     remote_src: true
     mode: 0700
-
-- name: Download promdump
-  get_url:
-    url: "{{ promdump_url }}"
-    dest: "{{ promdump_tarball }}"
-
-- name: Untar promdump
-  unarchive:
-    src: "{{ promdump_tarball }}"
-    dest: /usr/local/bin
-    remote_src: yes
-
-- name: Remove promdump tarball
-  file:
-    path: "{{ promdump_tarball }}"
-    state: absent
 
 - name: Download Red Hat Crucible
   ansible.builtin.git:

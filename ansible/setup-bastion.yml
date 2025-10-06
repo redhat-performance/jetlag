@@ -25,9 +25,13 @@
   - role: bastion-registry
     when: setup_bastion_registry
   - role: sync-operator-index
-    when: setup_bastion_registry
+    when:
+    - setup_bastion_registry
+    - sync_operator_index | default(false)
   - role: sync-ocp-release
-    when: setup_bastion_registry
+    when:
+    - setup_bastion_registry
+    - sync_ocp_release | default(false)
   - bastion-assisted-installer
   - role: bastion-gogs
     when: setup_bastion_gogs
