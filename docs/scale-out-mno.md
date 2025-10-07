@@ -5,7 +5,7 @@ A JetLag deployed Multi-Node Openshift deployment can be scale out via JetLag. W
 _**Steps to Scale Out:**_
 - [Add New Node Entries to Worker Inventory](#add-new-node-entries-to-worker-inventory)
 - [Update scale_out.yml](#update-scale_out.yml)
-- [Run mno-scale-out.yml](#run-mno-scale-out.yml)
+- [Run ocp-scale-out.yml](#run-ocp-scale-out.yml)
 
 ## Add Nodes to Worker Inventory
 To add new node entries to the worker inventory there are three potential options.
@@ -32,11 +32,11 @@ There are two variables in ansible/vars/scale_out.yml that indicate which entrie
 
 Example: If the initial OCP deployment had three baremetal workers and the intended worker count was ten, current_worker_count would be 3 and scale_out_count would be 7. Scale out from three existing workers, adding seven new workers, for a total of ten worker nodes.
 
-## Run mno-scale-out.yml
+## Run ocp-scale-out.yml
 Once the new worker records are added to the inventory and the scale_out.yml file has the proper values. The final step is to run the mno-scale-out.yml playbook.
 
 ```console
-(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/mno-scale-out.yml
+(.ansible) [root@xxx-h01-000-r650 jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/ocp-scale-out.yml
 ...
 ```
 

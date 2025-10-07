@@ -1,0 +1,63 @@
+---
+hosts:
+{% for worker in workers %}
+- hostname: {{ worker }}
+  rootDeviceHints:
+   deviceName: {{ hostvars[worker].install_disk }}
+  interfaces:
+{% if hostvars[worker].network_interface | default(False) %}
+   - macAddress: {{ hostvars[worker].mac_address }}
+     name: {{ hostvars[worker].network_interface }}
+{% endif %}
+{% if hostvars[worker].lab_interface | default(False) %}
+   - macAddress: {{ hostvars[worker].lab_mac }}
+     name: {{ hostvars[worker].lab_interface }}
+{% endif %}
+  networkConfig:
+   interfaces:
+{% if sno_use_lab_dhcp %}
+     - name: {{ hostvars[worker].lab_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].lab_mac }}
+       ipv4:
+         enabled: true
+         dhcp: true
+         auto-dns: false
+         auto-gateway: true
+         auto-routes: true
+   dns-resolver:
+     config:
+       server:
+       - {{ hostvars[groups['sno'][0]].ip }}
+{% elif hostvars[worker].lab_interface | default(False) %}
+     - name: {{ hostvars[worker].lab_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].lab_mac }}
+       ipv4:
+         enabled: false
+         auto-dns: false
+{% endif %}
+{% if hostvars[worker].network_interface | default(False) %}
+     - name: {{ hostvars[worker].network_interface }}
+       type: ethernet
+       state: up
+       mac-address: {{ hostvars[worker].mac_address }}
+       ipv4:
+         enabled: true
+         address:
+           - ip: {{ hostvars[worker].ip }}
+             prefix-length: {{ hostvars[worker].network_prefix }}
+         auto-dns: false
+   dns-resolver:
+     config:
+       server:
+       - {{ hostvars[worker].dns1 }}
+   routes:
+     config:
+     - destination: 0.0.0.0/0
+       next-hop-address: {{ hostvars[worker].gateway }}
+       next-hop-interface: {{ hostvars[worker].network_interface }}
+{% endif %}
+{% endfor %}

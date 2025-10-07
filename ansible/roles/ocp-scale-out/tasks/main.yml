@@ -1,0 +1,38 @@
+---
+- name: Delete ocp-scale-out directory
+  ansible.builtin.file:
+    state: absent
+    path: /root/ocp-scale-out
+
+- name: Create ocp-scale-out directory
+  ansible.builtin.file:
+    state: directory
+    path: /root/ocp-scale-out
+
+- name: Template Scaleout Nodes Config
+  template:
+    src: nodes-config.yml.j2
+    dest: /root/ocp-scale-out/nodes-config.yaml
+  vars:
+    workers: "{{ groups['worker'][current_worker_count:current_worker_count+scale_out_count] }}"
+
+- name: Set KUBECONFIG path based on cluster type
+  set_fact:
+    cluster_kubeconfig: "{{ bastion_cluster_config_dir }}/{{ 'kubeconfig' if cluster_type != 'sno' else groups['sno'][0] + '/kubeconfig' }}"
+
+- name: Add Nodes to cluster and generate boot iso (Takes a min or two)
+  command: oc adm node-image create --kubeconfig {{ cluster_kubeconfig }}
+  args:
+    chdir: /root/ocp-scale-out/
+
+- name: Copy scale out discovery iso to http server
+  ansible.builtin.copy:
+    src: /root/ocp-scale-out/node.x86_64.iso
+    dest: /opt/http_store/data/ocp-scale-out.x86_64.iso
+    remote_src: true
+
+- name: Delete ocp-scale-out directory
+  ansible.builtin.file:
+    state: absent
+    path: /root/ocp-scale-out
+

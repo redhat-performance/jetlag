@@ -4,6 +4,10 @@
     r_qry: "{{ qry }}"
     r_worker_counter: "{{ worker_counter }}"
 
+- name: Set KUBECONFIG path based on cluster type
+  set_fact:
+    cluster_kubeconfig: "{{ bastion_cluster_config_dir }}/{{ 'kubeconfig' if cluster_type != 'sno' else groups['sno'][0] + '/kubeconfig' }}"
+
 - name: approve CSRs and check if nodes have joined the cluster
   block:
     - name: Increment the retry count
@@ -17,19 +21,19 @@
 
     - name: Get CSRs
       shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get csr -o json
+        KUBECONFIG={{ cluster_kubeconfig }} oc get csr -o json
       register: oc_get_csr
     
     - name: Approve pending CSRs
       shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm certificate approve {{ item.metadata.name }}
+        KUBECONFIG={{ cluster_kubeconfig }} oc adm certificate approve {{ item.metadata.name }}
       loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
       loop_control:
         label: "{{ item.metadata.name }}"
     
     - name: Get worker node count
       shell: |
-        KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc get nodes | {{ worker_counter }}
+        KUBECONFIG={{ cluster_kubeconfig }} oc get nodes | {{ worker_counter }}
       register: oc_get_nodes_workers
 
     - name: Current Worker Node Count
