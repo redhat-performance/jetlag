@@ -47,6 +47,8 @@ hw_vendor:
   r7425: Dell
   r7525: Dell
   r7625: Dell
+  xe8640: Dell
+  xe9680: Dell
   1029u: Supermicro
   1029p: Supermicro
   5039ms: Supermicro
@@ -57,6 +59,36 @@ hw_vendor:
   6048p: Supermicro
   6049p: Supermicro
   dl360: Hp
+
+# Hardware install disk by-path mappings
+# Based on docs/tips-and-vars.md
+# Format: hw_model or rack-hw_model or rack-unit-hw_model for overrides
+# Examples:
+#   1029p                - hardware default
+#   f05-1029p            - rack-specific override
+#   f05-h03-1029p        - rack-unit-specific override
+hw_install_disk:
+  scalelab:
+    r750: /dev/disk/by-path/pci-0000:05:00.0-ata-1.0
+    r660: /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:1:0
+    r650: /dev/disk/by-path/pci-0000:67:00.0-scsi-0:2:0:0
+    r640: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    r630: /dev/disk/by-path/pci-0000:02:00.0-scsi-0:2:0:0
+  performancelab:
+    r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    y37-r740xd: /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0
+    y37-h01-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    y37-h03-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    y37-h05-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    y37-h07-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    y37-h09-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
+    r750: /dev/disk/by-path/pci-0000:05:00.0-ata-1
+    r7425: /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0
+    r7525: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
+    r760: /dev/disk/by-path/pci-0000:3f:00.0-scsi-0:0:1:0
+    6029p: /dev/disk/by-path/pci-0000:00:11.5-ata-5
+    xe8640: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
+    xe9680: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
 
 # This dictionary contains the expected nic names for networks in the scale/performance lab. This determines the name of the
 # nic for hypervisors.

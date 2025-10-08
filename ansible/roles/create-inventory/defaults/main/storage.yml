@@ -9,9 +9,8 @@
 # Edit and adjust each machine's install_disk= to have the by-path/by-id reference instead of the symbolic reference
 # See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/managing_file_systems/index#device-identifiers_assembly_overview-of-persistent-naming-attributes
 
-# Default install disks for mno
-control_plane_install_disk: /dev/sda
-worker_install_disk: /dev/sda
-
-# Default install disk for sno
-sno_install_disk: /dev/sda
+# Default install disks are now set dynamically in tasks/main.yml based on hardware mappings
+# You can override these in vars/all.yml:
+#   control_plane_install_disk: /dev/nvme0n1
+#   worker_install_disk: /dev/nvme0n1
+#   sno_install_disk: /dev/nvme0n1
