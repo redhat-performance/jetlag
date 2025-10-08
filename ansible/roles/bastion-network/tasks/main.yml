@@ -98,7 +98,6 @@
     loop:
       - "{{ bastion_bond0_interface1 }}"
       - "{{ bastion_bond0_interface2 }}"
-    ignore_errors: true
 
   - name: Create bond0 connection for bastion
     nmcli:
