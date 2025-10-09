@@ -331,7 +331,7 @@
         {{
           ocpinventory_sno_nodes[:idx] +
           [ocpinventory_sno_nodes[idx] | combine({
-            'bond0_macs': (item.mac[bond0_port1|int] + ',' + item.mac[bond0_port2|int])
+            'bond0_macs': (item.mac[bond0_port1|int + 1 ] + ',' + item.mac[bond0_port2|int + 1])
           })] +
           ocpinventory_sno_nodes[idx + 1:]
         }}
