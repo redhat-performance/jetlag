@@ -7,51 +7,15 @@
     state: directory
   loop:
    - "{{ sync_path }}"
-   - "{{ sync_path }}/catalog"
-   - "{{ sync_path }}/catalog/{{ operator_index_name }}"
+   - "{{ sync_path }}/operators"
+   - "{{ sync_path }}/operators/{{ operator_index_name }}"
 
-- name: Render declarative config from the provided index image
-  shell: |
-    cd {{ sync_path }}
-    opm render --skip-tls-verify {{ item['operator_index_container_image'] }} > {{ item['name'] }}-index.json
-  loop: "{{ operators_to_sync }}"
-
-- name: Template {{ operator_index_name }}.Dockerfile
+- name: Create ImageSetConfiguration
   template:
-    src: operator-index.Dockerfile.j2
-    dest: "{{ sync_path }}/catalog/{{ operator_index_name }}.Dockerfile"
+    src: imagesetconf.yml.j2
+    dest: "{{ sync_path }}/operators/{{ operator_index_name }}/imagesetconf.yml"
 
-- name: Clear {{ sync_path }}/catalog/{{ operator_index_name }}/index.json
-  copy:
-    content: ""
-    dest: "{{ sync_path }}/catalog/{{ operator_index_name }}/index.json"
-
-- name: Appending Operators from each index container index.json into new index.json
+- name: Mirror operator index images
   shell: |
-    cd {{ sync_path }}/catalog
-    {% for operator in item['operators'] %}
-    {% if item['brew_index'] %}
-    jq '. | select((.package=="{{ operator }}") or (.name=="{{ operator }}"))' ../{{ item['name'] }}-index.json | sed -e 's/registry.redhat.io/brew.registry.redhat.io/g' -e 's/registry.stage.redhat.io/brew.registry.redhat.io/g' >> {{ operator_index_name }}/index.json
-    {% else %}
-    jq '. | select((.package=="{{ operator }}") or (.name=="{{ operator }}"))' ../{{ item['name'] }}-index.json >> {{ operator_index_name }}/index.json
-    {% endif %}
-    {% endfor %}
-  loop: "{{ operators_to_sync }}"
+    oc mirror --authfile {{ registry_path }}/pull-secret-bastion.txt -c {{ sync_path }}/operators/{{ operator_index_name }}/imagesetconf.yml --workspace file://{{ sync_path }}/operators/{{ operator_index_name }} docker://{{ registry_host }}:{{ registry_port }} --v2
 
-- name: Validate the new {{ operator_index_name }} catalog
-  shell: |
-    cd {{ sync_path }}/catalog
-    opm validate {{ operator_index_name }}
-
-- name: Build new {{ operator_index_name }} catalog container image
-  shell: |
-    cd {{ sync_path }}/catalog
-    podman build -f {{ operator_index_name }}.Dockerfile -t {{ registry_host }}:{{ registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
-
-- name: Push pruned {{ operator_index_name }} image to bastion registry
-  shell: |
-    podman push {{ registry_host }}:{{ registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }}
-
-- name: Mirror {{ operator_index_name }} images
-  shell: |
-    oc adm catalog mirror {{ registry_host }}:{{ registry_port }}/olm-mirror/{{ operator_index_name }}:{{ operator_index_tag }} {{ registry_host }}:{{ registry_port }} -a {{ registry_path }}/pull-secret-bastion.txt --to-manifests={{ bastion_cluster_config_dir }}/olm-mirror-{{ operator_index_name }}-{{ operator_index_tag }}

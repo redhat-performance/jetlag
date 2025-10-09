@@ -22,7 +22,7 @@ spec:
   name: ansible-automation-platform-operator
   channel: {{ aap_channel }}
 {% if use_bastion_registry | default(false) %}
-  source: {{ operator_index_name }}
+  source: {{ generated_operator_index_name_tag }}
 {% else %}
   source: redhat-operators
 {% endif %}

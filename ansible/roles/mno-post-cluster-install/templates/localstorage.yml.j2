@@ -25,7 +25,7 @@ spec:
   name: local-storage-operator
   channel: stable
 {% if use_bastion_registry | default(false) %}
-  source: {{ operator_index_name }}
+  source: {{ generated_operator_index_name_tag }}
 {% else %}
   source: redhat-operators
 {% endif %}
