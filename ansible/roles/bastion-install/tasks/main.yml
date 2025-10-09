@@ -196,8 +196,6 @@
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
-  - url: "{{ release_urls['ga'] }}/latest/oc-mirror.tar.gz"
-    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
@@ -208,26 +206,30 @@
   - url: "{{ yq_url }}"
     dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
 
-- name: Get rhel8 opm
+- name: Get rhel8 tools
   get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
-     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ release_urls['ga'] }}/latest/oc-mirror.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('8', '==')
 
-- name: Get rhel9 opm
+- name: Get rhel9 tools
   get_url:
     validate_certs: false
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
   with_items:
-  -  url: "{{ release_urls['ga'] }}/latest/opm-linux-rhel9.tar.gz"
-     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ release_urls['ga'] }}/latest/opm-linux-rhel9.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
+  - url: "{{ release_urls['ga'] }}/latest/oc-mirror.rhel9.tar.gz"
+    dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('9', '==')
 
 - name: Untar coredns, opm, kube-burner and grpcurl client
