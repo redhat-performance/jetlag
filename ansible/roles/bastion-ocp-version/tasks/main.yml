@@ -65,6 +65,10 @@
     tar -xvf openshift-install-linux-*.tar.gz openshift-install
   args:
     chdir: "{{ ocp_version_path }}"
+  register: extract_installer
+  retries: 3
+  delay: 5
+  until: extract_installer is not failed
 
 # We need to unarchive the clients here to align their versions cluster version
 
