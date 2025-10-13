@@ -209,20 +209,20 @@
     - name: MNO - Set controlplane0 bond mac addresses
       set_fact:
         controlplane0_bond0_macs: >-
-          {{ ocpinventory.json.nodes[1].mac[bond0_port1|int] }},
-          {{ ocpinventory.json.nodes[1].mac[bond0_port2|int] }}
+          {{ ocpinventory.json.nodes[1].mac[bond0_port1|int - 1] }},
+          {{ ocpinventory.json.nodes[1].mac[bond0_port2|int - 1] }}
 
     - name: MNO - Set controlplane1 bond mac addresses
       set_fact:
         controlplane1_bond0_macs: >-
-          {{ ocpinventory.json.nodes[2].mac[bond0_port1|int] }},
-          {{ ocpinventory.json.nodes[2].mac[bond0_port2|int] }}
+          {{ ocpinventory.json.nodes[2].mac[bond0_port1|int - 1] }},
+          {{ ocpinventory.json.nodes[2].mac[bond0_port2|int - 1] }}
 
     - name: MNO - Set controlplane2 bond mac addresses
       set_fact:
         controlplane2_bond0_macs: >-
-          {{ ocpinventory.json.nodes[3].mac[bond0_port1|int] }},
-          {{ ocpinventory.json.nodes[3].mac[bond0_port2|int] }}
+          {{ ocpinventory.json.nodes[3].mac[bond0_port1|int - 1] }},
+          {{ ocpinventory.json.nodes[3].mac[bond0_port2|int - 1] }}
 
   - name: MNO - Set max number of nodes
     set_fact:
@@ -260,7 +260,7 @@
       {{
         ocpinventory_worker_nodes[:idx] +
         [ocpinventory_worker_nodes[idx] | combine({
-          'bond0_macs': (item.mac[bond0_port1|int] + ',' + item.mac[bond0_port2|int])
+          'bond0_macs': (item.mac[bond0_port1|int - 1] + ',' + item.mac[bond0_port2|int - 1])
         })] +
         ocpinventory_worker_nodes[idx + 1:]
       }}
