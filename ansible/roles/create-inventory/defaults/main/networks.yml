@@ -39,5 +39,5 @@ bond0_port2: 2
 # The assisted-installer doesn't need exact nic names for the private bond. These names are used
 # as representatives for the actual nic names, the actual nics are determined by the mac addresses
 private_bond_interfaces:
-- eth0
-- eth1
+  - eth0
+  - eth1

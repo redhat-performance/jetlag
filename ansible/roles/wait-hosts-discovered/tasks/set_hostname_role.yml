@@ -11,13 +11,27 @@
     host_id: "{{ discovered_host.id }}"
     host_macs: "{{ (discovered_host.inventory | from_json) | json_query('interfaces[].mac_address') | lower }}"
 
-- name: Set the hostname and role via mac address
+- name: Set the hostname and role via mac address (non-bonded)
   set_fact:
     hostname: "{{ item }}"
     host_role: "{{ hostvars[item]['role'] }}"
   when:
   - lab in rh_labs or lab == "byol"
+  - not (enable_bond | default(false))
+  - hostvars[item]['mac_address'] is defined
   - hostvars[item]['mac_address'] | lower in host_macs
+  loop: "{{ inventory_nodes }}"
+
+
+- name: Set the hostname and role via bond mac addresses (bonded)
+  set_fact:
+    hostname: "{{ item }}"
+    host_role: "{{ hostvars[item]['role'] }}"
+  when:
+  - lab in rh_labs or lab == "byol"
+  - enable_bond | default(false)
+  - hostvars[item]['bond0_macs'] is defined
+  - (hostvars[item]['bond0_macs'].split(',')[0] | lower in host_macs) or (hostvars[item]['bond0_macs'].split(',')[1] | lower in host_macs)
   loop: "{{ inventory_nodes }}"
 
 - name: Set the hostname and role via bmc address
