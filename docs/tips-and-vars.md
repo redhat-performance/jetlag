@@ -60,9 +60,22 @@ non-bootable disk or disk later in the boot order of hard disks. If this occurs,
 deployment will eventually fail as the installed OCP is unable to boot properly.
 
 > [!TIP]
-> Using the PCI paths (in a homogeneous Scale or Performance lab cloud) should be
-> consistent across all the machines, and is not subject to change during discovery.
-> Below are the extra vars along with the hardware used.
+> **Automatic Install Disk Selection:** For common hardware types in Scale Lab and Performance Lab,
+> Jetlag automatically selects the correct install disk using persistent `/dev/disk/by-path/`
+> references based on hardware model. See `hw_install_disk` mappings in `ansible/vars/lab.yml`.
+>
+> The automatic selection uses a fallback chain:
+> 1. Explicit variable override (`control_plane_install_disk`, `worker_install_disk`, `sno_install_disk`)
+> 2. Rack-unit-hardware specific mapping (e.g., `y37-h01-r740xd`)
+> 3. Rack-hardware specific mapping (e.g., `y37-r740xd`)
+> 4. Hardware default mapping (e.g., `r740xd`)
+> 5. Fallback to `/dev/sda`
+
+**When to override:** You typically only need to set `control_plane_install_disk`,
+`worker_install_disk`, or `sno_install_disk` if:
+- Your hardware model is not in the automatic mappings
+- You need a different disk than the default for your hardware
+- You are using BYOL (Bring Your Own Lab) outside of Scale/Performance labs
 
 For 3-node MNO deployments you only need to set `control_plane_install_disk`, if your
 MNO deployment has worker nodes then you will also need to set `worker_install_disk`.
@@ -96,9 +109,15 @@ edit the inventory file to set appropriate install paths for each machine.
 | Dell r750                                            | /dev/disk/by-path/pci-0000:05:00.0-ata-1        |
 | Dell r7425                                           | /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0 |
 | Dell r7525                                           | /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0 |
+| Dell r760                                            | /dev/disk/by-path/pci-0000:3f:00.0-scsi-0:0:1:0 |
 | SuperMicro 6029p                                     | /dev/disk/by-path/pci-0000:00:11.5-ata-5        |
 | Dell xe8640                                          | /dev/disk/by-path/pci-0000:01:00.0-nvme-1       |
 | Dell xe9680                                          | /dev/disk/by-path/pci-0000:01:00.0-nvme-1       |
+
+> [!NOTE]
+> The above hardware models are automatically configured in Jetlag via the `hw_install_disk`
+> mappings in `ansible/vars/lab.yml`. You typically do not need to manually set install
+> disk variables for these common hardware types unless you need to override the defaults.
 
 To find your machine's by-path reference:
 
@@ -231,8 +250,13 @@ At the moment QUADS does not expose any APIs for this kind of networking setup i
 
 ## Configuring NVMe install and etcd disks
 
-If you require the install disk or etcd disk to be on a specific drive,
-they can be specified directly through the vars file `all.yml`.
+If you require the install disk or etcd disk to be on a specific drive (different from
+the automatic selections), they can be specified directly through the vars file `all.yml`.
+
+This is typically used when:
+- You want to install on NVMe drives instead of the default SATA/SAS disks
+- You need to override the automatic hardware-based selection
+- Your specific hardware configuration requires non-standard disk selection
 
 To ensure the drive will be correctly mapped at each boot,
 we will locate the `/dev/disk/by-path` link to each drive.

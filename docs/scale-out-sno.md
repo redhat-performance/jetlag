@@ -24,7 +24,7 @@ There are two methods for adding new worker node entries to the inventory. Choos
 Use this method if you're adding new bare metal nodes to a **Single Node OpenShift (SNO)** cluster.
 
 1. Update the `worker_node_count` value in `ansible/vars/all.yml` to reflect the new total number of worker nodes.
-2. Ensure `worker_install_disk` extra vars parameter is set in `ansible/vars/all.yml`.
+2. **Optional:** Set `worker_install_disk` extra vars parameter in `ansible/vars/all.yml` if your hardware is not in the automatic `hw_install_disk` mappings (see `ansible/vars/lab.yml`) or if you need to override the default.
 3. Rerun the `create-inventory` playbook.
 4. After generation, compare the updated inventory file with the previous version to ensure only the new nodes were added to the `[worker]` section.
 5. Ensure all required worker-related variables are set in `[worker:vars]`.
