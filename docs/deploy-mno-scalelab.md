@@ -273,11 +273,20 @@ When the deployment is completed, the cluster API and routes should be reachable
 
 ### Extra vars
 
-For multi node deployment of OCP 4.13 or later, it's advisable to configure the following extra variables.
-- control_plane_install_disk
-- worker_install_disk
+**Install Disk Configuration:**
 
-These variables ensure disk references are made using by-path notation instead of symbolic links. This approach is recommended due to potential reliability issues with symbolic links. The values mentioned [Review `all.yml`](#review-vars-allyml) are correct for the Scale lab R650 instances. Please refer to [tips and vars](tips-and-vars.md#extra-vars-for-by-path-disk-reference) to determine the correct paths for other instances.
+For most common hardware types in Scale Lab (r750, r660, r650, r640, r630), Jetlag **automatically
+selects** the correct install disk using persistent `/dev/disk/by-path/` references. These automatic
+mappings are defined in `ansible/vars/lab.yml` under `hw_install_disk`.
+
+You **only need to set** `control_plane_install_disk` and `worker_install_disk` if:
+- Your hardware model is not in the automatic mappings
+- You need a different disk than the default for your hardware model
+- You want to explicitly override the automatic selection
+
+The values shown in the example [Review `all.yml`](#review-vars-allyml) below are for Dell r650 as a reference.
+Please refer to [tips and vars](tips-and-vars.md#install-disk-by-path-vars) for the complete list of automatic
+mappings and guidance on finding disk paths for unsupported hardware.
 
 ### Disconnected and ipv6 vars
 

@@ -367,6 +367,13 @@ Copy the sample byol inventory file and edit it:
 
 Make sure to replace the IP addresses, mac addresses, install disk by-paths, interface names, and dns servers with correct values for your environment.
 
+> [!NOTE]
+> **BYOL Environments:** Unlike Scale Lab and Performance Lab deployments, BYOL environments do not
+> benefit from automatic install disk selection. You must manually specify install disk paths using
+> `/dev/disk/by-path/` references for each node in your inventory file. See the
+> [Install disk by-path vars](tips-and-vars.md#install-disk-by-path-vars) section for guidance on
+> finding the correct paths for your hardware.
+
 ```
 # Bring Your Own Lab (BYOL) Sample Inventory
 [all:vars]
