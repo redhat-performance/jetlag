@@ -1,6 +1,72 @@
 ---
 # bastion-network tasks
 
+- name: Remove bastion self-reference from resolv.conf
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '^nameserver {{ bastion_controlplane_ip }}$'
+    state: absent
+
+- name: Check for established SSH connections to bastion controlplane IP
+  shell: |
+    ss -tnp state established '( dport = :22 or sport = :22 )' | grep -E "{{ bastion_controlplane_ip }}:22|:22.*{{ bastion_controlplane_ip }}" || true
+  register: ssh_connections_check
+  changed_when: false
+
+- name: Display message about SSH connection cleanup
+  debug:
+    msg:
+      - ""
+      - "=========================================================================================================="
+      - "SSH connection to bastion_controlplane_ip ({{ bastion_controlplane_ip }}) detected."
+      - "Connections will be closed to prevent SSH disruption during network reconfiguration."
+      - ""
+      - "Please re-run the playbook after this task completes. On the next run SSH will use"
+      - "the lab interface and the playbook will complete successfully."
+      - "=========================================================================================================="
+      - ""
+  when: ssh_connections_check.stdout | length > 0
+
+- name: Close SSH connections to bastion controlplane IP if detected
+  shell: |
+    # Get PIDs of SSH connections to bastion_controlplane_ip
+    PIDS=$(ss -tnp state established '( dport = :22 or sport = :22 )' | grep -E "{{ bastion_controlplane_ip }}:22|:22.*{{ bastion_controlplane_ip }}" | grep -oP 'pid=\K[0-9]+' | sort -u)
+
+    if [ -n "$PIDS" ]; then
+      for pid in $PIDS; do
+        kill -9 $pid 2>/dev/null || true
+      done
+    fi
+  when: ssh_connections_check.stdout | length > 0
+  changed_when: true
+
+- name: Determine machine type from bastion hostname
+  set_fact:
+    machine_type: "{{ (inventory_hostname.split('.')[0]).split('-')[-1] }}"
+
+- name: Get list of all NetworkManager connections
+  command: nmcli -g NAME connection show
+  register: nmcli_connections
+  changed_when: false
+
+- name: Get NetworkManager connection names for all non-lab interfaces
+  command: nmcli -g GENERAL.CONNECTION device show {{ item }}
+  loop: "{{ hw_nic_name[lab][machine_type][1:] }}"
+  register: non_lab_interfaces_nmcli
+  changed_when: false
+  failed_when: false
+
+- name: Build list of connections to remove (jetlag-prefixed + connections on non-lab interfaces)
+  set_fact:
+    connections_to_remove: "{{ (nmcli_connections.stdout_lines | select('match', '^' ~ jetlag_conn_prefix) | list) + (non_lab_interfaces_nmcli.results | map(attribute='stdout') | reject('equalto', '') | list) | unique | list }}"
+
+- name: Remove NetworkManager connections for clean reconfiguration
+  nmcli:
+    conn_name: "{{ item }}"
+    state: absent
+  loop: "{{ connections_to_remove }}"
+  when: connections_to_remove | length > 0
+
 - name: Stop and disable iptables
   systemd:
     state: stopped
@@ -91,18 +157,10 @@
     - enable_bond | default(false)
   block:
 
-  - name: Remove existing connections for bond slave interfaces
-    nmcli:
-      conn_name: "{{ item }}"
-      state: absent
-    loop:
-      - "{{ bastion_bond0_interface1 }}"
-      - "{{ bastion_bond0_interface2 }}"
-
   - name: Create bond0 connection for bastion
     nmcli:
       type: bond
-      conn_name: bond0
+      conn_name: "{{ jetlag_conn_prefix }}bond0"
       ifname: bond0
       ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
       mode: 802.3ad
@@ -113,7 +171,7 @@
   - name: Create bond0 connection for bastion (ipv6)
     nmcli:
       type: bond
-      conn_name: bond0
+      conn_name: "{{ jetlag_conn_prefix }}bond0"
       ifname: bond0
       ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
       mode: 802.3ad
@@ -124,7 +182,7 @@
   - name: Add first interface as bond slave
     nmcli:
       type: bond-slave
-      conn_name: "bond0-slave-{{ bastion_bond0_interface1 }}"
+      conn_name: "{{ jetlag_conn_prefix }}bond0-slave-{{ bastion_bond0_interface1 }}"
       ifname: "{{ bastion_bond0_interface1 }}"
       master: bond0
       state: present
@@ -132,7 +190,7 @@
   - name: Add second interface as bond slave
     nmcli:
       type: bond-slave
-      conn_name: "bond0-slave-{{ bastion_bond0_interface2 }}"
+      conn_name: "{{ jetlag_conn_prefix }}bond0-slave-{{ bastion_bond0_interface2 }}"
       ifname: "{{ bastion_bond0_interface2 }}"
       master: bond0
       state: present
@@ -142,27 +200,10 @@
   when:
     - not enable_bond | default(false)
   block:
-  # Connections can end up named "Wired Connection X" and prevent the bastion controlplane interface from being configured
-  - name: Get NetworkManager connection name for bastion control-plane interface
-    shell: |
-      nmcli d show {{ bastion_controlplane_interface }} | grep "GENERAL.CONNECTION:" | sed 's/GENERAL.CONNECTION://g' | xargs
-    register: cp_int_nmcli
-
-  - name: Display NetworkManager connection name for bastion control-plane interface
-    debug:
-      msg: "{{ cp_int_nmcli.stdout }}"
-
-  - name: Disable original bastion control-plane connection to allow reconfiguration
-    nmcli:
-      type: ethernet
-      conn_name: "{{ cp_int_nmcli.stdout }}"
-      state: absent
-    when: cp_int_nmcli.stdout != bastion_controlplane_interface
-
   - name: Setup bastion on control-plane network (ipv4)
     nmcli:
       type: ethernet
-      conn_name: "{{ bastion_controlplane_interface }}"
+      conn_name: "{{ jetlag_conn_prefix }}{{ bastion_controlplane_interface }}"
       ifname: "{{ bastion_controlplane_interface }}"
       ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
       state: present
@@ -171,7 +212,7 @@
   - name: Setup bastion on control-plane network (ipv6)
     nmcli:
       type: ethernet
-      conn_name: "{{ bastion_controlplane_interface }}"
+      conn_name: "{{ jetlag_conn_prefix }}{{ bastion_controlplane_interface }}"
       ifname: "{{ bastion_controlplane_interface }}"
       ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
       state: present
