@@ -5,40 +5,83 @@
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
-sync_path: /opt/registry/sync
-
 registry_path: /opt/registry
+
+sync_path: /opt/registry/sync
 
 # Creates one index with operators from multiple container images
 
 # operator_index_name represents the destination operator index for the single catalog source (can contain images from multiple Red Hat provided operator catalogs eg.redhat-operators, certified-operators, based on the vars set below under operators_to_sync list)
 operator_index_name: redhat-operator-index
+operator_index_tag: v4.19
 
-# operator_index_tag represents the destination operator tag on the installed cluster (actual image tags can be found in the operator_index_container_image value under operators_to_sync)
-operator_index_tag: v4.18
+# oc mirror will create manifests for catalogsource and clustercatalog when it syncs the operator index,
+# for now we will continue to use the catalogsource although clustercatalog is a newer API
+generated_operator_index_name_tag: "cs-{{ operator_index_name }}-{{ operator_index_tag | replace('.', '-') }}"
 
-# Tag to be used with the ose-operator-registry container image
-ose_operator_registry_tag: v4.18
-
-# These defaults match ACM ZTP Scale testing (4.18 SNO with 4.18 Operators). For SNO DU profile defaults, refer ansible/vars/sync-operator-index.sample.yml
-operators_to_sync:
-- name: redhat-operators
-  brew_index: false
-  operator_index_container_image: registry.redhat.io/redhat/redhat-operator-index:v4.18
-  operators:
-  - ansible-automation-platform-operator
-  - cluster-logging
-  - lifecycle-agent
-  - local-storage-operator
-  - openshift-gitops-operator
-  - openshift-special-resource-operator
-  - ptp-operator
-  - redhat-oadp-operator
-  - sriov-network-operator
-  - topology-aware-lifecycle-manager
-  - volsync-product
-#- name: certified-operators
-#  brew_index: false
-#  operator_index_container_image: registry.redhat.io/redhat/certified-operator-index:v4.18
-#  operators:
-#  - sriov-fec
+catalogs_to_sync:
+- catalog: registry.redhat.io/redhat/redhat-operator-index:v4.19
+  packages:
+  - name: advanced-cluster-management
+    channels:
+    - name: release-2.14
+      minVersion: 2.14.0
+      maxVersion: 2.14.0
+  - name: amq-streams
+    channels:
+    - name: stable
+      minVersion: 3.0.1-2
+      maxVersion: 3.0.1-2
+  - name: ansible-automation-platform-operator
+    defaultChannel: stable-2.6-cluster-scoped
+    channels:
+    - name: stable-2.6-cluster-scoped
+      minVersion: 2.6.0+0.1759764962
+      maxVersion: 2.6.0+0.1759764962
+  - name: cluster-logging
+    defaultChannel: stable-6.2
+    channels:
+    - name: stable-6.2
+      minVersion: 6.2.5
+      maxVersion: 6.2.5
+  - name: lifecycle-agent
+    channels:
+    - name: stable
+      minVersion: 4.19.0
+      maxVersion: 4.19.0
+  - name: local-storage-operator
+    channels:
+    - name: stable
+      minVersion: 4.19.0-202509280154
+      maxVersion: 4.19.0-202509280154
+  - name: multicluster-engine
+    channels:
+    - name: stable-2.9
+      minVersion: 2.9.0
+      maxVersion: 2.9.0
+  - name: multicluster-global-hub-operator-rh
+    channels:
+    - name: release-1.5
+      minVersion: v1.5.1
+      maxVersion: v1.5.1
+  - name: openshift-gitops-operator
+    defaultChannel: gitops-1.18
+    channels:
+    - name: gitops-1.18
+      minVersion: 1.18.0
+      maxVersion: 1.18.0
+  - name: ptp-operator
+    channels:
+    - name: stable
+      minVersion: 4.19.0-202509280154
+      maxVersion: 4.19.0-202509280154
+  - name: redhat-oadp-operator
+    channels:
+    - name: stable
+      minVersion: 1.5.2
+      maxVersion: 1.5.2
+  - name: sriov-network-operator
+    channels:
+    - name: stable
+      minVersion: 4.19.0-202510010724
+      maxVersion: 4.19.0-202510010724

@@ -1,0 +1,22 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  operators:
+{% for catalog in catalogs_to_sync %}
+  - catalog: {{ catalog.catalog }}
+    targetCatalog: redhat/{{ operator_index_name }}
+    targetTag: {{ operator_index_tag }}
+    packages:
+{%   for package in catalog.packages %}
+    - name: {{ package.name }}
+{%   if "defaultChannel" in package %}
+      defaultChannel: {{ package.defaultChannel }}
+{%   endif %}
+      channels:
+{% for channel in package.channels %}
+      - name: {{ channel.name }}
+        minVersion: {{ channel.minVersion }}
+        maxVersion: {{ channel.maxVersion }}
+{%   endfor %}
+{%   endfor %}
+{% endfor %}
