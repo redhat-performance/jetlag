@@ -208,96 +208,15 @@ By default, Jetlag will choose the first node in an allocation as the bastion no
 
 Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/SwDownload/SwSelect_Free.aspx?cat=IPMI).
 
-The system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
+**Network Interface Configuration:**
 
-Using the scale lab networking table, determine the names of the nic per network.
-
-* `bastion_lab_interface` will always be set to the nic name under "Public Network"
-* `bastion_controlplane_interface` should be set to the nic name under "Network 1" for this guide
-
-You may have to ssh to your intended bastion machine and view the network interface names to ensure the correct nic name is picked here.
+Jetlag automatically detects and configures network interfaces for common hardware in Scale Lab and Performance Lab using the `hw_nic_name` [mapping](../ansible/vars/lab.yml). You only need to manually set these if you want to override the defaults. For more details see [tips-and-vars.md](tips-and-vars.md).
 
 Here you can see a network diagram for the SNO cluster on Dell r640 with 3 SNO clusters:
 
 ![SNO Cluster](img/sno_cluster.png)
 
-For example if your bastion is ...
-
-Dell fc640 (Scale Lab)
-```yaml
-bastion_lab_interface: eno1
-bastion_controlplane_interface: eno2
-```
-
-Dell r640 (Scale Lab)
-```yaml
-bastion_lab_interface: eno1np0
-bastion_controlplane_interface: ens1f0
-```
-
-Dell r650 (Scale Lab)
-```yaml
-bastion_lab_interface: eno12399np0
-bastion_controlplane_interface: ens1f0
-```
-
-Supermicro 1029p or Supermicro 1029u (Scale Lab)
-```yaml
-bastion_lab_interface: eno1
-bastion_controlplane_interface: ens2f0
-```
-
-Supermicro 5039ms (Scale Lab)
-```yaml
-bastion_lab_interface: enp2s0f0
-bastion_controlplane_interface: enp1s0f0
-```
-
-For the guide we set our values for the Supermicro 1029u.
-
 ** If you desire to use a different network than "Network 1" for your controlplane network then you will have to append some additional overrides to the extra vars portion of the all.yml vars file.
-
-### OCP node vars
-
-The same chart provided by the scale lab for the bastion machine, is used to identify the nic names for `controlplane_lab_interface`.
-
-* `controlplane_lab_interface` should always be set to the nic name under "Public Network" for the specific system type
-
-For example if your Bare Metal OpenShift systems are ...
-
-Dell fc640 (Scale Lab)
-```yaml
-controlplane_lab_interface: eno1
-```
-
-Dell r640 (Scale Lab)
-```yaml
-controlplane_lab_interface: eno1np0
-```
-
-Dell r650 (Scale Lab)
-```yaml
-controlplane_lab_interface: eno12399np0
-```
-
-Dell r750 (Performance Lab)
-```yaml
-controlplane_lab_interface: eno8303
-```
-
-Supermicro 1029p or Supermicro 1029u (Scale Lab)
-```yaml
-controlplane_lab_interface: eno1
-```
-
-Supermicro 5039ms (Scale Lab)
-```yaml
-controlplane_lab_interface: enp2s0f0
-```
-
-For the guide we set our values for the Supermicro 1029U.
-
-** If your machine types are not homogeneous, then you will have to manually edit your generated inventory file to correct any nic names until this is reasonably automated.
 
 ### Extra vars
 
@@ -357,7 +276,6 @@ ocp_version: "latest-4.19"
 # Autoconfigures cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
 # controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
 # SNO configures only the first cluster on the api dns resolvable address
-# MNO/SNO still requires the correct value for bastion_controlplane_interface
 public_vlan: false
 
 # SNOs only require a single IP address and can be deployed using the lab DHCP interface instead of a private or
@@ -384,8 +302,10 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 
 smcipmitool_url: http://example.lab.com/tools/SMCIPMITool_2.25.0_build.210326_bundleJRE_Linux_x64.tar.gz
 
-bastion_lab_interface: eno1
-bastion_controlplane_interface: ens2f0
+# Network interfaces - auto-configured based on lab and hardware type
+# Uncomment to override:
+# bastion_lab_interface: eno1
+# bastion_controlplane_interface: ens2f0
 
 # Sets up Gogs a self-hosted git service on the bastion
 setup_bastion_gogs: false
@@ -399,8 +319,9 @@ use_bastion_registry: false
 ################################################################################
 # OCP node vars
 ################################################################################
-# Network configuration for all mno/sno cluster nodes
-controlplane_lab_interface: eno1
+# Network configuration - auto-configured based on lab and hardware type
+# Uncomment to override:
+# controlplane_lab_interface: eno1
 
 ################################################################################
 # Extra vars

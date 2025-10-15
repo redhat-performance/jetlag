@@ -123,11 +123,8 @@ Make sure to set/review the following vars:
 | `cluster_type` | either `mno`, or `sno` for the respective cluster layout
 | `worker_node_count` | applies to mno cluster type for the desired worker count, ideal for leaving left over inventory hosts for other purposes
 | `hybrid_worker_count` | applies to mno cluster type for the desired virtual worker count, HV nodes and VMs are required to be setup.
-| `bastion_lab_interface` | set to the bastion machine's lab accessible interface
-| `bastion_controlplane_interface` | set to the interface in which the bastion will be networked to the deployed ocp cluster
-| `controlplane_lab_interface` | applies to mno cluster type and should map to the nodes interface in which the lab provides dhcp to and also required for public routable vlan based sno deployment(to disable this interface)
 
-More customization such as `cluster_network` and `service_network` are available as extra vars, check each ansible role default vars file for variable names and options.
+More customization such as `cluster_network` and `service_network` are available as extra vars, check each ansible role default vars file for variable names and options. For network interface configuration details, see [tips-and-vars.md](docs/tips-and-vars.md).
 
 Save your pull-secret from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) in `pull_secret.txt` in the Jetlag repo base directory, for example by using the "Copy" button on the web page, and then pasting the clipboard text into a `cat > pull_secret.txt` command like this:
 
