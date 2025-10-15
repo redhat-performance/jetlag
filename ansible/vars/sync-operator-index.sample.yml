@@ -16,10 +16,11 @@ catalogs_to_sync:
       minVersion: 2.14.0
       maxVersion: 2.14.0
   - name: amq-streams
+    defaultChannel: amq-streams-2.9.x
     channels:
-    - name: stable
-      minVersion: 3.0.1-2
-      maxVersion: 3.0.1-2
+    - name: amq-streams-2.9.x
+      minVersion: 2.9.2-1
+      maxVersion: 2.9.2-1
   - name: ansible-automation-platform-operator
     defaultChannel: stable-2.6-cluster-scoped
     channels:
