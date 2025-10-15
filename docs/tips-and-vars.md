@@ -23,8 +23,12 @@ _**Table of Contents**_
 
 ## Network interface to vars table
 
+**Network interfaces** - Jetlag automatically detects and configures network interfaces for common hardware in Scale Lab and Performance Lab using the `hw_nic_name` [mapping](../ansible/vars/lab.yml). You only need to manually set these if you want to override the defaults:
+- `bastion_lab_interface` - the bastion machine's lab accessible interface
+- `bastion_controlplane_interface` - the bastion machine interface connected to the OCP cluster nodes control plane
+- `controlplane_lab_interface` - the OCP cluster nodes lab accessible interface
+
 Values here reflect the default (Network 1 which maps to `controlplane_network_interface_idx: 0`). See this [section](#using-other-network-interfaces) to generate the proper inventory for a different network.
-Note that if these variables are not explicitely set then Jetlag auto configures them.
 
 **Scale Lab**
 
