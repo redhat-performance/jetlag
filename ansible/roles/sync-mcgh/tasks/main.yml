@@ -1,0 +1,90 @@
+---
+# sync-mcgh tasks
+
+- name: Create directories for syncing mcgh
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+  - "{{ sync_path }}"
+  - "{{ sync_path }}/mcgh"
+
+- name: Template out pull-secret
+  copy:
+    content: "{{ acm_d_pull_secret }}"
+    dest: "{{ sync_path }}/pull-secret.acm_d.txt"
+
+- name: Add bastion registry to pull-secret
+  shell: |
+    b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
+    AUTHSTRING="{\"{{ registry_host }}:{{ registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
+    jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm_d.txt > {{ sync_path }}/pull-secret-bastion.acm_d.txt
+
+- name: Add mirrors for MCGH in registries.conf
+  blockinfile:
+    path: /etc/containers/registries.conf
+    block: |
+      [[registry]]
+      location="registry.redhat.io/multicluster-globalhub/multicluster-globalhub-agent-rhel9"
+      [[registry.mirror]]
+      location="quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/multicluster-global-hub-agent-globalhub-1-6"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+
+      [[registry]]
+      location="registry.redhat.io/multicluster-globalhub/multicluster-globalhub-manager-rhel9"
+      [[registry.mirror]]
+      location="quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/multicluster-global-hub-manager-globalhub-1-6"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+
+      [[registry]]
+      location="registry.redhat.io/multicluster-globalhub/multicluster-globalhub-rhel9-operator"
+      [[registry.mirror]]
+      location="quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/multicluster-global-hub-operator-globalhub-1-6"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+
+      [[registry]]
+      location="registry.redhat.io/multicluster-globalhub/multicluster-globalhub-grafana-rhel9"
+      [[registry.mirror]]
+      location="quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/glo-grafana-globalhub-1-6"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+
+      [[registry]]
+      location="registry.redhat.io/multicluster-globalhub/multicluster-globalhub-postgres-exporter-rhel9"
+      [[registry.mirror]]
+      location="quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/postgres-exporter-globalhub-1-6"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+
+      [[registry]]
+      location="registry.redhat.io/multicluster-globalhub/multicluster-globalhub-operator-bundle"
+      [[registry.mirror]]
+      location="quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/multicluster-global-hub-operator-bundle-globalhub-1-6"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+    marker_begin: "<!-- Ansible Sync MCGH Begin -->"
+    marker_end: "<!-- Ansible Sync MCGH End -->"
+
+- name: Create ImageSetConfiguration
+  template:
+    src: imagesetconf.yml.j2 
+    dest: "{{ sync_path }}/mcgh/imagesetconf.yml"
+
+- name: Mirror MCGH images onto the bastion registry
+  shell: |
+    oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt  -c {{ sync_path }}/mcgh/imagesetconf.yml --workspace file://{{ sync_path }}/mcgh/ docker://{{ registry_host }}:{{ registry_port }} --v2
+  register: result
+  until: not result.failed
+  retries: 3
+  delay: 1
+
+# If you sync in MCGH with operators you will already have the proper mirrors to install MCGH without this extra IDMS
+# Renamed to avoid conflicting with operators IDMS
+- name: Adjust the name of the ImageDigestMirrorSet for MCGH
+  lineinfile:
+    path: "{{ sync_path }}/mcgh/working-dir/cluster-resources/idms-oc-mirror.yaml"
+    regexp: "  name: idms-operator-0"
+    line: "  name: idms-mcgh-0"
