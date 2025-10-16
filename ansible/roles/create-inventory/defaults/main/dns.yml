@@ -9,6 +9,7 @@ setup_coredns: false
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
 etc_hosts_ingress_routes:
+- acm-cli-downloads
 - agent-registration-multicluster-engine
 - alertmanager-main-openshift-monitoring
 - alertmanager-open-cluster-management-observability
@@ -25,15 +26,18 @@ etc_hosts_ingress_routes:
 - federate-openshift-user-workload-monitoring
 - grafana-open-cluster-management-observability
 - hcp-cli-download-multicluster-engine
+- images-multicluster-engine
 - kam-openshift-gitops
 - minio-minio
 - multicloud-console
+- multicluster-global-hub-grafana-multicluster-global-hub
 - oauth-openshift
 - observatorium-api-open-cluster-management-observability
 - openshift-gitops-server-openshift-gitops
 - prometheus-k8s-federate-openshift-monitoring
 - prometheus-k8s-openshift-monitoring
 - rbac-query-proxy-open-cluster-management-observability
+- search-api-open-cluster-management
 - thanos-querier-openshift-monitoring
 - thanos-ruler-openshift-user-workload-monitoring
 
