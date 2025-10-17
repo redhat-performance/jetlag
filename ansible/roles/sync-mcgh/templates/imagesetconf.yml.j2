@@ -1,0 +1,10 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  operators:
+  - catalog: {{ mcgh_catalog }}
+    targetCatalog: {{ mcgh_dst_catalog_name }}
+    packages:
+    - name: multicluster-global-hub-operator-rh
+      channels:
+      - name: {{ mcgh_channel }}

@@ -9,6 +9,12 @@ acm_channel: release-2.14
 mce_channel: stable-2.9
 is_konflux_build: false
 
+# Multicluster Global Hub Sync
+mcgh_catalog: quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/multicluster-global-hub-operator-catalog-v419-globalhub-1-6@sha256:8d92ac78c0712ed99044ad212bf6318c8fbb594d8e2209370894a45ac5946c25
+mcgh_channel: release-1.6
+
+mcgh_dst_catalog_name: redhat-user-workloads/mcgh-v419
+
 # ZTP - Zero-Touch Provisioning Site Generator Image
 ztp_site_generator_image: registry-proxy.engineering.redhat.com/rh-osbs/openshift4-ztp-site-generate
 ztp_site_generator_image_tag: v4.19.0-3

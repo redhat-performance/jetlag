@@ -69,6 +69,14 @@
         location="quay.io:443/acm-d"
         mirror-by-digest-only = false
         pull-from-mirror = "all"
+
+        # Work around for ACM-24931
+        # [[registry]]
+        # location="registry.redhat.io/openshift4"
+        # [[registry.mirror]]
+        # location="quay.io:443/acm-d"
+        # mirror-by-digest-only = false
+        # pull-from-mirror = "all"
       marker_begin: "<!-- Ansible Begin -->"
       marker_end: "<!-- Ansible End -->"
   
