@@ -47,8 +47,13 @@ bmc_password={{ bmc_password }}
 {%   else %}
 {%     set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset) %}
 {%   endif %}
+{%   set worker_hw = (worker.pm_addr.split('.')[0]).split('-')[-1] %}
+{%   set worker_parts = (worker.pm_addr.split('.')[0]).replace('mgmt-','').split('-') %}
+{%   set worker_rack = worker_parts[0] %}
+{%   set worker_unit = worker_parts[1] if worker_parts|length > 1 else '' %}
+{%   set worker_disk = worker_install_disk | default(hw_install_disk[lab][worker_rack ~ '-' ~ worker_unit ~ '-' ~ worker_hw]) | default(hw_install_disk[lab][worker_rack ~ '-' ~ worker_hw]) | default(hw_install_disk[lab][worker_hw]) | default('/dev/sda') %}
 {% if sno_worker_foreman_data is defined and sno_worker_foreman_data.results is defined %}
-{{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_install_disk }}
+{{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_disk }}
 {% endif %}
 {% endfor %}
 
