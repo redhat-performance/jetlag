@@ -9,14 +9,16 @@ setup_coredns: false
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
 etc_hosts_ingress_routes:
+- aap-ansible-automation-platform
+- aap-controller-ansible-automation-platform
+- aap-eda-ansible-automation-platform
+- aap-hub-ansible-automation-platform
 - acm-cli-downloads
 - agent-registration-multicluster-engine
 - alertmanager-main-openshift-monitoring
 - alertmanager-open-cluster-management-observability
 - assisted-image-service-multicluster-engine
 - assisted-service-multicluster-engine
-- automationcontroller-ansible-automation-platform
-- automationhub-ansible-automation-platform
 - canary-openshift-ingress-canary
 - cluster-proxy-anp
 - cluster-proxy-user
