@@ -41,3 +41,6 @@ bond0_port2: 2
 private_bond_interfaces:
   - eth0
   - eth1
+
+# Prefix used in NetworkManager connection names for identification and cleanup
+jetlag_conn_prefix: "jetlag-"
