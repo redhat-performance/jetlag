@@ -13,7 +13,11 @@ interfaces:
     auto-dns: false
     enabled: true
   link-aggregation:
+{% if hostvars[item]['vendor'] == 'Libvirt' %}
+    mode: active-backup
+{% else %}
     mode: 802.3ad
+{% endif %}
     options:
       miimon: '100'
     port:

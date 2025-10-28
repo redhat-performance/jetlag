@@ -113,6 +113,33 @@
       <target chassis='4' port='0x13'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x3'/>
     </controller>
+{% if 'bond0_macs' in hostvars[inventory_hostname] %}
+{%   set bond_macs = hostvars[inventory_hostname]['bond0_macs'].split(',') %}
+    <interface type='bridge'>
+      <mac address='{{ bond_macs[0] }}'/>
+      <source bridge='br0'/>
+      <model type='virtio'/>
+{% if bw_limit | default(false) %}
+      <bandwidth>
+        <inbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+        <outbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+      </bandwidth>
+{% endif %}
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+    </interface>
+    <interface type='bridge'>
+      <mac address='{{ bond_macs[1] }}'/>
+      <source bridge='br0'/>
+      <model type='virtio'/>
+{% if bw_limit | default(false) %}
+      <bandwidth>
+        <inbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+        <outbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+      </bandwidth>
+{% endif %}
+      <address type='pci' domain='0x0000' bus='0x04' slot='0x00' function='0x0'/>
+    </interface>
+{% else %}
     <interface type='bridge'>
       <mac address='{{ hostvars[inventory_hostname]['mac_address'] }}'/>
       <source bridge='br0'/>
@@ -125,6 +152,7 @@
 {% endif %}
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>
+{% endif %}
     <serial type='pty'>
       <target type='isa-serial' port='0'>
         <model name='isa-serial'/>
