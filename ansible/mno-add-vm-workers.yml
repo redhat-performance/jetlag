@@ -1,0 +1,121 @@
+---
+# Create and deploy a cluster with the Assisted Installer
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/mno-deploy.yml
+#
+
+- name: Prep cluster to add hosts
+  hosts: bastion
+  vars_files:
+  - vars/lab.yml
+  - vars/all.yml
+  gather_facts: false
+  tasks:
+  - name: Set assisted installer connection
+    set_fact:
+      assisted_installer_host: "{{ groups['bastion'][0] }}"
+      assisted_installer_port: "8090"
+
+  - name: Get cluster status
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
+      method: GET
+      body_format: json
+      status_code: [200]
+      return_content: true
+    register: cluster_data
+    failed_when: cluster_data.json.status not in ['installed', 'adding-hosts']
+
+  - name: Set cluster status to adding-hosts
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/actions/allow-add-workers"
+      method: POST
+      body_format: json
+      status_code: [201, 202]
+    when: cluster_data.json.status == 'installed'
+
+  - name: Get infra-env
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
+      method: GET
+      body_format: json
+      status_code: [200]
+      return_content: true
+    register: infra_env_return
+
+  - name: Set ai_infraenv_id
+    set_fact:
+      ai_infraenv_id: "{{ infra_env_return.json.hosts[0].infra_env_id }}"
+
+  - name: Get infra-env static_network_config
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
+      method: GET
+      body_format: json
+      status_code: [200]
+      return_content: true
+    register: infra_env_return
+
+  - name: Set ai_infraenv_static_config
+    set_fact:
+      ai_infraenv_static_config: "{{ infra_env_return.json.static_network_config }}"
+
+  - name: Set empty static network configuration
+    set_fact:
+      static_network_config: []
+
+  - name: Generate Static Network Config for VMs
+    ansible.builtin.include_role:
+      name: create-ai-cluster
+      tasks_from: static_network_config
+    vars:
+      hybrid_worker_count: "{{ add_worker_count }}"
+    loop: "{{ groups['hv_vm'][:hybrid_worker_count | int] }}"
+
+  - name: show ai_infraenv_static_config
+    debug:
+      var: ai_infraenv_static_config
+
+  - name: show static_network_config
+    debug:
+      var: static_network_config
+
+  - name: Set static network composite
+    set_fact:
+      static_network_config_comp: "{{ static_network_config + ai_infraenv_static_config }}"
+
+  - name: show static_network_config composite
+    debug:
+      var: static_network_config_comp
+
+  - name: Update static config
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
+      body: {
+        "static_network_config": "{{ static_network_config + ai_infraenv_static_config }}"
+      }
+      method: PATCH
+      body_format: json
+      status_code: [201]
+      return_content: true
+
+
+- name: Boot / Install VMs
+  hosts: bastion
+  vars_files:
+  - vars/lab.yml
+  - vars/all.yml
+  roles:
+  - generate-discovery-iso
+  - role: boot-iso
+    vars:
+      inventory_group: hv_vm
+      index: "{{ add_worker_count }}"
+      virtual_media_iso: "discovery.iso"
+  - role: wait-hosts-discovered
+    vars:
+      inventory_nodes: "{{ groups['hv_vm'][:add_worker_count|int] }}"
+      discover_nodes: "{{ groups['hv_vm'][:add_worker_count|int] }}"
+  - add-hosts-install

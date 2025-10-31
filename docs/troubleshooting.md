@@ -12,6 +12,7 @@ _**Table of Contents**_
   - [Failed on Wait for cluster to be ready](#failed-on-wait-for-cluster-to-be-ready)
   - [Failed on Adjust by-path selected install disk](#failed-on-adjust-by-path-selected-install-disk)
   - [Failed on Insert Virtual Media](#failed-on-insert-virtual-media)
+  - [Failing ImagePull due to Pull Secret](#failing-imagepull-due-to-pull-secret)
 - [Bastion](#bastion)
   - [Accessing services](#accessing-services)
   - [Clean all container services / podman pods](#clean-all-container-services--podman-pods)
@@ -272,6 +273,15 @@ Object value modified successfully
 racadm>>set iDRAC.VirtualMedia.Attached Attached
 [Key=iDRAC.Embedded.1#VirtualMedia.1]
 Object value modified successfully
+```
+
+## Failing ImagePull due to Pull Secret
+
+If a cluster has been running for some time or has changed hands between owners, there is a chance the pull secret supplied at install time may have expired.  If the cluster is degraded enough as a result, the control plane will not be able to update the kubelet's pull secret automatically.
+
+For this emergency scenario, a playbook has been created that should hopefully help:
+```
+ansible-playbook ansible/copy-pull-secret.yml
 ```
 
 # Bastion
