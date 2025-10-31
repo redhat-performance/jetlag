@@ -1,0 +1,5 @@
+---
+- name: Start one vm
+  shell:
+    for i  in $(virsh list --all --name  --state-shutoff | grep vm |head -1) ; do virsh start $i ; done
+  become: true
