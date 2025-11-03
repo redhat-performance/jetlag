@@ -1,4 +1,5 @@
 pull_secret.*
+pull-secret.*
 kubeconfig
 .ansible
 .vscode

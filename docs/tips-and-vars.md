@@ -201,7 +201,7 @@ Saved credentials for registry.ci.openshift.org into ci_ps.json
 	}
 }
 ```
-* Append or update the pull secret retrieved from above under pull_secret.txt in repo base directory.
+* Append or update the pull secret retrieved from above under pull-secret.txt in repo base directory.
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
