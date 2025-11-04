@@ -1,0 +1,11 @@
+---
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: itms-aap-2-6-0
+spec:
+  imageTagMirrors:
+  - mirrors:
+    - {{ registry_host }}:{{ registry_port }}/ansible-automation-platform-26/ee-supported-rhel9
+    source: registry.redhat.io/ansible-automation-platform-26/ee-supported-rhel9
+status: {}
