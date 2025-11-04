@@ -38,6 +38,9 @@ sno_use_lab_dhcp: false
 # Enables FIPs security standard
 enable_fips: false
 
+#Enables the TechPreviewNoUpgrade feature set
+enable_techpreview: false
+
 # Enables Operators CNV and LSO install at deployment timeframe (GA releases only)
 enable_cnv_install: false
 

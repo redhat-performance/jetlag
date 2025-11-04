@@ -28,6 +28,9 @@ fips: true
 {% else %}
 fips: false
 {% endif %}
+{% if enable_techpreview | default(false) %}
+featureSet: TechPreviewNoUpgrade
+{% endif %}
 {% if use_bastion_registry | default(false) %}
 imageContentSources:
 - mirrors:
