@@ -16,6 +16,7 @@ interfaces:
     mode: 802.3ad
     options:
       miimon: '100'
+      xmit_hash_policy: layer3+4
     port:
 {% for interface in hostvars[item]['bond0_interfaces'] %}
     - {{ interface }}
