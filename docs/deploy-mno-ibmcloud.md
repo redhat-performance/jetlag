@@ -127,14 +127,13 @@ for subsequent steps:
 [root@<bastion> jetlag]#
 ```
 
-6. Download your `pull_secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
+6. Download your `pull-secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
 the long downloads page, in the section labeled "Tokens". You can either click the "Download" button, and then copy the
-downloaded file to `~/jetlag/pull_secret.txt` on the bastion (notice that Jetlag expects an underscore (`_`) while the
-file will download with a hyphen (`-`)); *or* click on the "Copy" button, and then paste the clipboard into the terminal
-after typing `cat >pull_secret.txt` on the bastion to create the expected filename:
+downloaded file to `~/jetlag/pull-secret.txt` on the bastion; *or* click on the "Copy" button, and then paste the clipboard into the terminal
+after typing `cat >pull-secret.txt` on the bastion to create the expected filename:
 
 ```console
-[root@<bastion> jetlag]# cat >pull_secret.txt
+[root@<bastion> jetlag]# cat >pull-secret.txt
 {
   "auths": {
     "quay.io": {
@@ -209,7 +208,7 @@ for a list of `dev` releases. Nightly `ci` builds are tricky and require determi
 exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
 `4.19.0-0.nightly-2025-02-25-035256`.
 
-Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci` builds.
+Note: user has to add registry.ci.openshift.org token in pull-secret.txt for `ci` builds.
 
 Set `ssh_private_key_file` and `ssh_public_key_file` to the file location of the ssh key files to access your ibmcloud bare metal servers.
 
@@ -271,9 +270,9 @@ enable_cnv_install: false
 
 ssh_private_key_file: ~/.ssh/ibmcloud_id_rsa
 ssh_public_key_file: ~/.ssh/ibmcloud_id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned Jetlag repo, Example:
-# [root@<bastion> jetlag]# ls pull_secret.txt
-pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
+# Place your pull-secret.txt in the base directory of the cloned Jetlag repo, Example:
+# [root@<bastion> jetlag]# ls pull-secret.txt
+pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"
 
 ################################################################################
 # Bastion node vars

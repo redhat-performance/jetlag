@@ -47,4 +47,4 @@ hv_vm_manifest_acm_cr: true
 # Retrieves the bastion pull-secret instead of below pull-secret
 use_bastion_registry: false
 # Provide pull-secret for connected manifests
-pull_secret: "{{ lookup('file', '../pull_secret.txt') | b64encode }}"
+pull_secret: "{{ lookup('file', '../pull-secret.txt') | b64encode }}"

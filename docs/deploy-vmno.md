@@ -30,7 +30,7 @@ _**Table of Contents**_
 
 # Deploy a VMNO
 
-This quickstart assumes you already have selected a bastion, setup ssh, downloaded your pull_secret.txt and cloned the jetlag repo. An example cloud consisting of Dell r740xds called `cloud99` in the performancelab is used for the example.
+This quickstart assumes you already have selected a bastion, setup ssh, downloaded your pull-secret.txt and cloned the jetlag repo. An example cloud consisting of Dell r740xds called `cloud99` in the performancelab is used for the example.
 
 The main steps to deploy a VMNO are as follows
 
@@ -77,7 +77,7 @@ for a list of `dev` releases. Nightly `ci` builds are tricky and require determi
 exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
 `4.19.0-0.nightly-2025-02-25-035256`.
 
-Note: user has to add registry.ci.openshift.org token in pull_secret.txt for `ci` builds.
+Note: user has to add registry.ci.openshift.org token in pull-secret.txt for `ci` builds.
 
 ### Bastion node vars
 
@@ -189,9 +189,9 @@ enable_cnv_install: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
-# [root@<bastion> jetlag]# ls pull_secret.txt
-pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
+# Place your pull-secret.txt in the base directory of the cloned jetlag repo, Example:
+# [root@<bastion> jetlag]# ls pull-secret.txt
+pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"
 
 ################################################################################
 # Bastion node vars
@@ -284,7 +284,7 @@ hv_vm_manifest_acm_cr: true
 # Retrieves the bastion pull-secret instead of below pull-secret
 use_bastion_registry: false
 # Provide pull-secret for connected manifests
-pull_secret: "{{ lookup('file', '../pull_secret.txt') | b64encode }}"
+pull_secret: "{{ lookup('file', '../pull-secret.txt') | b64encode }}"
 ```
 
 ## Run playbooks

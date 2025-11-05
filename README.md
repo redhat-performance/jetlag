@@ -95,7 +95,7 @@ You can also [manually create a "Bring Your Own Lab"](docs/deploy-mno-byol.md) i
 | - | - |
 | `ansible/vars/all.yml` | An Ansible vars file used for Red Hat performance labs (sample provided at `ansible/vars/all.sample.yml`)
 | `ansible/vars/ibmcloud.yml` | An Ansible vars file used for IBM Cloud (sample provided at `ansible/vars/ibmcloud.sample.yml`)
-| `pull_secret.txt` | Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
+| `pull-secret.txt` | Your OCP pull secret, download from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads)
 | `ansible/inventory/$CLOUDNAME.local` | The generated inventory file (Samples provided in `ansible/inventory`)
 
 Start by editing the vars
@@ -126,10 +126,10 @@ Make sure to set/review the following vars:
 
 More customization such as `cluster_network` and `service_network` are available as extra vars, check each ansible role default vars file for variable names and options. For network interface configuration details, see [tips-and-vars.md](docs/tips-and-vars.md).
 
-Save your pull-secret from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) in `pull_secret.txt` in the Jetlag repo base directory, for example by using the "Copy" button on the web page, and then pasting the clipboard text into a `cat > pull_secret.txt` command like this:
+Save your pull-secret from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) in `pull-secret.txt` in the Jetlag repo base directory, for example by using the "Copy" button on the web page, and then pasting the clipboard text into a `cat > pull-secret.txt` command like this:
 
 ```console
-(.ansible) [root@<bastion> jetlag]# cat >pull_secret.txt
+(.ansible) [root@<bastion> jetlag]# cat >pull-secret.txt
 {
   "auths": {
     "quay.io": {

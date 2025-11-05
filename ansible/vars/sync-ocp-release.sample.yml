@@ -8,4 +8,4 @@ ocp_build: "ga"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
 ocp_version: "latest-4.20"
 
-pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
+pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"

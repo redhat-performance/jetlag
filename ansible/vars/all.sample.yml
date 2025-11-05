@@ -46,9 +46,9 @@ enable_cnv_install: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
-# Place your pull_secret.txt in the base directory of the cloned jetlag repo, Example:
-# [root@<bastion> jetlag]# ls pull_secret.txt
-pull_secret: "{{ lookup('file', '../pull_secret.txt') }}"
+# Place your pull-secret.txt in the base directory of the cloned jetlag repo, Example:
+# [root@<bastion> jetlag]# ls pull-secret.txt
+pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"
 
 ################################################################################
 # Bastion node vars
