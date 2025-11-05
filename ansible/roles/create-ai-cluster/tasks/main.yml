@@ -232,6 +232,9 @@
   - file_name: kubeletconfig-max-pods.yml
     template_name: kubeletconfig-max-pods.yml
     enabled: "{{ kubelet_config }}"
+  - file_name: aap-imagetagmirrorset.yml
+    template_name: aap-imagetagmirrorset.yml.j2
+    enabled: "{{ use_bastion_registry and setup_ansible_automation_platform | default(false) }}"
 
 # SNO Custom manifests only
 - name: SNO - Include custom manifests
