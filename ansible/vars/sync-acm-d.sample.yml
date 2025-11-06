@@ -41,4 +41,4 @@ recert_image_tag: latest
 minio_image: quay.io/minio/minio
 minio_image_tag: RELEASE.2022-04-01T03-41-39Z
 
-acm_d_pull_secret: "{{ lookup('file', '../pull_secret.acm_d.txt') }}"
+acm_d_pull_secret: "{{ lookup('file', '../pull-secret.acm-d.txt') }}"

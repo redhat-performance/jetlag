@@ -12,13 +12,13 @@
 - name: Template out pull-secret
   copy:
     content: "{{ acm_d_pull_secret }}"
-    dest: "{{ sync_path }}/pull-secret.acm_d.txt"
+    dest: "{{ sync_path }}/pull-secret.acm-d.txt"
 
 - name: Add bastion registry to pull-secret
   shell: |
     b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
     AUTHSTRING="{\"{{ registry_host }}:{{ registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
-    jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm_d.txt > {{ sync_path }}/pull-secret-bastion.acm_d.txt
+    jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm-d.txt > {{ sync_path }}/pull-secret-bastion.acm-d.txt
 
 - name: Download acm mapping file from stolostron/deploy repo
   when: not is_konflux_build
@@ -43,7 +43,7 @@
 # If this errors, you won't be able to install ACM later, so retries are added incase of issues with the registry
   - name: Mirror acm images onto the bastion registry
     shell: |
-      oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
+      oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
     register: result
     until: not result.failed
     retries: 3
@@ -87,7 +87,7 @@
 
   - name: Mirror acm images from konflux build onto the bastion registry
     shell: |
-      oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
+      oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm-d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
     register: result
     until: not result.failed
     retries: 3
@@ -95,34 +95,34 @@
 
 - name: Mirror ztp-site-generator image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ ztp_site_generator_image }}:{{ ztp_site_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/ztp-site-generator:{{ ztp_site_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ ztp_site_generator_image }}:{{ ztp_site_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/ztp-site-generator:{{ ztp_site_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 # Use the rhacm policy generator included with the build intended
 # - name: Mirror rhacm policy generator image
 #   shell: |
-#     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/{{ rhacm_policy_generator_image.split("/")[-1] }}:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
+#     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ rhacm_policy_generator_image }}:{{ rhacm_policy_generator_image_tag }} {{ registry_host }}:{{ registry_port }}/acm-d/{{ rhacm_policy_generator_image.split("/")[-1] }}:{{ rhacm_policy_generator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror cluster-group-upgrades-operator image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_image }}:{{ cluster_group_upgrades_operator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator:{{ cluster_group_upgrades_operator_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ cluster_group_upgrades_operator_image }}:{{ cluster_group_upgrades_operator_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator:{{ cluster_group_upgrades_operator_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror cluster-group-upgrades-operator-precache image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_precache_image }}:{{ cluster_group_upgrades_operator_precache_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator-precache:{{ cluster_group_upgrades_operator_precache_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ cluster_group_upgrades_operator_precache_image }}:{{ cluster_group_upgrades_operator_precache_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator-precache:{{ cluster_group_upgrades_operator_precache_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror cluster-group-upgrades-operator-recovery image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ cluster_group_upgrades_operator_recovery_image }}:{{ cluster_group_upgrades_operator_recovery_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator-recovery:{{ cluster_group_upgrades_operator_recovery_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ cluster_group_upgrades_operator_recovery_image }}:{{ cluster_group_upgrades_operator_recovery_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift-kni/cluster-group-upgrades-operator-recovery:{{ cluster_group_upgrades_operator_recovery_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror origin-kube-rbac-proxy image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ origin_kube_rbac_proxy_image }}:{{ origin_kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift/origin-kube-rbac-proxy:{{ origin_kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ origin_kube_rbac_proxy_image }}:{{ origin_kube_rbac_proxy_image_tag }} {{ registry_host }}:{{ registry_port }}/openshift/origin-kube-rbac-proxy:{{ origin_kube_rbac_proxy_image_tag }} --keep-manifest-list --continue-on-error=true
 
 # Image needed for IBU
 - name: Mirror recert image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ recert_image }}:{{ recert_image_tag }} {{ registry_host }}:{{ registry_port }}/edge-infrastructure/recert:{{ recert_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ recert_image }}:{{ recert_image_tag }} {{ registry_host }}:{{ registry_port }}/edge-infrastructure/recert:{{ recert_image_tag }} --keep-manifest-list --continue-on-error=true
 
 - name: Mirror minio image
   shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm_d.txt {{ minio_image }}:{{ minio_image_tag }} {{ registry_host }}:{{ registry_port }}/minio/minio:{{ minio_image_tag }} --keep-manifest-list --continue-on-error=true
+    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ minio_image }}:{{ minio_image_tag }} {{ registry_host }}:{{ registry_port }}/minio/minio:{{ minio_image_tag }} --keep-manifest-list --continue-on-error=true

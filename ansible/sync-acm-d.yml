@@ -2,7 +2,7 @@
 # Sync ACM downstream container images into bastion/mirror registry to allow an ACM
 # downstream build to be installed from a bastion/mirror registry
 #
-# Prior to use, set `pull_secret.acm_d.txt` in base repo directory
+# Prior to use, set `pull-secret.acm-d.txt` in base repo directory
 #
 # Example Usage:
 #
