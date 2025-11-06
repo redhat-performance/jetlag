@@ -2,16 +2,22 @@ interfaces:
 - name: bond0
   type: bond
   state: up
-{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
+{% if 'ip' in hostvars[item] %}
   ipv4:
-{% else %}
-  ipv6:
-{% endif %}
     address:
     - ip: {{ hostvars[item]['ip'] }}
       prefix-length: {{ hostvars[item]['network_prefix'] }}
     auto-dns: false
     enabled: true
+{% endif %}
+{% if 'ipv6' in hostvars[item] %}
+  ipv6:
+    address:
+    - ip: {{ hostvars[item]['ipv6'] }}
+      prefix-length: {{ hostvars[item]['ipv6_prefix'] }}
+    auto-dns: false
+    enabled: true
+{% endif %}
   link-aggregation:
     mode: 802.3ad
     options:
@@ -36,10 +42,13 @@ dns-resolver:
 {% endif %}
 routes:
   config:
-{% if bastion_controlplane_ip | ansible.utils.ipv4 %}
+{% if 'ip' in hostvars[item] %}
   - destination: 0.0.0.0/0
-{% else %}
-  - destination: ::/0
-{% endif %}
     next-hop-address: {{ hostvars[item]['gateway'] }}
     next-hop-interface: bond0
+{% endif %}
+{% if 'ipv6' in hostvars[item] %}
+  - destination: ::/0
+    next-hop-address: {{ hostvars[item]['ipv6_gateway'] }}
+    next-hop-interface: bond0
+{% endif %}

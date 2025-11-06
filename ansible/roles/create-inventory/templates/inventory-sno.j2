@@ -45,7 +45,10 @@ bmc_password={{ bmc_password }}
 {%   if sno_use_lab_dhcp %}
 {%     set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', worker_long_hostname)|first).json.ip %}
 {%   else %}
-{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index + sno_controlplane_ip_offset +1) %}
+{%     set ip=controlplane_network[0] | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset +1) %}
+{%   endif %}
+{%   if controlplane_network | length > 1 %}
+{%     set ipv6=controlplane_network[1] | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset +1) %}
 {%   endif %}
 {%   set worker_hw = (worker.pm_addr.split('.')[0]).split('-')[-1] %}
 {%   set worker_parts = (worker.pm_addr.split('.')[0]).replace('mgmt-','').split('-') %}
@@ -53,7 +56,7 @@ bmc_password={{ bmc_password }}
 {%   set worker_unit = worker_parts[1] if worker_parts|length > 1 else '' %}
 {%   set worker_disk = worker_install_disk | default(hw_install_disk[lab][worker_rack ~ '-' ~ worker_unit ~ '-' ~ worker_hw]) | default(hw_install_disk[lab][worker_rack ~ '-' ~ worker_hw]) | default(hw_install_disk[lab][worker_hw]) | default('/dev/sda') %}
 {% if sno_worker_foreman_data is defined and sno_worker_foreman_data.results is defined %}
-{{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_disk }}
+{{ worker_short_hostname }} bmc_address={{ worker.pm_addr }} mac_address={{ worker.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }}{% if controlplane_network | length > 1 %} ipv6={{ ipv6 }}{% endif %} vendor={{ hw_vendor[(worker.pm_addr.split('.')[0]).split('-')[-1]] }} install_disk={{ worker_disk }}
 {% endif %}
 {% endfor %}
 
@@ -75,14 +78,18 @@ lab_interface={{ controlplane_lab_interface }}
 {% endif %}
 {% else %}
 network_interface={{ controlplane_network_interface }}
-network_prefix={{ controlplane_network_prefix }}
-gateway={{ controlplane_network_gateway }}
+network_prefix={{ controlplane_network_prefix[0] }}
+gateway={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% if controlplane_bastion_as_dns %}
-dns1={{ bastion_controlplane_ip }}
+dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% else %}
 dns1={{ labs[lab]['dns'][0] }}
 dns2={{ labs[lab]['dns'][1] | default('') }}
 {% endif %}
+{%   if controlplane_network | length > 1 %}
+ipv6_prefix={{ controlplane_network_prefix[1] }}
+ipv6_gateway={{ controlplane_network[1] | ansible.utils.nthhost(1) }}
+{%   endif %}
 {% endif %}
 {% else %}
 [worker]
@@ -107,7 +114,10 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 {%   if sno_use_lab_dhcp %}
 {%     set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', sno_long_hostname)|first).json.ip %}
 {%   else %}
-{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset) %}
+{%     set ip=controlplane_network[0] | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset) %}
+{%   endif %}
+{%   if controlplane_network | length > 1 %}
+{%     set ipv6=controlplane_network[1] | ansible.utils.nthhost(loop.index0 + sno_controlplane_ip_offset) %}
 {%   endif %}
 {%   set sno_hw = (sno.pm_addr.split('.')[0]).split('-')[-1] %}
 {%   set sno_parts = (sno.pm_addr.split('.')[0]).replace('mgmt-','').split('-') %}
@@ -115,9 +125,9 @@ dns2={{ labs[lab]['dns'][1] | default('') }}
 {%   set sno_unit = sno_parts[1] if sno_parts|length > 1 else '' %}
 {%   set sno_disk = sno_install_disk | default(hw_install_disk[lab][sno_rack ~ '-' ~ sno_unit ~ '-' ~ sno_hw]) | default(hw_install_disk[lab][sno_rack ~ '-' ~ sno_hw]) | default(hw_install_disk[lab][sno_hw]) | default('/dev/sda') %}
 {%   if enable_bond | default(false) %}
-{%     if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} bond0_macs={{ sno.bond0_macs }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[sno_hw] }} install_disk={{ sno_disk }} boot_iso={{ sno_short_hostname }}.iso
+{%     if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} bond0_macs={{ sno.bond0_macs }} lab_mac={{ lab_mac }} ip={{ ip }}{% if controlplane_network | length > 1 %} ipv6={{ ipv6 }}{% endif %} vendor={{ hw_vendor[sno_hw] }} install_disk={{ sno_disk }} boot_iso={{ sno_short_hostname }}.iso
 {%   else %}
-{%     if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} mac_address={{ sno.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }} vendor={{ hw_vendor[sno_hw] }} install_disk={{ sno_disk }} boot_iso={{ sno_short_hostname }}.iso
+{%     if not loop.first %}# {% endif %}{{ sno_short_hostname }} bmc_address={{ sno.pm_addr }} mac_address={{ sno.mac[controlplane_network_interface_idx|int] }} lab_mac={{ lab_mac }} ip={{ ip }}{% if controlplane_network | length > 1 %} ipv6={{ ipv6 }}{% endif %} vendor={{ hw_vendor[sno_hw] }} install_disk={{ sno_disk }} boot_iso={{ sno_short_hostname }}.iso
 {%   endif %}
 {% endfor %}
 
@@ -144,13 +154,20 @@ bond0_interfaces={{ private_bond_interfaces }}
 {% else %}
 network_interface={{ controlplane_network_interface }}
 {% endif %}
-network_prefix={{ controlplane_network_prefix }}
-gateway={{ controlplane_network_gateway }}
+network_prefix={{ controlplane_network_prefix[0] }}
+gateway={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {%   if controlplane_bastion_as_dns %}
-dns1={{ bastion_controlplane_ip }}
+dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {%   else %}
 dns1={{ labs[lab]['dns'][0] }}
 dns2={{ labs[lab]['dns'][1] | default('') }}
+{%   endif %}
+{%   if controlplane_network | length > 1 %}
+ipv6_prefix={{ controlplane_network_prefix[1] }}
+ipv6_gateway={{ controlplane_network[1] | ansible.utils.nthhost(1) }}
+{%     if controlplane_bastion_as_dns %}
+dns1_ipv6={{ controlplane_network[1] | ansible.utils.nthhost(1) }}
+{%     endif %}
 {%   endif %}
 {% endif %}
 

@@ -277,12 +277,12 @@
   - name: SNO - Set max number of nodes
     set_fact:
       max_nodes: "{{ ocpinventory.json.nodes|length }}"
-    when: worker_node_count == None
+    when: worker_node_count is not defined or worker_node_count == None
 
   - name: SNO - Set max number of nodes (worker_node_count set)
     set_fact:
       max_nodes: "{{ worker_node_count|int + 2 }}"
-    when: worker_node_count != None
+    when: worker_node_count is defined and worker_node_count != None
 
   - name: SNO - Set ocpinventory worker nodes (for scale-out scenarios)
     set_fact:

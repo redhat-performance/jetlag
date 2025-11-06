@@ -7,20 +7,28 @@ controlplane_network_interface_idx: 0
 # as a representative for the actual nic name. The actual nic is determined by the mac address which is
 # discovered by the ocpinventory.json file from the lab.
 controlplane_network_interface: eth0
-controlplane_network: 198.18.0.0/16
-controlplane_network_prefix: 16
-controlplane_network_gateway: "{{ controlplane_network | ansible.utils.nthhost(1) }}"
-controlplane_network_api: "{{ controlplane_network | ansible.utils.nthhost(3) }}"
-controlplane_network_ingress: "{{ controlplane_network | ansible.utils.nthhost(4) }}"
+# Controlplane network - always a list
+# Single stack IPv4: controlplane_network: ['198.18.0.0/16']
+# Dual stack: controlplane_network: ['198.18.0.0/16', 'fd00:198:18::/64']
+controlplane_network: ['198.18.0.0/16']
+# Network prefix - always a list matching controlplane_network
+# Single stack: controlplane_network_prefix: [16]
+# Dual stack: controlplane_network_prefix: [16, 64]
+controlplane_network_prefix: [16]
 # Sets "bastion_controlplane_ip" as primary dns
 controlplane_bastion_as_dns: true
-bastion_controlplane_ip: "{{ controlplane_network | ansible.utils.nthhost(1) }}"
 
-# OCP networks
-cluster_network_cidr: 10.128.0.0/14
+# OCP networks - always lists
+# Single stack: cluster_network_cidr: ['10.128.0.0/14']
+# Dual stack: cluster_network_cidr: ['10.128.0.0/14', 'fd01::/48']
+cluster_network_cidr: ['10.128.0.0/14']
 # The default cluster host prefix is /23, allowing 510 cluster nodes, and 510 pod IP addresses per node.
-cluster_network_host_prefix: 23
-service_network_cidr: 172.30.0.0/16
+# Must match cluster_network_cidr length: cluster_network_host_prefix: [23, 64]
+cluster_network_host_prefix: [23]
+# Service network CIDR - always a list
+# Single stack: service_network_cidr: ['172.30.0.0/16']
+# Dual stack: service_network_cidr: ['172.30.0.0/16', 'fd02::/112']
+service_network_cidr: ['172.30.0.0/16']
 
 vip_dhcp_allocation: false
 
