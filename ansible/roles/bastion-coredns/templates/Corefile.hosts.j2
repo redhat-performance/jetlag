@@ -1,15 +1,22 @@
 # Bastion/API/VM/Compact/Standard resolution
 hosts {
     # Bastion
-    {{ bastion_controlplane_ip }} {{ groups['bastion'][0] }}
+{% for network in controlplane_network %}
+    {{ network | ansible.utils.nthhost(1) }} {{ groups['bastion'][0] }}
+{% endfor %}
 
 {% if cluster_type in ["mno", "vmno"] %}
     # MNO Cluster API
-    {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+{%   for network in controlplane_network %}
+    {{ network | ansible.utils.nthhost(3) }} api.{{ cluster_name }}.{{ base_dns_name }}
+{%   endfor %}
 {% else %}
 {%   for sno in groups['sno'] %}
     # SNO Cluster API
     {{ hostvars[sno].ip }} api.{{ sno }}.{{ base_dns_name }}
+{%     if hostvars[sno].ipv6 is defined %}
+    {{ hostvars[sno].ipv6 }} api.{{ sno }}.{{ base_dns_name }}
+{%     endif %}
 {%   endfor %}
 {% endif %}
 
@@ -17,6 +24,10 @@ hosts {
 {% for vm in groups['hv_vm'] %}
     {{ hostvars[vm].ip }} {{ vm }}
     {{ hostvars[vm].ip }} api.{{ vm }}.{{ base_dns_name }}
+{%   if hostvars[vm].ipv6 is defined %}
+    {{ hostvars[vm].ipv6 }} {{ vm }}
+    {{ hostvars[vm].ipv6 }} api.{{ vm }}.{{ base_dns_name }}
+{%   endif %}
 {% endfor %}
 {% if groups['hv_vm'] | length > 0 %}
 
@@ -40,32 +51,55 @@ hosts {
 }
 
 # *.apps All Clusters
-{% if bastion_controlplane_ip | ansible.utils.ipv6 %}
 {%   if cluster_type in ["mno", "vmno"] %}
 # *.apps for hub cluster
-template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+{%   for network in controlplane_network %}
+{%     if network | ansible.utils.ipv4 %}
+template IN A {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
     fallthrough
 }
+{%     else %}
+template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    fallthrough
+}
+{%     endif %}
+{%   endfor %}
 {%   else %}
 {%     for sno in groups['sno'] %}
 # *.apps for {{ sno }} SNO
-template IN AAAA {{ sno }}.{{ base_dns_name }} {
+template IN A {{ sno }}.{{ base_dns_name }} {
     match .*.apps.{{ sno }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ip }}"
     fallthrough
 }
+{%       if hostvars[sno].ipv6 is defined %}
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ipv6 }}"
+    fallthrough
+}
+{%       endif %}
 {%     endfor %}
 {%   endif %}
 
 # *.apps for VMs
 {%   for vm in groups['hv_vm'] %}
-template IN AAAA {{ vm }}.{{ base_dns_name }} {
+template IN A {{ vm }}.{{ base_dns_name }} {
     match .*.apps.{{ vm }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
     fallthrough
 }
+{%     if hostvars[vm].ipv6 is defined %}
+template IN AAAA {{ vm }}.{{ base_dns_name }} {
+    match .*.apps.{{ vm }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ipv6 }}"
+    fallthrough
+}
+{%     endif %}
 {%   endfor %}
 {%   if groups['hv_vm'] | length > 0 %}
 
@@ -88,60 +122,6 @@ template IN AAAA standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
 # *.apps for compact clusters
 {%     for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
 template IN AAAA compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
-    match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
-    fallthrough
-}
-{%     endfor %}
-{%   endif %}
-{% else %}
-{%   if cluster_type in ["mno", "vmno"] %}
-# *.apps for mno cluster
-template IN A {{ cluster_name }}.{{ base_dns_name }} {
-    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
-    fallthrough
-}
-{%   else %}
-{%     for sno in groups['sno'] %}
-# *.apps for {{ sno }} SNO
-template IN A {{ sno }}.{{ base_dns_name }} {
-    match .*.apps.{{ sno }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ip }}"
-    fallthrough
-}
-{%     endfor %}
-{%   endif %}
-
-# *.apps for VMs
-{%   for vm in groups['hv_vm'] %}
-template IN A {{ vm }}.{{ base_dns_name }} {
-    match .*.apps.{{ vm }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
-    fallthrough
-}
-{%   endfor %}
-{%   if groups['hv_vm'] | length > 0 %}
-
-# *.apps for jumbocluster00
-template IN A jumbocluster00.{{ base_dns_name }} {
-    match .*.apps.jumbocluster00.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-3) }}"
-    fallthrough
-}
-
-# *.apps for standard clusters
-{%     for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
-template IN A standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
-    match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}"
-    fallthrough
-}
-{%     endfor %}
-
-# *.apps for compact clusters
-{%     for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
-template IN A compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
     fallthrough
