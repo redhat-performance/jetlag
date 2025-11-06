@@ -1,24 +1,24 @@
 {% if cluster_type == "sno" %}
-{% if du_profile %}
-{% if openshift_version is version('4.14', ">=") %}
+{%   if du_profile %}
+{%     if openshift_version is version('4.14', ">=") %}
 cpuPartitioningMode: AllNodes
-{% endif %}
-{% if openshift_version is version('4.13', ">=") %}
+{%     endif %}
+{%     if openshift_version is version('4.13', ">=") %}
 capabilities:
   baselineCapabilitySet: None
   additionalEnabledCapabilities:
-{% if openshift_version in ["4.13","4.14"] %}
+{%       if openshift_version in ["4.13","4.14"] %}
   - marketplace
-{% endif %}
+{%       endif %}
   - NodeTuning
-{% if openshift_version is version('4.15', ">=") %}
+{%       if openshift_version is version('4.15', ">=") %}
   - OperatorLifecycleManager
-{% endif %}
-{% if openshift_version is version('4.16', ">=") %}
+{%       endif %}
+{%       if openshift_version is version('4.16', ">=") %}
   - Ingress
-{% endif %}
-{% endif %}
-{% endif %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
 {% else %}
 networking:
   networkType: OVNKubernetes
@@ -32,7 +32,7 @@ fips: false
 featureSet: TechPreviewNoUpgrade
 {% endif %}
 {% if use_bastion_registry | default(false) %}
-imageContentSources:
+imageDigestSources:
 - mirrors:
   - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
   source: quay.io/openshift-release-dev/ocp-release
