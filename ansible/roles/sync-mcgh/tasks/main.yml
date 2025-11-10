@@ -12,13 +12,13 @@
 - name: Template out pull-secret
   copy:
     content: "{{ acm_d_pull_secret }}"
-    dest: "{{ sync_path }}/pull-secret.acm_d.txt"
+    dest: "{{ sync_path }}/pull-secret.acm-d.txt"
 
 - name: Add bastion registry to pull-secret
   shell: |
     b64auth=$( echo -n '{{ registry_user }}:{{ registry_password }}' | openssl base64 )
     AUTHSTRING="{\"{{ registry_host }}:{{ registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
-    jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm_d.txt > {{ sync_path }}/pull-secret-bastion.acm_d.txt
+    jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm-d.txt > {{ sync_path }}/pull-secret-bastion.acm-d.txt
 
 - name: Add mirrors for MCGH in registries.conf
   blockinfile:
@@ -75,7 +75,7 @@
 
 - name: Mirror MCGH images onto the bastion registry
   shell: |
-    oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm_d.txt  -c {{ sync_path }}/mcgh/imagesetconf.yml --workspace file://{{ sync_path }}/mcgh/ docker://{{ registry_host }}:{{ registry_port }} --v2
+    oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm-d.txt  -c {{ sync_path }}/mcgh/imagesetconf.yml --workspace file://{{ sync_path }}/mcgh/ docker://{{ registry_host }}:{{ registry_port }} --v2
   register: result
   until: not result.failed
   retries: 3
