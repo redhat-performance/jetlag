@@ -3,7 +3,7 @@ search {{ base_dns_name }}
 {% if public_vlan | default(false) %}
 nameserver {{ ansible_default_ipv4.address }}
 {% else %}
-nameserver {{ bastion_controlplane_ip }}
+nameserver {{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% endif %}
 {% if lab in rh_labs or lab == "byol" %}
 {% for dns in labs[lab]['dns'] %}
