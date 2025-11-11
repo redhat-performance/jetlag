@@ -1,0 +1,6 @@
+---
+- name: start one VMs
+  gather_facts: false
+  hosts: hv
+  roles:
+  - hv-vm-start
