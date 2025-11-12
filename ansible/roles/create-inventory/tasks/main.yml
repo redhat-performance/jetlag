@@ -93,7 +93,7 @@
 
   - name: Public VLAN - Set hypervisor_nic_interface_idx to -1 for the last interface
     set_fact:
-      hypervisor_nic_interface_idx: "-1"
+      hypervisor_nic_interface_idx: -1
 
 - name: Auto-configure bastion lab interface (only when not explicitly set)
   set_fact:
@@ -361,7 +361,9 @@
   block:
   - name: VMNO - Set ocpinventory hv nodes
     set_fact:
-      ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[1:] }}"
+      ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[1:max_hv_nodes|int] }}"
+    vars:
+      max_hv_nodes: "{{ (hv_count|int + 1) if hv_count != None else ocpinventory.json.nodes|length }}"
 
 - name: Hypervisor tasks to determine if there is a 2nd disk available
   when: hv_inventory or cluster_type == "vmno"
