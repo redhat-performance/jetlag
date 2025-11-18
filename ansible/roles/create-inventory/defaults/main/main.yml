@@ -42,3 +42,7 @@ disk2_mount_path: /mnt/disk2
 # If HV is setup, how many workers are VMs
 # This adds vm workers to the workers section of the inventory
 hybrid_worker_count: 0
+
+# For VMNO cluster type, specify how many hypervisors to include in the inventory
+# Default (None) uses all available nodes (minus bastion)
+hv_count:
