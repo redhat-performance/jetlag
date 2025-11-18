@@ -45,7 +45,7 @@ bmc_password={{ bmc_password }}
 {%   if sno_use_lab_dhcp %}
 {%     set ip=(sno_foreman_data.results|selectattr('json.name', 'eq', worker_long_hostname)|first).json.ip %}
 {%   else %}
-{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index + sno_controlplane_ip_offset) %}
+{%     set ip=controlplane_network | ansible.utils.nthhost(loop.index + sno_controlplane_ip_offset +1) %}
 {%   endif %}
 {%   set worker_hw = (worker.pm_addr.split('.')[0]).split('-')[-1] %}
 {%   set worker_parts = (worker.pm_addr.split('.')[0]).replace('mgmt-','').split('-') %}
