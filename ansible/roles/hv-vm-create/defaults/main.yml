@@ -24,7 +24,7 @@ vnuma_memory_mode: "strict"  # strict, preferred, interleave
 vnuma_cpu_mode: "strict"     # strict, preferred
 
 # Hugepages configuration for VMs
-enable_vm_hugepages: false
+vm_hugepages: false
 
 # Hugepage size for VMs: 2M or 1G
 vm_hugepage_size: "1G"
@@ -34,3 +34,6 @@ vm_hugepage_count:
 
 # Hugepage mount path in VMs
 vm_hugepage_mount: "/mnt/hugepages"
+
+# Enable IGB NICs for VMs
+vm_igb_nics: false
