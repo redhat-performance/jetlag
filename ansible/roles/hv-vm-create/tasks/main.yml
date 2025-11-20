@@ -21,7 +21,7 @@
     hv_vm_cpu_count: "{{ hostvars[inventory_hostname]['cpus'] }}"
 
 - name: Configure VM hugepages
-  when: enable_vm_hugepages
+  when: vm_hugepages
   block:
     - name: Calculate hugepages needed for VM if not specified
       set_fact:
