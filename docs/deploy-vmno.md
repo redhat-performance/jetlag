@@ -509,7 +509,10 @@ ansible/hv-vm-start-one.yml
 
 ## Disabling NetworkManager devices and connections for SR-IOV devices on VMs
 
-When VMs are created with SR-IOV devices using the IGB driver, the devices and connections will never fully initialize. NetworkManager repeatedly attempts to start them, which results in a large amount of churn on the VMs. A workaround to this churn is to force the devices down and connections' autoconnect off for those created for the interfaces.
+One option of creating SR-IOV capable interfaces in a VM is to create them using the Intel IGB driver.
+This may be achieved by setting the variable `vm_igb_nics: true` in your variables.
+
+**Please note:** When VMs are created with SR-IOV devices using the IGB driver, the devices and connections will never fully initialize. NetworkManager repeatedly attempts to start them, which results in a large amount of churn on the VMs. A workaround to this churn is to force the devices down and connections' autoconnect off for those created for the interfaces.
 
 See the following playbook:
 ```
