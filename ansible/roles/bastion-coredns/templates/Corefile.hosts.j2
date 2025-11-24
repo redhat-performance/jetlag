@@ -3,7 +3,7 @@ hosts {
     # Bastion
     {{ bastion_controlplane_ip }} {{ groups['bastion'][0] }}
 
-{% if cluster_type in ["mno", "vmno"] %}
+{% if cluster_type in ["mno", "hmno", "vmno"] %}
     # MNO Cluster API
     {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
 {% else %}
@@ -41,7 +41,7 @@ hosts {
 
 # *.apps All Clusters
 {% if bastion_controlplane_ip | ansible.utils.ipv6 %}
-{%   if cluster_type in ["mno", "vmno"] %}
+{%   if cluster_type in ["mno", "hmno", "vmno"] %}
 # *.apps for hub cluster
 template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
@@ -95,7 +95,7 @@ template IN AAAA compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
 {%     endfor %}
 {%   endif %}
 {% else %}
-{%   if cluster_type in ["mno", "vmno"] %}
+{%   if cluster_type in ["mno", "hmno", "vmno"] %}
 # *.apps for mno cluster
 template IN A {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}

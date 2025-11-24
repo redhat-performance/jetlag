@@ -89,7 +89,7 @@
   - name: Public VLAN - Set cluster_name if was set as default
     set_fact:
       cluster_name: "vlan{{ quads_assignment.json.vlan.vlan_id }}"
-    when: cluster_name == "mno"
+    when: cluster_name in ["mno", "hmno"]
 
   - name: Public VLAN - Set hypervisor_nic_interface_idx to -1 for the last interface
     set_fact:
@@ -144,7 +144,7 @@
       - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
 - name: Multi node cluster type tasks
-  when: cluster_type == "mno"
+  when: cluster_type in ["mno", "hmno"]
   block:
   - name: MNO - Set inventory variables
     set_fact:
@@ -247,11 +247,11 @@
     password: "{{ bmc_password }}"
     validate_certs: false
   loop: "{{ ocpinventory_worker_nodes }}"
-  when: cluster_type == "mno"
+  when: cluster_type in ["mno", "hmno"]
   register: mno_foreman_data
 
 - name: MNO - Add bond MAC addresses to worker nodes (when bonding is enabled)
-  when: cluster_type == "mno" and enable_bond | default(false) and not (public_vlan | default(false))
+  when: cluster_type in ["mno", "hmno"] and enable_bond | default(false) and not (public_vlan | default(false))
   set_fact:
     ocpinventory_worker_nodes: >-
       {{
@@ -472,8 +472,12 @@
       fail_msg: "controlplane_lab_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
       success_msg: "controlplane_lab_interface is configured: {{ controlplane_lab_interface }}"
 
+- name: Map cluster_type to inventory template name
+  set_fact:
+    inventory_template_type: "{{ 'mno' if cluster_type == 'hmno' else cluster_type }}"
+
 - name: Place inventory file named {{ lab_cloud }}.local into inventory directory
   template:
-    src: "inventory-{{ cluster_type }}.j2"
+    src: "inventory-{{ inventory_template_type }}.j2"
     dest: "{{ playbook_dir }}/inventory/{{ lab_cloud }}.local"
     backup: true

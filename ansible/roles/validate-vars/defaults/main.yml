@@ -4,6 +4,7 @@
 # mno = multi node openshift
 # sno = single node openshift
 rh_lab_cluster_types:
+- hmno
 - mno
 - sno
 - vmno

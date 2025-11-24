@@ -127,7 +127,7 @@
   - name: MNO / VMNO - Set ai_cluster_id
     set_fact:
       ai_cluster_id: "{{ create_cluster_return.json.id }}"
-  when: cluster_type in ["mno", "vmno"]
+  when: cluster_type in ["mno", "hmno", "vmno"]
 
 - name: Restart dnsmasq after /etc/hosts update
   systemd:
@@ -203,7 +203,7 @@
   include_tasks: 01_manifest_update.yml
   when:
   - lab in rh_labs or lab == "byol"
-  - (cluster_type == "mno") or (cluster_type == "sno" and not sno_use_lab_dhcp)
+  - (cluster_type in ["mno", "hmno"]) or (cluster_type == "sno" and not sno_use_lab_dhcp)
   loop:
   - file_name: 50-controlplane-disable-lab-dhcp-interface.yaml
     template_name: 50-controlplane-disable-lab-dhcp-interface.yml.j2
@@ -224,7 +224,7 @@
 # MNO Custom manifests only
 - name: MNO / VMNO - Include custom manifests
   include_tasks: 01_manifest_update.yml
-  when: cluster_type in ["mno", "vmno"]
+  when: cluster_type in ["mno", "hmno", "vmno"]
   loop:
   - file_name: 50-controlplane-tune-kni-haproxy.yaml
     template_name: 50-controlplane-tune-kni-haproxy.yml.j2

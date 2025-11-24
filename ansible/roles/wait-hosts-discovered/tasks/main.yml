@@ -4,7 +4,7 @@
 - name: MNO / VMNO - Create list of nodes to be discovered
   set_fact:
     inventory_nodes: "{{ groups['controlplane'] + groups['worker'] }}"
-  when: cluster_type in ["mno", "vmno"]
+  when: cluster_type in ["mno", "hmno", "vmno"]
 
 - name: SNO - Set the list of one node to be discovered
   set_fact:
