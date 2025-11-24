@@ -5,6 +5,12 @@ hv_kvm_def_path: /opt/hv
 
 hv_bmc_port: 9000
 
+# Bonding Configuration
+# When enable_bond is true, VMs in the [hv_vm] inventory section will have
+# bond0_macs defined (comma-separated MAC addresses) instead of mac_address.
+# The kvm-def.xml.j2 template will parse bond0_macs and create two network
+# interfaces for bonding.
+
 # vNUMA Configuration
 vnuma_enabled: false
 vnuma_memory_placement: "static"
