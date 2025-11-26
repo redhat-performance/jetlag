@@ -186,11 +186,13 @@
   vars:
     patch_network_body: |
       {
+      {% if controlplane_network | length > 1 %}
         "machine_networks": [
       {% for network in controlplane_network %}
           {"cidr": "{{ network }}"}{{ "," if not loop.last else "" }}
       {% endfor %}
         ],
+      {% endif %}
         "cluster_networks":  [
       {% for i in range(cluster_network_cidr | length) %}
           {
