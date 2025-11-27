@@ -80,10 +80,12 @@
       validate_certs: false
     register: quads_assignment
 
-  - name: Public VLAN - Set addressing information
+  - name: Public VLAN - Set addressing information (IPv4 only)
     set_fact:
-      controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
-      controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
+      controlplane_network:
+        - "{{ quads_assignment.json.vlan.ip_range }}"
+      controlplane_network_prefix:
+        - "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
 
   - name: Public VLAN - Set cluster_name if was set as default
