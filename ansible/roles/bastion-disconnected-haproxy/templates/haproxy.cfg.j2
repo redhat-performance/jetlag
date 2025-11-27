@@ -39,7 +39,7 @@ frontend api-ipv6-6443
 backend api-ipv6-be
     balance source
     mode tcp
-    server api [{{ controlplane_network_api }}]:6443 check inter 1s
+    server api [{{ controlplane_network[0] | ansible.utils.nthhost(3) }}]:6443 check inter 1s
 
 frontend machineconfig-ipv6-22623
     bind :::22623 v4v6
@@ -61,7 +61,7 @@ frontend ingress-router-ipv6-80
 backend ingress-ipv6-80
     mode tcp
     balance source
-    server ingress [{{ controlplane_network_ingress }}]:80 check inter 1s
+    server ingress [{{ controlplane_network[0] | ansible.utils.nthhost(4) }}]:80 check inter 1s
 
 frontend ingress-router-ipv6-443
     bind :::443 v4v6
@@ -71,7 +71,7 @@ frontend ingress-router-ipv6-443
 backend 443-ipv6-be
     mode tcp
     balance source
-    server ingress [{{ controlplane_network_ingress }}]:443 check inter 1s
+    server ingress [{{ controlplane_network[0] | ansible.utils.nthhost(4) }}]:443 check inter 1s
 
 {% if setup_bastion_gogs %}
 frontend gogs-ipv4-{{ gogs_ipv4_port }}
