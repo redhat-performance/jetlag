@@ -49,7 +49,7 @@ bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix[0] }}
-gateway={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
+gateway={{ controlplane_network_gateway | default(controlplane_network[0] | ansible.utils.nthhost(1)) }}
 {% if controlplane_bastion_as_dns %}
 dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% else %}
@@ -85,7 +85,7 @@ bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix[0] }}
-gateway={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
+gateway={{ controlplane_network_gateway | default(controlplane_network[0] | ansible.utils.nthhost(1)) }}
 {% if controlplane_bastion_as_dns %}
 dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% else %}
@@ -134,5 +134,5 @@ ansible_ssh_pass={{ hv_ssh_pass }}
 base_domain={{ base_dns_name }}
 machine_network={{ controlplane_network[0] }}
 network_prefix={{ controlplane_network_prefix[0] }}
-gateway={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
+gateway={{ controlplane_network_gateway | default(controlplane_network[0] | ansible.utils.nthhost(1)) }}
 bw_limit={{ hv_vm_bandwidth_limit }}
