@@ -40,19 +40,34 @@
       body_format: json
       status_code: [201]
       return_content: true
-      body: {
+      body: "{{ sno_cluster_body }}"
+    register: create_cluster_return
+    vars:
+      sno_cluster_body: |
+        {
           "name": "{{ cluster_name }}",
           "openshift_version": "{{ openshift_version }}",
           "high_availability_mode": "None",
           "base_dns_domain": "{{ base_dns_name }}",
-          "cluster_network_cidr": "{{ cluster_network_cidr }}",
-          "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-          "service_network_cidr": "{{ service_network_cidr }}",
-          "pull_secret": "{{ pull_secret | to_json }}",
+          "machine_networks": [
+        {% for network in controlplane_network %}
+            {"cidr": "{{ network }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "cluster_networks": [
+        {% for i in range(cluster_network_cidr | length) %}
+            {"cidr": "{{ cluster_network_cidr[i] }}", "host_prefix": {{ cluster_network_host_prefix[i] }} }{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "service_networks": [
+        {% for cidr in service_network_cidr %}
+            {"cidr": "{{ cidr }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "pull_secret": {{ pull_secret | tojson | tojson }},
           "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-          "additional_ntp_source": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}"
-      }
-    register: create_cluster_return
+          "additional_ntp_source": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}"
+        }
 
   - name: SNO - Add entries in /etc/hosts
     blockinfile:
@@ -94,32 +109,55 @@
       body_format: json
       status_code: [201]
       return_content: true
-      body: {
+      body: "{{ mno_cluster_body }}"
+    register: create_cluster_return
+    vars:
+      mno_cluster_body: |
+        {
           "name": "{{ cluster_name }}",
           "openshift_version": "{{ openshift_version }}",
           "base_dns_domain": "{{ base_dns_name }}",
-          "cluster_network_cidr": "{{ cluster_network_cidr }}",
-          "cluster_network_host_prefix": "{{ cluster_network_host_prefix }}",
-          "service_network_cidr": "{{ service_network_cidr }}",
-          "pull_secret": "{{ pull_secret | to_json }}",
+          "machine_networks": [
+        {% for network in controlplane_network %}
+            {"cidr": "{{ network }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "cluster_networks": [
+        {% for i in range(cluster_network_cidr | length) %}
+            {"cidr": "{{ cluster_network_cidr[i] }}", "host_prefix": {{ cluster_network_host_prefix[i] }} }{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "service_networks": [
+        {% for cidr in service_network_cidr %}
+            {"cidr": "{{ cidr }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "api_vips": [
+        {% for network in controlplane_network %}
+            {"ip": "{{ network | ansible.utils.nthhost(3) }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "ingress_vips": [
+        {% for network in controlplane_network %}
+            {"ip": "{{ network | ansible.utils.nthhost(4) }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+          ],
+          "pull_secret": {{ pull_secret | tojson | tojson }},
           "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-          "vip_dhcp_allocation": "{{ vip_dhcp_allocation }}",
-          "additional_ntp_source": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
-          "api_vips": [{"ip": "{{ controlplane_network_api }}"}],
-          "ingress_vips": [{"ip": "{{ controlplane_network_ingress }}"}],
+          "vip_dhcp_allocation": {{ vip_dhcp_allocation }},
+          "additional_ntp_source": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
           "network_type": "OVNKubernetes"
-      }
-    register: create_cluster_return
+        }
 
   - name: MNO / VMNO - Add entries in /etc/hosts
     blockinfile:
       path: "/etc/hosts"
       backup: true
       block: |
-        {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
-        {{ controlplane_network_api }} api-int.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network[0] | ansible.utils.nthhost(3) }} api.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network[0] | ansible.utils.nthhost(3) }} api-int.{{ cluster_name }}.{{ base_dns_name }}
         {% for route in etc_hosts_ingress_routes %}
-        {{ controlplane_network_ingress }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
+        {{ controlplane_network[0] | ansible.utils.nthhost(4) }} {{ route }}.apps.{{ cluster_name }}.{{ base_dns_name }}
         {% endfor %}
       insertafter: "EOF"
       marker: "# {mark} {{ cluster_name }} OCP CLUSTER MANAGED BLOCK"
@@ -144,21 +182,35 @@
     status_code: [201]
     return_content: true
     body_format: json
-    body: {
+    body: "{{ patch_network_body }}"
+  vars:
+    patch_network_body: |
+      {
+      {% if controlplane_network | length > 1 %}
+        "machine_networks": [
+      {% for network in controlplane_network %}
+          {"cidr": "{{ network }}"}{{ "," if not loop.last else "" }}
+      {% endfor %}
+        ],
+      {% endif %}
         "cluster_networks":  [
+      {% for i in range(cluster_network_cidr | length) %}
           {
-            "cidr": "{{ cluster_network_cidr }}",
+            "cidr": "{{ cluster_network_cidr[i] }}",
             "cluster_id": "{{ ai_cluster_id }}",
-            "host_prefix": "{{ cluster_network_host_prefix }}"
-          }
+            "host_prefix": {{ cluster_network_host_prefix[i] }}
+          }{{ "," if not loop.last else "" }}
+      {% endfor %}
         ],
         "service_networks":  [
+      {% for cidr in service_network_cidr %}
           {
-            "cidr": "{{ service_network_cidr }}",
-            "cluster_id": "{{ ai_cluster_id }}",
-          }
+            "cidr": "{{ cidr }}",
+            "cluster_id": "{{ ai_cluster_id }}"
+          }{{ "," if not loop.last else "" }}
+      {% endfor %}
         ]
-    }
+      }
 
 # - debug:
 #     msg: "{{ static_network_config }}"
@@ -170,16 +222,19 @@
     body_format: json
     status_code: [201]
     return_content: true
-    body: {
+    body: "{{ infra_env_body }}"
+  vars:
+    infra_env_body: |
+      {
         "name": "{{ cluster_name }}",
-        "additional_ntp_sources": "{{ bastion_controlplane_ip if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
+        "additional_ntp_sources": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
         "ssh_authorized_key": "{{ lookup('file', ssh_public_key_file) }}",
-        "pull_secret": "{{ pull_secret | to_json }}",
-        "static_network_config": "{{ static_network_config }}",
+        "pull_secret": {{ pull_secret | tojson | tojson }},
+        "static_network_config": {{ static_network_config | tojson }},
         "image_type": "{{ image_type }}",
         "cluster_id": "{{ ai_cluster_id }}",
-        "openshift_version": "{{ openshift_version }}",
-    }
+        "openshift_version": "{{ openshift_version }}"
+      }
   register: create_infra_env_return
 
 - name: Set ai_infraenv_id

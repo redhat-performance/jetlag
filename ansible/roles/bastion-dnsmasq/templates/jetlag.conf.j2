@@ -4,16 +4,22 @@ except-interface={{ bastion_public_interface }}
 {% endif %}
 
 # Bastion / assisted-installer / http-server / registry / router / dns
-address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
-
-address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
-address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
+{% for network in controlplane_network %}
+address=/{{ groups['bastion'][0] }}/{{ network | ansible.utils.nthhost(1) }}
+address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ network | ansible.utils.nthhost(3) }}
+address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ network | ansible.utils.nthhost(4) }}
+{% endfor %}
 
 # Jetlag provided DNS for VMs
 {% for vm in groups['hv_vm'] %}
 address=/{{ vm }}/{{ hostvars[vm].ip }}
 address=/api.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
 address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
+{% if hostvars[vm].ipv6 is defined %}
+address=/{{ vm }}/{{ hostvars[vm].ipv6 }}
+address=/api.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ipv6 }}
+address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ipv6 }}
+{% endif %}
 {% endfor %}
 
 {% if groups['hv_vm'] | length > 0 %}
@@ -38,5 +44,8 @@ address=/apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}/{{ host
 {% for item in groups['sno'] %}
 {% if hostvars[item].ip is defined %}
 address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ip }}
+{% endif %}
+{% if hostvars[item].ipv6 is defined %}
+address=/apps.{{ hostvars[item].inventory_hostname }}.{{ base_dns_name }}/{{ hostvars[item].ipv6 }}
 {% endif %}
 {% endfor %}

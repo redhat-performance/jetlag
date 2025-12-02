@@ -1,3 +1,5 @@
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-{{ bastion_controlplane_ip }} {{ groups['bastion'][0] }}
+{% for network in controlplane_network %}
+{{ network | ansible.utils.nthhost(1) }} {{ groups['bastion'][0] }}
+{% endfor %}

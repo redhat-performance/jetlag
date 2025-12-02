@@ -8,16 +8,22 @@ address=/0.rhel.pool.ntp.org/
 {% endif %}
 
 # Bastion / assisted-installer / http-server / registry / router / dns
-address=/{{ groups['bastion'][0] }}/{{ bastion_controlplane_ip }}
-
-address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
-address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
+{% for network in controlplane_network %}
+address=/{{ groups['bastion'][0] }}/{{ network | ansible.utils.nthhost(1) }}
+address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ network | ansible.utils.nthhost(3) }}
+address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ network | ansible.utils.nthhost(4) }}
+{% endfor %}
 
 # Jetlag provided DNS for VMs
 {% for vm in groups['hv_vm'] %}
 address=/{{ vm }}/{{ hostvars[vm].ip }}
 address=/api.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
 address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ip }}
+{% if hostvars[vm].ipv6 is defined %}
+address=/{{ vm }}/{{ hostvars[vm].ipv6 }}
+address=/api.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ipv6 }}
+address=/apps.{{ vm }}.{{ base_dns_name }}/{{ hostvars[vm].ipv6 }}
+{% endif %}
 {% endfor %}
 
 {% if groups['hv_vm'] | length > 0 %}
@@ -54,11 +60,11 @@ log-dhcp
 
 domain={{ base_dns_name }}
 
-dhcp-range={{ controlplane_network | ansible.utils.ipaddr('network') }},static,48h
+dhcp-range={{ controlplane_network[0] | ansible.utils.ipaddr('network') }},static,48h
 dhcp-option=option:router,{{ hostvars[groups['hv_vm'][0]]['gateway'] }}
 dhcp-option=option:ntp-server,{{ hostvars[inventory_hostname].ip }}
 dhcp-option=option:dns-server,{{ hostvars[inventory_hostname].ip }}
-dhcp-option=option:netmask,{{ controlplane_network | ansible.utils.ipaddr('netmask') }}
+dhcp-option=option:netmask,{{ controlplane_network[0] | ansible.utils.ipaddr('netmask') }}
 
 {% for vm in groups['hv_vm'] %}
 dhcp-host={{ hostvars[vm]['mac_address'] }},{{ hostvars[vm]['ip'] }},{{ vm }}
