@@ -5,13 +5,13 @@
   set_fact:
     _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
 
-- name: Dell - Power down machine prior to booting iso
+- name: "Dell - Power down machine prior to booting iso for {{ item }}"
   shell: |
     ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
   ignore_errors: true
   register: ipmi_poweroff
 
-- name: Dell - Pause for power down
+- name: "Dell - Pause for power down for {{ item }}"
   pause:
     seconds: 10
   when: not ipmi_poweroff.failed
@@ -35,7 +35,7 @@
     status_code: 202
     return_content: yes
 
-- name: Dell - Check for Virtual Media
+- name: "Dell - Check for Virtual Media for {{ item }}"
   uri:
     url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD"
     user: "{{ hostvars[item]['bmc_user'] }}"
@@ -54,7 +54,7 @@
 - name: Block to rescue incase of stuck virtual media
   when: check_virtual_media.json.Image
   block:
-  - name: Dell - Eject any CD Virtual Media
+  - name: "Dell - Eject any CD Virtual Media for {{ item }}"
     uri:
       url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
       user: "{{ hostvars[item]['bmc_user'] }}"
@@ -71,7 +71,7 @@
 
   rescue:
     # Use racadm to address the failed redfish unmount of old virtual media
-    - name: Force mount of a existing image
+    - name: "Force mount of a existing image for {{ item }}"
       raw: racadm remoteimage -c -u "" -p "" -l http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}
       delegate_to: "{{ hostvars[item]['bmc_address'] }}"
       vars:
@@ -79,7 +79,7 @@
         ansible_password: "{{ hostvars[item]['bmc_password'] }}"
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
-    - name: Force unmount of the existing image
+    - name: "Force unmount of the existing image for {{ item }}"
       raw: racadm remoteimage -d
       delegate_to: "{{ hostvars[item]['bmc_address'] }}"
       vars:
@@ -87,7 +87,7 @@
         ansible_password: "{{ hostvars[item]['bmc_password'] }}"
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
-- name: DELL - Insert Virtual Media
+- name: "DELL - Insert Virtual Media for {{ item }}"
   community.general.redfish_command:
     category: Manager
     command: VirtualMediaInsert
@@ -100,19 +100,21 @@
         - CD
         - DVD
     resource_id: iDRAC.Embedded.1
+    timeout: 60
   register: result
   until: not result.failed
-  retries: 5
+  retries: 10
   delay: 30
 
-- name: DELL - Power ON
+- name: "DELL - Power ON for {{ item }}"
   community.general.redfish_command:
     category: Systems
     command: PowerOn
     baseuri: "{{ hostvars[item]['bmc_address'] }}"
     username: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
+    timeout: 60
   register: result
   until: not result.failed
-  retries: 5
+  retries: 10
   delay: 30
