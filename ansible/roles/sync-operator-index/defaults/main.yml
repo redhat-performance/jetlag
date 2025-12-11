@@ -24,9 +24,9 @@ catalogs_to_sync:
   packages:
   - name: advanced-cluster-management
     channels:
-    - name: release-2.14
-      minVersion: 2.14.0
-      maxVersion: 2.14.0
+    - name: release-2.15
+      minVersion: 2.15.0
+      maxVersion: 2.15.0
   - name: amq-streams
     defaultChannel: amq-streams-3.0.x
     channels:
@@ -60,14 +60,14 @@ catalogs_to_sync:
       maxVersion: 4.19.0-202509280154
   - name: multicluster-engine
     channels:
-    - name: stable-2.9
-      minVersion: 2.9.0
-      maxVersion: 2.9.0
+    - name: stable-2.10
+      minVersion: 2.10.0
+      maxVersion: 2.10.0
   - name: multicluster-global-hub-operator-rh
     channels:
-    - name: release-1.5
-      minVersion: v1.5.1
-      maxVersion: v1.5.1
+    - name: release-1.6
+      minVersion: v1.6.0
+      maxVersion: v1.6.0
   - name: openshift-gitops-operator
     defaultChannel: gitops-1.18
     channels:
