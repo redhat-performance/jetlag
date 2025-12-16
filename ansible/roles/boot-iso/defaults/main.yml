@@ -9,3 +9,7 @@ http_store_port: 8081
 # For a scale out it indicates how many worker nodes are already deployed
 # and should not be included in the scale out from the inventory.
 offset: 0
+
+# Reset iDRAC service using badfish container (pulls and uses badfish container
+# to clear job queue and reset iDRAC service)
+reset_idrac: false

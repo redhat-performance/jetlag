@@ -2,41 +2,79 @@
 # Dell tasks for booting an iso
 
 - name: Set Virtual Media ISO
-  set_fact:
+  ansible.builtin.set_fact:
     _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
 
+- name: "Dell - Clear iDrac job queue for {{ item }} (badfish)"
+  ansible.builtin.include_role:
+    name: badfish
+    tasks_from: call
+  vars:
+    badfish_host: "{{ hostvars[item]['bmc_address'] }}"
+    badfish_user: "{{ hostvars[item]['bmc_user'] }}"
+    badfish_password: "{{ hostvars[item]['bmc_password'] }}"
+    badfish_args:
+      - "--clear-jobs"
+      - "--force"
+    ignore_errors: true
+  when: reset_idrac | bool
+
 - name: "Dell - Power down machine prior to booting iso for {{ item }}"
-  shell: |
-    ipmitool -I lanplus -H {{ hostvars[item]['bmc_address'] }} -U {{ hostvars[item]['bmc_user'] }} -P {{ hostvars[item]['bmc_password'] }} chassis power off
+  ansible.builtin.command:
+    cmd: >-
+      ipmitool -I lanplus -H "{{ hostvars[item]['bmc_address'] }}"
+      -U "{{ hostvars[item]['bmc_user'] }}"
+      -P "{{ hostvars[item]['bmc_password'] }}" chassis power off
   ignore_errors: true
   register: ipmi_poweroff
 
-- name: "Dell - Pause for power down for {{ item }}"
-  pause:
-    seconds: 10
+- name: "Dell - Reset iDRAC for {{ item }} (badfish)"
+  ansible.builtin.include_role:
+    name: badfish
+    tasks_from: call
+  vars:
+    badfish_host: "{{ hostvars[item]['bmc_address'] }}"
+    badfish_user: "{{ hostvars[item]['bmc_user'] }}"
+    badfish_password: "{{ hostvars[item]['bmc_password'] }}"
+    badfish_args:
+      - "--racreset"
+    ignore_errors: true
+  when: reset_idrac | bool
+
+- name: "Dell - Wait for power down for {{ item }}"
+  ansible.builtin.wait_for:
+    port: 22
+    delay: 2
+    state: stopped
+    host: "{{ hostvars[item]['ansible_host'] | default(hostvars[item]['inventory_hostname']) }}"
+    timeout: 60
   when: not ipmi_poweroff.failed
 
-- name: Dell - Set OneTimeBoot VirtualCD
-  uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration"
+- name: "Ensure iDRAC reset order is passed for {{ item }}"
+  when: reset_idrac | bool
+  ansible.builtin.pause:
+    seconds: 30
+
+- name: "Dell - Wait for iDRAC to be available for {{ item }}"
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1"
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
-    method: POST
+    method: GET
     headers:
       content-type: application/json
       Accept: application/json
-    body:
-      {
-        "ShareParameters": { "Target": "ALL" },
-        "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>',
-      }
-    body_format: json
-    validate_certs: no
-    status_code: 202
-    return_content: yes
+    validate_certs: false
+    status_code: [200, 201, 301, 302]
+  register: racreset_result
+  until: racreset_result.status in [200, 201, 301, 302]
+  retries: 60
+  delay: 5
+  failed_when: false
+  when: reset_idrac | bool  
 
 - name: "Dell - Check for Virtual Media for {{ item }}"
-  uri:
+  ansible.builtin.uri:
     url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD"
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
@@ -50,12 +88,15 @@
     status_code: 200
     return_content: yes
   register: check_virtual_media
+  retries: 10
+  delay: 10
+  until: check_virtual_media.status == 200
 
 - name: Block to rescue incase of stuck virtual media
   when: check_virtual_media.json.Image
   block:
   - name: "Dell - Eject any CD Virtual Media for {{ item }}"
-    uri:
+    ansible.builtin.uri:
       url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
       user: "{{ hostvars[item]['bmc_user'] }}"
       password: "{{ hostvars[item]['bmc_password'] }}"
@@ -72,7 +113,8 @@
   rescue:
     # Use racadm to address the failed redfish unmount of old virtual media
     - name: "Force mount of a existing image for {{ item }}"
-      raw: racadm remoteimage -c -u "" -p "" -l http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}
+      ansible.builtin.raw: >-
+        racadm remoteimage -c -u "" -p "" -l http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}
       delegate_to: "{{ hostvars[item]['bmc_address'] }}"
       vars:
         ansible_user: "{{ hostvars[item]['bmc_user'] }}"
@@ -80,7 +122,8 @@
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
     - name: "Force unmount of the existing image for {{ item }}"
-      raw: racadm remoteimage -d
+      ansible.builtin.raw: >-
+        racadm remoteimage -d
       delegate_to: "{{ hostvars[item]['bmc_address'] }}"
       vars:
         ansible_user: "{{ hostvars[item]['bmc_user'] }}"
@@ -105,6 +148,25 @@
   until: not result.failed
   retries: 10
   delay: 30
+
+- name: Dell - Set OneTimeBoot VirtualCD
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: POST
+    headers:
+      content-type: application/json
+      Accept: application/json
+    body:
+      {
+        "ShareParameters": { "Target": "ALL" },
+        "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>',
+      }
+    body_format: json
+    validate_certs: no
+    status_code: 202
+    return_content: yes
 
 - name: "DELL - Power ON for {{ item }}"
   community.general.redfish_command:

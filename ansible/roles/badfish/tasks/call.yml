@@ -1,0 +1,80 @@
+---
+# badfish call tasks
+# Reusable task file to run badfish container with various options
+#
+# Required variables:
+#   badfish_host: BMC address or hostname
+#   badfish_user: BMC username
+#   badfish_password: BMC password
+#   badfish_args: List of badfish command and its arguments (e.g., ['--power-on'] or ['--mount-virtual-media', 'http://example.com/image.iso'])
+#
+# Optional variables:
+#   badfish_dns: DNS server IP (for VPN environments)
+#   badfish_no_log: Set to false to log command output (default: false)
+#   delay: Delay between retries in seconds (default: omit)
+#   retries: Number of retries (default: omit)
+
+- name: Validate required badfish parameters
+  ansible.builtin.assert:
+    that:
+      - badfish_host is defined
+      - badfish_host | length > 0
+      - badfish_user is defined
+      - badfish_user | length > 0
+      - badfish_password is defined
+      - badfish_password | length > 0
+      - badfish_args is defined
+      - badfish_args | length > 0
+    fail_msg: "Missing or empty required badfish parameters. Required: badfish_host, badfish_user, badfish_password, badfish_args"
+    quiet: true
+
+- name: Build badfish command
+  vars:
+    _badfish_podman_cmd: >-
+      {{
+        ['podman', 'run', '--rm'] +
+        (['--dns', badfish_dns] if badfish_dns is defined else [])
+      }}
+    _badfish_badfish_cmd: >-
+      {{
+        ['-H', badfish_host, '-u', badfish_user, '-p', badfish_password] +
+        (badfish_args | default([]))
+      }}
+    _badfish_full_cmd: "{{ _badfish_podman_cmd + ['quay.io/quads/badfish'] + _badfish_badfish_cmd }}"
+  ansible.builtin.set_fact:
+    badfish_command_list: "{{ _badfish_full_cmd }}"
+
+- name: Display badfish command
+  ansible.builtin.debug:
+    msg: "Running badfish command: {{ badfish_command_list | join(' ') }}"
+
+- name: Run badfish container
+  ansible.builtin.command:
+    argv: "{{ badfish_command_list }}"
+  no_log: "{{ badfish_no_log | default(false) }}"
+  register: badfish_result
+  failed_when: badfish_result.rc != 0
+  delay: "{{ delay | default(omit) }}"
+  retries: "{{ retries | default(omit) }}"
+  until: not badfish_result.failed
+
+- name: Display badfish stdout
+  ansible.builtin.debug:
+    msg: "badfish stdout: {{ badfish_result.stdout }}"
+  when: badfish_result.stdout is defined
+
+- name: Display badfish stderr
+  ansible.builtin.debug:
+    msg: "badfish stderr: {{ badfish_result.stderr }}"
+  when: badfish_result.stderr is defined
+
+- name: Fail if badfish reports an error in stderr
+  ansible.builtin.fail:
+    msg: "badfish reported an error: {{ badfish_result.stderr }}"
+  when:
+    - not ignore_errors | default(false) | bool
+    - badfish_result.stderr is defined and 'ERROR' in badfish_result.stderr
+
+- name: Set fact with badfish result for external access
+  ansible.builtin.set_fact:
+    badfish_command_result: "{{ badfish_result }}"
