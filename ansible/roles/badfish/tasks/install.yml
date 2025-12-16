@@ -1,0 +1,12 @@
+---
+# badfish install tasks
+# Pulls the badfish container image from quay.io
+
+- name: Ensure podman package is installed
+  ansible.builtin.package:
+    name: podman
+    state: present
+
+- name: Pull badfish container image
+  ansible.builtin.command:
+    cmd: podman pull quay.io/quads/badfish
