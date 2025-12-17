@@ -123,8 +123,20 @@ hw_vm_counts:
       nvme0n1: 7
 ```
 
+When mixing different machines, the hv_vm_counts may be adjusted for those machine models to create the same number of VMs per hypervisor. For example, when mixing Dell r640 and r650 in ScaleLab, the following counts were used:
+
+```yaml
+hw_vm_counts:
+  scalelab:
+    r650:
+      default: 4
+      nvme0n1: 16
+```
+
 > [!NOTE]
 > Depending upon your hardware, you may have to parition and format a 2nd disk to help store VM disk files.
+
+In some VM scenarios, hugepages may be required. To configure VMs with hugepages, enable with the variable `enable_hugepages`, and configure specifics with other similar variables found in: `ansible/roles/hv-install/defaults/main.yml`.
 
 ## Configure Ansible vars in `hv.yml`
 
@@ -483,4 +495,26 @@ vm00007   Ready    worker                 1d    v1.31.7
 vm00008   Ready    worker                 1d    v1.31.7
 (.ansible) [root@<bastion> jetlag]# cat /root/vmno/kubeadmin-password
 xxxxx-xxxxx-xxxxx-xxxxx
+```
+
+## Additional helper playbooks for VM management
+
+If VMs become unresponsive, sometimes destroying and restarting them is the only remedy. Since the garbage cleanup of pods of all VMs on a single hypervisor at a time can cause stalling, it also may be beneficial to start one VM per HV at a time. Playbooks have been added for all of these tasks.
+
+See the following playbooks to help in these cases:
+```
+ansible/hv-vm-stop-all.yml
+ansible/hv-vm-start-one.yml
+```
+
+## Disabling NetworkManager devices and connections for SR-IOV devices on VMs
+
+One option of creating SR-IOV capable interfaces in a VM is to create them using the Intel IGB driver.
+This may be achieved by setting the variable `vm_igb_nics: true` in your variables.
+
+**Please note:** When VMs are created with SR-IOV devices using the IGB driver, the devices and connections will never fully initialize. NetworkManager repeatedly attempts to start them, which results in a large amount of churn on the VMs. A workaround to this churn is to force the devices down and connections' autoconnect off for those created for the interfaces.
+
+See the following playbook:
+```
+ansible/vm-sriov-disable.yml
 ```

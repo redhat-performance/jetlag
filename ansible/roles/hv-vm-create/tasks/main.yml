@@ -20,6 +20,33 @@
   set_fact:
     hv_vm_cpu_count: "{{ hostvars[inventory_hostname]['cpus'] }}"
 
+- name: Configure VM hugepages
+  when: vm_hugepages
+  block:
+    - name: Calculate hugepages needed for VM if not specified
+      set_fact:
+        calculated_vm_hugepage_count: "{{ (hostvars[inventory_hostname]['memory'] | int) // (vm_hugepage_size[:-1] | int) }}"
+      when: vm_hugepage_count is not defined or vm_hugepage_count == ""
+
+    - name: Set hugepage count for VM
+      set_fact:
+        vm_hugepages_needed: "{{ vm_hugepage_count if vm_hugepage_count is defined and vm_hugepage_count != '' else calculated_vm_hugepage_count }}"
+
+    - name: Check host hugepages availability
+      shell: |
+        grep -E "HugePages_Free.*{{ vm_hugepage_size }}" /proc/meminfo | awk '{print $2}' || echo "0"
+      register: host_hugepages_free
+      delegate_to: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+
+    - name: Validate sufficient hugepages available
+      fail:
+        msg: "Not enough {{ vm_hugepage_size }} hugepages available on host {{ hostvars[inventory_hostname]['ansible_host'] }}. Need: {{ vm_hugepages_needed }}, Available: {{ host_hugepages_free.stdout }}"
+      when: (host_hugepages_free.stdout | int) < (vm_hugepages_needed | int)
+
+    - name: Display hugepages configuration for VM
+      debug:
+        msg: "VM {{ inventory_hostname }} will use {{ vm_hugepages_needed }} {{ vm_hugepage_size }} hugepages ({{ (vm_hugepages_needed | int) * (vm_hugepage_size[:-1] | int) }}G total)"
+
 - name: Set vNUMA configuration tasks
   when: vnuma_enabled
   block:
