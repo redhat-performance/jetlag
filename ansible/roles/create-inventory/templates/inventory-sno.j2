@@ -79,7 +79,7 @@ lab_interface={{ controlplane_lab_interface }}
 {% else %}
 network_interface={{ controlplane_network_interface }}
 network_prefix={{ controlplane_network_prefix[0] }}
-gateway={{ controlplane_network_gateway | default(controlplane_network[0] | ansible.utils.nthhost(1)) }}
+gateway={{ controlplane_network_gateway }}
 {% if controlplane_bastion_as_dns %}
 dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% else %}
@@ -155,7 +155,7 @@ bond0_interfaces={{ private_bond_interfaces }}
 network_interface={{ controlplane_network_interface }}
 {% endif %}
 network_prefix={{ controlplane_network_prefix[0] }}
-gateway={{ controlplane_network_gateway | default(controlplane_network[0] | ansible.utils.nthhost(1)) }}
+gateway={{ controlplane_network_gateway }}
 {%   if controlplane_bastion_as_dns %}
 dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {%   else %}

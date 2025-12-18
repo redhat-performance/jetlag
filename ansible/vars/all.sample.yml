@@ -86,64 +86,32 @@ use_bastion_registry: false
 enable_bond: false
 
 ################################################################################
-# Dual Stack Network Configuration
-################################################################################
-# All network variables must be lists:
-# - For single stack (IPv4 only or IPv6 only): Use a list with one element
-# - For dual stack (IPv4 + IPv6): Use a list with two elements [IPv4, IPv6]
-
-# Controlplane network CIDRs (machine network)
-# For dual stack, first element must be IPv4, second must be IPv6
-#controlplane_network:
-#- 198.18.10.0/24
-#- fd00:198:18:10::/64
-
-# Controlplane network prefix lengths
-# Must match the length of controlplane_network
-#controlplane_network_prefix:
-#- 24
-#- 64
-
-# Cluster pod network CIDRs
-# For dual stack, include both IPv4 and IPv6 CIDRs
-#cluster_network_cidr:
-#- 10.128.0.0/14
-#- fd01::/48
-
-# Cluster network host prefix (pod subnet size)
-# Must match the length of cluster_network_cidr
-#cluster_network_host_prefix:
-#- 23
-#- 64
-
-# Service network CIDRs
-# For dual stack, include both IPv4 and IPv6 CIDRs
-#service_network_cidr:
-#- 172.30.0.0/16
-#- fd02::/112
-
-################################################################################
-# Example: Single Stack IPv4 Configuration
+# Single Stack IPv4 Network Configuration
 ################################################################################
 # For single stack IPv4, all network variables should have a single IPv4 element:
-#
-# controlplane_network:
-# - 198.18.10.0/24
-#
-# controlplane_network_prefix:
-# - 24
-#
-# cluster_network_cidr:
-# - 10.128.0.0/14
-#
-# cluster_network_host_prefix:
-# - 23
-#
-# service_network_cidr:
-# - 172.30.0.0/16
+
+# Controlplane network CIDR(machine network)
+controlplane_network:
+- 198.18.0.0/16
+
+# Controlplane network prefix length
+controlplane_network_prefix:
+- 16
+
+# Cluster pod network CIDRs
+cluster_network_cidr:
+- 10.128.0.0/14
+
+# Cluster network host prefix
+cluster_network_host_prefix:
+- 23
+
+# Service network CIDRs
+service_network_cidr:
+- 172.30.0.0/16
 
 ################################################################################
-# Example: Single Stack IPv6 Configuration
+# Single Stack IPv6 Network Configuration
 ################################################################################
 # For single stack IPv6, all network variables should have a single IPv6 element:
 #
@@ -161,6 +129,38 @@ enable_bond: false
 #
 # service_network_cidr:
 # - fd02::/112
+
+################################################################################
+# Dual Stack Network Configuration
+################################################################################
+# All network variables must be lists:
+# - For single stack (IPv4 only or IPv6 only): Use a list with one element
+# - For dual stack (IPv4 + IPv6): Use a list with two elements [IPv4, IPv6]
+
+# For dual stack, first element must be IPv4, second must be IPv6
+#controlplane_network:
+#- 198.18.0.0/16
+#- fd00:198:18:10::/64
+
+# Must match the length of controlplane_network
+#controlplane_network_prefix:
+#- 16
+#- 64
+
+# For dual stack, include both IPv4 and IPv6 CIDRs
+#cluster_network_cidr:
+#- 10.128.0.0/14
+#- fd01::/48
+
+# Must match the length of cluster_network_cidr
+#cluster_network_host_prefix:
+#- 23
+#- 64
+
+# For dual stack, include both IPv4 and IPv6 CIDRs
+#service_network_cidr:
+#- 172.30.0.0/16
+#- fd02::/112
 
 ################################################################################
 # Extra vars

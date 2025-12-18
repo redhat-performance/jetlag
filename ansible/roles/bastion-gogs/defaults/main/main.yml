@@ -1,7 +1,7 @@
 ---
 # bastion-gogs default vars
 
-gogs_host: "{{ controlplane_network_gateway | default(controlplane_network[0] | ansible.utils.nthhost(1)) }}"
+gogs_host: "{{ controlplane_network_gateway }}"
 
 gogs_ipv4_port: 10881
 gogs_ipv6_port: 10880

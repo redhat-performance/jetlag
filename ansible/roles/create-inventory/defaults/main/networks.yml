@@ -15,6 +15,9 @@ controlplane_network: ['198.18.0.0/16']
 # Single stack: controlplane_network_prefix: [16]
 # Dual stack: controlplane_network_prefix: [16, 64]
 controlplane_network_prefix: [16]
+# Gateway for controlplane network - defaults to .1 of first network
+# Can be overridden for special cases (e.g., public VLAN)
+controlplane_network_gateway: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}"
 # Sets "bastion_controlplane_ip" as primary dns
 controlplane_bastion_as_dns: true
 
