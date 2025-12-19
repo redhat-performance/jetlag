@@ -36,7 +36,7 @@
     value: "1"
   - name: net.ipv6.conf.all.disable_ipv6
     value: "0"
-  when:  bastion_controlplane_ip | ansible.utils.ipv6
+  when: controlplane_network | length > 1 or controlplane_network[0] | ansible.utils.ipv6
 
 - name: Increase the size of the arp-cache for dnsmasq
   sysctl:
@@ -99,27 +99,39 @@
       - "{{ bastion_bond0_interface1 }}"
       - "{{ bastion_bond0_interface2 }}"
 
-  - name: Create bond0 connection for bastion
+  - name: Create bond0 connection for bastion (dual stack)
     nmcli:
       type: bond
       conn_name: bond0
       ifname: bond0
-      ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
+      ip4: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      ip6: "{{ controlplane_network[1] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[1] }}"
       mode: 802.3ad
       miimon: 100
       state: present
-    when: bastion_controlplane_ip | ansible.utils.ipv4
+    when: controlplane_network | length > 1
 
-  - name: Create bond0 connection for bastion (ipv6)
+  - name: Create bond0 connection for bastion (single stack IPv4)
     nmcli:
       type: bond
       conn_name: bond0
       ifname: bond0
-      ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
+      ip4: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
       mode: 802.3ad
       miimon: 100
       state: present
-    when: bastion_controlplane_ip | ansible.utils.ipv6
+    when: controlplane_network | length == 1 and controlplane_network[0] | ansible.utils.ipv4
+
+  - name: Create bond0 connection for bastion (single stack IPv6)
+    nmcli:
+      type: bond
+      conn_name: bond0
+      ifname: bond0
+      ip6: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      mode: 802.3ad
+      miimon: 100
+      state: present
+    when: controlplane_network | length == 1 and controlplane_network[0] | ansible.utils.ipv6
 
   - name: Add first interface as bond slave
     nmcli:
@@ -159,20 +171,30 @@
       state: absent
     when: cp_int_nmcli.stdout != bastion_controlplane_interface
 
-  - name: Setup bastion on control-plane network (ipv4)
+  - name: Setup bastion on control-plane network (dual stack)
     nmcli:
       type: ethernet
       conn_name: "{{ bastion_controlplane_interface }}"
       ifname: "{{ bastion_controlplane_interface }}"
-      ip4: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
+      ip4: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      ip6: "{{ controlplane_network[1] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[1] }}"
       state: present
-    when:  bastion_controlplane_ip | ansible.utils.ipv4
+    when: controlplane_network | length > 1
 
-  - name: Setup bastion on control-plane network (ipv6)
+  - name: Setup bastion on control-plane network (single stack IPv4)
     nmcli:
       type: ethernet
       conn_name: "{{ bastion_controlplane_interface }}"
       ifname: "{{ bastion_controlplane_interface }}"
-      ip6: "{{ bastion_controlplane_ip }}/{{ controlplane_network_prefix }}"
+      ip4: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
       state: present
-    when:  bastion_controlplane_ip | ansible.utils.ipv6
+    when: controlplane_network | length == 1 and controlplane_network[0] | ansible.utils.ipv4
+
+  - name: Setup bastion on control-plane network (single stack IPv6)
+    nmcli:
+      type: ethernet
+      conn_name: "{{ bastion_controlplane_interface }}"
+      ifname: "{{ bastion_controlplane_interface }}"
+      ip6: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      state: present
+    when: controlplane_network | length == 1 and controlplane_network[0] | ansible.utils.ipv6

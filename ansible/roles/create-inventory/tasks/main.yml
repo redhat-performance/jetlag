@@ -80,10 +80,12 @@
       validate_certs: false
     register: quads_assignment
 
-  - name: Public VLAN - Set addressing information
+  - name: Public VLAN - Set addressing information (IPv4 only)
     set_fact:
-      controlplane_network: "{{ quads_assignment.json.vlan.ip_range }}"
-      controlplane_network_prefix: "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
+      controlplane_network:
+        - "{{ quads_assignment.json.vlan.ip_range }}"
+      controlplane_network_prefix:
+        - "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
 
   - name: Public VLAN - Set cluster_name if was set as default
@@ -277,12 +279,12 @@
   - name: SNO - Set max number of nodes
     set_fact:
       max_nodes: "{{ ocpinventory.json.nodes|length }}"
-    when: worker_node_count == None
+    when: worker_node_count is not defined or worker_node_count == None
 
   - name: SNO - Set max number of nodes (worker_node_count set)
     set_fact:
       max_nodes: "{{ worker_node_count|int + 2 }}"
-    when: worker_node_count != None
+    when: worker_node_count is defined and worker_node_count != None
 
   - name: SNO - Set ocpinventory worker nodes (for scale-out scenarios)
     set_fact:
