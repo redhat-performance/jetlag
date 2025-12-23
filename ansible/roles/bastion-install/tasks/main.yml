@@ -186,7 +186,7 @@
         - --strip-components=1
   when: supermicro_nodes | default(true)
 
-- name: Get CoreDNS, OpenShift clients, opm, kube-burner, grpcurl, minio client, and yq
+- name: Get CoreDNS, OpenShift clients, opm, kube-burner, kube-burner-ocp, grpcurl, minio client, and yq
   get_url:
     validate_certs: false
     force: true
@@ -198,6 +198,8 @@
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
   - url: "{{ kubeburner_url }}"
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+  - url: "{{ kubeburner_ocp_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/kube-burner-ocp-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
     dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
   - url: "{{ minio_client_url }}"
@@ -232,7 +234,7 @@
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   when: ansible_facts['distribution_major_version'] is version('9', '==')
 
-- name: Untar coredns, opm, kube-burner and grpcurl client
+- name: Untar coredns, opm, kube-burner, kube-burner-ocp and grpcurl client
   unarchive:
     src: "{{ item }}"
     dest: /usr/local/bin
@@ -243,6 +245,7 @@
   - "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
+  - "{{ bastion_cluster_config_dir }}/kube-burner-ocp-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 
 - name: Symlink RHEL8 opm
