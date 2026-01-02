@@ -112,16 +112,18 @@ Check if the servers in your allocation support NUMA config:
 ```
 
 Example output indicating NUMA support:
+```console
 NUMA node(s):          2
 NUMA node0 CPU(s):     0-11,24-35
 NUMA node1 CPU(s):     12-23,36-47
+```
 
-Add this var to your ansible/vars/all.yml file to enable vnuma config for virtual deployments:
+Add this var to your `ansible/vars/all.yml` file to enable vnuma config for virtual deployments:
 ```yaml
 vnuma_enabled: true
 ```
 
-Refer to ansible/roles/hv-vm-create/defaults/main.yml for other vNUMA configuration options.
+Refer to `ansible/roles/hv-vm-create/defaults/main.yml` for other vNUMA configuration options.
 
 ## Create/Delete/Replace VMs
 
