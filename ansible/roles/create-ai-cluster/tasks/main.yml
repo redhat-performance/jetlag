@@ -49,11 +49,13 @@
           "openshift_version": "{{ openshift_version }}",
           "high_availability_mode": "None",
           "base_dns_domain": "{{ base_dns_name }}",
+        {% if lab in rh_labs %}
           "machine_networks": [
         {% for network in controlplane_network %}
             {"cidr": "{{ network }}"}{{ "," if not loop.last else "" }}
         {% endfor %}
           ],
+        {% endif %}
           "cluster_networks": [
         {% for i in range(cluster_network_cidr | length) %}
             {"cidr": "{{ cluster_network_cidr[i] }}", "host_prefix": {{ cluster_network_host_prefix[i] }} }{{ "," if not loop.last else "" }}
@@ -117,11 +119,13 @@
           "name": "{{ cluster_name }}",
           "openshift_version": "{{ openshift_version }}",
           "base_dns_domain": "{{ base_dns_name }}",
+        {% if lab in rh_labs %}
           "machine_networks": [
         {% for network in controlplane_network %}
             {"cidr": "{{ network }}"}{{ "," if not loop.last else "" }}
         {% endfor %}
           ],
+        {% endif %}
           "cluster_networks": [
         {% for i in range(cluster_network_cidr | length) %}
             {"cidr": "{{ cluster_network_cidr[i] }}", "host_prefix": {{ cluster_network_host_prefix[i] }} }{{ "," if not loop.last else "" }}

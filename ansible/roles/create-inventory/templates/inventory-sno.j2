@@ -71,7 +71,7 @@ lab_interface={{ controlplane_lab_interface }}
 # network_prefix={{ controlplane_network_prefix }}
 # gateway={{ controlplane_network_gateway }}
 {% if controlplane_bastion_as_dns %}
-# dns1={{ bastion_controlplane_ip }}
+# dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {% else %}
 # dns1={{ labs[lab]['dns'][0] }}
 # dns2={{ labs[lab]['dns'][1] | default('') }}
@@ -142,7 +142,7 @@ bmc_password={{ bmc_password }}
 # network_prefix={{ controlplane_network_prefix }}
 # gateway={{ controlplane_network_gateway }}
 {%   if controlplane_bastion_as_dns %}
-# dns1={{ bastion_controlplane_ip }}
+# dns1={{ controlplane_network[0] | ansible.utils.nthhost(1) }}
 {%   else %}
 # dns1={{ labs[lab]['dns'][0] }}
 # dns2={{ labs[lab]['dns'][1] | default('') }}

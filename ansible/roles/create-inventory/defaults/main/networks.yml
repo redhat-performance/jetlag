@@ -18,7 +18,7 @@ controlplane_network_prefix: [16]
 # Gateway for controlplane network - defaults to .1 of first network
 # Can be overridden for special cases (e.g., public VLAN)
 controlplane_network_gateway: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}"
-# Sets "bastion_controlplane_ip" as primary dns
+# Sets bastion as primary dns
 controlplane_bastion_as_dns: true
 
 # OCP networks - always lists

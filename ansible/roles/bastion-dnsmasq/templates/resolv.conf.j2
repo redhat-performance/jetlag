@@ -1,19 +1,23 @@
 # Deployed by Jetlag automation
 search {{ base_dns_name }}
-{% if public_vlan | default(false) %}
-nameserver {{ ansible_default_ipv4.address }}
+{% if lab in cloud_labs %}
+nameserver {{ hostvars[inventory_hostname]['private_address'] }}
 {% else %}
+{%   if public_vlan | default(false) %}
+nameserver {{ ansible_default_ipv4.address }}
+{%   else %}
 nameserver {{ controlplane_network[0] | ansible.utils.nthhost(1) }}
+{%   endif %}
 {% endif %}
 {% if lab in rh_labs or lab == "byol" %}
-{% for dns in labs[lab]['dns'] %}
+{%   for dns in labs[lab]['dns'] %}
 nameserver {{ dns }}
-{% endfor %}
+{%   endfor %}
 {% else %}
-{% if dns_servers | length == 1 %}
+{%   if dns_servers | length == 1 %}
 nameserver {{ dns_servers[0] }}
-{% elif dns_servers | length >= 2 %}
+{%   elif dns_servers | length >= 2 %}
 nameserver {{ dns_servers[0] }}
 nameserver {{ dns_servers[1] }}
-{% endif %}
+{%   endif %}
 {% endif %}
