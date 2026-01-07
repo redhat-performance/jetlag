@@ -211,7 +211,7 @@ hw_vm_counts:
   scalelab:
     r630:
       default: 2
-      sdb: 2
+      sdb: 3
     r640:
       default: 8
       sdb: 12
