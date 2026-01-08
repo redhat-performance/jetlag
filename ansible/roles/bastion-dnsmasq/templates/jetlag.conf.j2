@@ -1,14 +1,21 @@
 # Jetlag provided DNS on Bastion
 {% if lab in cloud_labs %}
 except-interface={{ bastion_public_interface }}
-{% endif %}
 
 # Bastion / assisted-installer / http-server / registry / router / dns
-{% for network in controlplane_network %}
+address=/{{ groups['bastion'][0] }}/{{ hostvars[inventory_hostname]['private_address'] }}
+
+address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_api }}
+address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ controlplane_network_ingress }}
+
+{% else %}
+# Bastion / assisted-installer / http-server / registry / router / dns
+{%   for network in controlplane_network %}
 address=/{{ groups['bastion'][0] }}/{{ network | ansible.utils.nthhost(1) }}
 address=/api.{{ cluster_name }}.{{ base_dns_name }}/{{ network | ansible.utils.nthhost(3) }}
 address=/apps.{{ cluster_name }}.{{ base_dns_name }}/{{ network | ansible.utils.nthhost(4) }}
-{% endfor %}
+{%   endfor %}
+{% endif %}
 
 # Jetlag provided DNS for VMs
 {% for vm in groups['hv_vm'] %}

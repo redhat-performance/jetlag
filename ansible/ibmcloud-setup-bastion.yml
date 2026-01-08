@@ -13,7 +13,6 @@
   - vars/ibmcloud.yml
   vars:
     assisted_installer_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
-    bastion_controlplane_ip: "{{ hostvars[inventory_hostname]['private_address'] }}"
     http_store_host: "{{ hostvars[inventory_hostname]['private_address'] }}"
   roles:
   - validate-vars

@@ -124,6 +124,8 @@
   when: hostvars | json_query('(*)[?network_mac]')
 
 - name: Validate network configuration
+  when:
+  - lab in rh_labs
   block:
   - name: Validate controlplane_network is a list
     fail:
