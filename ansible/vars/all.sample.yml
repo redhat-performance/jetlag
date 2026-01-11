@@ -85,6 +85,15 @@ use_bastion_registry: false
 # Only works with private VLANs (public_vlan: false) and homogeneous hardware
 enable_bond: false
 
+# VLAN subinterface on bond configuration (requires enable_bond: true)
+# Enable VLAN subinterface on top of bond0 interface
+# When enabled, creates bond0.<vlan_id> interface with specified VLAN tag
+enable_bond_vlan: false
+# VLAN ID for the subinterface (1-4094)
+bond_vlan_id: 10
+# Name for the VLAN subinterface (defaults to bond0.<vlan_id>)
+# bond_vlan_interface_name: bond0.10
+
 ################################################################################
 # Single Stack IPv4 Network Configuration
 ################################################################################

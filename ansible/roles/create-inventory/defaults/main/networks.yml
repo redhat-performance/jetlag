@@ -52,3 +52,7 @@ bond0_port2: 2
 private_bond_interfaces:
   - eth0
   - eth1
+
+# Bond VLAN configuration defaults
+enable_bond_vlan: false
+bond_vlan_id: 10

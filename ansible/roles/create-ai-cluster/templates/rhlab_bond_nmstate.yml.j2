@@ -2,6 +2,11 @@ interfaces:
 - name: bond0
   type: bond
   state: up
+{% if enable_bond_vlan | default(false) %}
+  ipv4:
+    auto-dns: false
+    enabled: false
+{% else %}
 {% if 'ip' in hostvars[item] %}
   ipv4:
     address:
@@ -18,6 +23,7 @@ interfaces:
     auto-dns: false
     enabled: true
 {% endif %}
+{% endif %}
   link-aggregation:
     mode: 802.3ad
     options:
@@ -27,6 +33,30 @@ interfaces:
 {% for interface in hostvars[item]['bond0_interfaces'] %}
     - {{ interface }}
 {% endfor %}
+{% if enable_bond_vlan | default(false) %}
+- name: {{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}
+  type: vlan
+  state: up
+{% if 'ip' in hostvars[item] %}
+  ipv4:
+    address:
+    - ip: {{ hostvars[item]['ip'] }}
+      prefix-length: {{ hostvars[item]['network_prefix'] }}
+    auto-dns: false
+    enabled: true
+{% endif %}
+{% if 'ipv6' in hostvars[item] %}
+  ipv6:
+    address:
+    - ip: {{ hostvars[item]['ipv6'] }}
+      prefix-length: {{ hostvars[item]['ipv6_prefix'] }}
+    auto-dns: false
+    enabled: true
+{% endif %}
+  vlan:
+    base-iface: bond0
+    id: {{ bond_vlan_id | default(10) }}
+{% endif %}
 - name: {{ hostvars[item]['lab_interface']}}
   type: ethernet
   state: up
@@ -45,10 +75,18 @@ routes:
 {% if 'ip' in hostvars[item] %}
   - destination: 0.0.0.0/0
     next-hop-address: {{ hostvars[item]['gateway'] }}
+{% if enable_bond_vlan | default(false) %}
+    next-hop-interface: {{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}
+{% else %}
     next-hop-interface: bond0
+{% endif %}
 {% endif %}
 {% if 'ipv6' in hostvars[item] %}
   - destination: ::/0
     next-hop-address: {{ hostvars[item]['ipv6_gateway'] }}
+{% if enable_bond_vlan | default(false) %}
+    next-hop-interface: {{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}
+{% else %}
     next-hop-interface: bond0
+{% endif %}
 {% endif %}
