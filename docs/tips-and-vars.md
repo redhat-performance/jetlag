@@ -264,6 +264,11 @@ bond_vlan_id: 10
 
 This creates a VLAN subinterface (bond0.10) on top of the bond0 interface with the specified VLAN tag. The IP addresses are assigned to the VLAN subinterface instead of the bond0 interface directly.
 
+**What this configures:**
+- **Bastion host**: Creates bond0 (no IP) + bond0.10 (with controlplane IP) using nmcli
+- **Cluster nodes**: Creates bond0 (no IP) + bond0.10 (with node IPs) using nmstate
+- **Network routing**: All traffic flows through the VLAN subinterface
+
 **Requirements:**
 - `enable_bond` must be set to `true`
 - `bond_vlan_id` must be between 1-4094

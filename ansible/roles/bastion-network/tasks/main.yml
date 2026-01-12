@@ -109,7 +109,21 @@
       mode: 802.3ad
       miimon: 100
       state: present
-    when: controlplane_network | length > 1
+    when:
+      - controlplane_network | length > 1
+      - not enable_bond_vlan | default(false)
+
+  - name: Create bond0 connection for bastion without IPs (dual stack with VLAN)
+    nmcli:
+      type: bond
+      conn_name: bond0
+      ifname: bond0
+      mode: 802.3ad
+      miimon: 100
+      state: present
+    when:
+      - controlplane_network | length > 1
+      - enable_bond_vlan | default(false)
 
   - name: Create bond0 connection for bastion (single stack IPv4)
     nmcli:
@@ -120,7 +134,23 @@
       mode: 802.3ad
       miimon: 100
       state: present
-    when: controlplane_network | length == 1 and controlplane_network[0] | ansible.utils.ipv4
+    when:
+      - controlplane_network | length == 1
+      - controlplane_network[0] | ansible.utils.ipv4
+      - not enable_bond_vlan | default(false)
+
+  - name: Create bond0 connection for bastion without IPs (single stack IPv4 with VLAN)
+    nmcli:
+      type: bond
+      conn_name: bond0
+      ifname: bond0
+      mode: 802.3ad
+      miimon: 100
+      state: present
+    when:
+      - controlplane_network | length == 1
+      - controlplane_network[0] | ansible.utils.ipv4
+      - enable_bond_vlan | default(false)
 
   - name: Create bond0 connection for bastion (single stack IPv6)
     nmcli:
@@ -131,7 +161,23 @@
       mode: 802.3ad
       miimon: 100
       state: present
-    when: controlplane_network | length == 1 and controlplane_network[0] | ansible.utils.ipv6
+    when:
+      - controlplane_network | length == 1
+      - controlplane_network[0] | ansible.utils.ipv6
+      - not enable_bond_vlan | default(false)
+
+  - name: Create bond0 connection for bastion without IPs (single stack IPv6 with VLAN)
+    nmcli:
+      type: bond
+      conn_name: bond0
+      ifname: bond0
+      mode: 802.3ad
+      miimon: 100
+      state: present
+    when:
+      - controlplane_network | length == 1
+      - controlplane_network[0] | ansible.utils.ipv6
+      - enable_bond_vlan | default(false)
 
   - name: Add first interface as bond slave
     nmcli:
@@ -148,6 +194,49 @@
       ifname: "{{ bastion_bond0_interface2 }}"
       master: bond0
       state: present
+
+  # VLAN subinterface configuration when enabled
+  - name: Create VLAN subinterface for bastion (dual stack)
+    nmcli:
+      type: vlan
+      conn_name: "{{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}"
+      ifname: "{{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}"
+      vlanid: "{{ bond_vlan_id | default(10) }}"
+      vlandev: bond0
+      ip4: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      ip6: "{{ controlplane_network[1] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[1] }}"
+      state: present
+    when:
+      - enable_bond_vlan | default(false)
+      - controlplane_network | length > 1
+
+  - name: Create VLAN subinterface for bastion (single stack IPv4)
+    nmcli:
+      type: vlan
+      conn_name: "{{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}"
+      ifname: "{{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}"
+      vlanid: "{{ bond_vlan_id | default(10) }}"
+      vlandev: bond0
+      ip4: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      state: present
+    when:
+      - enable_bond_vlan | default(false)
+      - controlplane_network | length == 1
+      - controlplane_network[0] | ansible.utils.ipv4
+
+  - name: Create VLAN subinterface for bastion (single stack IPv6)
+    nmcli:
+      type: vlan
+      conn_name: "{{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}"
+      ifname: "{{ bond_vlan_interface_name | default('bond0.' + (bond_vlan_id | string)) }}"
+      vlanid: "{{ bond_vlan_id | default(10) }}"
+      vlandev: bond0
+      ip6: "{{ controlplane_network[0] | ansible.utils.nthhost(1) }}/{{ controlplane_network_prefix[0] }}"
+      state: present
+    when:
+      - enable_bond_vlan | default(false)
+      - controlplane_network | length == 1
+      - controlplane_network[0] | ansible.utils.ipv6
 
 # Single interface configuration for non-bonded setups
 - name: Setup bastion single interface configuration
