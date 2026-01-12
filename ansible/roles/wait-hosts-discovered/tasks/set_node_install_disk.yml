@@ -33,10 +33,24 @@
 
 - name: Get by-path disk id
   set_fact:
-    new_disk_id: "{{ (node.inventory | from_json | json_query(query) | first).id }}"
+    matching_disks: "{{ node.inventory | from_json | json_query(query) }}"
   vars:
     query: "disks[?by_path=='{{ hostvars[node.requested_hostname].install_disk }}']"
   when: '"by-path" in hostvars[node.requested_hostname].install_disk'
+
+- name: Set new_disk_id from matching disk
+  set_fact:
+    new_disk_id: "{{ (matching_disks | first).id }}"
+  when:
+  - '"by-path" in hostvars[node.requested_hostname].install_disk'
+  - matching_disks | length > 0
+
+- name: Fail if no matching disk found
+  fail:
+    msg: "No disk found with by_path matching '{{ hostvars[node.requested_hostname].install_disk }}' for host {{ node.requested_hostname }}. Available disks: {{ node.inventory | from_json | json_query('disks[*].by_path') | list }}"
+  when:
+  - '"by-path" in hostvars[node.requested_hostname].install_disk'
+  - matching_disks | length == 0
 
 - name: Adjust by-path selected install disk
   uri:
