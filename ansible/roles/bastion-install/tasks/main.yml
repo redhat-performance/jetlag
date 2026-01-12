@@ -48,6 +48,12 @@
     disable_gpg_check: yes
   when: ansible_facts['distribution_major_version'] is version('9', '>=')
 
+- name: Install badfish container image
+  include_role:
+    name: badfish
+    tasks_from: install
+  when: reset_idrac | bool
+
 - name: Install python
   pip:
     name: python-hpilo

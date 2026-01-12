@@ -71,6 +71,10 @@ setup_bastion_registry: false
 # Use in conjunction with ipv6 based clusters
 use_bastion_registry: false
 
+# Reset iDRAC service using badfish container (pulls and uses badfish container
+# to clear job queue and reset iDRAC service)
+# reset_idrac: false
+
 ################################################################################
 # OCP node vars
 ################################################################################

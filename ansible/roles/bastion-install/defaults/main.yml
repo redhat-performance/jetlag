@@ -14,3 +14,7 @@ rh_crucible_url: https://github.com/perftool-incubator/crucible
 
 # Since the use of tc on the bastion machine is rare, we disable rebooting the bastion machine by default
 bastion_install_tc_reboot: false
+
+# Reset iDRAC service using badfish container (pulls and uses badfish container
+# to clear job queue and reset iDRAC service)
+reset_idrac: false
