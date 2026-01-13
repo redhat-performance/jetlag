@@ -118,6 +118,8 @@
       type: bond
       conn_name: bond0
       ifname: bond0
+      method4: disabled
+      method6: disabled
       mode: 802.3ad
       miimon: 100
       state: present
@@ -144,6 +146,8 @@
       type: bond
       conn_name: bond0
       ifname: bond0
+      method4: disabled
+      method6: disabled
       mode: 802.3ad
       miimon: 100
       state: present
@@ -171,6 +175,8 @@
       type: bond
       conn_name: bond0
       ifname: bond0
+      method4: disabled
+      method6: disabled
       mode: 802.3ad
       miimon: 100
       state: present
