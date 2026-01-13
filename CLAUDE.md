@@ -167,3 +167,35 @@ Jetlag uses a modular Ansible role architecture:
 - **Disk Configuration**: VMs can span multiple disks on hypervisors (e.g., default disk + nvme for higher VM counts)
 - **Network Configuration**: VMs use libvirt networking with static IP assignment from controlplane network range
 - **Scale Lab/Performance Lab Only**: VMNO and hybrid deployments only supported in Scale Lab and Performance Lab environments
+
+## Troubleshooting and Tips
+
+When encountering issues with Jetlag deployments, consult these comprehensive documentation resources:
+
+### Primary Troubleshooting Resources
+- **[docs/troubleshooting.md](docs/troubleshooting.md)**: Comprehensive troubleshooting guide covering:
+  - Common deployment issues and solutions
+  - Hardware-specific problems (Dell, Supermicro)
+  - Bastion configuration and recovery procedures
+  - BMC/iDRAC reset procedures
+  - Virtual media and discovery issues
+
+- **[docs/tips-and-vars.md](docs/tips-and-vars.md)**: Advanced configuration guidance including:
+  - Network interface configuration and overrides
+  - Install disk configuration options
+  - OCP version management
+  - NVMe disk configuration for install and etcd
+  - Post-deployment tasks and optimizations
+  - Bastion registry management
+
+### Common Issues to Check First
+1. **Network Configuration**: Verify `bastion_lab_interface` and `bastion_controlplane_interface` match your hardware
+2. **BMC Access**: Ensure BMC credentials and network connectivity are correct
+3. **DNS Services**: Check bastion DNS services are running and configured correctly
+4. **Disk Selection**: Verify install disk paths and available storage
+5. **Resource Limits**: Ensure sufficient CPU/memory for VM deployments (VMNO/hybrid)
+
+### When to Consult Documentation
+- Before troubleshooting deployment failures, read the relevant sections in `troubleshooting.md`
+- For advanced configuration needs, reference the specific sections in `tips-and-vars.md`
+- When working with specific hardware vendors, check the hardware-specific troubleshooting sections
