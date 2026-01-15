@@ -52,6 +52,20 @@
   - enable_bond | default(false)
   - sno_use_lab_dhcp | default(false)
 
+- name: Validate enable_bond_vlan requires enable_bond
+  fail:
+    msg: "enable_bond_vlan requires enable_bond to be true"
+  when:
+  - enable_bond_vlan | default(false)
+  - not (enable_bond | default(false))
+
+- name: Validate bond_vlan_id range
+  fail:
+    msg: "bond_vlan_id must be between 1 and 4094"
+  when:
+  - enable_bond_vlan | default(false)
+  - bond_vlan_id | default(10) < 1 or bond_vlan_id | default(10) > 4094
+
 - name: Check for RHEL/Centos (Bastion Validation)
   fail:
     msg: "Expecting RHEL or Centos for a Bastion OS"
