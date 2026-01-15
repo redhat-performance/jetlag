@@ -38,7 +38,7 @@
     value: "0"
   when: controlplane_network | length > 1 or controlplane_network[0] | ansible.utils.ipv6
 
-- name: Increase the size of the arp-cache for dnsmasq
+- name: Increase the size of the arp-cache for dns
   sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"

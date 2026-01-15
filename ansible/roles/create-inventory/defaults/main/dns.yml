@@ -4,7 +4,7 @@ cluster_name: mno
 base_dns_name: example.com
 
 # Setup and use coredns instead of dnsmasq
-setup_coredns: false
+setup_coredns: true
 
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
