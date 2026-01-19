@@ -32,8 +32,10 @@
     when:
     - setup_bastion_registry
     - sync_ocp_release | default(false)
+  - role: bastion-proxy
+    when: setup_bastion_proxy | default(false)
   - bastion-assisted-installer
   - role: bastion-gogs
     when: setup_bastion_gogs
   - role: bastion-disconnected-haproxy
-    when: use_bastion_registry
+    when: use_bastion_registry or setup_bastion_proxy | default(false)

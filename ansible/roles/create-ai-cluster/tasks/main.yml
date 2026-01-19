@@ -68,7 +68,12 @@
           ],
           "pull_secret": {{ pull_secret | tojson | tojson }},
           "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
-          "additional_ntp_source": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}"
+        {% if setup_bastion_proxy | default(false) %}
+          "http_proxy": "http://{{ proxy_host | default(groups['bastion'][0]) }}:{{ proxy_port | default(3128) }}",
+          "https_proxy": "http://{{ proxy_host | default(groups['bastion'][0]) }}:{{ proxy_port | default(3128) }}",
+          "no_proxy": "{{ proxy_no_proxy | default('localhost,127.0.0.1,.' + base_dns_name + ',' + groups['bastion'][0] + ',' + controlplane_network | join(',')) }}",
+        {% endif %}
+          "additional_ntp_source": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry or setup_bastion_proxy | default(false) else labs[lab]['ntp_server'] }}"
         }
 
   - name: SNO - Add entries in /etc/hosts
@@ -149,7 +154,12 @@
           "pull_secret": {{ pull_secret | tojson | tojson }},
           "ssh_public_key": "{{ lookup('file', ssh_public_key_file) }}",
           "vip_dhcp_allocation": {{ vip_dhcp_allocation }},
-          "additional_ntp_source": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry else labs[lab]['ntp_server'] }}",
+        {% if setup_bastion_proxy | default(false) %}
+          "http_proxy": "http://{{ proxy_host | default(groups['bastion'][0]) }}:{{ proxy_port | default(3128) }}",
+          "https_proxy": "http://{{ proxy_host | default(groups['bastion'][0]) }}:{{ proxy_port | default(3128) }}",
+          "no_proxy": "{{ proxy_no_proxy | default('localhost,127.0.0.1,.' + base_dns_name + ',' + groups['bastion'][0] + ',' + controlplane_network | join(',')) }}",
+        {% endif %}
+          "additional_ntp_source": "{{ controlplane_network[0] | ansible.utils.nthhost(1) if (lab in cloud_labs) or use_bastion_registry or setup_bastion_proxy | default(false) else labs[lab]['ntp_server'] }}",
           "network_type": "OVNKubernetes"
         }
 
@@ -256,6 +266,24 @@
         "ignition_config_override": "{{ lookup('template', 'disconnected-discovery.ign.j2') | to_json }}",
     }
   when: use_bastion_registry | default(false)
+
+- name: Patch infra-env for proxy configuration
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/infra-envs/{{ ai_infraenv_id }}"
+    method: PATCH
+    body_format: json
+    status_code: [201]
+    return_content: true
+    body: {
+        "proxy": {
+          "http_proxy": "http://{{ proxy_host | default(groups['bastion'][0]) }}:{{ proxy_port | default(3128) }}",
+          "https_proxy": "http://{{ proxy_host | default(groups['bastion'][0]) }}:{{ proxy_port | default(3128) }}",
+          "no_proxy": "{{ proxy_no_proxy | default('localhost,127.0.0.1,.' + base_dns_name + ',' + groups['bastion'][0] + ',' + controlplane_network | join(',')) }}"
+        }
+    }
+  when:
+    - setup_bastion_proxy | default(false)
+    - not use_bastion_registry | default(false)
 
 # Disable lab interface manifests, skip if SNO has sno_use_lab_dhcp=true
 - name: Include custom manifests to disable the lab interface (RH Labs & BYOL)

@@ -1,0 +1,83 @@
+---
+# Bastion proxy tasks - Deploy Squid forward proxy
+
+- name: Create squid directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+  loop:
+    - "{{ proxy_cache_dir }}"
+    - "{{ proxy_conf_dir }}"
+    - /var/log/squid
+
+- name: Template squid configuration
+  template:
+    src: squid.conf.j2
+    dest: "{{ proxy_conf_dir }}/squid.conf"
+    mode: '0644'
+  notify: Restart squid proxy
+
+- name: Pull squid container image
+  containers.podman.podman_image:
+    name: "{{ proxy_container_image }}"
+    state: present
+
+- name: Stop existing squid containers
+  containers.podman.podman_container:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - squid-proxy
+    - squid-init
+  failed_when: false
+
+- name: Initialize squid cache directory
+  containers.podman.podman_container:
+    name: squid-init
+    image: "{{ proxy_container_image }}"
+    state: started
+    rm: true
+    user: root
+    command: sh -c "chown -R proxy:proxy /var/spool/squid /var/log/squid && squid -z -N"
+    volumes:
+      - "{{ proxy_conf_dir }}/squid.conf:/etc/squid/squid.conf:z"
+      - "{{ proxy_cache_dir }}:/var/spool/squid:z"
+      - /var/log/squid:/var/log/squid:z
+  register: squid_init
+  failed_when: false
+
+- name: Wait for cache initialization
+  pause:
+    seconds: 3
+  when: squid_init.changed
+
+- name: Run squid proxy container
+  containers.podman.podman_container:
+    name: squid-proxy
+    image: "{{ proxy_container_image }}"
+    state: started
+    restart_policy: always
+    network_mode: host
+    volumes:
+      - "{{ proxy_conf_dir }}/squid.conf:/etc/squid/squid.conf:z"
+      - "{{ proxy_cache_dir }}:/var/spool/squid:z"
+      - /var/log/squid:/var/log/squid:z
+
+- name: Open firewall port for proxy
+  firewalld:
+    port: "{{ proxy_port }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+  when: ansible_facts.services['firewalld.service'] is defined
+
+- name: Verify squid proxy is responding
+  uri:
+    url: "http://localhost:{{ proxy_port }}"
+    method: GET
+    status_code: [400, 403]
+  register: proxy_check
+  retries: 5
+  delay: 3
+  until: proxy_check.status in [400, 403]
