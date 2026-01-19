@@ -12,6 +12,11 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JETLAG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 CONFIG_FILE="${SCRIPT_DIR}/vars/config.env"
+
+# Activate venv to access yq
+if [[ -f "${JETLAG_ROOT}/.ansible/bin/activate" ]]; then
+    source "${JETLAG_ROOT}/.ansible/bin/activate"
+fi
 STATE_FILE="${SCRIPT_DIR}/vars/state.env"
 
 # Mode parameter
@@ -108,15 +113,13 @@ collect_quads_config() {
 
     prompt_with_options "Select Lab" "scalelab, performancelab" "${LAB:-scalelab}" LAB
 
-    # Auto-configure QUADS API server based on lab
-    case "$LAB" in
-        scalelab)
-            QUADS_API_SERVER="quads2.rdu2.scalelab.redhat.com"
-            ;;
-        performancelab)
-            QUADS_API_SERVER="quads2.rdu3.labs.perfscale.redhat.com"
-            ;;
-    esac
+    # Auto-configure QUADS API server based on lab (from ansible/vars/lab.yml)
+    LAB_YML="${JETLAG_ROOT}/ansible/vars/lab.yml"
+    QUADS_API_SERVER=$(yq -r ".labs.${LAB}.quads" "$LAB_YML")
+    if [[ -z "$QUADS_API_SERVER" || "$QUADS_API_SERVER" == "null" ]]; then
+        print_error "Error: Could not find QUADS server for lab '$LAB' in $LAB_YML"
+        exit 1
+    fi
     print_info "QUADS Server: $QUADS_API_SERVER"
 
     print_header "QUADS Credentials"

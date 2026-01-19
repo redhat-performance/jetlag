@@ -7,6 +7,14 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JETLAG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# Activate venv to access yq
+if [[ -f "${JETLAG_ROOT}/.ansible/bin/activate" ]]; then
+    source "${JETLAG_ROOT}/.ansible/bin/activate"
+fi
+
 LAB="${1:-scalelab}"
 CLOUD_NAME="${2}"
 QUADS_SERVER="${3}"
@@ -22,23 +30,16 @@ if ! command -v jq &> /dev/null; then
     exit 2
 fi
 
-# Use provided QUADS server or map from lab
+# Use provided QUADS server or map from lab (from ansible/vars/lab.yml)
 if [[ -n "$QUADS_SERVER" ]]; then
     QUADS_HOST="$QUADS_SERVER"
 else
-    # Map lab to QUADS server (from jetlag ansible/vars/lab.yml)
-    case "$LAB" in
-        scalelab)
-            QUADS_HOST="quads2.rdu2.scalelab.redhat.com"
-            ;;
-        performancelab)
-            QUADS_HOST="quads2.rdu3.labs.perfscale.redhat.com"
-            ;;
-        *)
-            echo "Unknown lab: $LAB" >&2
-            exit 2
-            ;;
-    esac
+    LAB_YML="${JETLAG_ROOT}/ansible/vars/lab.yml"
+    QUADS_HOST=$(yq -r ".labs.${LAB}.quads" "$LAB_YML")
+    if [[ -z "$QUADS_HOST" || "$QUADS_HOST" == "null" ]]; then
+        echo "Error: Could not find QUADS server for lab '$LAB' in $LAB_YML" >&2
+        exit 2
+    fi
 fi
 
 # Download ocpinventory.json
