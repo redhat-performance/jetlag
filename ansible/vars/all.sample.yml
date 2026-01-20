@@ -28,6 +28,7 @@ ocp_version: "latest-4.20"
 # controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
 # SNO configures only the first cluster on the api dns resolvable address
 # MNO/SNO still requires the correct value for bastion_controlplane_interface
+# It is required to comment out controlplane_network and controlplane_network_prefix in the Network Configuration
 public_vlan: false
 
 # SNOs only require a single IP address and can be deployed using the lab DHCP interface instead of a private or
