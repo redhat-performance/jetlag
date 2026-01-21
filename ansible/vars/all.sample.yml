@@ -100,35 +100,32 @@ bond_vlan_id: 10
 # bond_vlan_interface_name: bond0.10
 
 ################################################################################
-# Single Stack IPv4 Network Configuration
+# Network Configuration
 ################################################################################
-# For single stack IPv4, all network variables should have a single IPv4 element:
-
-# Controlplane network CIDR(machine network)
-controlplane_network:
-- 198.18.0.0/16
-
-# Controlplane network prefix length
-controlplane_network_prefix:
-- 16
-
-# Cluster pod network CIDRs
-cluster_network_cidr:
-- 10.128.0.0/14
-
-# Cluster network host prefix
-cluster_network_host_prefix:
-- 23
-
-# Service network CIDRs
-service_network_cidr:
-- 172.30.0.0/16
-
-################################################################################
-# Single Stack IPv6 Network Configuration
-################################################################################
-# For single stack IPv6, all network variables should have a single IPv6 element:
+# Network variables default to single-stack IPv4 values via role defaults in
+# ansible/roles/create-inventory/defaults/main/networks.yml
+# Only uncomment and set these if you need to override the defaults
+# (e.g., for IPv6 single stack or dual stack configurations).
 #
+# When public_vlan is enabled, these are auto-configured - do NOT set them.
+
+# Single Stack IPv4 (default - no need to uncomment for standard deployments):
+# controlplane_network:
+# - 198.18.0.0/16
+#
+# controlplane_network_prefix:
+# - 16
+#
+# cluster_network_cidr:
+# - 10.128.0.0/14
+#
+# cluster_network_host_prefix:
+# - 23
+#
+# service_network_cidr:
+# - 172.30.0.0/16
+
+# Single Stack IPv6:
 # controlplane_network:
 # - fd00:198:18:10::/64
 #
@@ -144,37 +141,29 @@ service_network_cidr:
 # service_network_cidr:
 # - fd02::/112
 
-################################################################################
-# Dual Stack Network Configuration
-################################################################################
-# All network variables must be lists:
-# - For single stack (IPv4 only or IPv6 only): Use a list with one element
-# - For dual stack (IPv4 + IPv6): Use a list with two elements [IPv4, IPv6]
-
-# For dual stack, first element must be IPv4, second must be IPv6
-#controlplane_network:
-#- 198.18.0.0/16
-#- fd00:198:18:10::/64
-
-# Must match the length of controlplane_network
-#controlplane_network_prefix:
-#- 16
-#- 64
-
-# For dual stack, include both IPv4 and IPv6 CIDRs
-#cluster_network_cidr:
-#- 10.128.0.0/14
-#- fd01::/48
-
-# Must match the length of cluster_network_cidr
-#cluster_network_host_prefix:
-#- 23
-#- 64
-
-# For dual stack, include both IPv4 and IPv6 CIDRs
-#service_network_cidr:
-#- 172.30.0.0/16
-#- fd02::/112
+# Dual Stack (IPv4 + IPv6):
+# All network variables must be lists with two elements [IPv4, IPv6].
+# First element must be IPv4, second must be IPv6.
+#
+# controlplane_network:
+# - 198.18.0.0/16
+# - fd00:198:18:10::/64
+#
+# controlplane_network_prefix:
+# - 16
+# - 64
+#
+# cluster_network_cidr:
+# - 10.128.0.0/14
+# - fd01::/48
+#
+# cluster_network_host_prefix:
+# - 23
+# - 64
+#
+# service_network_cidr:
+# - 172.30.0.0/16
+# - fd02::/112
 
 ################################################################################
 # Extra vars
