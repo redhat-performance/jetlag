@@ -14,7 +14,7 @@ mirror:
 {%   endif %}
       channels:
 {% for channel in package.channels %}
-      - name: {{ channel.name }}
+      - name: "{{ channel.name }}"
         minVersion: {{ channel.minVersion }}
         maxVersion: {{ channel.maxVersion }}
 {%   endfor %}
