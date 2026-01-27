@@ -1,0 +1,26 @@
+---
+# Bastion proxy defaults
+
+# Proxy configuration
+proxy_type: squid
+proxy_port: 3128
+proxy_container_image: docker.io/ubuntu/squid:latest
+
+# Cache configuration (persistent across reboots)
+proxy_cache_dir: /opt/squid/cache
+proxy_conf_dir: /opt/squid/conf
+proxy_cache_size_mb: 10000
+proxy_max_object_size_mb: 4096
+
+# IPv6 settings
+proxy_listen_ipv6: true
+
+# ACL - which hosts can use the proxy (auto-populated from controlplane_network)
+proxy_allowed_networks: "{{ controlplane_network }}"
+
+# Computed proxy URL for use by other roles
+proxy_url: "http://{{ groups['bastion'][0] }}:{{ proxy_port }}"
+proxy_host: "{{ groups['bastion'][0] }}"
+
+# No proxy list (hosts that should bypass the proxy)
+proxy_no_proxy: "localhost,127.0.0.1,.{{ base_dns_name }},{{ controlplane_network | join(',') }}"
