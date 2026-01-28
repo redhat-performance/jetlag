@@ -89,6 +89,7 @@ hw_install_disk:
     6029p: /dev/disk/by-path/pci-0000:00:11.5-ata-5
     xe8640: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
     xe9680: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
+    cc37-r750: /dev/disk/by-path/pci-0000:05:00.0-ata-1.0
 
 # This dictionary contains the expected nic names for networks in the scale/performance lab. This determines the name of the
 # nic for hypervisors.
