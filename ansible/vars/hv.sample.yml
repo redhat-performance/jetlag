@@ -48,3 +48,38 @@ hv_vm_manifest_acm_cr: true
 use_bastion_registry: false
 # Provide pull-secret for connected manifests
 pull_secret: "{{ lookup('file', '../pull-secret.txt') | b64encode }}"
+
+################################################################################
+# Hugepages Configuration
+################################################################################
+
+# Enable hugepages on hypervisors
+enable_hugepages: false
+
+# Hugepage size for hypervisors: 2M or 1G
+hugepage_size: "1G"
+
+# Number of hugepages to allocate on hypervisors (e.g., 64 for 64GB of 1G hugepages)
+# Calculate based on total memory and VM requirements
+hugepage_count: 64
+
+# Additional kernel parameters for performance tuning
+additional_kernel_params:
+  - "intel_iommu=on"
+  - "iommu=pt"
+  - "isolcpus=2-15,18-31"
+
+# Enable hugepages for VMs
+vm_hugepages: false
+
+# Hugepage size for VMs (should match hypervisor hugepage_size)
+vm_hugepage_size: "1G"
+
+# Number of hugepages per VM (auto-calculated based on VM memory if not specified)
+# vm_hugepage_count: 18
+
+# Enable vNUMA for performance (recommended with hugepages)
+vnuma_enabled: false
+
+# Enable IGB NICs for VMs
+vm_igb_nics: false
