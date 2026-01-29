@@ -32,6 +32,7 @@
       set_fact:
         vm_hugepages_needed: "{{ vm_hugepage_count if vm_hugepage_count is defined and vm_hugepage_count != '' else calculated_vm_hugepage_count }}"
 
+        # TODO This grep expression failed on the second installation. Need either a way to force huge pages, or advanced logic to check which is configured.
     - name: Check host hugepages availability
       shell: |
         grep -E "HugePages_Free.*{{ vm_hugepage_size }}" /proc/meminfo | awk '{print $2}' || echo "0"
