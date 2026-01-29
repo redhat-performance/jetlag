@@ -45,6 +45,13 @@
   - public_vlan | default(false)
   - enable_bond | default(false)
 
+- name: Validate public_vlan network configuration
+  fail:
+    msg: "public_vlan is enabled but controlplane_network uses the default private range. Comment out controlplane_network and controlplane_network_prefix in all.yml to use public VLAN auto-configuration."
+  when:
+  - public_vlan | default(false)
+  - "'198.18.0.0/16' in controlplane_network"
+
 - name: Validate enable_bond and sno_use_lab_dhcp
   fail:
     msg: "enable_bond and sno_use_lab_dhcp can not both be true, only enable one or the other"
