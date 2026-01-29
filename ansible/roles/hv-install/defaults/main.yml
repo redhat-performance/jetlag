@@ -1,0 +1,17 @@
+---
+# hv-install default vars
+
+# Hugepages configuration for hypervisors
+enable_hugepages: false
+
+# Hugepage size: 2M or 1G
+hugepage_size: "1G"
+
+# Number of hugepages to allocate (e.g., 32 for 32GB of 1G hugepages)
+hugepage_count: 32
+
+# Additional kernel parameters for performance tuning
+additional_kernel_params: []
+
+# Number of hugepages per node (e.g. total / 2)
+hugepages_count_per_node: 190
