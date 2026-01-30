@@ -1,0 +1,8 @@
+---
+# Bastion proxy handlers
+
+- name: Restart squid proxy
+  containers.podman.podman_container:
+    name: squid-proxy
+    state: started
+    restart: true
