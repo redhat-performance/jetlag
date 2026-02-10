@@ -6,7 +6,7 @@
 {% if vm_hugepages %}
   <memoryBacking>
     <hugepages>
-      <page size='{{ vm_hugepage_size[:-1] }}' unit='{{ vm_hugepage_size[-1] }}'/>
+      <page size='1048576' unit='KiB'/>
     </hugepages>
   </memoryBacking>
 {% endif %}
