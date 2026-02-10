@@ -72,9 +72,6 @@ additional_kernel_params:
 # Enable hugepages for VMs
 vm_hugepages: false
 
-# Hugepage size for VMs (should match hypervisor hugepage_size)
-vm_hugepage_size: "1G"
-
 # Number of hugepages per VM (auto-calculated based on VM memory if not specified)
 # vm_hugepage_count: 18
 
