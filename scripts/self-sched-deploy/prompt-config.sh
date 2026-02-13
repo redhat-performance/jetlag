@@ -11,6 +11,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JETLAG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+mkdir -p "${SCRIPT_DIR}/vars"
 CONFIG_FILE="${SCRIPT_DIR}/vars/config.env"
 
 # Activate venv to access yq

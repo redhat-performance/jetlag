@@ -42,14 +42,24 @@ else
     fi
 fi
 
-# Download ocpinventory.json
+# Download ocpinventory.json, retrying until nodes data is available
 INVENTORY_URL="http://${QUADS_HOST}/instack/${CLOUD_NAME}_ocpinventory.json"
-INVENTORY_JSON=$(curl -s "$INVENTORY_URL")
+MAX_RETRIES=12
+RETRY_INTERVAL=10
 
-if [[ -z "$INVENTORY_JSON" || "$INVENTORY_JSON" == "null" ]]; then
-    echo "Failed to download inventory from $INVENTORY_URL" >&2
-    exit 2
-fi
+for ((i=1; i<=MAX_RETRIES; i++)); do
+    INVENTORY_JSON=$(curl -s "$INVENTORY_URL")
+    if [[ -n "$INVENTORY_JSON" && "$INVENTORY_JSON" != "null" ]] && \
+       echo "$INVENTORY_JSON" | jq -e '.nodes | length > 0' &>/dev/null; then
+        break
+    fi
+    if [[ $i -eq $MAX_RETRIES ]]; then
+        echo "Error: ocpinventory.json not available after $MAX_RETRIES attempts" >&2
+        exit 2
+    fi
+    echo "Waiting for ocpinventory.json to be ready... (attempt $i/$MAX_RETRIES)" >&2
+    sleep "$RETRY_INTERVAL"
+done
 
 # Extract server models from pm_addr fields
 # Pattern: mgmt-[rack]-[unit]-[model].domain → extract [model]

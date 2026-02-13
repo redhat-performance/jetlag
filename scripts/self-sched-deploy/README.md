@@ -8,7 +8,7 @@ This tool provides an easy way to deploy an OpenShift cluster on Red Hat labs (S
 
 ## Prerequisites
 
-- **Ansible**: Version 2.9+
+- **Jetlag environment**: Run `source bootstrap.sh` from the jetlag repo root to setup the virtual environment
 - **GNU Make**: For running the Makefile
 - **jq**: For JSON parsing (r630 server detection)
 - **Pull Secret**: Download from [console.redhat.com](https://console.redhat.com/openshift/install/pull-secret)
@@ -18,6 +18,9 @@ This tool provides an easy way to deploy an OpenShift cluster on Red Hat labs (S
 ## Quick Start
 
 ```bash
+# Bootstrap jetlag environment (from repo root)
+source bootstrap.sh
+
 # Navigate to the self-sched-deploy directory
 cd scripts/self-sched-deploy
 

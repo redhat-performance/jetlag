@@ -38,10 +38,7 @@ deploy: configure bootstrap repos create-assignment-run inventory-run bastion-ru
 	@if [ -f "$(STATE_FILE)" ]; then \
 		source $(STATE_FILE) && \
 		echo "Cloud: $$CLOUD_NAME" && \
-		echo "Cluster config: $(JETLAG_ROOT)/ansible/$$CLOUD_NAME" && \
-		echo "" && \
-		echo "Access your cluster:" && \
-		echo "export KUBECONFIG=$(JETLAG_ROOT)/ansible/kubeconfig"; \
+		echo "Inventory: $(JETLAG_ROOT)/ansible/inventory/$$CLOUD_NAME.local"; \
 	fi
 
 # Configure: prompt for all parameters upfront
@@ -276,8 +273,16 @@ cluster-run:
 	$(ACTIVATE_VENV) && ansible-playbook -i ansible/inventory/$$CLOUD_NAME.local ansible/$$DEPLOY_PLAYBOOK; \
 	echo -e "$(GREEN)Cluster deployment complete!$(NC)"; \
 	echo ""; \
+	BASTION_HOST=$$(grep -v '^#' $(JETLAG_ROOT)/ansible/inventory/$$CLOUD_NAME.local | grep -A1 '^\[bastion\]' | tail -1 | awk '{print $$1}'); \
+	if [ "$$CLUSTER_TYPE" = "sno" ]; then \
+		SNO_NAME=$$(grep -v '^#' $(JETLAG_ROOT)/ansible/inventory/$$CLOUD_NAME.local | grep -A1 '^\[sno\]' | tail -1 | awk '{print $$1}'); \
+		KUBECONFIG_PATH="/root/sno/$$SNO_NAME/kubeconfig"; \
+	else \
+		KUBECONFIG_PATH="/root/$$CLUSTER_TYPE/kubeconfig"; \
+	fi; \
 	echo "Access your cluster:"; \
-	echo "export KUBECONFIG=$(JETLAG_ROOT)/ansible/kubeconfig"
+	echo "  ssh root@$$BASTION_HOST"; \
+	echo "  export KUBECONFIG=$$KUBECONFIG_PATH"
 
 #------------------------------------------------------------------------------
 # Utility targets
