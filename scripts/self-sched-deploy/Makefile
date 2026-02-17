@@ -188,19 +188,11 @@ inventory-run:
 			sed -i 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		elif [ "$$NETWORK_STACK" = "ipv6" ]; then \
-			sed -i 's/^- 198.18.0.0\/16$$/- fd00:198:18:10::\/64/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^- 16$$/- 64/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^- 10.128.0.0\/14$$/- fd01::\/48/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^- 23$$/- 64/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^- 172.30.0.0\/16$$/- fd02::\/112/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sed -i '/^# Single Stack IPv6:/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^setup_bastion_registry: false$$/setup_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^use_bastion_registry: false$$/use_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		elif [ "$$NETWORK_STACK" = "dual" ]; then \
-			sed -i '/^- 198.18.0.0\/16$$/a - fd00:198:18:10::\/64' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i '/^- 16$$/a - 64' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i '/^- 10.128.0.0\/14$$/a - fd01::\/48' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i '/^- 23$$/a - 64' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i '/^- 172.30.0.0\/16$$/a - fd02::\/112' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sed -i '/^# Dual Stack/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		fi; \
