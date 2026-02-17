@@ -195,6 +195,8 @@ inventory-run:
 			sed -i 's/^- 172.30.0.0\/16$$/- fd02::\/112/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^setup_bastion_registry: false$$/setup_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^use_bastion_registry: false$$/use_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			echo 'sync_operator_index: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			echo 'sync_ocp_release: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		elif [ "$$NETWORK_STACK" = "dual" ]; then \
 			sed -i '/^- 198.18.0.0\/16$$/a - fd00:198:18:10::\/64' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i '/^- 16$$/a - 64' $(JETLAG_ROOT)/ansible/vars/all.yml; \
