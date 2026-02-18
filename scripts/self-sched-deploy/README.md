@@ -99,6 +99,7 @@ The interactive prompts collect the following:
 - **Cluster Type**: `mno` (Multi-Node OpenShift) or `sno` (Single-Node OpenShift)
 - **Worker Count**: Number of worker nodes (MNO only)
 - **Network Stack**: `ipv4`, `ipv6`, or `dual` (dual-stack)
+- **IPv6 Mode** (IPv6 only): `proxy` (connected via forward proxy) or `disconnected` (local mirror registry)
 
 ### Paths
 - **Pull Secret**: Path to your `pull-secret.txt` file (default: jetlag root)
@@ -136,7 +137,10 @@ When you run any target, the tool checks for an existing assignment in `vars/sta
 Standard IPv4-only deployment. No special requirements.
 
 ### IPv6 Single-Stack
-IPv6-only deployment. Automatically enables bastion registry for disconnected installation.
+IPv6-only deployment. When selected, an additional prompt asks for the connectivity mode:
+
+- **proxy** (default): Connected deployment via a Squid forward proxy on the bastion. The bastion's dual-stack connectivity provides outbound access for the IPv6 cluster. No local registry mirror or image syncing required.
+- **disconnected**: Full disconnected deployment with a local mirror registry (`setup_bastion_registry`, `use_bastion_registry`) and image syncing (`sync_operator_index`, `sync_ocp_release`).
 
 ### Dual-Stack
 Both IPv4 and IPv6. Standard connected installation using the IPv4 network.
