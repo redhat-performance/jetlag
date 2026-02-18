@@ -189,10 +189,14 @@ inventory-run:
 			sed -i 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		elif [ "$$NETWORK_STACK" = "ipv6" ]; then \
 			sed -i '/^# Single Stack IPv6:/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^setup_bastion_registry: false$$/setup_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^use_bastion_registry: false$$/use_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			echo 'sync_operator_index: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			echo 'sync_ocp_release: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			if [ "$$IPV6_MODE" = "disconnected" ]; then \
+				sed -i 's/^setup_bastion_registry: false$$/setup_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+				sed -i 's/^use_bastion_registry: false$$/use_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+				echo 'sync_operator_index: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
+				echo 'sync_ocp_release: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			else \
+				sed -i 's/^setup_bastion_proxy: false$$/setup_bastion_proxy: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			fi; \
 		elif [ "$$NETWORK_STACK" = "dual" ]; then \
 			sed -i '/^# Dual Stack/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			sed -i 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
