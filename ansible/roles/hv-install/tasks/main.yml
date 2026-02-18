@@ -21,6 +21,55 @@
     name: sushy-tools
     version: 1.2.0
 
+- name: Configure hugepages support
+  when: enable_hugepages
+  block:
+
+  - name: Run grubby to add hugepages arguments
+    command: grubby --update-kernel=ALL --args="default_hugepagesz={{ hugepage_size }} hugepagesz={{ hugepage_size }}"
+    register: grub_updated
+
+  - name: Set reboot required flag
+    set_fact:
+      hugepages_reboot_required: true
+    when: grub_updated.changed
+
+  - name: Create hugetlb-gigantic-pages.service file
+    copy:
+      dest: /usr/lib/systemd/system/hugetlb-gigantic-pages.service
+      content: |
+        [Unit]
+        Description=HugeTLB Gigantic Pages Reservation
+        DefaultDependencies=no
+        Before=dev-hugepages.mount
+        ConditionPathExists=/sys/devices/system/node
+        ConditionKernelCommandLine=hugepagesz=1G
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/lib/systemd/hugetlb-reserve-pages.sh
+
+        [Install]
+        WantedBy=sysinit.target
+
+  - name: Create hugetlb-reserve-pages.sh
+    template:
+      src: hugetlb-reserve-pages.sh.j2
+      dest: /usr/lib/systemd/hugetlb-reserve-pages.sh
+      mode: "0755"
+    register: hugetlb_script
+
+  - name: Set reboot required flag
+    set_fact:
+      hugepages_reboot_required: true
+    when: hugetlb_script.changed
+
+  - name: Enable hugetlb-gigantic-pages.service
+    systemd:
+      enabled: true
+      name: hugetlb-gigantic-pages.service
+
 - name: Get coredns
   get_url:
     validate_certs: false
@@ -65,3 +114,21 @@
     state: started
     enabled: true
     name: ksmtuned
+
+- name: Reboot hypervisor for hugepages configuration
+  when:
+  - enable_hugepages
+  - hugepages_reboot_required | default(false)
+  block:
+  - name: Reboot hypervisor
+    reboot:
+      msg: "Rebooting to apply hugepages configuration"
+      reboot_timeout: 600
+
+  - name: Verify hugepages are configured
+    shell: cat /proc/meminfo | grep -E "HugePages_Total|HugePages_Free|Hugepagesize"
+    register: hugepages_status
+
+  - name: Display hugepages status
+    debug:
+      msg: "{{ hugepages_status.stdout_lines }}"

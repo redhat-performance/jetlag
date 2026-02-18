@@ -3,6 +3,13 @@
   <uuid>{{ hostvars[inventory_hostname]['domain_uuid'] }}</uuid>
   <memory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</memory>
   <currentMemory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</currentMemory>
+{% if vm_hugepages %}
+  <memoryBacking>
+    <hugepages>
+      <page size='1048576' unit='KiB'/>
+    </hugepages>
+  </memoryBacking>
+{% endif %}
   <vcpu placement='static'>{{ hv_vm_cpu_count | int }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-q35-rhel7.6.0'>hvm</type>
@@ -11,6 +18,9 @@
   <features>
     <acpi/>
     <apic/>
+{% if vm_igb_nics | default(false) %}
+    <ioapic driver='qemu'/>
+{% endif %}
   </features>
 {% if vnuma_enabled %}
   <cpu mode='host-model' check='partial'>
@@ -125,6 +135,20 @@
 {% endif %}
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
     </interface>
+{% if vm_igb_nics | default(false) %}
+{% for i in range(1, 6) %}
+    <interface type='bridge'>
+{% set mac_prefix = "%s:%02x" | format('52:54:00',i) %}
+      <mac address='{{ mac_prefix | community.general.random_mac(seed=inventory_hostname) }}'/>
+      <source bridge='br0'/>
+      <model type='igb'/>
+      <address type='pci' domain='0x0000' bus='{{ "0x%02x" | format(i + 4) }}' slot='0x00' function='0x0'/>
+    </interface>
+{% endfor %}
+    <iommu model='intel'>
+      <driver intremap='on'/>
+    </iommu>
+{% endif %}
     <serial type='pty'>
       <target type='isa-serial' port='0'>
         <model name='isa-serial'/>
