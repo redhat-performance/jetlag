@@ -187,6 +187,21 @@ collect_jetlag_config() {
         3|dual) NETWORK_STACK="dual" ;;
     esac
 
+    # IPv6 connectivity mode
+    if [[ "$NETWORK_STACK" == "ipv6" ]]; then
+        echo ""
+        echo "IPv6 connectivity mode:"
+        echo "1) proxy        - Connected via forward proxy (Squid on bastion)"
+        echo "2) disconnected - Disconnected with local mirror registry"
+        prompt_with_options "Select IPv6 mode" "proxy, disconnected" "${IPV6_MODE:-proxy}" IPV6_MODE
+
+        # Normalize input
+        case "$IPV6_MODE" in
+            1|proxy) IPV6_MODE="proxy" ;;
+            2|disconnected) IPV6_MODE="disconnected" ;;
+        esac
+    fi
+
     print_header "Pull Secret"
 
     # Default pull secret path is in jetlag root
@@ -241,6 +256,7 @@ DEPLOY_PLAYBOOK="${DEPLOY_PLAYBOOK}"
 
 # Network Configuration
 NETWORK_STACK="${NETWORK_STACK}"
+IPV6_MODE="${IPV6_MODE}"
 
 # Paths
 PULL_SECRET_PATH="${PULL_SECRET_PATH}"
@@ -304,6 +320,9 @@ display_jetlag_summary() {
     echo "OCP Build:        $OCP_BUILD"
     echo "OCP Version:      $OCP_VERSION"
     echo "Network Stack:    $NETWORK_STACK"
+    if [[ "$NETWORK_STACK" == "ipv6" ]]; then
+        echo "IPv6 Mode:        $IPV6_MODE"
+    fi
     echo "Pull Secret:      $PULL_SECRET_PATH"
     if [[ -n "$BASTION_ROOT_PASSWORD" ]]; then
         echo "Bastion Password: (provided)"
@@ -333,6 +352,9 @@ display_full_summary() {
     echo "Worker Nodes:     $WORKER_NODE_COUNT"
     echo "Hosts to Reserve: $NUM_HOSTS"
     echo "Network Stack:    $NETWORK_STACK"
+    if [[ "$NETWORK_STACK" == "ipv6" ]]; then
+        echo "IPv6 Mode:        $IPV6_MODE"
+    fi
     echo "Pull Secret:      $PULL_SECRET_PATH"
     echo "Workload:         $WORKLOAD_NAME"
     if [[ -n "$BASTION_ROOT_PASSWORD" ]]; then
