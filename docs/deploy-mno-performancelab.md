@@ -201,7 +201,8 @@ release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ for
 of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
 for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
 exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
-`4.19.0-0.nightly-2025-02-25-035256`.
+`4.19.0-0.nightly-2025-02-25-035256`, For 'ci' builds check latest nightly from  https://amd64.ocp.releases.ci.openshift.org/.
+
 
 Note: user has to add registry.ci.openshift.org token in pull-secret.txt for `ci` builds.
 
