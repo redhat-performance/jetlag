@@ -43,6 +43,71 @@
     ocpinventory_sno_nodes: []
     ocpinventory_hv_nodes: []
 
+- name: Validate allocation has enough nodes for MNO deployment
+  assert:
+    that:
+      - ocpinventory.json.nodes | length >= 4
+    fail_msg: >-
+      MNO deployment requires at least 4 nodes (1 bastion + 3 controlplane),
+      but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
+      Verify your lab allocation has enough machines.
+    success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (minimum 4 for MNO)"
+  when: cluster_type == "mno"
+
+- name: Validate allocation has enough nodes for VMNO deployment
+  assert:
+    that:
+      - ocpinventory.json.nodes | length >= 2
+    fail_msg: >-
+      VMNO deployment requires at least 2 nodes (1 bastion + 1 hypervisor),
+      but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
+      Verify your lab allocation has enough machines.
+    success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (minimum 2 for VMNO)"
+  when: cluster_type == "vmno"
+
+- name: Validate allocation has enough nodes for requested hypervisor count
+  assert:
+    that:
+      - ocpinventory.json.nodes | length >= (hv_count | int) + 1
+    fail_msg: >-
+      VMNO deployment with {{ hv_count }} hypervisor(s) requires at least {{ (hv_count | int) + 1 }} nodes
+      (1 bastion + {{ hv_count }} hypervisors),
+      but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
+      Either reduce hv_count or request a larger allocation.
+    success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (need {{ (hv_count | int) + 1 }} for {{ hv_count }} hypervisors)"
+  when:
+    - cluster_type == "vmno"
+    - hv_count is defined
+    - hv_count != None
+    - hv_count | int > 0
+
+- name: Validate allocation has enough nodes for requested worker count
+  assert:
+    that:
+      - ocpinventory.json.nodes | length >= (worker_node_count | int) + 4
+    fail_msg: >-
+      MNO deployment with {{ worker_node_count }} worker(s) requires at least {{ (worker_node_count | int) + 4 }} nodes
+      (1 bastion + 3 controlplane + {{ worker_node_count }} workers),
+      but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
+      Either reduce worker_node_count or request a larger allocation.
+    success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (need {{ (worker_node_count | int) + 4 }} for {{ worker_node_count }} workers)"
+  when:
+    - cluster_type == "mno"
+    - worker_node_count is defined
+    - worker_node_count != None
+    - worker_node_count | int > 0
+
+- name: Validate allocation has enough nodes for SNO deployment
+  assert:
+    that:
+      - ocpinventory.json.nodes | length >= 2
+    fail_msg: >-
+      SNO deployment requires at least 2 nodes (1 bastion + 1 SNO node),
+      but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
+      Verify your lab allocation has enough machines.
+    success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (minimum 2 for SNO)"
+  when: cluster_type == "sno"
+
 - name: Get bastion foreman data (For lab ip address)
   uri:
     url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ bastion_machine }}"
