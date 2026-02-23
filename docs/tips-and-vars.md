@@ -174,7 +174,8 @@ are `candidate-4.17`, `candidate-4.16` or `latest` which points to the early can
 build of the latest in development release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
 for a list of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
 for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
-exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is `4.19.0-0.nightly-2025-02-25-035256`.
+exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is `4.19.0-0.nightly-2025-02-25-035256`, For 'ci' builds check latest nightly from  https://amd64.ocp.releases.ci.openshift.org/.
+
 
 ```yaml
 ocp_build: "ga"
