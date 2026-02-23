@@ -26,19 +26,29 @@ bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
 
 [controlplane]
-{% set cp_hw = (controlplane0.split('.')[0]).split('-')[-1] %}
-{% set cp_parts = (controlplane0.split('.')[0]).replace('mgmt-','').split('-') %}
-{% set cp_rack = cp_parts[0] %}
-{% set cp_unit = cp_parts[1] if cp_parts|length > 1 else '' %}
-{% set cp_disk = control_plane_install_disk | default(hw_install_disk[lab][cp_rack ~ '-' ~ cp_unit ~ '-' ~ cp_hw]) | default(hw_install_disk[lab][cp_rack ~ '-' ~ cp_hw]) | default(hw_install_disk[lab][cp_hw]) | default('/dev/sda') %}
+{% set cp0_hw = (controlplane0.split('.')[0]).split('-')[-1] %}
+{% set cp0_parts = (controlplane0.split('.')[0]).replace('mgmt-','').split('-') %}
+{% set cp0_rack = cp0_parts[0] %}
+{% set cp0_unit = cp0_parts[1] if cp0_parts|length > 1 else '' %}
+{% set cp0_disk = control_plane_install_disk | default(hw_install_disk[lab][cp0_rack ~ '-' ~ cp0_unit ~ '-' ~ cp0_hw]) | default(hw_install_disk[lab][cp0_rack ~ '-' ~ cp0_hw]) | default(hw_install_disk[lab][cp0_hw]) | default('/dev/sda') %}
+{% set cp1_hw = (controlplane1.split('.')[0]).split('-')[-1] %}
+{% set cp1_parts = (controlplane1.split('.')[0]).replace('mgmt-','').split('-') %}
+{% set cp1_rack = cp1_parts[0] %}
+{% set cp1_unit = cp1_parts[1] if cp1_parts|length > 1 else '' %}
+{% set cp1_disk = control_plane_install_disk | default(hw_install_disk[lab][cp1_rack ~ '-' ~ cp1_unit ~ '-' ~ cp1_hw]) | default(hw_install_disk[lab][cp1_rack ~ '-' ~ cp1_hw]) | default(hw_install_disk[lab][cp1_hw]) | default('/dev/sda') %}
+{% set cp2_hw = (controlplane2.split('.')[0]).split('-')[-1] %}
+{% set cp2_parts = (controlplane2.split('.')[0]).replace('mgmt-','').split('-') %}
+{% set cp2_rack = cp2_parts[0] %}
+{% set cp2_unit = cp2_parts[1] if cp2_parts|length > 1 else '' %}
+{% set cp2_disk = control_plane_install_disk | default(hw_install_disk[lab][cp2_rack ~ '-' ~ cp2_unit ~ '-' ~ cp2_hw]) | default(hw_install_disk[lab][cp2_rack ~ '-' ~ cp2_hw]) | default(hw_install_disk[lab][cp2_hw]) | default('/dev/sda') %}
 {% if enable_bond | default(false) %}
-{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} bond0_macs={{ controlplane0_bond0_macs }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(5) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(5) }}{% endif %} vendor={{ controlplane0_vendor }} install_disk={{ cp_disk }}
-{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} bond0_macs={{ controlplane1_bond0_macs }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(6) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(6) }}{% endif %} vendor={{ controlplane1_vendor }} install_disk={{ cp_disk }}
-{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} bond0_macs={{ controlplane2_bond0_macs }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(7) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(7) }}{% endif %} vendor={{ controlplane2_vendor }} install_disk={{ cp_disk }}
+{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} bond0_macs={{ controlplane0_bond0_macs }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(5) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(5) }}{% endif %} vendor={{ controlplane0_vendor }} install_disk={{ cp0_disk }}
+{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} bond0_macs={{ controlplane1_bond0_macs }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(6) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(6) }}{% endif %} vendor={{ controlplane1_vendor }} install_disk={{ cp1_disk }}
+{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} bond0_macs={{ controlplane2_bond0_macs }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(7) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(7) }}{% endif %} vendor={{ controlplane2_vendor }} install_disk={{ cp2_disk }}
 {% else %}
-{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} mac_address={{ controlplane0_mac_address }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(5) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(5) }}{% endif %} vendor={{ controlplane0_vendor }} install_disk={{ cp_disk }}
-{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} mac_address={{ controlplane1_mac_address }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(6) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(6) }}{% endif %} vendor={{ controlplane1_vendor }} install_disk={{ cp_disk }}
-{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} mac_address={{ controlplane2_mac_address }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(7) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(7) }}{% endif %} vendor={{ controlplane2_vendor }} install_disk={{ cp_disk }}
+{{ controlplane0.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane0 }} mac_address={{ controlplane0_mac_address }} lab_mac={{ controlplane0_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(5) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(5) }}{% endif %} vendor={{ controlplane0_vendor }} install_disk={{ cp0_disk }}
+{{ controlplane1.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane1 }} mac_address={{ controlplane1_mac_address }} lab_mac={{ controlplane1_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(6) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(6) }}{% endif %} vendor={{ controlplane1_vendor }} install_disk={{ cp1_disk }}
+{{ controlplane2.split('.')[0] | replace('mgmt-','') }} bmc_address={{ controlplane2 }} mac_address={{ controlplane2_mac_address }} lab_mac={{ controlplane2_lab_mac }} ip={{ controlplane_network[0] | ansible.utils.nthhost(7) }}{% if controlplane_network | length > 1 %} ipv6={{ controlplane_network[1] | ansible.utils.nthhost(7) }}{% endif %} vendor={{ controlplane2_vendor }} install_disk={{ cp2_disk }}
 {% endif %}
 
 [controlplane:vars]
