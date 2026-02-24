@@ -195,10 +195,13 @@
 - name: Get CoreDNS, OpenShift clients, opm, kube-burner, kube-burner-ocp, grpcurl, minio client, and yq
   get_url:
     validate_certs: false
-    force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
     mode: "{{ item.mode | default('0644') }}"
+  retries: 3
+  delay: 10
+  register: download_result
+  until: download_result is not failed
   with_items:
   - url: "{{ coredns_url }}"
     dest: "{{ bastion_cluster_config_dir }}/coredns_linux_amd64.tgz"
@@ -220,6 +223,10 @@
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
+  retries: 3
+  delay: 10
+  register: download_rhel8_result
+  until: download_rhel8_result is not failed
   with_items:
   - url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
@@ -233,6 +240,10 @@
     force: true
     url: "{{ item.url }}"
     dest: "{{ item.dest }}"
+  retries: 3
+  delay: 10
+  register: download_rhel9_result
+  until: download_rhel9_result is not failed
   with_items:
   - url: "{{ release_urls['ga'] }}/latest/opm-linux-rhel9.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
