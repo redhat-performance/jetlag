@@ -197,7 +197,7 @@ hw_nic_name:
     r650:
     - eno12399
     - ens2f0np0
-    - ens2f0np0
+    - ens2f1np1
     r740xd:
     - eno3
     - eno1
