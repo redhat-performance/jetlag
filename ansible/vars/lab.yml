@@ -194,6 +194,10 @@ hw_nic_name:
     - ens1f0
     - ens1f1
   performancelab:
+    r650:
+    - eno12399
+    - ens2f0np0
+    - ens2f0np0
     r740xd:
     - eno3
     - eno1
