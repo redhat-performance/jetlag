@@ -4,6 +4,7 @@
 - name: Check if vm disk file exists
   stat:
     path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
+    get_checksum: false
   register: vm_disk_stat
 
 - name: Create vm disk
