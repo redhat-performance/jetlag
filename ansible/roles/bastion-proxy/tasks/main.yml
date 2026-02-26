@@ -18,51 +18,30 @@
     mode: '0644'
   notify: Restart squid proxy
 
-- name: Pull squid container image
-  containers.podman.podman_image:
-    name: "{{ proxy_container_image }}"
-    state: present
-
-- name: Stop existing squid containers
-  containers.podman.podman_container:
-    name: "{{ item }}"
-    state: absent
-  loop:
-    - squid-proxy
-    - squid-init
-  failed_when: false
-
-- name: Initialize squid cache directory
-  containers.podman.podman_container:
-    name: squid-init
-    image: "{{ proxy_container_image }}"
-    state: started
-    rm: true
-    user: root
-    command: sh -c "chown -R proxy:proxy /var/spool/squid /var/log/squid && squid -z -N"
-    volumes:
-      - "{{ proxy_conf_dir }}/squid.conf:/etc/squid/squid.conf:z"
-      - "{{ proxy_cache_dir }}:/var/spool/squid:z"
-      - /var/log/squid:/var/log/squid:z
-  register: squid_init
-  failed_when: false
-
-- name: Wait for cache initialization
-  pause:
-    seconds: 3
-  when: squid_init.changed
-
-- name: Run squid proxy container
-  containers.podman.podman_container:
+- name: Create squid-proxy pod
+  containers.podman.podman_pod:
     name: squid-proxy
-    image: "{{ proxy_container_image }}"
+    network: host
     state: started
-    restart_policy: always
-    network_mode: host
-    volumes:
+
+- name: Ensure squid-proxy pod is up
+  containers.podman.podman_pod:
+    name: squid-proxy
+    network: host
+    state: restarted
+
+- name: Create squid proxy container in squid-proxy pod
+  containers.podman.podman_container:
+    pod: squid-proxy
+    network: host
+    name: squid
+    image: "{{ proxy_container_image }}"
+    user: root
+    volume:
       - "{{ proxy_conf_dir }}/squid.conf:/etc/squid/squid.conf:z"
       - "{{ proxy_cache_dir }}:/var/spool/squid:z"
       - /var/log/squid:/var/log/squid:z
+    state: started
 
 - name: Open firewall port for proxy
   firewalld:

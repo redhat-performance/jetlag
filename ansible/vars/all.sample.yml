@@ -77,10 +77,6 @@ use_bastion_registry: false
 # When enabled, cluster nodes use the proxy to reach quay.io, registry.redhat.io, etc.
 setup_bastion_proxy: false
 
-# Proxy settings (defaults provided, override as needed)
-# proxy_port: 3128
-# proxy_cache_size_mb: 10000
-
 # Reset iDRAC service using badfish container (pulls and uses badfish container
 # to clear job queue and reset iDRAC service)
 # reset_idrac: false

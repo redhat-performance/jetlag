@@ -4,7 +4,7 @@
 # Proxy configuration
 proxy_type: squid
 proxy_port: 3128
-proxy_container_image: docker.io/ubuntu/squid:latest
+proxy_container_image: quay.io/konflux-ci/caching/squid:latest
 
 # Cache configuration (persistent across reboots)
 proxy_cache_dir: /opt/squid/cache
