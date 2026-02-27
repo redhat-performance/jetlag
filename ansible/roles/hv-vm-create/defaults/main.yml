@@ -26,9 +26,6 @@ vnuma_cpu_mode: "strict"     # strict, preferred
 # Hugepages configuration for VMs
 vm_hugepages: false
 
-# Number of hugepages to allocate per VM (auto-calculated based on VM memory if not specified)
-vm_hugepage_count:
-
 # Hugepage mount path in VMs
 vm_hugepage_mount: "/mnt/hugepages"
 

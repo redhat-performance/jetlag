@@ -24,14 +24,9 @@
 - name: Configure VM hugepages
   when: vm_hugepages
   block:
-    - name: Calculate hugepages needed for VM if not specified
-      set_fact:
-        calculated_vm_hugepage_count: "{{ (hostvars[inventory_hostname]['memory'] | int) // (1 | int) }}"
-      when: vm_hugepage_count is not defined or vm_hugepage_count == ""
-
     - name: Set hugepage count for VM
       set_fact:
-        vm_hugepages_needed: "{{ vm_hugepage_count if vm_hugepage_count is defined and vm_hugepage_count != '' else calculated_vm_hugepage_count }}"
+        vm_hugepages_needed: "{{ (hostvars[inventory_hostname]['memory'] | int) // (1 | int) }}"
 
     # Hard-coding 1Gi hugepages for now. In the unlikely event we may need small hugepages, we can refactor code at that time.
     - name: Check host hugepages availability
