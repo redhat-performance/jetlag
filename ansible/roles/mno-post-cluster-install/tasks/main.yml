@@ -31,6 +31,11 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm wait-for-stable-cluster --minimum-stable-period={{ minimum_stable_period }} --timeout={{ wait_until_cluster_stable_timeout }}
   when: wait_until_cluster_stable
 
+- name: Remove assisted-installer namespace
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc delete ns assisted-installer
+  when: remove_assisted_installer_namespace
+
 - name: Apply a label to the worker node(s)
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite -l node-role.kubernetes.io/worker jetlag=true

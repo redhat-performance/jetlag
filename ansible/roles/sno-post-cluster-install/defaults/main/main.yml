@@ -10,6 +10,9 @@ wait_until_cluster_stable: true
 minimum_stable_period: 2m
 wait_until_cluster_stable_timeout: 20m
 
+# Remove assisted-installer namespace from cluster after installation
+remove_assisted_installer_namespace: false
+
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
 gitops_channel: stable

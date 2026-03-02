@@ -32,6 +32,11 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm wait-for-stable-cluster --minimum-stable-period={{ minimum_stable_period }} --timeout={{ wait_until_cluster_stable_timeout }}
   when: wait_until_cluster_stable
 
+- name: Remove assisted-installer namespace
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc delete ns assisted-installer
+  when: remove_assisted_installer_namespace
+
 - name: Apply a label to the SNO node
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc label no --all --overwrite jetlag=true
