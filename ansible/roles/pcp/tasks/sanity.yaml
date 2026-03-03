@@ -1,3 +1,11 @@
+---
+- name: Check if only one role is selected
+  ansible.builtin.fail:
+    msg: "Please only select either server or a client role, not both"
+  when:
+    - pcp_install_server | bool
+    - pcp_install_client | bool
+
 - name: Check if there are hosts to configure
   when:
    - pcp_server_configure_clients | bool
