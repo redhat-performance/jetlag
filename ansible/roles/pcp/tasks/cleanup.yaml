@@ -79,7 +79,7 @@
         - groups['hv'] is defined
         - groups['hv'] | length > 0
       ansible.builtin.file:
-        path: "{{ pcp_log_dir }}/{{ hostvars[item].inventory_hostname }}"
+        path: "{{ pcp_log_dir }}/{{ item }}"
         state: absent
       loop:
         - "{{ groups['hv'] }}"
