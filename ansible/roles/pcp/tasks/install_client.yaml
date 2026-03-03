@@ -41,3 +41,17 @@
   loop:
     - pmcd
     - pmlogger
+
+- name: Restart pmlogger on Bastion node
+  delegate_to: bastion[0]
+  block:
+    - name: Check if pmlogger is running
+      ansible.builtin.command: systemctl is-active pmlogger
+      ignore_errors: true
+      register: bastion_pmlogger_running
+
+    - name: Restart pmlogger
+      when: bastion_pmlogger_running.stdout == 'active'
+      ansible.builtin.systemd:
+        name: pmlogger
+        state: restarted

@@ -14,7 +14,7 @@ pcp_cleanup_remove_remote_file: true
 
 # Client configuration
 pcp_log_dir: "/var/log/pcp/pmlogger"
-pcp_pmcd_options_file_path: "/etc/pcp/pmcd.options"
+pcp_pmcd_options_file_path: "/etc/pcp/pmcd/pmcd.options"
 pcp_listen_interface_name: "eno3"
 
 # Server configuration
