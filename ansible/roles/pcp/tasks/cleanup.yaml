@@ -40,7 +40,7 @@
 - name: Remove PCP packages
   when: pcp_cleanup_remove_rpms | bool
   ansible.builtin.dnf:
-    name: pcp
+    name: "{{ item }}"
     state: absent
   loop:
     - pcp
