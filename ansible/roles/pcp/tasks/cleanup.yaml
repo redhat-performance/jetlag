@@ -32,9 +32,9 @@
       loop: "{{ pcp_services_enabled_status.results}}"
 
 - name: Unset selinux pcp boolean
-  ansible.builtin.seboolean:
+  ansible.posix.seboolean:
     name: pcp_bind_all_unreserved_ports
-    state: off
+    state: false
     persistent: true
 
 - name: Remove PCP packages

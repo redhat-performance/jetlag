@@ -27,9 +27,9 @@
         protocol: tcp
 
 - name: Set selinux pcp boolean
-  ansible.builtin.seboolean:
+  ansible.posix.seboolean:
     name: pcp_bind_all_unreserved_ports
-    state: on
+    state: true
     persistent: true
 
 - name: Start and enable PCP services
