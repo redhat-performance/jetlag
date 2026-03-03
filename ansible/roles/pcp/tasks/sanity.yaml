@@ -1,0 +1,8 @@
+- name: Check if there are hosts to configure
+  when:
+   - pcp_server_configure_clients | bool
+   - groups['hv'] is defined
+   - groups['hv'] | length == 0
+  ansible.builtin.fail:
+    msg: "Configuration is set to configure clients, but HV group is empty"
+

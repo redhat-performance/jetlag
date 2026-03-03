@@ -1,0 +1,42 @@
+- name: Install pcp packages
+  ansible.builtin.dnf:
+    name: pcp-system-tools
+    state: present
+
+- name: Expose pcp over the network
+  ansible.builtin.lineinfile:
+    path: "{{ pcp_pmcd_options_file_path }}"
+    line: "-i {{ ansible_facts[pcp_listen_interface_name]['ipv4']['address'] }}"
+    insertafter: EOF
+    state: present
+
+- name: Configure firewall
+  block:
+    - name: Check if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      register: pcp_client_firewalld_running
+
+    - name: Add firewalld rules
+      when: pcp_client_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: 44321/tcp
+        zone: public
+        permanent: true
+        immediate: true
+        state: enabled
+        protocol: tcp
+
+- name: Set selinux pcp boolean
+  ansible.builtin.seboolean:
+    name: pcp_bind_all_unreserved_ports
+    state: on
+    persistent: true
+
+- name: Start and enable PCP services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+  loop:
+    - pmcd
+    - pmlogger

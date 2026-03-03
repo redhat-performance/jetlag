@@ -1,0 +1,22 @@
+---
+# PCP role main tasks
+
+- name: Sanity check
+  when: pcp_sanity | bool
+  ansible.builtin.include_tasks:
+    - sanity.yaml
+
+- name: Clean up
+  when: pcp_cleanup | bool
+  ansible.builtin.include_tasks:
+    - cleanup.yaml
+
+- name: Install Server
+  when: pcp_install_server | bool
+  ansible.builtin.include_tasks:
+    - install-server.yaml
+
+- name: Install Client
+  when: pcp_install_client | bool
+  ansible.builtin.include_tasks:
+    - install-client.yaml

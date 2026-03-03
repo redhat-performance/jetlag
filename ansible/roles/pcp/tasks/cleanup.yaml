@@ -1,0 +1,61 @@
+- name: Stop and disable PCP services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - pmcd
+    - pmlogger
+
+- name: Unset selinux pcp boolean
+  ansible.builtin.seboolean:
+    name: pcp_bind_all_unreserved_ports
+    state: off
+    persistent: true
+
+- name: Remove PCP packages
+  when: pcp_cleanup_remove_rpms | bool
+  ansible.builtin.dnf:
+    name: pcp
+    state: absent
+  loop:
+    - pcp
+    - pcp-system-tools
+
+- name: Reconfigure firewall
+  when: pcp_cleanup_remove_firewalld_rules | bool
+  block:
+    - name: Checkf if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      register: pcp_cleanup_firewalld_running
+
+    - name: Remove firewalld rules
+      when: pcp_cleanup_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: 44321/tcp
+        permanent: true
+        immediate: true
+        state: disabled
+
+- name: Remove existing files
+  when: pcp_cleanup_remove_remote_file | bool
+  block:
+    - name: Remove remote configuration file
+      ansible.builtin.file:
+        path: "{{ pcp_server_remote_file_path }}"
+        state: absent
+    
+    - name: Remove old local log files
+      ansible.builtin.file:
+        path: "{{ pcp_log_dir }}/{{ ansible_hostname}}"
+        state: absent
+
+    - name: Remove old client log files
+      when:
+        - groups['hv'] is defined
+        - groups['hv'] | length > 0
+      ansible.builtin.file:
+        path: "{{ pcp_log_dir }}/{{ hostvars[item].inventory_hostname }}"
+        state: absent
+      loop:
+        - "{{ groups['hv'] }}"

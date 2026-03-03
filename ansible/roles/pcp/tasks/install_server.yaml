@@ -1,0 +1,21 @@
+- name: Install pcp packages
+  ansible.builtin.dnf:
+    name: pcp-system-tools
+    state: present
+
+- name: Add client configuration
+  ansible.builtin.template:
+    src: remote.j2
+    dest: "{{ pcp_server_remote_file_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Start and enable PCP services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+  loop:
+    - pmcd
+    - pmlogger

@@ -1,0 +1,23 @@
+# Control flow variables
+pcp_sanity: false
+pcp_cleanup: false
+pcp_install_server: false
+pcp_install_client: false
+
+# Basic configuration
+pcp_enable_service: true
+
+# Cleanup configuration
+pcp_cleanup_remove_rpms: true
+pcp_cleanup_remove_firewalld_rules: true
+pcp_cleanup_remove_remote_file: true
+
+# Client configuration
+pcp_log_dir: "/var/log/pcp/pmlogger"
+pcp_pmcd_options_file_path: "/etc/pcp/pmcd.options"
+pcp_listen_interface_name: "eno3"
+
+# Server configuration
+pcp_server_configure_clients: true
+pcp_log_clients_sub_dir: "hv"
+pcp_server_remote_file_path: "/etc/pcp/pmlogger/control.d/remote"
