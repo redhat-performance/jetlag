@@ -27,7 +27,6 @@
       when: item.stdout == 'enabled'
       ansible.builtin.systemd:
         name: "{{ item.item }}"
-        state: stopped
         enabled: false
       loop: "{{ pcp_services_enabled_status.results}}"
 
