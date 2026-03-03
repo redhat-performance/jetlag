@@ -44,7 +44,7 @@
       ansible.builtin.file:
         path: "{{ pcp_server_remote_file_path }}"
         state: absent
-    
+
     - name: Remove old local log files
       ansible.builtin.file:
         path: "{{ pcp_log_dir }}/{{ ansible_hostname}}"

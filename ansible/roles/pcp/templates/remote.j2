@@ -3,5 +3,5 @@ $version=1.1
 
 {% for client in groups['hv'] %}
 {% set kurzname = hostvars[client].inventory_hostname.split('.')[0] %}
-{{ hostvars[client].inventory_hostname }} n n PCP_ARCHIVE_DIR/{% if pcp_log_clients_sub_dir != "" %}{{ pcp_log_clients_sub_dir }}/{% endif %}{{ kurzname }} -r -T24h10m -c config.{{ kurzname }} 
+{{ hostvars[client].inventory_hostname }} n n PCP_ARCHIVE_DIR/{% if pcp_log_clients_sub_dir != "" %}{{ pcp_log_clients_sub_dir }}/{% endif %}{{ kurzname }} -r -T24h10m -c config.{{ kurzname }}
 {% endfor %}

@@ -5,4 +5,3 @@
    - groups['hv'] | length == 0
   ansible.builtin.fail:
     msg: "Configuration is set to configure clients, but HV group is empty"
-

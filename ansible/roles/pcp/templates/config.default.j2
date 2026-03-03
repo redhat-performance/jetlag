@@ -1107,11 +1107,11 @@ log advisory on default {
 	disk.dm.read_bytes
 	disk.dev.write_bytes			# kB_wrtn
 	disk.dm.write_bytes
-	kernel.all.cpu.user	# %user   
-	kernel.all.cpu.nice	# %nice 
-	kernel.all.cpu.sys	# %system 
-	kernel.all.cpu.wait.total	# %iowait  
-	kernel.all.cpu.steal	# %steal   
+	kernel.all.cpu.user	# %user
+	kernel.all.cpu.nice	# %nice
+	kernel.all.cpu.sys	# %system
+	kernel.all.cpu.wait.total	# %iowait
+	kernel.all.cpu.steal	# %steal
 	kernel.all.cpu.idle	# %idle
 	disk.all.read                   # total: Total reads completed successfully
 	disk.all.read_merge             # merged: grouped reads (resulting in one I/O)
@@ -1145,13 +1145,13 @@ log advisory on default {
 	disk.all.read_bytes		# rkB/s
 	disk.all.write_bytes		# wkB/s
 	# avgqu-sz
-	# - avgrq-sz 
+	# - avgrq-sz
 	disk.dev.avactive		# await
 	disk.dm.avactive
 	disk.all.read_rawactive		# r_await
 	disk.all.write_rawactive	# w_await
 	# - svctm
-	# - %util (r/s + w/s) * (svctm / 1000)		
+	# - %util (r/s + w/s) * (svctm / 1000)
 }
 #----
 #+ tools/ip:y:default:
@@ -1180,7 +1180,7 @@ log advisory on default {
 	ipc.msg.max_msgsz
 	ipc.msg.max_defmsgq
 	ipc.shm.max_seg
-	ipc.shm.max_segsz 
+	ipc.shm.max_segsz
 	ipc.shm.max_shmsys
 	ipc.shm.min_segsz
 	ipc.sem.max_semid
@@ -1416,7 +1416,7 @@ log advisory on default {
 	kernel.percpu.cpu.sys
 	kernel.percpu.cpu.user
 	kernel.percpu.cpu.wait.total
-	kernel.percpu.cpu.vuser	
+	kernel.percpu.cpu.vuser
 	kernel.percpu.cpu.vnice
 	kernel.percpu.cpu.irq.soft
 	kernel.percpu.cpu.irq.hard
