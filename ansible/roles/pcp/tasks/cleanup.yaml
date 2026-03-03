@@ -50,6 +50,7 @@
   block:
     - name: Checkf if firewalld is running
       ansible.builtin.command: systemctl is-active firewalld
+      ignore_errors: true
       register: pcp_cleanup_firewalld_running
 
     - name: Remove firewalld rules
