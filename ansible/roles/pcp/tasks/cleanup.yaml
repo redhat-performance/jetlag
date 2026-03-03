@@ -1,11 +1,35 @@
 - name: Stop and disable PCP services
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: stopped
-    enabled: false
-  loop:
-    - pmcd
-    - pmlogger
+  vars:
+    pcp_services_list:
+      - pmcd
+      - pmlogger
+  block:
+    - name: Check if PCP services are running
+      ansible.builtin.command: systemctl is-active {{ item }}
+      ignore_errors: true
+      register: pcp_services_active_status
+      loop: "{{ pcp_services_list }}"
+
+    - name: Stop PCP services
+      when: item.stdout == 'active'
+      ansible.builtin.systemd:
+        name: "{{ item.item }}"
+        state: stopped
+      loop: "{{ pcp_services_active_status.results}}"
+
+    - name: Check if PCP services exist
+      ansible.builtin.command: systemctl is-enabled {{ item }}
+      ignore_errors: true
+      register: pcp_services_enabled_status
+      loop: "{{ pcp_services_list }}"
+      
+    - name: Disable PCP services
+      when: item.stdout == 'enabled'
+      ansible.builtin.systemd:
+        name: "{{ item.item }}"
+        state: stopped
+        enabled: false
+      loop: "{{ pcp_services_enabled_status.results}}"
 
 - name: Unset selinux pcp boolean
   ansible.builtin.seboolean:
