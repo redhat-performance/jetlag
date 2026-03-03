@@ -66,7 +66,7 @@ ansible -i <inventory_file> bastion --module-name include_role --args name=pcp \
 
 Client:
 ```
-ansible -i <inventory_file> bastion --module-name include_role --args name=pcp \
+ansible -i <inventory_file> hv --module-name include_role --args name=pcp \
 -e pcp_sanity=true \
 -e pcp_cleanup=true \
 -e pcp_install_client=true \
@@ -76,8 +76,13 @@ ansible -i <inventory_file> bastion --module-name include_role --args name=pcp \
 
 ### Ad-hoc Cleanup
 
+Bastion:
 ```
 ansible -i <inventory_file> bastion --module-name include_role --args name=pcp -e pcp_cleanup=true
+```
+Hypervisors:
+```
+ansible -i <inventory_file> hv --module-name include_role --args name=pcp -e pcp_cleanup=true
 ```
 
 ### Requirements
