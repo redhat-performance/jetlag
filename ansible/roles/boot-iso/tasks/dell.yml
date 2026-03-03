@@ -38,6 +38,8 @@
     badfish_password: "{{ hostvars[item]['bmc_password'] }}"
     badfish_args:
       - "--racreset"
+    retries: 15
+    delay: 10
     ignore_errors: true
   when: reset_idrac | bool
 
