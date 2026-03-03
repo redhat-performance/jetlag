@@ -43,7 +43,7 @@
     - pmlogger
 
 - name: Restart pmlogger on Bastion node
-  delegate_to: bastion[0]
+  delegate_to: "{{ groups['bastion'][0] }}"
   block:
     - name: Check if pmlogger is running
       ansible.builtin.command: systemctl is-active pmlogger
