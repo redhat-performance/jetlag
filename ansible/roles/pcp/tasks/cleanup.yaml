@@ -22,7 +22,7 @@
       ignore_errors: true
       register: pcp_services_enabled_status
       loop: "{{ pcp_services_list }}"
-      
+
     - name: Disable PCP services
       when: item.stdout == 'enabled'
       ansible.builtin.systemd:
