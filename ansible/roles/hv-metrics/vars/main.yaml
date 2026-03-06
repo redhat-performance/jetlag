@@ -6,6 +6,7 @@ hv_metrics_install_client: false
 
 # General configuration
 hv_metrics_work_dir: "/root/prometheus"
+hv_metrics_cleanup_keep_work_dir: false
 
 # Prometheus collector configuration
 # Server configuration

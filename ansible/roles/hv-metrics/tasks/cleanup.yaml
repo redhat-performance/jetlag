@@ -61,6 +61,7 @@
         state: absent
 
 - name: Cleanup working directory
+  when: not hv_metrics_cleanup_keep_work_dir | bool
   ansible.builtin.file:
     path: "{{ hv_metrics_work_dir }}"
     state: absent
