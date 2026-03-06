@@ -66,7 +66,7 @@ Client:
 ansible -i <inventory_file> hv --module-name include_role --args name=hv-metrics \
 -e hv_metrics_sanity=true \
 -e hv_metrics_cleanup=true \
--e hv_metrics_install_client=true \
+-e hv_metrics_install_client=true
 ```
 
 
@@ -74,11 +74,11 @@ ansible -i <inventory_file> hv --module-name include_role --args name=hv-metrics
 
 Bastion:
 ```
-ansible -i <inventory_file> bastion --module-name include_role --args name=hv-metrics -e hv-metrics_cleanup=true
+ansible -i <inventory_file> bastion --module-name include_role --args name=hv-metrics -e hv_metrics_cleanup=true
 ```
 Hypervisors:
 ```
-ansible -i <inventory_file> hv --module-name include_role --args name=hv-metrics -e hv-metrics_cleanup=true
+ansible -i <inventory_file> hv --module-name include_role --args name=hv-metrics -e hv_metrics_cleanup=true
 ```
 
 ### Requirements
