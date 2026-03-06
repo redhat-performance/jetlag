@@ -11,8 +11,7 @@ Pull=always
 Network=host
 Volume=/:/host:ro,rslave
 
-PodmanArgs=--pod="host"
-PodmanArgs=--path.rootfs=/host
+Exec=--path.rootfs=/host --pod="host"
 
 [Install]
 # Start by default on boot
