@@ -11,6 +11,23 @@
     owner: root
     group: root
 
+- name: Configure firewall
+  block:
+    - name: Check if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      ignore_errors: true
+      register: hv_metrics_client_firewalld_running
+
+    - name: Add firewalld rules
+      when: hv_metrics_client_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: "{{ hv_metrics_client_port }}"
+        zone: public
+        permanent: true
+        immediate: true
+        state: enabled
+        protocol: tcp
+
 - name: Start and enable nodexporter container
   ansible.builtin.systemd:
     name: nodexporter.container

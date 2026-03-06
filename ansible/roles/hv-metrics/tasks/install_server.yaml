@@ -35,6 +35,23 @@
     owner: root
     group: root
 
+- name: Configure firewall
+  block:
+    - name: Check if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      ignore_errors: true
+      register: hv_metrics_server_firewalld_running
+
+    - name: Add firewalld rules
+      when: hv_metrics_server_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: "{{ hv_metrics_server_port }}"
+        zone: public
+        permanent: true
+        immediate: true
+        state: enabled
+        protocol: tcp
+
 - name: Start and enable prometheus container
   ansible.builtin.systemd:
     name: prometheus.container
