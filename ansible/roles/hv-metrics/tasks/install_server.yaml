@@ -11,9 +11,9 @@
     owner: root
     group: root
 
-- name: Create log directory
+- name: Create prometheus data directory
   ansible.builtin.file:
-    path: "{{ hv_metrics_server_podman_log_dir }}"
+    path: "{{ hv_metrics_server_podman_data_dir }}"
     state: directory
     mode: "0777"
     owner: root
