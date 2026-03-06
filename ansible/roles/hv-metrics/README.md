@@ -53,7 +53,10 @@ Example for `hv-setup.yml`:
 
 #### Ad-hoc use
 
-Server:
+You can execute following ad-hoc command from `../jetlag/ansible` directory:
+> Do note, that this will not have a pretty output, but you only need to be concerned of the final state Changed (Success) or Fatal (Failed) or exit code.
+
+Install Server:
 ```
 ansible -i <inventory_file> bastion --module-name include_role --args name=hv-metrics \
 -e hv_metrics_sanity=true \
@@ -61,7 +64,7 @@ ansible -i <inventory_file> bastion --module-name include_role --args name=hv-me
 -e hv_metrics_install_server=true
 ```
 
-Client:
+Install Client:
 ```
 ansible -i <inventory_file> hv --module-name include_role --args name=hv-metrics \
 -e hv_metrics_sanity=true \
