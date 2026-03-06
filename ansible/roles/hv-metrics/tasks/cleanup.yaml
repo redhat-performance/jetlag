@@ -92,7 +92,7 @@
         state: disabled
 
     - name: Remove firewalld rules
-      when: pcp_cleanup_firewalld_running.stdout == 'active'
+      when: hv_metrics_cleanup_firewalld_running.stdout == 'active'
       ansible.builtin.firewalld:
         port: "{{ hv_metrics_client_port }}"
         permanent: true
