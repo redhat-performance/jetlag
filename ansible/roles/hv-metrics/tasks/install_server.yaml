@@ -15,7 +15,7 @@
   ansible.builtin.file:
     path: "{{ hv_metrics_server_podman_log_dir }}"
     state: directory
-    mode: "0755"
+    mode: "0777"
     owner: root
     group: root
 
