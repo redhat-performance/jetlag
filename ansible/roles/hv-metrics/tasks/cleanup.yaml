@@ -71,19 +71,7 @@
     - name: Remove prometheus container image
       ansible.builtin.command: podman rmi {{ hv_metrics_prometheus_container_name }}
       ignore_errors: true
-      register: prometheus_container_image_remove_status
-
-    - name: Fail if prometheus cleanup failed
-      when: prometheus_container_image_remove_status.rc != 0
-      ansible.builtin.fail:
-        msg: "Failed to remove prometheus container image. Please cleanup manually."
 
     - name: Remove nodexporter container image
       ansible.builtin.command: podman rmi {{ hv_metrics_node_exporter_container_name }}
       ignore_errors: true
-      register: nodexporter_container_image_remove_status
-
-    - name: Fail if nodexporter cleanup failed
-      when: nodexporter_container_image_remove_status.rc != 0
-      ansible.builtin.fail:
-        msg: "Failed to remove nodexporter container image. Please cleanup manually."
