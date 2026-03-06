@@ -1,0 +1,13 @@
+- name: Put client quadlet configuration
+  ansible.builtin.template:
+    src: nodexporter.container.j2
+    dest: "{{ hv_metrics_quadlet_dir }}/nodexporter.container"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Start and enable nodexporter container
+  ansible.builtin.systemd:
+    name: nodexporter.container
+    state: restarted
+    enabled: true

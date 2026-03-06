@@ -1,0 +1,30 @@
+# Control flow variables
+hv_metrics_sanity: false
+hv_metrics_cleanup: false
+hv_metrics_install_server: false
+hv_metrics_install_client: false
+
+# General configuration
+hv_metrics_work_dir: "/root/prometheus"
+
+# Prometheus collector configuration
+# Server configuration
+hv_metrics_server_address: localhost
+hv_metrics_server_port: 9090
+hv_metrics_server_retention_time: "30d"
+
+# Client configuration
+hv_metrics_client_port: 9100
+hv_metrics_scrape_interval: "15s"
+hv_metrics_evaluation_interval: "15s"
+
+# Prometheus server container configuration
+hv_metrics_server_podman_config_source: "{{ hv_metrics_work_dir }}/prometheus.yaml"
+hv_metrics_server_podman_log_dir: "{{ hv_metrics_work_dir }}/logs"
+
+# Container configuration
+hv_metrics_quadlet_dir: "/etc/containers/systemd"
+hv_metrics_prometheus_container_image: "quay.io/prometheus/prometheus:latest"
+hv_metrics_prometheus_container_name: "prometheus"
+hv_metrics_node_exporter_container_image: "quay.io/prometheus/node-exporter:latest"
+hv_metrics_node_exporter_container_name: "node-exporter"

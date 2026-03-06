@@ -1,0 +1,37 @@
+- name: Create work directory
+  ansible.builtin.file:
+    path: "{{ hv_metrics_work_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Create log directory
+  ansible.builtin.file:
+    path: "{{ hv_metrics_server_podman_log_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Render prometheus configuration
+  ansible.builtin.template:
+    src: prometheus.yaml.j2
+    dest: "{{ hv_metrics_server_podman_config_source }}"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Put server quadlet configuration
+  ansible.builtin.template:
+    src: prometheus.container.j2
+    dest: "{{ hv_metrics_quadlet_dir }}/prometheus.container"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Start and enable prometheus container
+  ansible.builtin.systemd:
+    name: prometheus.container
+    state: restarted
+    enabled: true

@@ -1,0 +1,86 @@
+- name: Cleaning up prometheus server
+  block:
+    - name: Check if prometheus quadlet configured
+      ansible.builtin.command: systemctl is-enabled prometheus.service
+      ignore_errors: true
+      register: prometheus_quadlet_status
+
+    - name: Check if prometheus quadlet is running
+      when: prometheus_quadlet_status.stdout != 'not-found'
+      ansible.builtin.command: systemctl is-active prometheus.service
+      register: prometheus_quadlet_active_status
+
+    - name: Stop prometheus quadlet
+      when: prometheus_quadlet_active_status.stdout == 'active'
+      ansible.builtin.systemd:
+        name: prometheus.service
+        state: stopped
+
+    - name: Disable prometheus quadlet
+      when: prometheus_quadlet_status.stdout == 'enabled'
+      ansible.builtin.systemd:
+        name: prometheus.service
+        enabled: false
+
+    - name: Remove prometheus quadlet
+      when: prometheus_quadlet_status.stdout != 'not-found'
+      ansible.builtin.file:
+        path: "{{ hv_metrics_quadlet_dir }}/prometheus.container"
+        state: absent
+
+- name: Cleaning up prometheus client
+  block:
+    - name: Check if nodexporter quadlet configured
+      ansible.builtin.command: systemctl is-enabled nodexporter.service
+      ignore_errors: true
+      register: nodexporter_quadlet_status
+
+    - name: Check if nodexporter quadlet is running
+      when: not nodexporter_quadlet_status.stdout == 'not-found'
+      ansible.builtin.command: systemctl is-active nodexporter.service
+      register: nodexporter_quadlet_active_status
+
+    - name: Stop nodexporter quadlet
+      when: nodexporter_quadlet_active_status.stdout == 'active'
+      ansible.builtin.systemd:
+        name: nodexporter.service
+        state: stopped
+
+    - name: Disable nodexporter quadlet
+      when: nodexporter_quadlet_status.stdout == 'enabled'
+      ansible.builtin.systemd:
+        name: nodexporter.service
+        enabled: false
+
+    - name: Remove nodexporter quadlet
+      when: not nodexporter_quadlet_status.stdout == 'not-found'
+      ansible.builtin.file:
+        path: "{{ hv_metrics_quadlet_dir }}/nodexporter.container"
+        state: absent
+
+- name: Cleanup working directory
+  ansible.builtin.file:
+    path: "{{ hv_metrics_work_dir }}"
+    state: absent
+
+- name: Remove container images
+  block:
+    - name: Remove prometheus container image
+      ansible.builtin.command: podman rmi {{ hv_metrics_prometheus_container_name }}
+      ignore_errors: true
+      register: prometheus_container_image_remove_status
+
+    - name: Fail if prometheus cleanup failed
+      when: prometheus_container_image_remove_status.rc != 0
+      ansible.builtin.fail:
+        msg: "Failed to remove prometheus container image. Please cleanup manually."
+
+    - name: Remove nodexporter container image
+      ansible.builtin.command: podman rmi {{ hv_metrics_node_exporter_container_name }}
+      ignore_errors: true
+      register: nodexporter_container_image_remove_status
+
+    - name: Fail if nodexporter cleanup failed
+      when: nodexporter_container_image_remove_status.rc != 0
+      ansible.builtin.fail:
+        msg: "Failed to remove nodexporter container image. Please cleanup manually."
