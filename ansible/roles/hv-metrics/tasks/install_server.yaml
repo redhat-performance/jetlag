@@ -27,7 +27,7 @@
     owner: root
     group: root
 
-- name: Put server quadlet configuration
+- name: Put prometheus quadlet configuration
   ansible.builtin.template:
     src: prometheus.container.j2
     dest: "{{ hv_metrics_quadlet_dir }}/prometheus.container"
@@ -52,9 +52,9 @@
         state: enabled
         protocol: tcp
 
-- name: Start and enable prometheus container
+- name: Start and enable prometheus quadlet
   ansible.builtin.systemd:
-    name: prometheus.container
+    name: prometheus.service
     daemon_reload: true
     state: restarted
     enabled: true

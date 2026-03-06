@@ -3,7 +3,7 @@
     name: podman
     state: present
 
-- name: Put client quadlet configuration
+- name: Put nodexporter quadlet configuration
   ansible.builtin.template:
     src: nodexporter.container.j2
     dest: "{{ hv_metrics_quadlet_dir }}/nodexporter.container"
@@ -28,9 +28,9 @@
         state: enabled
         protocol: tcp
 
-- name: Start and enable nodexporter container
+- name: Start and enable nodexporter quadlet
   ansible.builtin.systemd:
-    name: nodexporter.container
+    name: nodexporter.service
     daemon_reload: true
     state: restarted
     enabled: true
