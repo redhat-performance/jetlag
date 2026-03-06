@@ -75,3 +75,26 @@
     - name: Remove nodexporter container image
       ansible.builtin.command: podman rmi {{ hv_metrics_node_exporter_container_name }}
       ignore_errors: true
+
+- name: Reconfigure firewalld
+  block:
+    - name: Check if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      ignore_errors: true
+      register: hv_metrics_cleanup_firewalld_running
+
+    - name: Remove firewalld rules
+      when: hv_metrics_cleanup_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: "{{ hv_metrics_server_port }}"
+        permanent: true
+        immediate: true
+        state: disabled
+
+    - name: Remove firewalld rules
+      when: pcp_cleanup_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: "{{ hv_metrics_client_port }}"
+        permanent: true
+        immediate: true
+        state: disabled
