@@ -14,5 +14,6 @@
 - name: Start and enable nodexporter container
   ansible.builtin.systemd:
     name: nodexporter.container
+    daemon_reload: true
     state: restarted
     enabled: true
