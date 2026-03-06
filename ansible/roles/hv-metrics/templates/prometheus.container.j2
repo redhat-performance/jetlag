@@ -8,14 +8,11 @@ Image={{ hv_metrics_prometheus_container_image }}
 
 Pull=always
 
-
 PublishPort=9090:{{ hv_metrics_server_port }}
 Volume={{ hv_metrics_server_podman_log_dir}}:/prometheus
 Volume={{ hv_metrics_server_podman_config_source }}:/etc/prometheus/prometheus.yaml:ro
 
-PodmanArgs=--config.file=/etc/prometheus/prometheus.yaml
-PodmanArgs=--storage.tsdb.path=/prometheus
-PodmanArgs=--storage.tsdb.retention.time={{ hv_metrics_server_retention_time }}
+Exec=--config.file=/etc/prometheus/prometheus.yaml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time={{ hv_metrics_server_retention_time }}
 
 [Install]
 # Start by default on boot
