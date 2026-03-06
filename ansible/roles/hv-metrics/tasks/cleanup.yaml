@@ -8,6 +8,7 @@
     - name: Check if prometheus quadlet is running
       when: prometheus_quadlet_status.stdout != 'not-found'
       ansible.builtin.command: systemctl is-active prometheus.service
+      ignore_errors: true
       register: prometheus_quadlet_active_status
 
     - name: Stop prometheus quadlet
@@ -38,6 +39,7 @@
     - name: Check if nodexporter quadlet is running
       when: not nodexporter_quadlet_status.stdout == 'not-found'
       ansible.builtin.command: systemctl is-active nodexporter.service
+      ignore_errors: true
       register: nodexporter_quadlet_active_status
 
     - name: Stop nodexporter quadlet
