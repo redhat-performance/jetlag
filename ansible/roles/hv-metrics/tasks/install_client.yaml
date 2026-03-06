@@ -1,3 +1,8 @@
+- name: Install podman
+  ansible.builtin.dnf:
+    name: podman
+    state: present
+
 - name: Put client quadlet configuration
   ansible.builtin.template:
     src: nodexporter.container.j2
