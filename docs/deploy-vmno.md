@@ -98,6 +98,12 @@ bastion_controlplane_interface: eno1
 
 Double check your nic names with your bastion machine.
 
+It's recommended to setup the monitoring for the hypervisor to keep track of an actual resource consumption, especially for the cases of high overcommit ratio:
+```yaml
+setup_hv_metrics: true
+```
+This will setup Prometheus instance on the bastion node that will pull data from hypervisors.
+
 ### OCP node vars
 
 No vars need to be adjusted in this section.
@@ -151,6 +157,14 @@ Change `lab` to `lab: performancelab`
 Change `hv_vm_generate_manifests` to `hv_vm_generate_manifests: false`
 
 VM manifests are only used in conjunction with ACM/MCE testing.
+
+
+For the metrics collection to work, set following variable:
+```yaml
+setup_hv_metrics: true
+```
+
+This will setup the prometheus node_exporter container on all hypervisors, and metrics will be available from Bastion node.
 
 ## Review vars `all.yml` and `hv.yml`
 
@@ -225,6 +239,9 @@ setup_bastion_registry: false
 # Use in conjunction with ipv6 based clusters
 use_bastion_registry: false
 
+# Setup Hypervisor metrics collection for VMNO deployments
+setup_hv_metrics: false
+
 ################################################################################
 # OCP node vars
 ################################################################################
@@ -298,6 +315,9 @@ hv_vm_manifest_acm_cr: true
 use_bastion_registry: false
 # Provide pull-secret for connected manifests
 pull_secret: "{{ lookup('file', '../pull-secret.txt') | b64encode }}"
+
+# Setup promtheus node_exporter metrics
+setup_hv_metrics: false
 ```
 
 ## Run playbooks
