@@ -1,0 +1,23 @@
+---
+# Dell tasks for waiting on iDRAC after clear-jobs
+# Clear-jobs triggers an LC reinit that temporarily empties the ComputerSystem
+# Members array (~10s to start, ~70s to recover). Poll until recovered.
+
+- name: "Dell - Wait for ComputerSystem ready after clear-jobs for {{ item }}"
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: GET
+    headers:
+      content-type: application/json
+      Accept: application/json
+    validate_certs: false
+    return_content: true
+  register: systems_ready
+  until: >-
+    systems_ready.status == 200 and
+    (systems_ready.json['Members@odata.count'] | default(0) | int) >= 1
+  retries: 40
+  delay: 15
+  failed_when: false

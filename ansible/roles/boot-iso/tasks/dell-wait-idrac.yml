@@ -1,0 +1,20 @@
+---
+# Dell tasks for waiting on iDRAC availability after racreset
+# Poll until Redfish API is responding.
+
+- name: "Dell - Wait for iDRAC Redfish ready after racreset for {{ item }}"
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1"
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: GET
+    headers:
+      content-type: application/json
+      Accept: application/json
+    validate_certs: false
+    status_code: [200, 201, 301, 302]
+  register: redfish_result
+  until: redfish_result.status in [200, 201, 301, 302]
+  retries: 40
+  delay: 15
+  failed_when: false
