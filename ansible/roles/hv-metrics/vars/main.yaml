@@ -10,6 +10,7 @@ hv_metrics_cleanup_keep_work_dir: false
 
 # Prometheus collector configuration
 # Server configuration
+hv_metrics_enable_local_prometheus: true
 hv_metrics_server_address: localhost
 hv_metrics_server_port: 9090
 hv_metrics_server_retention_time: "30d"

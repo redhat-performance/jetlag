@@ -81,6 +81,13 @@ setup_bastion_proxy: false
 # to clear job queue and reset iDRAC service)
 # reset_idrac: false
 
+# Setup Hypervisor metrics collection for VMNO deployments
+# Sets up Prometheus server on a bastion node and node_exporter on hypervisors
+# You can access the metrics at http://<bastion_ip>:9090
+# For more configuration options, check ansible/roles/hv-metrics/vars/main.yaml
+# Do not override the role, just put override below
+setup_hv_metrics: false
+
 ################################################################################
 # OCP node vars
 ################################################################################
