@@ -30,5 +30,5 @@
   - role: hv-metrics
     when: setup_hv_metrics | default(false) | bool
     vars:
-      - hv_metrics_sanity: true
-      - hv_metrics_install_client: true
+      hv_metrics_sanity: true
+      hv_metrics_install_client: true
