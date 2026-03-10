@@ -35,6 +35,10 @@ HW_VALIDATOR_REQUIREMENTS=[{"version":"default","master":{"cpu_cores":4,"ram_mib
 
 SKIP_CERT_VERIFICATION=true
 
+{% if override_container_policy | default(false) | bool %}
+OPENSHIFT_INSTALL_EXPERIMENTAL_DISABLE_IMAGE_POLICY=true
+{% endif %}
+
 SELF_VERSION={{ assisted_service_image }}
 INSTALLER_IMAGE={{ assisted_installer_image }}
 {% if use_bastion_registry | default(false) %}

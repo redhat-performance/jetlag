@@ -17,6 +17,9 @@ assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
 assisted_image_service_port: 8888
 
+# Override /etc/containers/policy.json with insecureAcceptAnything via CVO override
+override_container_policy: true
+
 # Enables longer timeouts due to r750s longer reboot timing
 enable_assisted_installer_long_timeouts: false
 assisted_installer_long_timeout: 140m
