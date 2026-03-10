@@ -89,6 +89,7 @@ hw_install_disk:
     6029p: /dev/disk/by-path/pci-0000:00:11.5-ata-5
     xe8640: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
     xe9680: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
+    bb37-r750: /dev/disk/by-path/pci-0000:05:00.0-ata-1.0
     cc37-r750: /dev/disk/by-path/pci-0000:05:00.0-ata-1.0
 
 # This dictionary contains the expected nic names for networks in the scale/performance lab. This determines the name of the
@@ -204,6 +205,12 @@ hw_nic_name:
     - eno2
     - ens7f0
     - ens7f1
+    r750:
+    - eno8303
+    - ens3f0
+    - ens3f1
+    - ens6f0
+    - ens6f1
     r760:
     - eno12399
     - ens3f0
@@ -265,6 +272,9 @@ hw_vm_counts:
     r740xd:
       default: 4
       nvme0n1: 5
+    r750:
+      default: 4
+      nvme0n1: 23
     r760:
       default: 4
       nvme0n1: 30
