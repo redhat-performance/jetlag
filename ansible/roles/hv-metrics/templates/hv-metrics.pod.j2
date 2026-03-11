@@ -1,0 +1,18 @@
+[Unit]
+Description=Hypervisors Metrics Pod (Quadlet-based)
+After=network.target
+
+[Pod]
+PublishPort={{ hv_metrics_pod_port }}:{% if hv_metrics_grafana_sidecar %}3000{% else %}9090{% endif %}
+
+{% if hv_metrics_debug %}
+# For debugging purposes Grafana and Prometheus default ports
+# also published to allow direct access to the containers
+PublishPort=9090:9090
+{% if hv_metrics_grafana_sidecar %}
+PublishPort=3000:3000
+{% endif %}
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target default.target

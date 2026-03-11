@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ hv_metrics_pod_name }}
+spec:
+  containers:
+    - name: {{ hv_metrics_prometheus_container_name }}
+      image: {{ hv_metrics_prometheus_container_image }}
+      args:
+        - "--config.file=/etc/prometheus/prometheus.yaml"
+        - "--storage.tsdb.path=/prometheus"
+        - "--storage.tsdb.retention.time={{ hv_metrics_server_retention_time }}"
+      ports:
+        - containerPort: 9090
+      volumeMounts:
+        - name: prometheus-data
+          mountPath: /prometheus
+        - name: prometheus-config
+          mountPath: /etc/prometheus/prometheus.yaml
+          readOnly: true
+{% if hv_metrics_grafana_sidecar %}
+    - name: {{ hv_metrics_grafana_container_name }}
+      image: {{ hv_metrics_grafana_container_image }}
+      env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: {{ hv_metrics_grafana_username }}
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: {{ hv_metrics_grafana_password }}
+        - name: GF_ANALYTICS_CHECK_FOR_UPDATES
+          value: false
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: false
+      ports:
+        - containerPort: 3000
+      volumeMounts:
+        - name: grafana-provider
+          mountPath: /etc/grafana/provisioning/dashboards/provider.yaml
+        - name: grafana-dashboard
+          mountPath: /etc/grafana/provisioning/dashboards/{{ hv_metrics_grafana_dashboard_name }}.json
+        - name: grafana-datasource
+          mountPath: /etc/grafana/provisioning/datasources/datasource-prometheus.yaml
+{% endif %}
+  volumes:
+    - name: prometheus-data
+      hostPath:
+        path: {{ hv_metrics_server_podman_data_dir }}
+        type: Directory
+    - name: prometheus-config
+      hostPath:
+        path: {{ hv_metrics_server_podman_config_source }}
+        type: File
+{% if hv_metrics_grafana_sidecar %}
+    - name: grafana-provider
+      hostPath:
+        path: {{ hv_metrics_work_dir }}/dashboard-providers.yaml
+        type: File
+    - name: grafana-dashboard
+      hostPath:
+        path: {{ hv_metrics_work_dir }}/{{ hv_metrics_grafana_dashboard_name }}.json
+        type: File
+    - name: grafana-datasource
+      hostPath:
+        path: {{ hv_metrics_work_dir }}/datasource-prometheus.yaml
+        type: File
+{% endif %}

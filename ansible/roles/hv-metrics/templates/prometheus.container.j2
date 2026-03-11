@@ -1,14 +1,15 @@
 [Unit]
 Description=Prometheus container
-After=network.target
+After= {{ hv_metrics_pod_name}}.service
+Requires={{ hv_metrics_pod_name }}.service
 
 [Container]
+Pod={{ hv_metrics_pod_name}}.pod
 ContainerName={{ hv_metrics_prometheus_container_name }}
 Image={{ hv_metrics_prometheus_container_image }}
 
 Pull=always
 
-PublishPort=9090:{{ hv_metrics_server_port }}
 Volume={{ hv_metrics_server_podman_data_dir}}:/prometheus
 Volume={{ hv_metrics_server_podman_config_source }}:/etc/prometheus/prometheus.yaml:ro
 

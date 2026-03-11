@@ -1,63 +1,137 @@
+- name: Cleaning up grafana server
+  block:
+    - name: Check if grafana quadlet configured
+      ansible.builtin.command: systemctl is-enabled {{ hv_metrics_grafana_container_name }}.service
+      ignore_errors: true
+      register: grafana_quadlet_status
+
+    - name: Check if grafana quadlet is running
+      when: grafana_quadlet_status.stdout != 'not-found'
+      ansible.builtin.command: systemctl is-active {{ hv_metrics_grafana_container_name }}.service
+      ignore_errors: true
+      register: grafana_quadlet_active_status
+
+    - name: Stop grafana quadlet
+      when: grafana_quadlet_active_status.stdout == 'active'
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_grafana_container_name }}.service"
+        state: stopped
+
+    - name: Disable grafana quadlet
+      when: grafana_quadlet_status.stdout == 'enabled'
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_grafana_container_name }}.service"
+        enabled: false
+
+    - name: Remove grafana quadlet
+      when: grafana_quadlet_status.stdout != 'not-found'
+      ansible.builtin.file:
+        path: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_grafana_container_name }}.container"
+        state: absent
+
 - name: Cleaning up prometheus server
   block:
     - name: Check if prometheus quadlet configured
-      ansible.builtin.command: systemctl is-enabled prometheus.service
+      ansible.builtin.command: systemctl is-enabled {{ hv_metrics_prometheus_container_name }}.service
       ignore_errors: true
       register: prometheus_quadlet_status
 
     - name: Check if prometheus quadlet is running
       when: prometheus_quadlet_status.stdout != 'not-found'
-      ansible.builtin.command: systemctl is-active prometheus.service
+      ansible.builtin.command: systemctl is-active {{ hv_metrics_prometheus_container_name }}.service
       ignore_errors: true
       register: prometheus_quadlet_active_status
 
     - name: Stop prometheus quadlet
       when: prometheus_quadlet_active_status.stdout == 'active'
       ansible.builtin.systemd:
-        name: prometheus.service
+        name: "{{ hv_metrics_prometheus_container_name }}.service"
         state: stopped
 
     - name: Disable prometheus quadlet
       when: prometheus_quadlet_status.stdout == 'enabled'
       ansible.builtin.systemd:
-        name: prometheus.service
+        name: "{{ hv_metrics_prometheus_container_name }}.service"
         enabled: false
 
     - name: Remove prometheus quadlet
       when: prometheus_quadlet_status.stdout != 'not-found'
       ansible.builtin.file:
-        path: "{{ hv_metrics_quadlet_dir }}/prometheus.container"
+        path: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_prometheus_container_name }}.container"
+        state: absent
+
+- name: Cleaning up hv-metrics pod
+  block:
+    - name: Check if hv-metrics pod quadlet configured
+      ansible.builtin.command: systemctl is-enabled {{ hv_metrics_pod_name }}.service
+      ignore_errors: true
+      register: hv_metrics_pod_quadlet_status
+
+    - name: Check if hv-metrics pod quadlet is running
+      when: hv_metrics_pod_quadlet_status.stdout != 'not-found'
+      ansible.builtin.command: systemctl is-active {{ hv_metrics_pod_name }}.service
+      ignore_errors: true
+      register: hv_metrics_pod_quadlet_active_status
+
+    - name: Stop hv-metrics pod quadlet
+      when: hv_metrics_pod_quadlet_active_status.stdout == 'active'
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_pod_name }}.service"
+        state: stopped
+
+    - name: Disable hv-metrics pod quadlet
+      when: hv_metrics_pod_quadlet_status.stdout == 'enabled'
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_pod_name }}.service"
+        enabled: false
+
+    - name: Remove hv-metrics pod quadlet
+      when: hv_metrics_pod_quadlet_status.stdout != 'not-found'
+      ansible.builtin.file:
+        path: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_pod_name }}.pod"
+        state: absent
+    
+    - name: Remove hv-metrics pod kube configuration
+      when: hv_metrics_pod_type == "kube"
+      ansible.builtin.file:
+        path: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_pod_name }}.kube"
+        state: absent
+
+    - name: Remove hv-metrics pod definition
+      when: hv_metrics_pod_type == "kube"
+      ansible.builtin.file:
+        path: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_pod_name }}.yaml"
         state: absent
 
 - name: Cleaning up prometheus client
   block:
     - name: Check if nodexporter quadlet configured
-      ansible.builtin.command: systemctl is-enabled nodexporter.service
+      ansible.builtin.command: systemctl is-enabled {{ hv_metrics_node_exporter_container_name }}.service
       ignore_errors: true
       register: nodexporter_quadlet_status
 
     - name: Check if nodexporter quadlet is running
       when: not nodexporter_quadlet_status.stdout == 'not-found'
-      ansible.builtin.command: systemctl is-active nodexporter.service
+      ansible.builtin.command: systemctl is-active {{ hv_metrics_node_exporter_container_name }}.service
       ignore_errors: true
       register: nodexporter_quadlet_active_status
 
     - name: Stop nodexporter quadlet
       when: nodexporter_quadlet_active_status.stdout == 'active'
       ansible.builtin.systemd:
-        name: nodexporter.service
+        name: "{{ hv_metrics_node_exporter_container_name }}.service"
         state: stopped
 
     - name: Disable nodexporter quadlet
       when: nodexporter_quadlet_status.stdout == 'enabled'
       ansible.builtin.systemd:
-        name: nodexporter.service
+        name: "{{ hv_metrics_node_exporter_container_name }}.service"
         enabled: false
 
     - name: Remove nodexporter quadlet
       when: not nodexporter_quadlet_status.stdout == 'not-found'
       ansible.builtin.file:
-        path: "{{ hv_metrics_quadlet_dir }}/nodexporter.container"
+        path: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_node_exporter_container_name }}.container"
         state: absent
 
 - name: Cleanup working directory
@@ -74,6 +148,10 @@
 
     - name: Remove nodexporter container image
       ansible.builtin.command: podman rmi {{ hv_metrics_node_exporter_container_name }}
+      ignore_errors: true
+
+    - name: Remove grafana container image
+      ansible.builtin.command: podman rmi {{ hv_metrics_grafana_container_name }}
       ignore_errors: true
 
 - name: Reconfigure firewalld
