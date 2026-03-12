@@ -1,0 +1,26 @@
+---
+# Dell tasks for clearing iDRAC job queue (fire for all hosts, then wait separately)
+
+  # ignore_errors: closessn is only available starting with iDRAC 9
+- name: "Dell - Close all existing iDRAC sessions for {{ item }}"
+  ansible.builtin.raw: >-
+    racadm closessn -a
+  delegate_to: "{{ hostvars[item]['bmc_address'] }}"
+  vars:
+    ansible_user: "{{ hostvars[item]['bmc_user'] }}"
+    ansible_password: "{{ hostvars[item]['bmc_password'] }}"
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+  ignore_errors: true
+
+- name: "Dell - Clear iDRAC job queue for {{ item }} (badfish)"
+  ansible.builtin.include_role:
+    name: badfish
+    tasks_from: call
+  vars:
+    badfish_host: "{{ hostvars[item]['bmc_address'] }}"
+    badfish_user: "{{ hostvars[item]['bmc_user'] }}"
+    badfish_password: "{{ hostvars[item]['bmc_password'] }}"
+    badfish_args:
+      - "--clear-jobs"
+      - "--force"
+    ignore_errors: true

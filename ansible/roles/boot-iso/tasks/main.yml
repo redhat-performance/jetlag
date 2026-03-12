@@ -1,6 +1,43 @@
 ---
 # boot-iso tasks
 
+- name: Dell iDRAC clear-jobs and reset
+  when: reset_idrac | bool
+  block:
+    - name: Dell - Clear iDRAC job queue
+      include_tasks: dell-clear-jobs.yml
+      with_items:
+        - "{{ groups[inventory_group][offset|int:index|int] }}"
+      when: hostvars[item]['vendor'] == 'Dell'
+
+    - name: Dell - Pause for LC reinit to start after clear-jobs
+      ansible.builtin.pause:
+        seconds: 30
+      when: groups[inventory_group][offset|int:index|int] | map('extract', hostvars, 'vendor') | select('equalto', 'Dell') | list | length > 0
+
+    - name: Dell - Wait for iDRAC after clear-jobs
+      include_tasks: dell-wait-clear-jobs.yml
+      with_items:
+        - "{{ groups[inventory_group][offset|int:index|int] }}"
+      when: hostvars[item]['vendor'] == 'Dell'
+
+    - name: Dell - Reset iDRAC
+      include_tasks: dell-reset-idrac.yml
+      with_items:
+        - "{{ groups[inventory_group][offset|int:index|int] }}"
+      when: hostvars[item]['vendor'] == 'Dell'
+
+    - name: Dell - Pause for iDRAC to start resetting
+      ansible.builtin.pause:
+        seconds: 30
+      when: groups[inventory_group][offset|int:index|int] | map('extract', hostvars, 'vendor') | select('equalto', 'Dell') | list | length > 0
+
+    - name: Dell - Wait for iDRAC after reset
+      include_tasks: dell-wait-idrac.yml
+      with_items:
+        - "{{ groups[inventory_group][offset|int:index|int] }}"
+      when: hostvars[item]['vendor'] == 'Dell'
+
 - name: Boot iso on dell hardware
   include_tasks: dell.yml
   with_items:
