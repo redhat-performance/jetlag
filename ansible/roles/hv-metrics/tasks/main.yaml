@@ -1,0 +1,16 @@
+---
+- name: Sanity check
+  when: hv_metrics_sanity | bool
+  ansible.builtin.include_tasks: sanity.yaml
+
+- name: Clean up
+  when: hv_metrics_cleanup | bool
+  ansible.builtin.include_tasks: cleanup.yaml
+
+- name: Install Server
+  when: hv_metrics_install_server | bool
+  ansible.builtin.include_tasks: install_server.yaml
+
+- name: Install Client
+  when: hv_metrics_install_client | bool
+  ansible.builtin.include_tasks: install_client.yaml

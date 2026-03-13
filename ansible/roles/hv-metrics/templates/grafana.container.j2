@@ -1,0 +1,24 @@
+[Unit]
+Description=Grafana container
+After= {{ hv_metrics_grafana_container_name }}.service
+Requires={{ hv_metrics_pod_name }}.service {{ hv_metrics_grafana_container_name }}.service
+
+[Container]
+Pod={{ hv_metrics_pod_name}}.pod
+ContainerName={{ hv_metrics_grafana_container_name }}
+Image={{ hv_metrics_grafana_container_image }}
+
+Pull=always
+
+Environment=GF_SECURITY_ADMIN_USER={{ hv_metrics_grafana_username }}
+Environment=GF_SECURITY_ADMIN_PASSWORD={{ hv_metrics_grafana_password }}
+Environment=GF_ANALYTICS_CHECK_FOR_UPDATES=false
+Environment=GF_USERS_ALLOW_SIGN_UP=false
+
+Volume={{ hv_metrics_work_dir }}/dashboard-providers.yaml:/etc/grafana/provisioning/dashboards/provider.yaml
+Volume={{ hv_metrics_work_dir }}/{{ hv_metrics_grafana_dashboard_name }}.json:/etc/grafana/provisioning/dashboards/{{ hv_metrics_grafana_dashboard_name }}.json
+Volume={{ hv_metrics_work_dir }}/datasource-prometheus.yaml:/etc/grafana/provisioning/datasources/datasource-prometheus.yaml
+
+[Install]
+# Start by default on boot
+WantedBy=multi-user.target default.target

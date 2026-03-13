@@ -1,0 +1,20 @@
+[Unit]
+Description=Prometheus container
+After= {{ hv_metrics_pod_name}}.service
+Requires={{ hv_metrics_pod_name }}.service
+
+[Container]
+Pod={{ hv_metrics_pod_name}}.pod
+ContainerName={{ hv_metrics_prometheus_container_name }}
+Image={{ hv_metrics_prometheus_container_image }}
+
+Pull=always
+
+Volume={{ hv_metrics_server_podman_data_dir}}:/prometheus
+Volume={{ hv_metrics_server_podman_config_source }}:/etc/prometheus/prometheus.yaml:ro
+
+Exec=--config.file=/etc/prometheus/prometheus.yaml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time={{ hv_metrics_server_retention_time }}
+
+[Install]
+# Start by default on boot
+WantedBy=multi-user.target default.target

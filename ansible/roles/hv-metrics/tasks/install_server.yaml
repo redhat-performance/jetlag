@@ -1,0 +1,160 @@
+- name: Podman block
+  block:
+    - name: Install podman
+      ansible.builtin.dnf:
+        name: podman
+        state: present
+
+    - name: Register podman version
+      ansible.builtin.command: podman version --format '{% raw %}{{ .Server.Version }}{% endraw %}'
+      register: podman_version
+      failed_when: podman_version.rc != 0
+
+    - name: Check if podman version 5.0.0 or higher
+      when: podman_version.stdout is version('5.0.0', '>=')
+      ansible.builtin.set_fact:
+        hv_metrics_pod_type: "quadlet"
+
+- name: Create work directory
+  ansible.builtin.file:
+    path: "{{ hv_metrics_work_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: HV Metrics pod block
+  block:
+    - name: Render hv-metrics pod definition
+      when: hv_metrics_pod_type == "kube"
+      ansible.builtin.template:
+        src: hv-metrics.yaml.j2
+        dest: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_pod_name }}.yaml"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render hv-metrics pod kube configuration
+      when: hv_metrics_pod_type == "kube"
+      ansible.builtin.template:
+        src: hv-metrics.kube.j2
+        dest: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_pod_name }}.kube"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render hv-metrics pod quadlet configuration
+      when: hv_metrics_pod_type == "quadlet"
+      ansible.builtin.template:
+        src: hv-metrics.pod.j2
+        dest: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_pod_name }}.pod"
+        mode: "0644"
+        owner: root
+        group: root
+
+- name: Prometheus block
+  block:
+    - name: Create prometheus data directory
+      ansible.builtin.file:
+        path: "{{ hv_metrics_server_podman_data_dir }}"
+        state: directory
+        mode: "0777"
+        owner: root
+        group: root
+
+    - name: Render prometheus configuration
+      ansible.builtin.template:
+        src: prometheus.yaml.j2
+        dest: "{{ hv_metrics_server_podman_config_source }}"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render prometheus quadlet configuration
+      when: hv_metrics_pod_type == "quadlet"
+      ansible.builtin.template:
+        src: prometheus.container.j2
+        dest: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_prometheus_container_name }}.container"
+        mode: "0644"
+        owner: root
+        group: root
+
+- name: Grafana block
+  when: hv_metrics_grafana_sidecar | bool
+  block:
+    - name: Render grafana quadlet configuration
+      when: hv_metrics_pod_type == "quadlet"
+      ansible.builtin.template:
+        src: grafana.container.j2
+        dest: "{{ hv_metrics_quadlet_dir }}/{{ hv_metrics_grafana_container_name }}.container"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render grafana dashboard provider configuration
+      ansible.builtin.template:
+        src: dashboard-providers.yaml.j2
+        dest: "{{ hv_metrics_work_dir }}/dashboard-providers.yaml"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Copy grafana dashboard
+      ansible.builtin.copy:
+        src: hv-metrics-dashboard.json
+        dest: "{{ hv_metrics_work_dir }}/{{ hv_metrics_grafana_dashboard_name }}.json"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render grafana datasource configuration
+      ansible.builtin.template:
+        src: datasource-prometheus.yaml.j2
+        dest: "{{ hv_metrics_work_dir }}/datasource-prometheus.yaml"
+        mode: "0644"
+        owner: root
+        group: root
+
+- name: Configure firewall
+  block:
+    - name: Check if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      ignore_errors: true
+      register: hv_metrics_server_firewalld_running
+
+    - name: Add firewalld rules
+      when: hv_metrics_server_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: "{{ hv_metrics_pod_port }}"
+        zone: public
+        permanent: true
+        immediate: true
+        state: enabled
+        protocol: tcp
+
+- name: Enablement block
+  block:
+    - name: Start and enable hv-metrics pod
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_pod_name }}.service"
+        daemon_reload: true
+        state: restarted
+        enabled: true
+
+    - name: Start and enable prometheus quadlet
+      when: hv_metrics_pod_type == "quadlet"
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_prometheus_container_name }}.service"
+        daemon_reload: true
+        state: restarted
+        enabled: true
+
+    - name: Start and enable grafana quadlet
+      when:
+        - hv_metrics_grafana_sidecar | bool
+        - hv_metrics_pod_type == "quadlet"
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_grafana_container_name }}.service"
+        daemon_reload: true
+        state: restarted
+        enabled: true

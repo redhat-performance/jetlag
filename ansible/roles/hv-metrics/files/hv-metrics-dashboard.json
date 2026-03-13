@@ -1,0 +1,132 @@
+{
+  "title": "HV Metrics Dashboard",
+  "templating": {
+    "list": [
+      {
+        "name": "interval",
+        "type": "interval",
+        "label": "Interval",
+        "query": "1m,5m,10m,30m,1h",
+        "current": { "text": "1m", "value": "1m" }
+      },
+      {
+        "name": "job",
+        "type": "query",
+        "label": "Job Selection",
+        "datasource": null,
+        "query": {
+          "query": "label_values(node_cpu_seconds_total, job)",
+          "refId": "StandardVariableQuery"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": { "text": "All", "value": "$__all" },
+        "refresh": 1
+      }
+    ]
+  },
+  "panels": [
+    { "title": "Compute (CPU)", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
+    {
+      "title": "CPU Utilization (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "targets": [{ "expr": "avg(1 - rate(node_cpu_seconds_total{job=~\"$job\", mode='idle'}[$interval])) by (job) * 100", "legendFormat": "{{job}}" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.:]+).*", "renamePattern": "$1" } }]
+    },
+    {
+      "title": "CPU Cores Used",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "targets": [{ "expr": "sum(1 - rate(node_cpu_seconds_total{job=~\"$job\", mode='idle'}[$interval])) by (job)", "legendFormat": "{{job}}" }],
+      "fieldConfig": { "defaults": { "unit": "none" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.:]+).*", "renamePattern": "$1" } }]
+    },
+    { "title": "Memory Metrics", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 } },
+    {
+      "title": "Available vs Used Memory (Stacked)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "targets": [
+        { "expr": "node_memory_MemTotal_bytes{job=~\"$job\"} - node_memory_MemAvailable_bytes{job=~\"$job\"}", "legendFormat": "{{job}} Used" },
+        { "expr": "node_memory_MemAvailable_bytes{job=~\"$job\"}", "legendFormat": "{{job}} Available" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "stacking": { "mode": "normal" }, "fillOpacity": 40 } } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.: ]+)(.*)", "renamePattern": "$1$2" } }]
+    },
+    {
+      "title": "Strictly Free Memory",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "targets": [{ "expr": "node_memory_MemFree_bytes{job=~\"$job\"}", "legendFormat": "{{job}}" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.:]+).*", "renamePattern": "$1" } }]
+    },
+    { "title": "Disk Metrics", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 } },
+    {
+      "title": "Disk sda: IOPS",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 19 },
+      "targets": [{ "expr": "rate(node_disk_io_now{job=~\"$job\", device='sda'}[$interval])", "legendFormat": "{{job}}" }],
+      "fieldConfig": { "defaults": { "unit": "iops" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.:]+).*", "renamePattern": "$1" } }]
+    },
+    {
+      "title": "Disk sda: Throughput",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 19 },
+      "targets": [
+        { "expr": "rate(node_disk_read_bytes_total{job=~\"$job\", device='sda'}[$interval])", "legendFormat": "{{job}} Read" },
+        { "expr": "rate(node_disk_written_bytes_total{job=~\"$job\", device='sda'}[$interval])", "legendFormat": "{{job}} Write" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "binbps" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.: ]+)(.*)", "renamePattern": "$1$2" } }]
+    },
+    {
+      "title": "Disk nvme0n1: IOPS",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 19 },
+      "targets": [{ "expr": "rate(node_disk_io_now{job=~\"$job\", device='nvme0n1'}[$interval])", "legendFormat": "{{job}}" }],
+      "fieldConfig": { "defaults": { "unit": "iops" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.:]+).*", "renamePattern": "$1" } }]
+    },
+    {
+      "title": "Disk nvme0n1: Throughput",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 19 },
+      "targets": [
+        { "expr": "rate(node_disk_read_bytes_total{job=~\"$job\", device='nvme0n1'}[$interval])", "legendFormat": "{{job}} Read" },
+        { "expr": "rate(node_disk_written_bytes_total{job=~\"$job\", device='nvme0n1'}[$interval])", "legendFormat": "{{job}} Write" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "binbps" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.: ]+)(.*)", "renamePattern": "$1$2" } }]
+    },
+    { "title": "Network Interfaces", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 } },
+    {
+      "title": "Network: eno1",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "targets": [
+        { "expr": "rate(node_network_receive_bytes_total{job=~\"$job\", device='eno1'}[$interval])", "legendFormat": "{{job}} Rx" },
+        { "expr": "rate(node_network_transmit_bytes_total{job=~\"$job\", device='eno1'}[$interval])", "legendFormat": "{{job}} Tx" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bps" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.: ]+)(.*)", "renamePattern": "$1$2" } }]
+    },
+    {
+      "title": "Network: eno3",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "targets": [
+        { "expr": "rate(node_network_receive_bytes_total{job=~\"$job\", device='eno3'}[$interval])", "legendFormat": "{{job}} Rx" },
+        { "expr": "rate(node_network_transmit_bytes_total{job=~\"$job\", device='eno3'}[$interval])", "legendFormat": "{{job}} Tx" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bps" } },
+      "transformations": [{ "id": "renameByRegex", "options": { "regex": "([^.: ]+)(.*)", "renamePattern": "$1$2" } }]
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 13
+}

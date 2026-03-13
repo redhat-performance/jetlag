@@ -1,0 +1,36 @@
+- name: Install podman
+  ansible.builtin.dnf:
+    name: podman
+    state: present
+
+- name: Put nodexporter quadlet configuration
+  ansible.builtin.template:
+    src: nodexporter.container.j2
+    dest: "{{ hv_metrics_quadlet_dir }}/nodexporter.container"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Configure firewall
+  block:
+    - name: Check if firewalld is running
+      ansible.builtin.command: systemctl is-active firewalld
+      ignore_errors: true
+      register: hv_metrics_client_firewalld_running
+
+    - name: Add firewalld rules
+      when: hv_metrics_client_firewalld_running.stdout == 'active'
+      ansible.builtin.firewalld:
+        port: "{{ hv_metrics_client_port }}"
+        zone: public
+        permanent: true
+        immediate: true
+        state: enabled
+        protocol: tcp
+
+- name: Start and enable nodexporter quadlet
+  ansible.builtin.systemd:
+    name: nodexporter.service
+    daemon_reload: true
+    state: restarted
+    enabled: true

@@ -1,0 +1,12 @@
+- name: Check configuration
+  when:
+    - hv_metrics_install_server | bool
+    - hv_metrics_install_client | bool
+  block:
+    - name: Show configuration warning
+      ansible.builtin.debug:
+        msg: "You have both server and client roles selected. This should work, but double check your configuration."
+
+    - name: Give time to read the warning
+      ansible.builtin.pause:
+        seconds: 10
