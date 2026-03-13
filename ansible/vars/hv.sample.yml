@@ -50,8 +50,7 @@ use_bastion_registry: false
 pull_secret: "{{ lookup('file', '../pull-secret.txt') | b64encode }}"
 
 # Setup Hypervisor metrics collection for VMNO deployments
-# Sets up Prometheus server on a bastion node and node_exporter on hypervisors
-# You can access the metrics at http://<bastion_ip>:9090
+# Deploy prometheus node_exporter on hypervisor nodes
 # For more configuration options, check ansible/roles/hv-metrics/vars/main.yaml
 # Do not override the role, just put override below
 setup_hv_metrics: false

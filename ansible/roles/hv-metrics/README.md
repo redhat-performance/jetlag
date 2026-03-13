@@ -14,6 +14,10 @@ At the end of the server installation with default settings, you will get an end
 
 You can use `hv_metrics_debug: true` in case you want grafana and prometheus exposed additionally on respective ports 3000/9090 on bastion.
 
+Role setup `hv-metrics` pod with `prometheus` and optionally `grafana` containers inside.
+> - For podman 5+ everything is deployed as quadlets.
+> - For podman prior to version 5, pod is setup as kube with yaml definition.
+
 ### Configuration
 
 You can override additional parameters by following methods:

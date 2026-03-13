@@ -241,6 +241,8 @@ use_bastion_registry: false
 
 # Setup Hypervisor metrics collection for VMNO deployments
 setup_hv_metrics: false
+hv_metrics_grafana_sidecar: true
+hv_metrics_debug: false
 
 ################################################################################
 # OCP node vars
@@ -316,7 +318,7 @@ use_bastion_registry: false
 # Provide pull-secret for connected manifests
 pull_secret: "{{ lookup('file', '../pull-secret.txt') | b64encode }}"
 
-# Setup promtheus node_exporter metrics
+# Setup promtheus node_exporter container
 setup_hv_metrics: false
 ```
 
