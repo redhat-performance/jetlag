@@ -19,7 +19,7 @@ hv_metrics_pod_port: "10999"
 # Server configuration
 hv_metrics_enable_local_prometheus: true
 hv_metrics_server_address: localhost
-hv_metrics_server_retention_time: "30d"
+hv_metrics_server_retention_time: "14d"
 
 # Prometheus server container configuration
 hv_metrics_server_podman_config_source: "{{ hv_metrics_work_dir }}/prometheus.yaml"
