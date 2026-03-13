@@ -101,7 +101,7 @@
 
     - name: Copy grafana dashboard
       ansible.builtin.copy:
-        src: full_node_exporter.json
+        src: hv-metrics-dashboard.json
         dest: "{{ hv_metrics_work_dir }}/{{ hv_metrics_grafana_dashboard_name }}.json"
         mode: "0644"
         owner: root
