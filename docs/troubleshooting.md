@@ -323,7 +323,7 @@ In the event your bastion's running containers have incorrect data or you are de
 Clean **all** containers (on bastion machine):
 
 ```console
-podman ps | awk '{print $1}' | xargs -I % podman stop %; podman ps -a | awk '{print $1}' | xargs -I % podman rm %; podman pod ps | awk '{print $1}' | xargs -I % podman pod rm %
+podman pod ps -q | xargs -I % podman pod stop %; podman ps -q | xargs -I % podman stop %; podman pod ps -q | xargs -I % podman pod rm %; podman ps -aq | xargs -I % podman rm %
 ```
 
 When replacing the ocp version, just remove the assisted-installer pod and container, then rerun the `setup-bastion.yml` playbook.
