@@ -290,6 +290,8 @@ Several services are run on the bastion in order to automate the tasks that Jetl
 | HAProxy (When disconnected)                             | 6443, 443, 80             |
 | Gogs - Self-hosted Git (When `setup_bastion_gogs=true`) | 10881 (http), 10022 (git) |
 | Dnsmasq / Coredns                                       | 53                        |
+| Grafana instance for hypervisor monitoring              | 3000                      |
+| Prometheus server for hypervisor monitoring             | 9090                      |
 
 Example accessing the bastion registry and listing repositories:
 ```console

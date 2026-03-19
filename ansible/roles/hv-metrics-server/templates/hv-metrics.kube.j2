@@ -1,0 +1,16 @@
+[Unit]
+Description=HV Metrics (Kube-based)
+After=network.target
+
+[Kube]
+Yaml={{ hv_metrics_server_pod_name }}.yaml
+Network={{ hv_metrics_server_pod_name }}-net.network
+{% if hv_metrics_server_expose_prometheus %}
+PublishPort={{ hv_metrics_server_prometheus_port }}:9090
+{% endif %}
+{% if hv_metrics_server_deploy_grafana %}
+PublishPort={{ hv_metrics_server_grafana_port }}:3000
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target default.target

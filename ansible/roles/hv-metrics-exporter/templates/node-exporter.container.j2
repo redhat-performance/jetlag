@@ -1,0 +1,18 @@
+[Unit]
+Description=Prometheus node-exporter container
+After=network.target
+
+[Container]
+ContainerName={{ hv_metrics_exporter_container_name }}
+Image={{ hv_metrics_exporter_container_image }}
+
+Pull=always
+
+Network=host
+Volume=/:/host:ro,rslave
+
+Exec=--path.rootfs=/host
+
+[Install]
+# Start by default on boot
+WantedBy=multi-user.target default.target

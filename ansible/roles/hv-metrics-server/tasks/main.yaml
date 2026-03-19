@@ -1,0 +1,95 @@
+- name: Create work directory
+  ansible.builtin.file:
+    path: "{{ hv_metrics_server_work_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: HV Metrics pod block
+  block:
+    - name: Render hv-metrics pod definition
+      ansible.builtin.template:
+        src: hv-metrics.yaml.j2
+        dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}.yaml"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render hv-metrics network configuration
+      ansible.builtin.template:
+        src: hv-metrics-net.network.j2
+        dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}-net.network"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render hv-metrics pod kube configuration
+      ansible.builtin.template:
+        src: hv-metrics.kube.j2
+        dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}.kube"
+        mode: "0644"
+        owner: root
+        group: root
+
+- name: Prometheus block
+  block:
+    - name: Create prometheus data directory
+      ansible.builtin.file:
+        path: "{{ hv_metrics_server_podman_data_dir }}"
+        state: directory
+        mode: "0777"
+        owner: root
+        group: root
+
+    - name: Render prometheus configuration
+      ansible.builtin.template:
+        src: prometheus.yaml.j2
+        dest: "{{ hv_metrics_server_podman_config_source }}"
+        mode: "0644"
+        owner: root
+        group: root
+
+- name: Grafana block
+  when: hv_metrics_server_deploy_grafana | bool
+  block:
+    - name: Render grafana dashboard provider configuration
+      ansible.builtin.template:
+        src: dashboard-providers.yaml.j2
+        dest: "{{ hv_metrics_server_work_dir }}/dashboard-providers.yaml"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Create dashboard directory
+      ansible.builtin.file:
+        path: "{{ hv_metrics_server_grafana_dashboard_dir }}"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Copy grafana dashboards
+      ansible.builtin.copy:
+        src: "dashboards/"
+        dest: "{{ hv_metrics_server_grafana_dashboard_dir }}"
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: Render grafana datasource configuration
+      ansible.builtin.template:
+        src: datasource-prometheus.yaml.j2
+        dest: "{{ hv_metrics_server_work_dir }}/datasource-prometheus.yaml"
+        mode: "0644"
+        owner: root
+        group: root
+
+- name: Enablement block
+  block:
+    - name: Start and enable hv-metrics pod
+      ansible.builtin.systemd:
+        name: "{{ hv_metrics_server_pod_name }}.service"
+        daemon_reload: true
+        state: restarted
+        enabled: true

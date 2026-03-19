@@ -1,0 +1,3 @@
+hv_metrics_exporter_quadlet_dir: "/etc/containers/systemd"
+hv_metrics_exporter_container_name: "hv-metrics-exporter"
+hv_metrics_exporter_container_image: "quay.io/prometheus/node-exporter:latest"

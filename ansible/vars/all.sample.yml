@@ -81,6 +81,14 @@ setup_bastion_proxy: false
 # to clear job queue and reset iDRAC service)
 # reset_idrac: false
 
+# Setup Hypervisor metrics collection for VMNO deployments
+# Sets up Prometheus server on a bastion node and node_exporter on hypervisors
+# Grafana is exposed at http://<bastion_fqdn>:3000 by default
+# Prometheus is exposed on port 9090 instead
+# For more configuration options, see ansible/roles/hv-metrics-server/defaults/main.yaml
+# Do not override the role, just put override below
+setup_hv_metrics: false
+
 ################################################################################
 # OCP node vars
 ################################################################################
