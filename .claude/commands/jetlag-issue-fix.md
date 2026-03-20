@@ -7,6 +7,13 @@ You are the orchestrator for the Jetlag issue-to-fix-to-test workflow. You drive
 
 **IMPORTANT**: This workflow has mandatory human gates. NEVER proceed past a gate without explicit user confirmation.
 
+## Related Skills
+
+This orchestrator delegates to three companion skills via the Skill tool:
+- **`/jetlag-test-map`** — Maps changed files to Prow test jobs (used in Phase 2)
+- **`/jetlag-prow-trigger`** — Triggers tests and polls for results (used in Phase 4)
+- **`/jetlag-prow-analyze`** — Analyzes failed Prow job logs (used in Phase 5)
+
 ## Input
 
 - `$ARGUMENTS` — GitHub issue number or URL from `redhat-performance/jetlag`
@@ -49,10 +56,11 @@ You are the orchestrator for the Jetlag issue-to-fix-to-test workflow. You drive
 ## Phase 2: PLAN
 
 1. Identify the files to change and what changes are needed
-2. Determine which Prow test jobs cover the change (apply test-map logic):
-   - Map changed files to test jobs using the mapping from `/jetlag-test-map`
-   - Check for feature modifiers (bond, public_vlan, hybrid, vmno)
-   - Check for cross-repo needs (new variables)
+2. Determine which Prow test jobs cover the change by invoking `/jetlag-test-map`:
+   - Use the Skill tool to run `/jetlag-test-map` with the list of files you plan to change
+   - This returns: minimum tests, extra coverage, feature-specific tests, and cross-repo flags
+   - Review its output for feature modifiers (bond, public_vlan, hybrid, vmno)
+   - Review its output for cross-repo needs (new variables requiring openshift/release changes)
 
 3. **HUMAN GATE 2**: Present the fix plan:
    ```
@@ -131,16 +139,11 @@ Trigger `deploy-sno` now? (bare-metal CI, ~1-2 hours)
 WAIT for user confirmation.
 
 ### Standard Flow (existing test covers the change)
-1. Trigger the test:
-   ```
-   gh pr comment <PR#> --repo redhat-performance/jetlag --body "/test <job-name>"
-   ```
-2. Poll for results (every 5 minutes, 3-hour timeout):
-   ```
-   gh api repos/redhat-performance/jetlag/commits/<SHA>/statuses \
-     --jq '[.[] | select(.context | contains("<job>"))] | first | {state, target_url, description}'
-   ```
-3. Report progress inline to the user
+Use the Skill tool to invoke `/jetlag-prow-trigger <PR#> <job-name>` which handles:
+1. Triggering the test via `/test <job-name>` PR comment
+2. Polling commit statuses every 5 minutes (3-hour timeout)
+3. Reporting progress inline
+4. Returning the final result with Prow URL and log excerpts on failure
 
 ### Cross-Repo Flow (new feature needs test job changes)
 If the test-map flagged cross-repo needs:
@@ -203,12 +206,14 @@ Recommend: `/retest <job>`
 Do NOT count infra errors toward the 3-iteration limit.
 
 ### Code Failure
+Use the Skill tool to invoke `/jetlag-prow-analyze <prow-url>` with the Prow URL from the trigger result. This returns a structured report with root cause classification, failed task/role, log excerpts, and correlation with PR changes.
+
 **HUMAN GATE 4**: Present failure analysis and proposed revision:
 ```
 ## Test Failed: <job>
 
 ### Root Cause
-<analysis from log examination>
+<analysis from /jetlag-prow-analyze output>
 
 ### Failed Task
 <role>/<task> on <host>: <error>
