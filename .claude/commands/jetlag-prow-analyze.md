@@ -101,10 +101,15 @@ Recommend: `/retest <job>` — don't count as code failure
 
 ## Step 6: Leverage Existing Prow Skills
 
-For deeper analysis, delegate to existing prow-job skills where applicable:
-- Use `/prow-job:analyze-test-failure` patterns for structured test failure analysis
-- Use `/prow-job:extract-must-gather` patterns if must-gather artifacts are available
-- Use `/prow-job:analyze-resource` patterns for resource lifecycle issues
+For deeper OCP-level analysis beyond Ansible failures, delegate to the `prow-job:*` skills
+from [openshift-eng/ai-helpers](https://github.com/openshift-eng/ai-helpers) (if installed):
+- `/prow-job:analyze-test-failure` — structured test failure analysis from JUnit and console logs
+- `/prow-job:extract-must-gather` — extract and browse must-gather archives from job artifacts
+- `/prow-job:analyze-resource` — Kubernetes resource lifecycle analysis from audit/pod logs
+
+These are generic OpenShift CI tools, not Ansible-aware. Use them when the failure is in
+OCP cluster operations (operator failures, resource issues) rather than in Jetlag's Ansible
+playbooks. This skill's own Ansible-focused parsing (Steps 3-5) handles the common case.
 
 ## Output Format
 
