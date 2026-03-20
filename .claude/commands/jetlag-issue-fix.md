@@ -160,8 +160,19 @@ If the test-map flagged cross-repo needs:
 
    Shall I draft the openshift/release changes?
    ```
-3. If user confirms, provide the YAML/script snippets for the openshift/release PR
-4. The user creates and triggers tests from the openshift/release PR
+3. If user confirms, create the companion PR in openshift/release:
+   - Clone upstream: `git clone --depth=1 --branch=main https://github.com/openshift/release.git`
+   - Add user's fork as remote: `git remote add fork git@github.com:<user>/release.git`
+   - Make changes on a new branch
+   - **CRITICAL**: Before committing, run the required generators from the repo root:
+     ```
+     make ci-operator-config    # determinizes ci-operator config YAML (sorts keys, normalizes)
+     make jobs                  # regenerates prow job configs from ci-operator configs
+     ```
+     These generate/update files in `ci-operator/jobs/` and normalize `ci-operator/config/`.
+     The PR will fail `ci-operator-config-metadata` and `generated-config` checks without this.
+   - Commit all changes (including generated files), push to fork, create PR against openshift/release
+4. Trigger tests from the openshift/release PR
 5. After the Jetlag PR merges, remind the user to update the openshift/release PR to remove `JETLAG_PR`
 
 ## Phase 5: EVALUATE

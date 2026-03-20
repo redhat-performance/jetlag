@@ -66,6 +66,13 @@ If a new variable is found that gates behavior and is NOT in the above list:
 - Provide a draft YAML snippet showing the new test entry for `ci-operator/config/redhat-performance/jetlag/redhat-performance-jetlag-main.yaml`
 - Provide a draft env var declaration for `openshift-qe-installer-bm-deploy-ref.yaml`
 - Provide the script modification needed in `openshift-qe-installer-bm-deploy-commands.sh`
+- **IMPORTANT**: Note that after making changes to openshift/release, these generators must be run from the repo root before pushing:
+  ```
+  make ci-operator-config    # determinizes config YAML (sorts keys, normalizes)
+  make jobs                  # regenerates prow job configs from ci-operator configs
+  ```
+  Without this, the PR will fail `ci-operator-config-metadata` and `generated-config` checks.
+  Both commands require `podman` (or `docker`) and pull CI tooling images.
 
 ## Output Format
 

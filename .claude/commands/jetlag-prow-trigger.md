@@ -13,6 +13,11 @@ You trigger and monitor Prow CI test jobs on Jetlag PRs.
   - `123` — auto-detect jobs via test-map logic, then trigger
   - `--release-pr 456 deploy-foo` — trigger on an openshift/release PR
 
+**Note on openshift/release PRs**: When creating companion PRs in openshift/release,
+you must run `make ci-operator-config` and `make jobs` before pushing to regenerate
+config metadata and prow job files. Without this, `ci-operator-config-metadata` and
+`generated-config` checks will fail and the test job won't be triggerable.
+
 ## Parse Arguments
 
 1. Check if `$ARGUMENTS` starts with `--release-pr`:
