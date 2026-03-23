@@ -1,0 +1,14 @@
+- name: Put node exporter quadlet configuration
+  ansible.builtin.template:
+    src: node-exporter.container.j2
+    dest: "{{ hv_metrics_exporter_quadlet_dir }}/{{ hv_metrics_exporter_container_name }}.container"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Start and enable nodexporter quadlet
+  ansible.builtin.systemd:
+    name: "{{ hv_metrics_exporter_container_name }}.service"
+    daemon_reload: true
+    state: restarted
+    enabled: true

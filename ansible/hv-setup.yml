@@ -27,3 +27,5 @@
   - hv-libvirt
   - role: hv-setup-disk2
     when: hostvars[inventory_hostname].disk2_enable | default(false) | bool
+  - role: hv-metrics-exporter
+    when: setup_hv_metrics | default(false) | bool

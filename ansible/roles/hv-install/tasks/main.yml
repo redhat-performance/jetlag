@@ -12,6 +12,7 @@
     - python3-libvirt
     - rsync
     - ksmtuned
+    - podman
     state: present
     update_cache: true
     disable_gpg_check: yes

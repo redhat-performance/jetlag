@@ -1,0 +1,35 @@
+# General configuration
+hv_metrics_server_work_dir: "/root/hv-metrics"
+hv_metrics_server_expose_prometheus: true
+hv_metrics_server_deploy_grafana: true
+
+# Pod configuration
+hv_metrics_server_pod_name: "hv-metrics"
+
+# Prometheus collector configuration
+# Server configuration
+hv_metrics_server_enable_local_prometheus: true
+hv_metrics_server_address: localhost
+hv_metrics_server_retention_time: "14d"
+hv_metrics_server_prometheus_port: 9090
+
+# Prometheus server container configuration
+hv_metrics_server_podman_config_source: "{{ hv_metrics_server_work_dir }}/prometheus.yaml"
+hv_metrics_server_podman_data_dir: "{{ hv_metrics_server_work_dir }}/data"
+
+# Collectors configuration
+hv_metrics_server_scrape_interval: "15s"
+hv_metrics_server_evaluation_interval: "15s"
+
+# Grafana configuration
+hv_metrics_server_grafana_username: "testadmin"
+hv_metrics_server_grafana_password: "testadmin"
+hv_metrics_server_grafana_dashboard_dir: "{{ hv_metrics_server_work_dir }}/dashboards"
+hv_metrics_server_grafana_port: 3000
+
+# Container configuration
+hv_metrics_server_quadlet_dir: "/etc/containers/systemd"
+hv_metrics_server_prometheus_container_image: "quay.io/prometheus/prometheus:latest"
+hv_metrics_server_prometheus_container_name: "prometheus"
+hv_metrics_server_grafana_container_image: "docker.io/grafana/grafana:latest"
+hv_metrics_server_grafana_container_name: "grafana"

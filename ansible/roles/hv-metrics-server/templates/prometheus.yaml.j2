@@ -1,0 +1,17 @@
+global:
+  scrape_interval: {{ hv_metrics_server_scrape_interval }}
+  evaluation_interval: {{ hv_metrics_server_evaluation_interval }}
+
+scrape_configs:
+{% if hv_metrics_server_enable_local_prometheus %}
+  - job_name: 'bastion'
+    static_configs:
+      - targets: ['{{ hv_metrics_server_address }}:9090']
+{% endif %}
+
+{% for client in groups['hv'] %}
+{% set shortname = hostvars[client].inventory_hostname.split('.')[0] %}
+  - job_name: '{{ shortname }}'
+    static_configs:
+      - targets: ['{{ hostvars[client].inventory_hostname }}:9100']
+{% endfor %}
