@@ -39,6 +39,6 @@ recert_image_tag: latest
 
 # Minio provides an S3 storage service for ACM's OBS and s3 storage for OADP
 minio_image: quay.io/minio/minio
-minio_image_tag: RELEASE.2022-04-01T03-41-39Z
+minio_image_tag: RELEASE.2025-09-07T16-13-09Z
 
 acm_d_pull_secret: "{{ lookup('file', '../pull-secret.acm-d.txt') }}"
