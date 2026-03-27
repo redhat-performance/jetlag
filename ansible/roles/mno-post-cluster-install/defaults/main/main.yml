@@ -51,7 +51,7 @@ prometheus_retention_period: 15d
 
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false
-minio_image_tag: RELEASE.2022-04-01T03-41-39Z
+minio_image_tag: RELEASE.2025-09-07T16-13-09Z
 minio_pv_storageclass: localstorage2-sc
 
 # Performance-addon-operator vars_files
