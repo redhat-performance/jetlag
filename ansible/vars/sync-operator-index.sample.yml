@@ -83,3 +83,10 @@ catalogs_to_sync:
 # - quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
 # - quay.io/namespace/image_name:example_tag
 
+# Sync extra container images directly with oc image mirror, allowing destination renaming.
+# extra_images:
+# - src: registry.redhat.io/openshift4/ztp-site-generate-rhel8:v4.21.0-2
+#   dest: openshift-kni/ztp-site-generator:v4.21.0-2
+# - src: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+#   dest: minio/minio:RELEASE.2025-09-07T16-13-09Z
+

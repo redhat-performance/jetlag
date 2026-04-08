@@ -465,6 +465,21 @@ additional_images:
 > [!NOTE]
 > The `additional_images` parameter mirrors the images exactly as they are named. It does not support renaming the target destination path or tag. Images requiring a rename must still be mirrored manually using `oc image mirror`.
 
+**Automating Image Mirroring with Renaming**
+
+Instead of manually running `oc image mirror` commands, you can automate mirroring generic container images into your bastion registry during the `sync-operator-index` playbook execution. This method uses a separate background task to process and mirror the images, ensuring it fully supports renaming the target destination path.
+
+Simply add the `extra_images` list to your `ansible/vars/sync-operator-index.yml` file:
+
+```yaml
+# Sync extra container images using oc image mirror, which allows renaming.
+extra_images:
+- src: registry.redhat.io/openshift4/ztp-site-generate-rhel8:v4.21.0-2
+  dest: openshift-kni/ztp-site-generator:v4.21.0-2
+- src: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+  dest: minio/minio:RELEASE.2025-09-07T16-13-09Z
+```
+
 For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
 
 ```console

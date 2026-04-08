@@ -91,3 +91,4 @@ catalogs_to_sync:
       maxVersion: 4.19.0-202510010724
 
 additional_images: []
+extra_images: []

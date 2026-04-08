@@ -19,3 +19,8 @@
   shell: |
     oc mirror --authfile {{ registry_path }}/pull-secret-bastion.txt -c {{ sync_path }}/operators/{{ operator_index_name }}/imagesetconf.yml --workspace file://{{ sync_path }}/operators/{{ operator_index_name }} docker://{{ registry_host }}:{{ registry_port }} --v2
 
+- name: Mirror extra images with renaming support
+  shell: |
+    oc image mirror -a {{ registry_path }}/pull-secret-bastion.txt {{ item.src }} {{ registry_host }}:{{ registry_port }}/{{ item.dest }} --keep-manifest-list --continue-on-error=true
+  loop: "{{ extra_images | default([]) }}"
+
