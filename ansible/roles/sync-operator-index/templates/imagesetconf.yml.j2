@@ -20,3 +20,9 @@ mirror:
 {%   endfor %}
 {%   endfor %}
 {% endfor %}
+{% if additional_images %}
+  additionalImages:
+{%   for image in additional_images %}
+    - name: {{ image }}
+{%   endfor %}
+{% endif %}

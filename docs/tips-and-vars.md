@@ -449,6 +449,22 @@ For on-demand mirroring, the next command run on the bastion will mirror the ima
 ```
 Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
 
+**Automating Image Mirroring**
+
+Instead of manually running `oc image mirror` commands, you can automate mirroring generic container images into your bastion registry during the `sync-operator-index` playbook execution.
+
+Simply add the `additional_images` list to your `ansible/vars/sync-operator-index.yml` file:
+
+```yaml
+# Sync extra container images directly (without renaming) into the destination registry.
+additional_images:
+- quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+- quay.io/namespace/image_name:example_tag
+```
+
+> [!NOTE]
+> The `additional_images` parameter mirrors the images exactly as they are named. It does not support renaming the target destination path or tag. Images requiring a rename must still be mirrored manually using `oc image mirror`.
+
 For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
 
 ```console

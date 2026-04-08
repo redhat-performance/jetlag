@@ -78,3 +78,8 @@ catalogs_to_sync:
       minVersion: 4.19.0-202510010724
       maxVersion: 4.19.0-202510010724
 
+# Sync extra container images directly (without renaming) into the destination registry.
+# additional_images:
+# - quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+# - quay.io/namespace/image_name:example_tag
+
