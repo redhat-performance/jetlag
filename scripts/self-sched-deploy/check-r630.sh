@@ -44,7 +44,7 @@ fi
 
 # Download ocpinventory.json, retrying until nodes data is available
 INVENTORY_URL="http://${QUADS_HOST}/instack/${CLOUD_NAME}_ocpinventory.json"
-MAX_RETRIES=12
+MAX_RETRIES=60
 RETRY_INTERVAL=10
 
 for ((i=1; i<=MAX_RETRIES; i++)); do

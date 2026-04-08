@@ -109,12 +109,23 @@ create-assignment-run:
 		echo -e "$(YELLOW)Using existing assignment: $$CLOUD_NAME$(NC)"; \
 	else \
 		echo "Generating QUADS configuration..."; \
+		if [ "$$PREFERRED_MODEL" = "all" ]; then \
+			export PREFERRED_MODELS_YAML='"all"'; \
+		else \
+			export PREFERRED_MODELS_YAML="$$(printf '\n'; echo "$$PREFERRED_MODEL" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$$//' | sed 's/^/  - "/' | sed 's/$$/"/')"; \
+		fi; \
 		envsubst < $(SCRIPT_DIR)/templates/quads_config.yml.j2 > $(QUADS_REPO)/quads_config.yml; \
+		if [ "$$WIPE_DISKS" = "no" ]; then \
+			WIPE_VALUE="false"; \
+		else \
+			WIPE_VALUE="true"; \
+		fi; \
 		echo "Running QUADS assignment..."; \
 		cd $(QUADS_REPO) && \
 		ansible-playbook quads_self_schedule.yml \
 			-e "workload_name='$$WORKLOAD_NAME'" \
-			-e "num_hosts=$$NUM_HOSTS" | tee /tmp/quads_output.log; \
+			-e "num_hosts=$$NUM_HOSTS" \
+			-e "wipe=$$WIPE_VALUE" | tee /tmp/quads_output.log; \
 		CLOUD_NAME=$$(grep -oP '"cloud_name":\s*"\K[^"]+' /tmp/quads_output.log | head -1 || true); \
 		if [ -z "$$CLOUD_NAME" ]; then \
 			CLOUD_NAME=$$(grep -oP '"cloud":\s*\{"name":\s*"\K[^"]+' /tmp/quads_output.log | head -1 || true); \
