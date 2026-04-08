@@ -89,3 +89,5 @@ catalogs_to_sync:
     - name: stable
       minVersion: 4.19.0-202510010724
       maxVersion: 4.19.0-202510010724
+
+additional_images: []
