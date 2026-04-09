@@ -216,6 +216,11 @@ inventory-run:
 		if [ "$$RESET_IDRAC" = "true" ]; then \
 			sed -i 's/^# reset_idrac: false$$/reset_idrac: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		fi; \
+		INVENTORY_FILE="$(SCRIPT_DIR)/vars/$${CLOUD_NAME}_ocpinventory.json"; \
+		if [ -f "$$INVENTORY_FILE" ]; then \
+			echo "Using pre-built inventory: $$INVENTORY_FILE"; \
+			echo "ocp_inventory_override: $$INVENTORY_FILE" >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		fi; \
 		if [ ! -f "$$PULL_SECRET_PATH" ]; then \
 			echo -e "$(RED)Error: Pull secret not found at $$PULL_SECRET_PATH$(NC)"; \
 			exit 1; \
@@ -358,6 +363,7 @@ clean:
 	@rm -f $(CONFIG_FILE)
 	@rm -f $(STATE_FILE)
 	@rm -f /tmp/quads_output.log
+	@rm -f $(SCRIPT_DIR)/vars/*_ocpinventory.json
 	@echo -e "$(GREEN)Clean complete.$(NC)"
 	@echo ""
 	@echo "Note: Cloned repository in $(REPOS_DIR) was not removed."

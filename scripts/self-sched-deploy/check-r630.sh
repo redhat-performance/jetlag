@@ -1,9 +1,10 @@
 #!/bin/bash
-# Check if allocated servers include r630 models
-# Downloads ocpinventory.json from QUADS and parses pm_addr fields
+# Build ocpinventory.json from QUADS API, check for r630 models,
+# and ensure bastion is powered on.
 #
 # Usage: ./check-r630.sh <lab> <cloud_name> [quads_server]
 # Returns: "r630" and exit 0 if r630 found, "none" and exit 1 otherwise
+# Side effect: saves built inventory to vars/<cloud_name>_ocpinventory.json
 
 set -e
 
@@ -42,24 +43,72 @@ else
     fi
 fi
 
-# Download ocpinventory.json, retrying until nodes data is available
-INVENTORY_URL="http://${QUADS_HOST}/instack/${CLOUD_NAME}_ocpinventory.json"
+# Build ocpinventory.json from QUADS API
+QUADS_API="https://${QUADS_HOST}/api/v3"
 MAX_RETRIES=90
 RETRY_INTERVAL=10
 
+# Get cloud_id
+CLOUD_ID=$(curl -s "$QUADS_API/clouds?name=$CLOUD_NAME" | jq -r '.[0].id')
+if [[ -z "$CLOUD_ID" || "$CLOUD_ID" == "null" ]]; then
+    echo "Error: Could not find cloud_id for $CLOUD_NAME" >&2
+    exit 2
+fi
+
+# Get pm_password from active assignment ticket
+TICKET=$(curl -s "$QUADS_API/assignments?active=true&cloud_id=$CLOUD_ID" | jq -r '.[0].ticket')
+if [[ -z "$TICKET" || "$TICKET" == "null" ]]; then
+    echo "Error: Could not find active assignment ticket for $CLOUD_NAME" >&2
+    exit 2
+fi
+PM_PASSWORD="rdu2@${TICKET}"
+
+# Get host list, retrying until hosts are assigned
 for ((i=1; i<=MAX_RETRIES; i++)); do
-    INVENTORY_JSON=$(curl -s "$INVENTORY_URL")
-    if [[ -n "$INVENTORY_JSON" && "$INVENTORY_JSON" != "null" ]] && \
-       echo "$INVENTORY_JSON" | jq -e '.nodes | length > 0' &>/dev/null; then
+    HOST_LIST=$(curl -s "$QUADS_API/hosts?cloud_id=$CLOUD_ID" | jq -r '.[].name')
+    if [[ -n "$HOST_LIST" ]]; then
         break
     fi
     if [[ $i -eq $MAX_RETRIES ]]; then
-        echo "Error: ocpinventory.json not available after $MAX_RETRIES attempts" >&2
+        echo "Error: No hosts found for $CLOUD_NAME after $MAX_RETRIES attempts" >&2
         exit 2
     fi
-    echo "Waiting for ocpinventory.json to be ready... (attempt $i/$MAX_RETRIES)" >&2
+    echo "Waiting for hosts to be assigned... (attempt $i/$MAX_RETRIES)" >&2
     sleep "$RETRY_INTERVAL"
 done
+
+# Build inventory JSON from host data
+NODES="[]"
+for HOST in $HOST_LIST; do
+    echo "Fetching MAC addresses for $HOST..." >&2
+    MACS=$(curl -s "$QUADS_API/hosts/$HOST" | jq '[.interfaces | sort_by(.name) | .[].mac_address]')
+    NODE=$(jq -n \
+        --arg name "$HOST" \
+        --arg pm_addr "mgmt-$HOST" \
+        --arg pm_password "$PM_PASSWORD" \
+        --argjson macs "$MACS" \
+        '{
+            arch: "x86_64",
+            cpu: "2",
+            disk: "20",
+            mac: $macs,
+            memory: "1024",
+            name: $name,
+            pm_addr: $pm_addr,
+            pm_password: $pm_password,
+            pm_type: "pxe_ipmitool",
+            pm_user: "quads"
+        }')
+    NODES=$(echo "$NODES" | jq ". + [$NODE]")
+done
+
+INVENTORY_JSON=$(jq -n --argjson nodes "$NODES" '{nodes: $nodes}')
+
+# Save inventory to file for reuse by create-inventory.yml
+INVENTORY_FILE="${SCRIPT_DIR}/vars/${CLOUD_NAME}_ocpinventory.json"
+mkdir -p "${SCRIPT_DIR}/vars"
+echo "$INVENTORY_JSON" > "$INVENTORY_FILE"
+echo "Inventory saved to $INVENTORY_FILE" >&2
 
 # Check bastion power state and power on if needed (only when wipe is off)
 if [[ "${WIPE_DISKS:-}" = "no" ]]; then
