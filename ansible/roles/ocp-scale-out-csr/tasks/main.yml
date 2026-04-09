@@ -3,7 +3,7 @@
   include_tasks: check_nodes_joined.yml
   vars:
     qry: "items[?status.conditions==null && spec.username == 'system:serviceaccount:openshift-machine-config-operator:node-bootstrapper']"
-    worker_counter: "grep worker | grep -v -c master"
+    worker_counter: "grep worker | grep -v master | wc -l"
 
 - name: Approve Kublet-serving CSRs and wait for nodes to join cluster
   include_tasks: check_nodes_joined.yml
