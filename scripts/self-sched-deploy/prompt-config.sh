@@ -131,7 +131,7 @@ collect_quads_config() {
 
     print_header "Cluster Configuration"
 
-    prompt_with_options "Cluster Type" "mno (Multi-Node), sno (Single-Node)" "${CLUSTER_TYPE:-mno}" CLUSTER_TYPE
+    prompt_with_options "Cluster Type" "mno (Multi-Node), sno (Single-Node)" "${CLUSTER_TYPE:-sno}" CLUSTER_TYPE
 
     if [[ "$CLUSTER_TYPE" == "mno" ]]; then
         prompt_with_default "Worker Node Count" "${WORKER_NODE_COUNT:-2}" WORKER_NODE_COUNT
@@ -145,6 +145,14 @@ collect_quads_config() {
 
     print_info "Auto-calculated hosts to reserve: $NUM_HOSTS"
     prompt_with_default "Number of hosts to reserve (override if needed)" "$NUM_HOSTS" NUM_HOSTS
+
+    print_header "Hardware Preference"
+
+    prompt_with_default "Preferred hardware models, comma-separated in order of preference (e.g., r660,r750,r650 or 'all')" "${PREFERRED_MODEL:-r660}" PREFERRED_MODEL
+
+    print_header "Deployment Options"
+
+    prompt_with_options "Wipe disks on hosts" "yes, no" "${WIPE_DISKS:-no}" WIPE_DISKS
 
     print_header "Workload Description"
 
@@ -253,6 +261,8 @@ CLUSTER_TYPE="${CLUSTER_TYPE}"
 WORKER_NODE_COUNT="${WORKER_NODE_COUNT}"
 NUM_HOSTS="${NUM_HOSTS}"
 DEPLOY_PLAYBOOK="${DEPLOY_PLAYBOOK}"
+PREFERRED_MODEL="${PREFERRED_MODEL}"
+WIPE_DISKS="${WIPE_DISKS}"
 
 # Network Configuration
 NETWORK_STACK="${NETWORK_STACK}"
@@ -297,6 +307,8 @@ display_quads_summary() {
     echo "Cluster Type:     $CLUSTER_TYPE"
     echo "Worker Nodes:     $WORKER_NODE_COUNT"
     echo "Hosts to Reserve: $NUM_HOSTS"
+    echo "Hardware Model:   $PREFERRED_MODEL"
+    echo "Wipe Disks:       $WIPE_DISKS"
     echo "Workload:         $WORKLOAD_NAME"
 
     if [[ "$USE_EXISTING_ASSIGNMENT" == "true" ]]; then
@@ -351,6 +363,8 @@ display_full_summary() {
     echo "Cluster Type:     $CLUSTER_TYPE"
     echo "Worker Nodes:     $WORKER_NODE_COUNT"
     echo "Hosts to Reserve: $NUM_HOSTS"
+    echo "Hardware Model:   $PREFERRED_MODEL"
+    echo "Wipe Disks:       $WIPE_DISKS"
     echo "Network Stack:    $NETWORK_STACK"
     if [[ "$NETWORK_STACK" == "ipv6" ]]; then
         echo "IPv6 Mode:        $IPV6_MODE"
