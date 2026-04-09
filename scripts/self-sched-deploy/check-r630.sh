@@ -44,7 +44,7 @@ fi
 
 # Download ocpinventory.json, retrying until nodes data is available
 INVENTORY_URL="http://${QUADS_HOST}/instack/${CLOUD_NAME}_ocpinventory.json"
-MAX_RETRIES=60
+MAX_RETRIES=90
 RETRY_INTERVAL=10
 
 for ((i=1; i<=MAX_RETRIES; i++)); do
@@ -60,6 +60,44 @@ for ((i=1; i<=MAX_RETRIES; i++)); do
     echo "Waiting for ocpinventory.json to be ready... (attempt $i/$MAX_RETRIES)" >&2
     sleep "$RETRY_INTERVAL"
 done
+
+# Check bastion power state and power on if needed (only when wipe is off)
+if [[ "${WIPE_DISKS:-}" = "no" ]]; then
+    BMC_ADDRESS=$(echo "$INVENTORY_JSON" | jq -r '.nodes[0].pm_addr')
+    BMC_USER=$(echo "$INVENTORY_JSON" | jq -r '.nodes[0].pm_user')
+    BMC_PASSWORD=$(echo "$INVENTORY_JSON" | jq -r '.nodes[0].pm_password')
+    BASTION_HOST=$(echo "$INVENTORY_JSON" | jq -r '.nodes[0].name')
+
+    echo "Checking power state of bastion ($BASTION_HOST) via Redfish..." >&2
+    POWER_STATE=$(curl -s -k -u "$BMC_USER:$BMC_PASSWORD" \
+        "https://$BMC_ADDRESS/redfish/v1/Systems/System.Embedded.1" | jq -r '.PowerState')
+
+    if [[ "$POWER_STATE" != "On" ]]; then
+        echo "Bastion is $POWER_STATE, powering on..." >&2
+        curl -s -k -u "$BMC_USER:$BMC_PASSWORD" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"ResetType":"On"}' \
+            "https://$BMC_ADDRESS/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset" >/dev/null
+
+        echo "Waiting for bastion to become reachable via SSH..." >&2
+        for ((j=1; j<=60; j++)); do
+            SSH_OUTPUT=$(ssh -o ConnectTimeout=5 -o BatchMode=yes -o StrictHostKeyChecking=no \
+                -o UserKnownHostsFile=/dev/null root@"$BASTION_HOST" true 2>&1 || true)
+            if ! echo "$SSH_OUTPUT" | grep -q "Connection refused\|Connection timed out\|No route to host"; then
+                echo "Bastion is reachable via SSH." >&2
+                break
+            fi
+            if [[ $j -eq 60 ]]; then
+                echo "Error: Bastion not reachable via SSH after 60 attempts" >&2
+                exit 2
+            fi
+            echo "Waiting for SSH... (attempt $j/60)" >&2
+            sleep 10
+        done
+    else
+        echo "Bastion is already powered on." >&2
+    fi
+fi
 
 # Extract server models from pm_addr fields
 # Pattern: mgmt-[rack]-[unit]-[model].domain → extract [model]
