@@ -81,7 +81,6 @@ hw_install_disk:
     y37-h03-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
     y37-h05-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
     y37-h07-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
-    y37-h09-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
     r750: /dev/disk/by-path/pci-0000:05:00.0-ata-1
     r7425: /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0
     r7525: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
