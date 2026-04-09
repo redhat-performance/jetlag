@@ -17,16 +17,6 @@ remove_assisted_installer_namespace: false
 setup_openshift_gitops: false
 gitops_channel: stable
 
-# Performance-addon-operator and du profile vars
-install_performance_addon_operator: false
-hugepages_count: 16
-node: 0
-isolated_cpus: 2-47,50-95
-
-du_profile: false
-operator_index_name: redhat-operator-index
-operator_index_tag: v4.18
-
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false
 minio_image_tag: RELEASE.2025-09-07T16-13-09Z
@@ -34,3 +24,21 @@ minio_pv_storageclass: localstorage2-sc
 
 # setup metal3
 sno_metal3: false
+
+# Apply the cluster-monitoring-config that uses the localstorage class name created
+# by controlplane_localstorage_configuration
+apply_cluster_monitoring_config: false
+
+# Prometheus storage settings
+prometheus_retention_period: 15d
+prometheus_storage_class: localstorage-sc
+prometheus_storage_size: 50Gi
+
+# DU Profile
+du_profile: false
+
+# Performance-addon-operator and du profile vars
+install_performance_addon_operator: false
+hugepages_count: 16
+node: 0
+isolated_cpus: 2-47,50-95

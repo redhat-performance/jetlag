@@ -46,8 +46,10 @@ migrate_monitoring: false
 # by controlplane_localstorage_configuration or worker_localstorage_configuration
 apply_cluster_monitoring_config: false
 
-# Set the rention period for prometheus to allow up to 15 days of data by default
+# Prometheus storage settings
 prometheus_retention_period: 15d
+prometheus_storage_class: localstorage-sc
+prometheus_storage_size: 50Gi
 
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false

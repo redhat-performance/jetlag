@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |+
+    prometheusK8s:
+      retention: {{ prometheus_retention_period }}
+      volumeClaimTemplate:
+        metadata:
+          name: localpvc
+        spec:
+          storageClassName: {{ prometheus_storage_class }}
+          resources:
+            requests:
+              storage: {{ prometheus_storage_size }}
