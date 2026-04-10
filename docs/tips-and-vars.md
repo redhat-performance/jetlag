@@ -449,6 +449,26 @@ For on-demand mirroring, the next command run on the bastion will mirror the ima
 ```
 Once the image has successfully mirrored onto the disconnected registry, your deployment will be able to create the container.
 
+For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
+
+```console
+### script
+#!/bin/bash
+registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
+name='XXX/client-server'
+auth='-u username:passwd'
+
+function rm_XXX_tag {
+ ltag=$1
+ curl $auth -X DELETE -sI -k "https://${registry}/v2/${name}/manifests/$(
+   curl $auth -sI -k \
+     -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+      "https://${registry}/v2/${name}/manifests/${ltag}" \
+   | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
+ )"
+}
+```
+
 **Automating Image Mirroring**
 
 Instead of manually running `oc image mirror` commands, you can automate mirroring generic container images into your bastion registry during the `sync-operator-index` playbook execution.
@@ -480,22 +500,16 @@ extra_images:
   dest: minio/minio:RELEASE.2025-09-07T16-13-09Z
 ```
 
-For image deletion, use the Docker V2 REST API to delete the object. Note that the deletion operation argument has to be an image's digest not image's tag. So if you mirrored your image by tag in the previous step, on deletion you have to get its digest first. The following is a convenient script that deletes an image by tag.
+**Automating ImageTagMirrorSet (ITMS) Creation**
 
-```console
-### script
-#!/bin/bash
-registry='[fc00:1000::1]:5000'   <===== IPv6 address and port of perf176b disconnected registry
-name='XXX/client-server'
-auth='-u username:passwd'
+When working in disconnected environments, some core pods or debugging tools may have external registry paths hardcoded (e.g., `registry.redhat.io/rhel9/support-tools`). To ensure these pods can pull images from your bastion registry without modifying their manifests, Jetlag can automatically create `ImageTagMirrorSet` (ITMS) resources during the post-cluster-install phase.
 
-function rm_XXX_tag {
- ltag=$1
- curl $auth -X DELETE -sI -k "https://${registry}/v2/${name}/manifests/$(
-   curl $auth -sI -k \
-     -H "Accept: application/vnd.oci.image.manifest.v1+json" \
-      "https://${registry}/v2/${name}/manifests/${ltag}" \
-   | tr -d '\r' | sed -En 's/^Docker-Content-Digest: (.*)/\1/pi'
- )"
-}
+Simply add the `image_tag_mirrors` list to your `ansible/vars/all.yml` file. This tells OpenShift to intercept requests to the `source` registry and redirect them to your local bastion registry under the `dest` namespace.
+
+```yaml
+# Automatically generate ITMS resources post-install
+# The destination will automatically point to your bastion: <registry_host>:<registry_port>/<dest>
+image_tag_mirrors:
+- source: registry.redhat.io/rhel9
+  dest: rhel9
 ```

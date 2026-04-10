@@ -92,3 +92,5 @@ catalogs_to_sync:
 
 additional_images: []
 extra_images: []
+
+image_tag_mirrors: []
