@@ -109,6 +109,21 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/idms-oc-mirror.yaml
   when: use_bastion_registry | default(false)
 
+- name: Apply ImageTagMirrorSet on bastion registry clusters
+  shell: |
+    cat <<EOF | KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f -
+    apiVersion: config.openshift.io/v1
+    kind: ImageTagMirrorSet
+    metadata:
+      name: {{ item.dest | replace('/', '-') }}-mirror
+    spec:
+      imageTagMirrors:
+      - mirrors:
+        - {{ registry_host }}:{{ registry_port }}/{{ item.dest }}
+        source: {{ item.source }}
+    EOF
+  loop: "{{ image_tag_mirrors | default([]) }}"
+  when: use_bastion_registry | default(false)
 - name: Apply oc mirror catalogSource on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_operator_index_name_tag }}.yaml
