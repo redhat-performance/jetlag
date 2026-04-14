@@ -61,8 +61,8 @@ data:
         metadata:
           name: localpvc
         spec:
-          storageClassName: localstorage-sc
+          storageClassName: {{ prometheus_storage_class }}
           resources:
             requests:
-              storage: 50Gi
+              storage: {{ prometheus_storage_size }}
 {% endif %}

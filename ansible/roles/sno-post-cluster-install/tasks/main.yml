@@ -12,6 +12,7 @@
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/tunedPerformancePatch"
 
@@ -46,6 +47,8 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
+  - src: cluster-monitoring-config.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring/cluster-monitoring-config.yml"
   - src: openshift-gitops-operator.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops/openshift-gitops-operator.yml"
   - src: localstorage.yml.j2
@@ -127,13 +130,13 @@
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localstorage.yml
 
-  # The localvolume resource will not be instantly available, thus retry for around 2 minutes
+  # The localvolume resource will not be instantly available, thus retry for around 15 minutes
   - name: Create localvolume resource
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume.yml
     register: lv_result
     until: not lv_result.failed
-    retries: 60
+    retries: 450
     delay: 2
 
   - name: Create localvolume2 resource
@@ -145,15 +148,20 @@
     delay: 2
     when: localvolume2_configuration
 
+- name: Setup Metal3
+  when: sno_metal3 | bool
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml
+
 - name: Setup Minio
   when: setup_minio | bool
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio/minio.yml
 
-- name: Setup Metal3
-  when: sno_metal3 | bool
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml
+- name: Apply OpenShift-Monitoring configuration options
+  when: apply_cluster_monitoring_config and controlplane_localstorage_configuration
+  shell:
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring/cluster-monitoring-config.yml
 
 - name: Include DU Profile tasks
   include_tasks: du_profile_post_install_tasks.yml
