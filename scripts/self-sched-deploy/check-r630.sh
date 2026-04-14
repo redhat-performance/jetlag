@@ -11,9 +11,11 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JETLAG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-# Activate venv to access yq
-if [[ -f "${JETLAG_ROOT}/.ansible/bin/activate" ]]; then
-    source "${JETLAG_ROOT}/.ansible/bin/activate"
+# Use yq from the jetlag venv
+YQ="${JETLAG_ROOT}/.ansible/bin/yq"
+if [[ ! -x "$YQ" ]]; then
+    echo "Error: yq not found at $YQ. Run 'source bootstrap.sh' from the jetlag root first." >&2
+    exit 2
 fi
 
 LAB="${1:-scalelab}"
@@ -36,7 +38,7 @@ if [[ -n "$QUADS_SERVER" ]]; then
     QUADS_HOST="$QUADS_SERVER"
 else
     LAB_YML="${JETLAG_ROOT}/ansible/vars/lab.yml"
-    QUADS_HOST=$(yq -r ".labs.${LAB}.quads" "$LAB_YML")
+    QUADS_HOST=$($YQ -r ".labs.${LAB}.quads" "$LAB_YML")
     if [[ -z "$QUADS_HOST" || "$QUADS_HOST" == "null" ]]; then
         echo "Error: Could not find QUADS server for lab '$LAB' in $LAB_YML" >&2
         exit 2

@@ -14,9 +14,11 @@ JETLAG_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 mkdir -p "${SCRIPT_DIR}/vars"
 CONFIG_FILE="${SCRIPT_DIR}/vars/config.env"
 
-# Activate venv to access yq
-if [[ -f "${JETLAG_ROOT}/.ansible/bin/activate" ]]; then
-    source "${JETLAG_ROOT}/.ansible/bin/activate"
+# Use yq from the jetlag venv
+YQ="${JETLAG_ROOT}/.ansible/bin/yq"
+if [[ ! -x "$YQ" ]]; then
+    echo "Error: yq not found at $YQ. Run 'source bootstrap.sh' from the jetlag root first." >&2
+    exit 1
 fi
 STATE_FILE="${SCRIPT_DIR}/vars/state.env"
 
@@ -116,7 +118,7 @@ collect_quads_config() {
 
     # Auto-configure QUADS API server based on lab (from ansible/vars/lab.yml)
     LAB_YML="${JETLAG_ROOT}/ansible/vars/lab.yml"
-    QUADS_API_SERVER=$(yq -r ".labs.${LAB}.quads" "$LAB_YML")
+    QUADS_API_SERVER=$($YQ -r ".labs.${LAB}.quads" "$LAB_YML")
     if [[ -z "$QUADS_API_SERVER" || "$QUADS_API_SERVER" == "null" ]]; then
         print_error "Error: Could not find QUADS server for lab '$LAB' in $LAB_YML"
         exit 1
