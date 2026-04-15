@@ -240,7 +240,9 @@ inventory-run:
 		BASTION_HOST=$$(grep -A1 '^\[bastion\]' $(JETLAG_ROOT)/ansible/inventory/$$CLOUD_NAME.local | tail -1 | awk '{print $$1}'); \
 		if [ -n "$$BASTION_HOST" ] && [ -n "$$BASTION_ROOT_PASSWORD" ]; then \
 			echo "Bastion host: $$BASTION_HOST"; \
-			sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$$BASTION_HOST 2>/dev/null && \
+			ssh-keygen -R "$$BASTION_HOST" 2>/dev/null || true; \
+			ssh-keyscan "$$BASTION_HOST" >> ~/.ssh/known_hosts 2>/dev/null; \
+			sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no root@$$BASTION_HOST 2>/dev/null && \
 			echo -e "$(GREEN)SSH key copied to bastion successfully.$(NC)" || \
 			echo -e "$(YELLOW)Warning: Could not copy SSH key. You may need to do this manually.$(NC)"; \
 		else \
