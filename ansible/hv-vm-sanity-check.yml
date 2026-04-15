@@ -1,0 +1,53 @@
+---
+# Sanity check for VMs on hypervisors
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-sanity-check.yml
+#
+
+- name: Sanity check for VMs on hypervisors
+  hosts: hv_vm
+  gather_facts: false
+  vars:
+    hv_bmc_port: 9000
+  tasks:
+    - name: Check VM state on hypervisor via virsh
+      shell: "virsh domstate {{ inventory_hostname }}"
+      register: vm_virsh_state
+      changed_when: false
+      failed_when: false
+
+    - name: Check virtual BMC accessibility and PowerState
+      uri:
+        url: "http://{{ hostvars[inventory_hostname]['hv_ip'] | default(hostvars[inventory_hostname]['ansible_host']) }}:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
+        method: GET
+        validate_certs: no
+        return_content: yes
+      register: vm_redfish_status
+      failed_when: false
+
+    - name: Check if VM IP is pingable from hypervisor
+      shell: "ping -c 1 -W 1 {{ hostvars[inventory_hostname]['ip'] }}"
+      register: vm_ping
+      changed_when: false
+      failed_when: false
+      when: hostvars[inventory_hostname]['ip'] is defined
+
+    - name: Check if VM SSH port is open from hypervisor
+      wait_for:
+        host: "{{ hostvars[inventory_hostname]['ip'] }}"
+        port: 22
+        timeout: 5
+      register: vm_ssh
+      failed_when: false
+      when: hostvars[inventory_hostname]['ip'] is defined
+
+    - name: Summary of VM Status
+      debug:
+        msg:
+          - "VM: {{ inventory_hostname }}"
+          - "Virsh State: {{ vm_virsh_state.stdout | default('UNKNOWN') }}"
+          - "Redfish State: {{ vm_redfish_status.json.PowerState | default('UNKNOWN') }}"
+          - "Ping ({{ hostvars[inventory_hostname]['ip'] | default('N/A') }}): {{ 'SUCCESS' if (vm_ping.rc | default(1) == 0) else 'FAILED' }}"
+          - "SSH (Port 22): {{ 'OPEN' if not (vm_ssh.failed | default(true)) else 'CLOSED' }}"
