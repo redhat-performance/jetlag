@@ -51,3 +51,8 @@
           - "Redfish State: {{ vm_redfish_status.json.PowerState | default('UNKNOWN') }}"
           - "Ping ({{ hostvars[inventory_hostname]['ip'] | default('N/A') }}): {{ 'SUCCESS' if (vm_ping.rc | default(1) == 0) else 'FAILED' }}"
           - "SSH (Port 22): {{ 'OPEN' if not (vm_ssh.failed | default(true)) else 'CLOSED' }}"
+      when: >
+        (vm_virsh_state.stdout | default('UNKNOWN')) != 'running' or
+        (vm_redfish_status.json.PowerState | default('UNKNOWN')) != 'On' or
+        (vm_ping.rc | default(1)) != 0 or
+        (vm_ssh.failed | default(true))
