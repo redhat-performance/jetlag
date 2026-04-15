@@ -242,7 +242,7 @@ inventory-run:
 			echo "Bastion host: $$BASTION_HOST"; \
 			ssh-keygen -R "$$BASTION_HOST" 2>/dev/null || true; \
 			ssh-keyscan "$$BASTION_HOST" >> ~/.ssh/known_hosts 2>/dev/null; \
-			sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no root@$$BASTION_HOST 2>/dev/null && \
+			sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@$$BASTION_HOST 2>/dev/null && \
 			echo -e "$(GREEN)SSH key copied to bastion successfully.$(NC)" || \
 			echo -e "$(YELLOW)Warning: Could not copy SSH key. You may need to do this manually.$(NC)"; \
 		else \
