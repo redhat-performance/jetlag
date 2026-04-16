@@ -114,7 +114,13 @@ create-assignment-run:
 		else \
 			export PREFERRED_MODELS_YAML="$$(printf '\n'; echo "$$PREFERRED_MODEL" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$$//' | sed 's/^/  - "/' | sed 's/$$/"/')"; \
 		fi; \
-		envsubst < $(SCRIPT_DIR)/templates/quads_config.yml.j2 > $(QUADS_REPO)/quads_config.yml; \
+		{ echo "---"; \
+			echo "quads_api_server: \"$$QUADS_API_SERVER\""; \
+			echo "quads_username: \"$$QUADS_USERNAME\""; \
+			echo "quads_user_domain: \"$$QUADS_USER_DOMAIN\""; \
+			echo "quads_password: \"$$QUADS_PASSWORD\""; \
+			echo "preferred_models: $$PREFERRED_MODELS_YAML"; \
+		} > $(QUADS_REPO)/quads_config.yml; \
 		if [ "$$WIPE_DISKS" = "no" ]; then \
 			WIPE_VALUE="false"; \
 		else \
@@ -181,6 +187,7 @@ inventory-run:
 	@echo -e "$(BLUE)Phase: Generate Jetlag Inventory$(NC)"
 	@echo -e "$(BLUE)=============================================$(NC)"
 	@set -a && source $(CONFIG_FILE) && source $(STATE_FILE) && set +a && \
+		sedi() { local e="$$1" f="$$2"; sed "$$e" "$$f" > "$$f.tmp~" && mv "$$f.tmp~" "$$f"; }; \
 		echo "Checking for r630 servers..."; \
 		RESET_IDRAC="false"; \
 		if $(SCRIPT_DIR)/check-r630.sh "$$LAB" "$$CLOUD_NAME" "$$QUADS_API_SERVER" | grep -q "r630"; then \
@@ -189,32 +196,32 @@ inventory-run:
 		fi; \
 		echo "Generating jetlag configuration..."; \
 		cp $(JETLAG_ROOT)/ansible/vars/all.sample.yml $(JETLAG_ROOT)/ansible/vars/all.yml; \
-		sed -i "s/^lab:$$/lab: $$LAB/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
-		sed -i "s/^lab_cloud:$$/lab_cloud: $$CLOUD_NAME/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
-		sed -i "s/^cluster_type:$$/cluster_type: $$CLUSTER_TYPE/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
-		sed -i "s/^worker_node_count:$$/worker_node_count: $$WORKER_NODE_COUNT/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
-		sed -i "s/^ocp_build: .*/ocp_build: \"$$OCP_BUILD\"/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
-		sed -i "s/^ocp_version: .*/ocp_version: \"$$OCP_VERSION\"/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		sedi "s/^lab:$$/lab: $$LAB/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		sedi "s/^lab_cloud:$$/lab_cloud: $$CLOUD_NAME/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		sedi "s/^cluster_type:$$/cluster_type: $$CLUSTER_TYPE/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		sedi "s/^worker_node_count:$$/worker_node_count: $$WORKER_NODE_COUNT/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		sedi "s/^ocp_build: .*/ocp_build: \"$$OCP_BUILD\"/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
+		sedi "s/^ocp_version: .*/ocp_version: \"$$OCP_VERSION\"/" $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		if [ "$$NETWORK_STACK" = "ipv4" ]; then \
-			sed -i 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		elif [ "$$NETWORK_STACK" = "ipv6" ]; then \
-			sed -i '/^# Single Stack IPv6:/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi '/^# Single Stack IPv6:/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			if [ "$$IPV6_MODE" = "disconnected" ]; then \
-				sed -i 's/^setup_bastion_registry: false$$/setup_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-				sed -i 's/^use_bastion_registry: false$$/use_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+				sedi 's/^setup_bastion_registry: false$$/setup_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+				sedi 's/^use_bastion_registry: false$$/use_bastion_registry: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 				echo 'sync_operator_index: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
 				echo 'sync_ocp_release: true' >> $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			else \
-				sed -i 's/^setup_bastion_proxy: false$$/setup_bastion_proxy: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+				sedi 's/^setup_bastion_proxy: false$$/setup_bastion_proxy: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 			fi; \
 		elif [ "$$NETWORK_STACK" = "dual" ]; then \
-			sed -i '/^# Dual Stack/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
-			sed -i 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi '/^# Dual Stack/,/^$$/{/^# [a-z]/s/^# //; /^# - /s/^# //;}' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi 's/^setup_bastion_registry: true$$/setup_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi 's/^use_bastion_registry: true$$/use_bastion_registry: false/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		fi; \
 		if [ "$$RESET_IDRAC" = "true" ]; then \
-			sed -i 's/^# reset_idrac: false$$/reset_idrac: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
+			sedi 's/^# reset_idrac: false$$/reset_idrac: true/' $(JETLAG_ROOT)/ansible/vars/all.yml; \
 		fi; \
 		INVENTORY_FILE="$(SCRIPT_DIR)/vars/$${CLOUD_NAME}_ocpinventory.json"; \
 		if [ -f "$$INVENTORY_FILE" ]; then \
@@ -225,7 +232,9 @@ inventory-run:
 			echo -e "$(RED)Error: Pull secret not found at $$PULL_SECRET_PATH$(NC)"; \
 			exit 1; \
 		fi; \
-		if [ "$$(realpath "$$PULL_SECRET_PATH")" != "$$(realpath $(JETLAG_ROOT)/pull-secret.txt)" ]; then \
+		SRC_PATH=$$(cd "$$(dirname "$$PULL_SECRET_PATH")" && echo "$$(pwd)/$$(basename "$$PULL_SECRET_PATH")"); \
+		DST_PATH=$$(cd "$$(dirname "$(JETLAG_ROOT)/pull-secret.txt")" && echo "$$(pwd)/$$(basename "$(JETLAG_ROOT)/pull-secret.txt")"); \
+		if [ "$$SRC_PATH" != "$$DST_PATH" ]; then \
 			echo "Copying pull secret to jetlag root..."; \
 			cp "$$PULL_SECRET_PATH" $(JETLAG_ROOT)/pull-secret.txt; \
 		else \
@@ -242,9 +251,14 @@ inventory-run:
 			echo "Bastion host: $$BASTION_HOST"; \
 			ssh-keygen -R "$$BASTION_HOST" 2>/dev/null || true; \
 			ssh-keyscan "$$BASTION_HOST" >> ~/.ssh/known_hosts 2>/dev/null; \
-			sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@$$BASTION_HOST 2>/dev/null && \
-			echo -e "$(GREEN)SSH key copied to bastion successfully.$(NC)" || \
-			echo -e "$(YELLOW)Warning: Could not copy SSH key. You may need to do this manually.$(NC)"; \
+			if command -v sshpass &>/dev/null; then \
+				sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@$$BASTION_HOST 2>/dev/null && \
+				echo -e "$(GREEN)SSH key copied to bastion successfully.$(NC)" || \
+				echo -e "$(YELLOW)Warning: Could not copy SSH key. You may need to do this manually.$(NC)"; \
+			else \
+				echo -e "$(YELLOW)Warning: sshpass not found. Please copy your SSH key manually:$(NC)"; \
+				echo "  ssh-copy-id root@$$BASTION_HOST"; \
+			fi; \
 		else \
 			echo -e "$(YELLOW)Warning: Bastion host or password not available. SSH key not copied.$(NC)"; \
 		fi
