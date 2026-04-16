@@ -397,8 +397,8 @@ display_full_summary() {
 main() {
     case "$MODE" in
         quads)
-            check_existing_state
             load_existing_config
+            check_existing_state
             collect_quads_config
             display_quads_summary
             save_config
@@ -410,8 +410,8 @@ main() {
             save_config
             ;;
         all|*)
-            check_existing_state
             load_existing_config
+            check_existing_state
             collect_quads_config
             collect_jetlag_config
             display_full_summary
