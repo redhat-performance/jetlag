@@ -126,18 +126,18 @@ create-assignment-run:
 			-e "workload_name='$$WORKLOAD_NAME'" \
 			-e "num_hosts=$$NUM_HOSTS" \
 			-e "wipe=$$WIPE_VALUE" | tee /tmp/quads_output.log; \
-		CLOUD_NAME=$$(grep -oP '"cloud_name":\s*"\K[^"]+' /tmp/quads_output.log | head -1 || true); \
+		CLOUD_NAME=$$(sed -n 's/.*"cloud_name":[[:space:]]*"\([^"]*\)".*/\1/p' /tmp/quads_output.log | head -1 || true); \
 		if [ -z "$$CLOUD_NAME" ]; then \
-			CLOUD_NAME=$$(grep -oP '"cloud":\s*\{"name":\s*"\K[^"]+' /tmp/quads_output.log | head -1 || true); \
+			CLOUD_NAME=$$(sed -n 's/.*"cloud":[[:space:]]*{"name":[[:space:]]*"\([^"]*\)".*/\1/p' /tmp/quads_output.log | head -1 || true); \
 		fi; \
 		if [ -z "$$CLOUD_NAME" ]; then \
 			echo -e "$(RED)Error: Could not extract cloud_name from QUADS output$(NC)"; \
 			echo "Please check the output above and manually set CLOUD_NAME in $(STATE_FILE)"; \
 			exit 1; \
 		fi; \
-		ASSIGNMENT_ID=$$(grep -oP '"assignment_id":\s*"\K[^"]+' /tmp/quads_output.log | head -1 || true); \
+		ASSIGNMENT_ID=$$(sed -n 's/.*"assignment_id":[[:space:]]*"\([^"]*\)".*/\1/p' /tmp/quads_output.log | head -1 || true); \
 		if [ -z "$$ASSIGNMENT_ID" ]; then \
-			ASSIGNMENT_ID=$$(grep -oP '"assignment_id":\s*\K[0-9]+' /tmp/quads_output.log | head -1 || true); \
+			ASSIGNMENT_ID=$$(sed -n 's/.*"assignment_id":[[:space:]]*\([0-9]*\).*/\1/p' /tmp/quads_output.log | head -1 || true); \
 		fi; \
 		echo "CLOUD_NAME=$$CLOUD_NAME" > $(STATE_FILE); \
 		echo "ASSIGNMENT_ID=$$ASSIGNMENT_ID" >> $(STATE_FILE); \
