@@ -154,7 +154,7 @@ collect_quads_config() {
 
     print_header "Deployment Options"
 
-    prompt_with_options "Wipe disks on hosts" "yes, no" "${WIPE_DISKS:-no}" WIPE_DISKS
+    prompt_with_options "Wipe disks on hosts" "yes, no" "${WIPE_DISKS:-yes}" WIPE_DISKS
 
     print_header "Workload Description"
 
