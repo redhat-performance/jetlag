@@ -152,7 +152,7 @@ create-assignment-run:
 			echo "Waiting for assignment validation..."; \
 			QUADS_HOST="$$QUADS_API_SERVER"; \
 			while true; do \
-				STATUS=$$(curl -s "https://$$QUADS_HOST/api/v3/assignments/$$ASSIGNMENT_ID" | jq -r '.validated | tostring'); \
+				STATUS=$$(curl -sk "https://$$QUADS_HOST/api/v3/assignments/$$ASSIGNMENT_ID" | jq -r '.validated | tostring'); \
 				if [ "$$STATUS" = "true" ]; then \
 					echo -e "$(GREEN)Assignment validated and ready!$(NC)"; \
 					break; \
@@ -240,9 +240,9 @@ inventory-run:
 		else \
 			echo "Pull secret already in jetlag root."; \
 		fi; \
-		echo "Running jetlag create-inventory..."; \
+		echo "Running jetlag create-inventory..." && \
 		cd $(JETLAG_ROOT) && \
-		$(ACTIVATE_VENV) && ansible-playbook ansible/create-inventory.yml; \
+		$(ACTIVATE_VENV) && ansible-playbook ansible/create-inventory.yml && \
 		echo -e "$(GREEN)Inventory generated: $(JETLAG_ROOT)/ansible/inventory/$$CLOUD_NAME.local$(NC)"; \
 		echo ""; \
 		echo "Copying SSH key to bastion host..."; \
@@ -252,15 +252,24 @@ inventory-run:
 			ssh-keygen -R "$$BASTION_HOST" 2>/dev/null || true; \
 			ssh-keyscan "$$BASTION_HOST" >> ~/.ssh/known_hosts 2>/dev/null; \
 			if command -v sshpass &>/dev/null; then \
-				sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@$$BASTION_HOST 2>/dev/null && \
-				echo -e "$(GREEN)SSH key copied to bastion successfully.$(NC)" || \
-				echo -e "$(YELLOW)Warning: Could not copy SSH key. You may need to do this manually.$(NC)"; \
+				if sshpass -p "$$BASTION_ROOT_PASSWORD" ssh-copy-id -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@$$BASTION_HOST 2>/dev/null; then \
+					echo -e "$(GREEN)SSH key copied to bastion successfully.$(NC)"; \
+				else \
+					echo -e "$(RED)Error: Could not copy SSH key to bastion.$(NC)"; \
+					echo -e "$(RED)Please run the following command manually, then resume deployment:$(NC)"; \
+					echo "  ssh-copy-id root@$$BASTION_HOST"; \
+					echo "  make inventory-run bastion-run cluster-run"; \
+					exit 1; \
+				fi; \
 			else \
-				echo -e "$(YELLOW)Warning: sshpass not found. Please copy your SSH key manually:$(NC)"; \
+				echo -e "$(RED)Error: sshpass not found. Please copy your SSH key manually, then resume deployment:$(NC)"; \
 				echo "  ssh-copy-id root@$$BASTION_HOST"; \
+				echo "  make inventory-run bastion-run cluster-run"; \
+				exit 1; \
 			fi; \
 		else \
-			echo -e "$(YELLOW)Warning: Bastion host or password not available. SSH key not copied.$(NC)"; \
+			echo -e "$(RED)Error: Bastion host or password not available. SSH key not copied.$(NC)"; \
+			exit 1; \
 		fi
 
 #------------------------------------------------------------------------------
@@ -278,9 +287,9 @@ bastion-run:
 	@echo -e "$(BLUE)=============================================$(NC)"
 	@source $(CONFIG_FILE) && \
 	source $(STATE_FILE) && \
-	echo "Running jetlag setup-bastion..."; \
+	echo "Running jetlag setup-bastion..." && \
 	cd $(JETLAG_ROOT) && \
-	$(ACTIVATE_VENV) && ansible-playbook -i ansible/inventory/$$CLOUD_NAME.local ansible/setup-bastion.yml; \
+	$(ACTIVATE_VENV) && ansible-playbook -i ansible/inventory/$$CLOUD_NAME.local ansible/setup-bastion.yml && \
 	echo -e "$(GREEN)Bastion setup complete.$(NC)"
 
 #------------------------------------------------------------------------------
@@ -298,9 +307,9 @@ cluster-run:
 	@echo -e "$(BLUE)=============================================$(NC)"
 	@source $(CONFIG_FILE) && \
 	source $(STATE_FILE) && \
-	echo "Running jetlag $$DEPLOY_PLAYBOOK..."; \
+	echo "Running jetlag $$DEPLOY_PLAYBOOK..." && \
 	cd $(JETLAG_ROOT) && \
-	$(ACTIVATE_VENV) && ansible-playbook -i ansible/inventory/$$CLOUD_NAME.local ansible/$$DEPLOY_PLAYBOOK; \
+	$(ACTIVATE_VENV) && ansible-playbook -i ansible/inventory/$$CLOUD_NAME.local ansible/$$DEPLOY_PLAYBOOK && \
 	echo -e "$(GREEN)Cluster deployment complete!$(NC)"; \
 	echo ""; \
 	BASTION_HOST=$$(grep -v '^#' $(JETLAG_ROOT)/ansible/inventory/$$CLOUD_NAME.local | grep -A1 '^\[bastion\]' | tail -1 | awk '{print $$1}'); \
@@ -358,7 +367,7 @@ terminate-assignment:
 	fi; \
 	echo "Logging in to QUADS..."; \
 	QUADS_EMAIL="$$QUADS_USERNAME@$$QUADS_USER_DOMAIN"; \
-	TOKEN=$$(curl -s -X POST "https://$$QUADS_API_SERVER/api/v3/login/" \
+	TOKEN=$$(curl -sk -X POST "https://$$QUADS_API_SERVER/api/v3/login/" \
 		-u "$$QUADS_EMAIL:$$QUADS_PASSWORD" | jq -r '.auth_token // empty'); \
 	if [ -z "$$TOKEN" ]; then \
 		echo -e "$(RED)Error: Failed to authenticate with QUADS.$(NC)"; \

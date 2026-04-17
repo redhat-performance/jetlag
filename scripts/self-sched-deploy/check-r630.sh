@@ -51,14 +51,14 @@ MAX_RETRIES=90
 RETRY_INTERVAL=10
 
 # Get cloud_id
-CLOUD_ID=$(curl -s "$QUADS_API/clouds?name=$CLOUD_NAME" | jq -r '.[0].id')
+CLOUD_ID=$(curl -sk "$QUADS_API/clouds?name=$CLOUD_NAME" | jq -r '.[0].id')
 if [[ -z "$CLOUD_ID" || "$CLOUD_ID" == "null" ]]; then
     echo "Error: Could not find cloud_id for $CLOUD_NAME" >&2
     exit 2
 fi
 
 # Get pm_password from active assignment ticket
-TICKET=$(curl -s "$QUADS_API/assignments?active=true&cloud_id=$CLOUD_ID" | jq -r '.[0].ticket')
+TICKET=$(curl -sk "$QUADS_API/assignments?active=true&cloud_id=$CLOUD_ID" | jq -r '.[0].ticket')
 if [[ -z "$TICKET" || "$TICKET" == "null" ]]; then
     echo "Error: Could not find active assignment ticket for $CLOUD_NAME" >&2
     exit 2
@@ -67,7 +67,7 @@ PM_PASSWORD="rdu2@${TICKET}"
 
 # Get host list, retrying until hosts are assigned
 for ((i=1; i<=MAX_RETRIES; i++)); do
-    HOST_LIST=$(curl -s "$QUADS_API/hosts?cloud_id=$CLOUD_ID" | jq -r '.[].name')
+    HOST_LIST=$(curl -sk "$QUADS_API/hosts?cloud_id=$CLOUD_ID" | jq -r '.[].name')
     if [[ -n "$HOST_LIST" ]]; then
         break
     fi
@@ -83,7 +83,7 @@ done
 NODES="[]"
 for HOST in $HOST_LIST; do
     echo "Fetching MAC addresses for $HOST..." >&2
-    MACS=$(curl -s "$QUADS_API/hosts/$HOST" | jq '[.interfaces | sort_by(.name) | .[].mac_address]')
+    MACS=$(curl -sk "$QUADS_API/hosts/$HOST" | jq '[.interfaces | sort_by(.name) | .[].mac_address]')
     NODE=$(jq -n \
         --arg name "$HOST" \
         --arg pm_addr "mgmt-$HOST" \
