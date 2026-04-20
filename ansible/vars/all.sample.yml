@@ -153,6 +153,11 @@ bond_vlan_id: 10
 #
 # service_network_cidr:
 # - fd02::/112
+#
+# Note: In IPv6-only configurations, IPv6 addresses are stored in the 'ip' field
+# in the generated inventory (not 'ipv6'). The 'ipv6' field is only used for
+# dual-stack configurations. CoreDNS templates automatically detect whether the
+# 'ip' field contains an IPv4 or IPv6 address and generate appropriate DNS records.
 
 # Dual Stack (IPv4 + IPv6):
 # All network variables must be lists with two elements [IPv4, IPv6].
