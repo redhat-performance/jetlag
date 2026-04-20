@@ -71,7 +71,11 @@ template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
 {%   else %}
 {%     for sno in groups['sno'] %}
 # *.apps for {{ sno }} SNO
+{%       if hostvars[sno].ip | ansible.utils.ipv4 %}
 template IN A {{ sno }}.{{ base_dns_name }} {
+{%       else %}
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+{%       endif %}
     match .*.apps.{{ sno }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ip }}"
     fallthrough
@@ -88,7 +92,11 @@ template IN AAAA {{ sno }}.{{ base_dns_name }} {
 
 # *.apps for VMs
 {%   for vm in groups['hv_vm'] %}
+{%     if hostvars[vm].ip | ansible.utils.ipv4 %}
 template IN A {{ vm }}.{{ base_dns_name }} {
+{%     else %}
+template IN AAAA {{ vm }}.{{ base_dns_name }} {
+{%     endif %}
     match .*.apps.{{ vm }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
     fallthrough
