@@ -37,7 +37,7 @@
       }}
     _badfish_badfish_cmd: >-
       {{
-        ['-H', badfish_host, '-u', badfish_user, '-p', badfish_password] +
+        ['-H', badfish_host, '-u', badfish_user, '-p', badfish_password, '--insecure'] +
         (badfish_args | default([]))
       }}
     _badfish_full_cmd: "{{ _badfish_podman_cmd + ['quay.io/quads/badfish'] + _badfish_badfish_cmd }}"
