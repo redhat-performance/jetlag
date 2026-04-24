@@ -75,6 +75,12 @@ ansible-playbook ansible/hv-vm-replace.yml
 
 # Sync OpenShift releases
 ansible-playbook ansible/sync-ocp-release.yml
+
+# Deploy MinIO object storage on the bastion (set setup_bastion_minio: true in all.yml first)
+ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-minio.yml
+
+# Clean all MinIO data between cluster deployments (wipes data, recreates empty buckets)
+ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-minio-clean.yml
 ```
 
 ## Project Architecture
@@ -179,6 +185,12 @@ When encountering issues with Jetlag deployments, consult these comprehensive do
   - Bastion configuration and recovery procedures
   - BMC/iDRAC reset procedures
   - Virtual media and discovery issues
+
+- **[docs/bastion-minio.md](docs/bastion-minio.md)**: MinIO object storage setup and usage covering:
+  - Variables and configuration options
+  - Deploying MinIO via `setup-bastion.yml` or standalone `bastion-minio.yml`
+  - Accessing the S3 API (port 9000) and web console (port 9001)
+  - Cleaning MinIO data between cluster deployments with `bastion-minio-clean.yml`
 
 - **[docs/tips-and-vars.md](docs/tips-and-vars.md)**: Advanced configuration guidance including:
   - Network interface configuration and overrides

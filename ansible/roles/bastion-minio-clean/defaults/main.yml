@@ -1,0 +1,4 @@
+---
+# bastion-minio-clean default vars
+
+minio_store_path: /opt/minio
