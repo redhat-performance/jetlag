@@ -7,8 +7,8 @@ interfaces:
     address:
     - ip: {{ hostvars[item]['ip'] }}
       prefix-length: {{ hostvars[item]['network_prefix'] }}
-{%   if cluster_type == "sno" and public_vlan and groups['sno'] | default([]) | length == 1  %}
-    - ip: {{ controlplane_network[0] | ansible.utils.nthhost(4) }}
+{%   if cluster_type == "sno" and public_vlan and groups['sno'] | default([]) | length == 1 and sno_pub_vlan_ingress_ip_offset | int > 0 %}
+    - ip: {{ controlplane_network[0] | ansible.utils.nthhost(sno_pub_vlan_ingress_ip_offset) }}
       prefix-length: {{ hostvars[item]['network_prefix'] }}
 {%   endif %}
     auto-dns: false
@@ -24,8 +24,8 @@ interfaces:
     - ip: {{ hostvars[item]['ip'] }}
       prefix-length: {{ hostvars[item]['network_prefix'] }}
 {%   endif %}
-{%   if cluster_type == "sno" and public_vlan and groups['sno'] | default([]) | length == 1 and controlplane_network | length > 1 %}
-    - ip: {{ controlplane_network[1] | ansible.utils.nthhost(4) }}
+{%   if cluster_type == "sno" and public_vlan and groups['sno'] | default([]) | length == 1 and controlplane_network | length > 1 and sno_pub_vlan_ingress_ip_offset | int > 0 %}
+    - ip: {{ controlplane_network[1] | ansible.utils.nthhost(sno_pub_vlan_ingress_ip_offset) }}
       prefix-length: {{ hostvars[item]['ipv6_prefix'] }}
 {%   endif %}
     auto-dns: false
