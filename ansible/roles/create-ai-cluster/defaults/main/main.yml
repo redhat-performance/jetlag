@@ -28,3 +28,6 @@ reserved_cpus: 0-1,32-33
 
 # SNO Only
 du_profile: false
+
+# SNO public VLAN ingress IP offset (set to 0 to disable secondary IP)
+sno_pub_vlan_ingress_ip_offset: 4
