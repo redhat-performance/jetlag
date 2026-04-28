@@ -1,0 +1,23 @@
+---
+# bastion-minio-clean tasks
+
+- name: Stop minio pod
+  containers.podman.podman_pod:
+    name: minio
+    state: stopped
+
+- name: Remove minio data directory
+  ansible.builtin.file:
+    path: "{{ minio_store_path }}/data"
+    state: absent
+
+- name: Recreate minio data directory
+  ansible.builtin.file:
+    path: "{{ minio_store_path }}/data"
+    state: directory
+
+- name: Start minio pod
+  containers.podman.podman_pod:
+    name: minio
+    network: host
+    state: started

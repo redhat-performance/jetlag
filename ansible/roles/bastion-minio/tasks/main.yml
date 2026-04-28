@@ -1,0 +1,84 @@
+---
+# bastion-minio tasks
+
+- name: Create directory for bastion minio storage
+  ansible.builtin.file:
+    path: "{{ minio_store_path }}"
+    state: directory
+
+- name: Set minio data disk partition path
+  ansible.builtin.set_fact:
+    _minio_disk_partition: "{{ minio_data_disk }}1"
+  when: minio_data_disk != ""
+
+- name: Set minio data disk partition path for nvme
+  ansible.builtin.set_fact:
+    _minio_disk_partition: "{{ minio_data_disk }}p1"
+  when:
+  - minio_data_disk != ""
+  - '"nvme" in minio_data_disk'
+  - '"by-path" not in minio_data_disk'
+
+- name: Set minio data disk partition path for by-path
+  ansible.builtin.set_fact:
+    _minio_disk_partition: "{{ minio_data_disk }}-part1"
+  when:
+  - minio_data_disk != ""
+  - '"by-path" in minio_data_disk'
+
+- name: Create minio data disk primary partition
+  community.general.parted:
+    device: "{{ minio_data_disk }}"
+    number: 1
+    state: present
+    label: gpt
+  when: minio_data_disk != ""
+
+- name: Format minio data disk as XFS
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ _minio_disk_partition }}"
+  when: minio_data_disk != ""
+
+- name: Mount minio data disk
+  ansible.posix.mount:
+    fstype: xfs
+    src: "{{ _minio_disk_partition }}"
+    path: "{{ minio_store_path }}"
+    state: mounted
+  when: minio_data_disk != ""
+
+- name: Create minio data directory
+  ansible.builtin.file:
+    path: "{{ minio_store_path }}/data"
+    state: directory
+
+- name: Create minio pod
+  containers.podman.podman_pod:
+    name: minio
+    network: host
+    state: started
+
+# On a reboot "started" state does not start an exited pod (why..idk)
+- name: Ensure minio pod is up
+  containers.podman.podman_pod:
+    name: minio
+    network: host
+    state: restarted
+
+- name: Create minio container in minio pod
+  containers.podman.podman_container:
+    pod: minio
+    network: host
+    name: minio
+    image: "{{ minio_image }}:{{ minio_image_tag }}"
+    entrypoint: /bin/sh
+    command:
+    - -c
+    - "mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && for i in $(seq -f \"%05g\" 1 4000); do mkdir -p \"/storage/vm$i-ibu\"; done && minio server /storage --console-address :{{ minio_console_port }}"
+    env:
+      MINIO_ACCESS_KEY: "{{ minio_access_key }}"
+      MINIO_SECRET_KEY: "{{ minio_secret_key }}"
+    volume:
+    - "{{ minio_store_path }}/data:/storage:Z"
+    state: started

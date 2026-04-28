@@ -1,0 +1,15 @@
+---
+# Cleans all data stored in MinIO on the bastion
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-minio-clean.yml
+#
+
+- name: Clean MinIO data on bastion
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/all.yml
+  roles:
+  - bastion-minio-clean

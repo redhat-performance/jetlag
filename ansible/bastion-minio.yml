@@ -1,0 +1,15 @@
+---
+# Setup MinIO on the bastion machine
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-minio.yml
+#
+
+- name: Setup MinIO on bastion
+  hosts: bastion
+  vars_files:
+  - vars/lab.yml
+  - vars/all.yml
+  roles:
+  - bastion-minio
