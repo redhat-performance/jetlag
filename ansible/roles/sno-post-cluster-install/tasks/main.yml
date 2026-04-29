@@ -38,9 +38,10 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc delete ns assisted-installer
   when: remove_assisted_installer_namespace
 
-- name: Apply a label to the SNO node
+- name: Apply post-install labels to SNO node
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc label no --all --overwrite jetlag=true
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc label no --all --overwrite {{ item }}
+  loop: "{{ post_install_node_labels }}"
 
 - name: Place templated configuration items
   template:
