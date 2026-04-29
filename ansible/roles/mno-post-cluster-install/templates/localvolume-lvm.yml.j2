@@ -2,7 +2,7 @@
 apiVersion: "local.storage.openshift.io/v1"
 kind: "LocalVolume"
 metadata:
-  name: "lv-worker-localstorage"
+  name: "localvolume-lvm"
   namespace: "openshift-local-storage"
 spec:
   nodeSelector:
@@ -17,12 +17,18 @@ spec:
     key: "node-role.kubernetes.io/master"
   storageClassDevices:
   - storageClassName: "localstorage-sc"
-    volumeMode: Filesystem
+    volumeMode: {{ localstorage_lvm_volume_mode }}
+{% if localstorage_lvm_volume_mode == "Filesystem" %}
     fsType: xfs
+{% endif %}
     devicePaths:
+{% if controlplane_localstorage_configuration and controlplane_localstorage_lvm_devices | length > 0 %}
 {% for i in range(controlplane_localstorage_lv_count) %}
       - "/dev/vg_ls/lv_cp_tv{{ '%02d' % i }}"
 {% endfor %}
+{% endif %}
+{% if worker_localstorage_configuration and worker_localstorage_lvm_devices | length > 0 %}
 {% for i in range(worker_localstorage_lv_count) %}
       - "/dev/vg_ls/lv_w_tv{{ '%02d' % i }}"
 {% endfor %}
+{% endif %}

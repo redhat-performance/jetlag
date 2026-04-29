@@ -29,16 +29,35 @@
 {% endif %}
 {% endif %}
 {% if controlplane_localstorage_configuration %}
+{% for device in controlplane_localstorage_lvm_devices %}
       {
-        "device": "{{ controlplane_localstorage_device }}",
+        "device": "{{ device }}",
         "wipeTable": true,
         "partitions": [
+{% if controlplane_localstorage_lvm_devices | length > 0 %}
           {
-            "label": "LS",
+            "label": "LS{{ loop.index0 }}",
             "sizeMiB": 0
           }
+{% endif %}
         ]
+{% if not loop.last or controlplane_localstorage_disk_devices %}
+      },
+{% else %}
       }
+{% endif %}
+{% endfor %}
+{% for device in controlplane_localstorage_disk_devices %}
+      {
+        "device": "{{ device }}",
+        "wipeTable": true,
+        "partitions": []
+{% if not loop.last %}
+      },
+{% else %}
+      }
+{% endif %}
+{% endfor %}
 {% endif %}
     ],
     "filesystems": [
@@ -60,7 +79,7 @@
 {% endif %}
     ],
     "files": [
-{% if controlplane_localstorage_configuration %}
+{% if controlplane_localstorage_configuration and controlplane_localstorage_lvm_devices | length > 0 %}
       {
         "contents": {
           "source": "data:text/plain;base64,{{ lookup('template', './controlplane-setup-lvm.sh.j2') | b64encode }}"
@@ -84,13 +103,13 @@
         "name": "var-lib-containers.mount",
         "enabled": true,
         "contents": "[Mount]\nWhat=/dev/disk/by-partlabel/CTNR\nType=xfs\nOptions=defaults\n[Install]\nWantedBy=local-fs.target"
-{% if controlplane_localstorage_configuration %}
+{% if controlplane_localstorage_configuration and controlplane_localstorage_lvm_devices | length > 0 %}
       },
 {% else %}
       }
 {% endif %}
 {% endif %}
-{% if controlplane_localstorage_configuration %}
+{% if controlplane_localstorage_configuration and controlplane_localstorage_lvm_devices | length > 0 %}
       {
         "name": "setup-localstorage.service",
         "enabled": true,

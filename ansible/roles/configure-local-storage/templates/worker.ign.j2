@@ -8,18 +8,38 @@
   },
   "storage": {
     "disks": [
+{% for device in worker_localstorage_lvm_devices %}
       {
-        "device": "{{ worker_localstorage_device }}",
+        "device": "{{ device }}",
         "wipeTable": true,
         "partitions": [
+{% if worker_localstorage_lvm_devices | length > 0 %}
           {
-            "label": "LS",
+            "label": "LS{{ loop.index0 }}",
             "sizeMiB": 0
           }
+{% endif %}
         ]
+{% if not loop.last or worker_localstorage_disk_devices %}
+      },
+{% else %}
       }
+{% endif %}
+{% endfor %}
+{% for device in worker_localstorage_disk_devices %}
+      {
+        "device": "{{ device }}",
+        "wipeTable": true,
+        "partitions": []
+{% if not loop.last %}
+      },
+{% else %}
+      }
+{% endif %}
+{% endfor %}
     ],
     "files": [
+{% if worker_localstorage_lvm_devices | length > 0 %}
       {
         "contents": {
           "source": "data:text/plain;base64,{{ lookup('template', './worker-setup-lvm.sh.j2') | b64encode }}"
@@ -28,15 +48,18 @@
         "overwrite": true,
         "path": "/usr/local/bin/setup-lvm.sh"
       }
+{% endif %}
     ]
   },
   "systemd": {
     "units": [
+{% if worker_localstorage_lvm_devices | length > 0 %}
       {
         "name": "setup-localstorage.service",
         "enabled": true,
         "contents": "[Unit]\nConditionPathExists=!/var/lib/lvm-setup-complete\n\n[Service]\nType=oneshot\nExecStart=/usr/local/bin/setup-lvm.sh\nExecStartPost=/usr/bin/touch /var/lib/lvm-setup-complete\n[Install]\nWantedBy=multi-user.target"
       }
+{% endif %}
     ]
   }
 }
