@@ -59,3 +59,8 @@ minio_pv_storageclass: localstorage2-sc
 # Performance-addon-operator vars_files
 install_performance_addon_operator: false
 ocp_channel: "{{ openshift_version }}"
+
+# Additional labels to apply to worker nodes post-install (list of key=value or key= strings)
+post_install_node_labels:
+  - jetlag=true
+  # - cluster.ocs.openshift.io/openshift-storage=

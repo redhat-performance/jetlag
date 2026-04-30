@@ -36,9 +36,10 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc delete ns assisted-installer
   when: remove_assisted_installer_namespace
 
-- name: Apply a label to the worker node(s)
+- name: Apply post-install labels to worker node(s)
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite -l node-role.kubernetes.io/worker jetlag=true
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite -l node-role.kubernetes.io/worker {{ item }}
+  loop: "{{ post_install_node_labels }}"
 
 - name: Install Performance-Addon-Operator - find channel
   shell: |

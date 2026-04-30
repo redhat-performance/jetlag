@@ -42,3 +42,7 @@ install_performance_addon_operator: false
 hugepages_count: 16
 node: 0
 isolated_cpus: 2-47,50-95
+
+# Additional labels to apply to all nodes post-install (list of key=value or key= strings)
+post_install_node_labels:
+  - jetlag=true
