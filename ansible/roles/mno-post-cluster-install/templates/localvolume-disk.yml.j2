@@ -1,0 +1,31 @@
+---
+apiVersion: "local.storage.openshift.io/v1"
+kind: "LocalVolume"
+metadata:
+  name: "localvolume-disk"
+  namespace: "openshift-local-storage"
+spec:
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: "localstorage"
+        operator: In
+        values:
+        - "true"
+  tolerations:
+  - effect: NoSchedule
+    key: "node-role.kubernetes.io/master"
+  storageClassDevices:
+  - storageClassName: "localstorage-disk-sc"
+    forceWipeDevicesAndDestroyAllData: {{ localstorage_disk_force_wipe }}
+    volumeMode: {{ localstorage_disk_volume_mode }}
+{% if localstorage_disk_volume_mode == "Filesystem" %}
+    fsType: xfs
+{% endif %}
+    devicePaths:
+{% for device in controlplane_localstorage_disk_devices %}
+      - "{{ device }}"
+{% endfor %}
+{% for device in worker_localstorage_disk_devices %}
+      - "{{ device }}"
+{% endfor %}

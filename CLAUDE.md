@@ -186,6 +186,12 @@ When encountering issues with Jetlag deployments, consult these comprehensive do
   - BMC/iDRAC reset procedures
   - Virtual media and discovery issues
 
+- **[docs/local-storage.md](docs/local-storage.md)**: Local Storage Operator (LSO) configuration covering:
+  - Variables for LVM and disk configuration
+  - How Ignition handles disk wiping, partitioning, and LVM setup at boot
+  - LocalVolume resources (`localvolume-lvm`, `localvolume-disk`, `localvolume2`) and their storage classes
+  - Configuration examples for common scenarios
+
 - **[docs/bastion-minio.md](docs/bastion-minio.md)**: MinIO object storage setup and usage covering:
   - Variables and configuration options
   - Deploying MinIO via `setup-bastion.yml` or standalone `bastion-minio.yml`
