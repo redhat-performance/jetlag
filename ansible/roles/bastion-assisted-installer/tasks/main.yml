@@ -26,11 +26,16 @@
   set_fact:
     slurped_ai_ocp_version: "{{ slurped_ai_ocp_version_raw }}"
     slurped_ai_os_images: "{{ slurped_ai_os_images_raw }}"
-    slurped_ai_release_images: "{{ slurped_ai_release_images_raw }}"
+    slurped_ai_release_images: "{{ slurped_ai_release_image_raw }}"
 
 - name: Ensure bastion machine is logged in to inspect image digest
   shell: |
     skopeo login -u {{ registry_user }} -p {{ registry_password }} {{ registry_host }}:{{ registry_port }}
+  when: use_bastion_registry | default(false)
+
+- name: Debug log registry credentials
+  debug:
+    msg: "Registry password is {{ registry_password }}"
   when: use_bastion_registry | default(false)
 
 - name: Determine digest for assisted-installer-controller image
