@@ -16,15 +16,9 @@ DEPLOY_TYPE="Podman"
 STORAGE=filesystem
 DUMMY_IGNITION=false
 
-{% if use_bastion_registry | default(false) %}
-OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version_bastion.content | b64decode }}
-OS_IMAGES={{ slurped_ai_os_images_bastion.content | b64decode }}
-RELEASE_IMAGES={{ slurped_ai_release_images_bastion.content | b64decode }}
-{% else %}
 OPENSHIFT_VERSIONS={{ slurped_ai_ocp_version.content | b64decode }}
 OS_IMAGES={{ slurped_ai_os_images.content | b64decode }}
 RELEASE_IMAGES={{ slurped_ai_release_images.content | b64decode }}
-{% endif %}
 ENABLE_SINGLE_NODE_DNSMASQ=true
 DISK_ENCRYPTION_SUPPORT=true
 PUBLIC_CONTAINER_REGISTRIES=quay.io
