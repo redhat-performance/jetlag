@@ -18,9 +18,7 @@ _**Table of Contents**_
 - [Prerequisites](#prerequisites)
 - [Cluster Deployment Usage](#cluster-deployment-usage)
 - [Quickstart guides](#quickstart-guides)
-- [Tips and Troubleshooting](#tips-and-troubleshooting)
-- [Disconnected API/Console Access](#disconnected-apiconsole-access)
-- [Jetlag Hypervisors](#jetlag-hypervisors)
+- [Additional Documentation](#additional-documentation)
 <!-- /TOC -->
 
 ## Tested Labs/Hardware
@@ -207,20 +205,21 @@ xxxxx-xxxxx-xxxxx-xxxxx
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Scale Lab Bastion Machine](docs/deploy-sno-scalelab.md)
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Performance Lab Bastion Machine](docs/deploy-sno-performancelab.md)
 * [Deploy Single Node OpenShift (SNO) clusters via jetlag on IBMcloud ](docs/deploy-sno-ibmcloud.md)
+* [Deploy a Hybrid MNO cluster (bare metal + virtual workers)](docs/deploy-mno-hybrid.md)
 * [Deploy a VMNO](docs/deploy-vmno.md)
+* [Deploy a "Bring Your Own Lab" MNO cluster](docs/deploy-mno-byol.md)
 * [Scale out MNO](docs/scale-out-mno.md)
 * [Scale out SNO](docs/scale-out-sno.md)
 
-## Tips and Troubleshooting
+## Additional Documentation
 
-See [tips-and-vars.md](docs/tips-and-vars.md) in [docs](docs) directory.
-
-See [troubleshooting.md](docs/troubleshooting.md) in [docs](docs) directory.
-
-## Disconnected API/Console Access
-
-See [disconnected-ipv6-cluster-access.md](docs/disconnected-ipv6-cluster-access.md) in [docs](docs) directory.
-
-## Jetlag Hypervisors
-
-See [hypervisors.md](docs/hypervisors.md) in [docs](docs) directory.
+| Document | Description |
+| -------- | ----------- |
+| [Bastion MinIO](docs/bastion-minio.md) | Deploying S3-compatible object storage on the bastion |
+| [CI](docs/ci.md) | Continuous integration details |
+| [Disconnected API/Console Access](docs/disconnected-ipv6-cluster-access.md) | Accessing disconnected IPv6 clusters |
+| [Hypervisors](docs/hypervisors.md) | Managing hypervisor nodes and VMs |
+| [Local Storage](docs/local-storage.md) | Configuring the Local Storage Operator (LSO) for control-plane and worker nodes |
+| [OpenShift Data Foundation (ODF)](docs/odf.md) | Installing ODF for Ceph-backed block, file, and object storage |
+| [Tips and Vars](docs/tips-and-vars.md) | Advanced configuration, network overrides, and extra variables |
+| [Troubleshooting](docs/troubleshooting.md) | Common deployment issues and solutions |
