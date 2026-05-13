@@ -16,6 +16,10 @@ remove_assisted_installer_namespace: false
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
 gitops_channel: stable
+gitops_catalogsource: redhat-operators
+
+# Local Storage Operator (LSO) catalog source
+lso_catalogsource: redhat-operators
 
 # Minio deployment is an object storage pod for use with ACM
 setup_minio: false
@@ -39,9 +43,19 @@ du_profile: false
 
 # Performance-addon-operator and du profile vars
 install_performance_addon_operator: false
+pao_catalogsource: redhat-operators
 hugepages_count: 16
 node: 0
 isolated_cpus: 2-47,50-95
+
+# Custom CatalogSources to apply post-install
+# Each entry creates a CatalogSource resource in openshift-marketplace
+# custom_catalogsources:
+# - name: my-custom-catalog
+#   image: quay.io/my-org/my-operator-index:v4.21
+#   displayName: My Custom Catalog
+#   publisher: My Org
+custom_catalogsources: []
 
 # Additional labels to apply to all nodes post-install (list of key=value or key= strings)
 post_install_node_labels:

@@ -20,5 +20,9 @@ metadata:
 spec:
   channel: "{{ ocp_channel }}"
   name: performance-addon-operator
-  source: redhat-operators
+{% if use_bastion_registry | default(false) and pao_catalogsource == 'redhat-operators' %}
+  source: {{ generated_operator_index_name_tag }}
+{% else %}
+  source: {{ pao_catalogsource }}
+{% endif %}
   sourceNamespace: openshift-marketplace

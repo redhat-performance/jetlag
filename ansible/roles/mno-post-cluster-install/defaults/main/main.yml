@@ -27,6 +27,7 @@ setup_performance_dashboards: false
 # Deploy ansible-automation-platform operator
 setup_ansible_automation_platform: false
 aap_channel: stable-2.6-cluster-scoped
+aap_catalogsource: redhat-operators
 aap_enable_overrides: false
 # MAX_CONCURRENT_RECONCILES_ANSIBLEJOB_TOWER_ANSIBLE_COM
 aap_override_max_concurrent_ajt: 10
@@ -36,6 +37,10 @@ aap_override_max_concurrent_awt: 10
 # Deploy openshift-gitops-operator
 setup_openshift_gitops: false
 gitops_channel: stable
+gitops_catalogsource: redhat-operators
+
+# Local Storage Operator (LSO) catalog source
+lso_catalogsource: redhat-operators
 
 # Migrate the ingresscontrollers and/or monitoring components to the master nodes
 # Used during nodedensity testing to ensure these things are more available
@@ -59,6 +64,16 @@ minio_pv_storageclass: localstorage2-sc
 # Performance-addon-operator vars_files
 install_performance_addon_operator: false
 ocp_channel: "{{ openshift_version }}"
+pao_catalogsource: redhat-operators
+
+# Custom CatalogSources to apply post-install
+# Each entry creates a CatalogSource resource in openshift-marketplace
+# custom_catalogsources:
+# - name: my-custom-catalog
+#   image: quay.io/my-org/my-operator-index:v4.21
+#   displayName: My Custom Catalog
+#   publisher: My Org
+custom_catalogsources: []
 
 # Additional labels to apply to worker nodes post-install (list of key=value or key= strings)
 post_install_node_labels:

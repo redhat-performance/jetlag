@@ -8,6 +8,7 @@
   loop:
     - "{{ bastion_cluster_config_dir }}"
     - "{{ bastion_cluster_config_dir }}/aap"
+    - "{{ bastion_cluster_config_dir }}/catalogsources"
     - "{{ bastion_cluster_config_dir }}/gitops"
     - "{{ bastion_cluster_config_dir }}/localstorage"
     - "{{ bastion_cluster_config_dir }}/minio"
@@ -78,6 +79,8 @@
       dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
     - src: performance-addon-operator.yml.j2
       dest: "{{ bastion_cluster_config_dir }}/performance-addon-operator/performance-addon-operator.yml"
+    - src: catalogsource.yml.j2
+      dest: "{{ bastion_cluster_config_dir }}/catalogsources/catalogsource.yml"
 
 - name: Clone performance-dashboards
   git:
@@ -134,6 +137,11 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_operator_index_name_tag }}.yaml
   when: use_bastion_registry | default(false)
+
+- name: Apply custom CatalogSources
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/catalogsources/catalogsource.yml
+  when: custom_catalogsources | length > 0
 
 - name: Install Ansible-Automation-Platform-operator
   shell: |
