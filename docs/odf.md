@@ -23,7 +23,7 @@ Minimum requirements:
 - **Cluster type**: MNO only (ODF is not supported on SNO deployments in Jetlag)
 - **Nodes**: At least 3 nodes (control-plane or worker) with available block devices
 - **Block devices**: Each node must have at least one unused disk configured via `controlplane_localstorage_disk_devices` or `worker_localstorage_disk_devices`
-- **LSO**: `controlplane_localstorage_configuration: true` (or `worker_localstorage_configuration: true`) with disk devices listed
+- **LSO**: `setup_lso: true` with disk devices listed
 - **Node labels**: The label `cluster.ocs.openshift.io/openshift-storage=` must be applied to the nodes that will host ODF. Set this via `post_install_node_labels`
 
 ## Variables
@@ -57,7 +57,7 @@ post_install_node_labels:
 - cluster.ocs.openshift.io/openshift-storage=
 
 # --- Local Storage (prerequisite for ODF) ---
-controlplane_localstorage_configuration: true
+setup_lso: true
 controlplane_localstorage_disk_devices:
 - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
 - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:3:0

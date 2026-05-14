@@ -132,8 +132,8 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops/openshift-gitops-operator.yml
   when: setup_openshift_gitops
 
-- name: Setup nodes localstorage
-  when: controlplane_localstorage_configuration
+- name: Setup Local Storage Operator (LSO)
+  when: setup_lso | bool
   block:
   - name: Install local-storage operator
     shell:
@@ -170,7 +170,7 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio/minio.yml
 
 - name: Apply OpenShift-Monitoring configuration options
-  when: apply_cluster_monitoring_config and controlplane_localstorage_configuration
+  when: (apply_cluster_monitoring_config | bool) and (setup_lso | bool)
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring/cluster-monitoring-config.yml
 

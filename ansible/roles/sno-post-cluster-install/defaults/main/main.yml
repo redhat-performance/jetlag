@@ -26,11 +26,14 @@ setup_minio: false
 minio_image_tag: RELEASE.2025-09-07T16-13-09Z
 minio_pv_storageclass: localstorage2-sc
 
+# Install Local Storage Operator (LSO) and create LocalVolume resources
+setup_lso: false
+
 # setup metal3
 sno_metal3: false
 
-# Apply the cluster-monitoring-config that uses the localstorage class name created
-# by controlplane_localstorage_configuration
+# Apply the cluster-monitoring-config that uses the localstorage class name
+# created by LSO (requires setup_lso: true)
 apply_cluster_monitoring_config: false
 
 # Prometheus storage settings
