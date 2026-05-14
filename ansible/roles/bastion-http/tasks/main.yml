@@ -1,6 +1,13 @@
 ---
 # bastion-http tasks
 
+- name: Ensure http store path is defined
+  ansible.builtin.assert:
+    that:
+      - http_store_path is defined
+      - http_store_path | length > 0
+    fail_msg: "http_store_path must be defined and non-empty"
+
 - name: Create directories for bastion http server
   file:
     path: "{{ item }}"
