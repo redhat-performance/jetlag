@@ -217,6 +217,7 @@ xxxxx-xxxxx-xxxxx-xxxxx
 | -------- | ----------- |
 | [Bastion MinIO](docs/bastion-minio.md) | Deploying S3-compatible object storage on the bastion |
 | [CI](docs/ci.md) | Continuous integration details |
+| [Custom CatalogSources](docs/custom-catalogsources.md) | Custom operator catalogs and per-operator CatalogSource overrides |
 | [Disconnected API/Console Access](docs/disconnected-ipv6-cluster-access.md) | Accessing disconnected IPv6 clusters |
 | [Hypervisors](docs/hypervisors.md) | Managing hypervisor nodes and VMs |
 | [Local Storage](docs/local-storage.md) | Configuring the Local Storage Operator (LSO) for control-plane and worker nodes |

@@ -6,6 +6,7 @@ setup_odf: false
 
 # ODF operator subscription channel
 odf_channel: stable-4.21
+odf_catalogsource: redhat-operators
 
 # StorageCluster configuration
 

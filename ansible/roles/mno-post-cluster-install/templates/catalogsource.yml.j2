@@ -1,0 +1,13 @@
+{% for cs in custom_catalogsources %}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: {{ cs.name }}
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: {{ cs.image }}
+  displayName: {{ cs.displayName | default(cs.name) }}
+  publisher: {{ cs.publisher | default('Custom') }}
+{% endfor %}

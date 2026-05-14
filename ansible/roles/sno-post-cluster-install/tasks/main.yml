@@ -8,6 +8,7 @@
   loop:
   - "{{ bastion_cluster_config_dir }}"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/catalogsources"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3"
@@ -64,6 +65,8 @@
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml"
   - src: openshift-marketplace-ns.yaml
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-marketplace-ns.yaml"
+  - src: catalogsource.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/catalogsources/catalogsource.yml"
 
 - name: Add kube-burner sa
   shell: |
@@ -112,6 +115,11 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_operator_index_name_tag }}.yaml
   when: use_bastion_registry | default(false)
+
+- name: Apply custom CatalogSources
+  shell: |
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/catalogsources/catalogsource.yml
+  when: custom_catalogsources | length > 0
 
 # Part of DU Profile (Not completely in du_profile_tasks.yml)
 - name: Annotate catalogSource.yaml to pin opm to reserved cores for DUs

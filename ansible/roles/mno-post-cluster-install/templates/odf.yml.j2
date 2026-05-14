@@ -23,10 +23,10 @@ metadata:
 spec:
   channel: "{{ odf_channel }}"
   name: odf-operator
-{% if use_bastion_registry | default(false) %}
+{% if use_bastion_registry | default(false) and odf_catalogsource == 'redhat-operators' %}
   source: {{ generated_operator_index_name_tag }}
 {% else %}
-  source: redhat-operators
+  source: {{ odf_catalogsource }}
 {% endif %}
   sourceNamespace: openshift-marketplace
   installPlanApproval: Automatic
