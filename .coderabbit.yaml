@@ -1,0 +1,73 @@
+language: en-US
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "ansible/roles/**"
+      instructions: >
+        This is an Ansible role. Review with these Ansible-specific checks:
+
+        - Idempotency: Tasks should be idempotent (can be run multiple times safely).
+
+        - Module Selection: Use appropriate Ansible modules; avoid shell/command when native modules exist.
+
+        - Variable Naming: Follow consistent naming conventions, proper scoping (group_vars, host_vars, role defaults).
+
+        - Task Naming: All tasks must have clear, descriptive names.
+
+        - YAML Formatting: Proper YAML syntax, consistent indentation, use of multi-line strings where appropriate.
+
+        - Handlers: Proper use of handlers for service restarts and notify/listen patterns.
+
+        - Jinja2 Templates: Correct usage of filters, tests, and variable references.
+
+        - Error Handling: Use of failed_when, changed_when, ignore_errors appropriately.
+
+        - Tags: Meaningful tags for task organization and selective execution.
+
+        - Secrets Management: No plain-text passwords, proper use of ansible-vault if applicable.
+
+        - Conditionals: Proper use of when clauses, check for undefined variables.
+
+        - Loops: Efficient use of loop, with_items, etc.
+
+        - Role Structure: Follows standard role directory structure (tasks, defaults, vars, templates, handlers, meta).
+
+        - Deprecations: No use of deprecated Ansible features or modules.
+
+        - Performance: Consideration of serial, async, poll for long-running tasks.
+
+    - path: "ansible/vars/**"
+      instructions: >
+        These are Ansible variable files. Check for:
+
+        - No sensitive data exposure (passwords, tokens, keys).
+
+        - Proper variable naming conventions consistent with the project.
+
+        - Consistency with corresponding sample files (e.g., all.sample.yml, ibmcloud.sample.yml).
+
+        - Variables are properly documented with comments where the purpose is non-obvious.
+
+    - path: "ansible/*.yml"
+      instructions: >
+        These are Ansible playbooks. Check for:
+
+        - Proper play structure and task ordering.
+
+        - Correct role inclusions and variable passing.
+
+        - Appropriate use of tags for selective execution.
+
+        - Idempotency of all tasks.
+
+    - path: "docs/**"
+      instructions: >
+        Documentation files. Check for:
+
+        - Accuracy relative to the code changes in this PR.
+
+        - Clear examples and configuration instructions.
+
+        - Consistent formatting with existing documentation.
