@@ -1,6 +1,6 @@
 # Local Storage
 
-Jetlag can configure the [OpenShift Local Storage Operator (LSO)](https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent_storage_local/persistent-storage-local.html) on control-plane and worker nodes during cluster deployment. Disk preparation (wiping, partitioning, LVM setup) is handled via Ignition at node boot time. LSO is then installed and `LocalVolume` resources are created post-install.
+Jetlag can prepare disks and optionally install the [OpenShift Local Storage Operator (LSO)](https://docs.openshift.com/container-platform/latest/storage/persistent_storage/persistent_storage_local/persistent-storage-local.html) on control-plane and worker nodes during cluster deployment. Disk preparation (wiping, partitioning, LVM setup) is triggered by populating device lists and handled via Ignition at node boot time. LSO installation is controlled independently by `setup_lso` and creates `LocalVolume` resources post-install.
 
 _**Table of Contents**_
 
@@ -20,27 +20,33 @@ _**Table of Contents**_
 
 ## Variables
 
-All variables are defined in `ansible/roles/configure-local-storage/defaults/main.yml`. Override them in the `Extra vars` section of `ansible/vars/all.yml`.
+Disk preparation variables are defined in `ansible/roles/configure-local-storage/defaults/main.yml`. LSO and LocalVolume variables are in the post-install role defaults. Override them in the `Extra vars` section of `ansible/vars/all.yml`.
 
-**Control-plane / SNO**
+**Control-plane / SNO disk preparation**
+
+Populating any device list below triggers Ignition-based disk wiping/partitioning at node boot.
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
-| `controlplane_localstorage_configuration` | `false` | Master enable for control-plane local storage setup |
 | `controlplane_localstorage_lvm_devices` | `[]` | List of disks to partition and include in the LVM volume group. Empty list disables LVM setup |
-| `controlplane_localstorage_disk_devices` | `[]` | List of disks to wipe and expose as raw block devices to LSO |
+| `controlplane_localstorage_disk_devices` | `[]` | List of disks to wipe and expose as raw block devices |
 | `controlplane_localstorage_lv_count` | `10` | Number of thin logical volumes to create in the LVM volume group |
 | `controlplane_localstorage_lv_size` | `100G` | Size of each thin logical volume |
 
-**Worker nodes**
+**Worker node disk preparation**
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
-| `worker_localstorage_configuration` | `false` | Master enable for worker node local storage setup |
 | `worker_localstorage_lvm_devices` | `[]` | List of disks to partition and include in the LVM volume group on worker nodes. Empty list disables LVM setup |
-| `worker_localstorage_disk_devices` | `[]` | List of disks to wipe and expose as raw block devices to LSO on worker nodes |
+| `worker_localstorage_disk_devices` | `[]` | List of disks to wipe and expose as raw block devices on worker nodes |
 | `worker_localstorage_lv_count` | `10` | Number of thin logical volumes to create in the LVM volume group |
 | `worker_localstorage_lv_size` | `100G` | Size of each thin logical volume |
+
+**LSO installation (post-install)**
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `setup_lso` | `false` | Install the Local Storage Operator and create `LocalVolume` resources for any populated device lists |
 
 **LocalVolume volume modes**
 
@@ -89,23 +95,23 @@ When `localstorage_lvm_volume_mode` or `localstorage_disk_volume_mode` is set to
 
 ### Control-plane with LVM only
 
-Three LVM logical volumes on a single disk, exposed as a filesystem storage class:
+Three LVM logical volumes on a single disk, wiped at boot and exposed via LSO as a filesystem storage class:
 
 ```yaml
-controlplane_localstorage_configuration: true
 controlplane_localstorage_lvm_devices:
   - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
 controlplane_localstorage_lv_count: 3
 controlplane_localstorage_lv_size: 500G
+setup_lso: true
 ```
 
-### Control-plane with Block Disks only
+### Control-plane with block disks only
 
 ```yaml
-controlplane_localstorage_configuration: true
 controlplane_localstorage_disk_devices:
   - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
   - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:3:0
+setup_lso: true
 ```
 
 ### Control-plane with LVM and block disks
@@ -113,7 +119,6 @@ controlplane_localstorage_disk_devices:
 LVM volumes on one disk, plus two additional raw disks exposed as block devices:
 
 ```yaml
-controlplane_localstorage_configuration: true
 controlplane_localstorage_lvm_devices:
   - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
 controlplane_localstorage_lv_count: 10
@@ -121,6 +126,7 @@ controlplane_localstorage_lv_size: 100G
 controlplane_localstorage_disk_devices:
   - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:3:0
 localstorage_disk_volume_mode: Block
+setup_lso: true
 ```
 
 This creates both `localvolume-lvm` (storage class `localstorage-sc`) and `localvolume-disk` (storage class `localstorage-disk-sc`).
@@ -128,9 +134,21 @@ This creates both `localvolume-lvm` (storage class `localstorage-sc`) and `local
 ### Workers with LVM
 
 ```yaml
-worker_localstorage_configuration: true
-worker_localstorage_device:
+worker_localstorage_lvm_devices:
   - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
 worker_localstorage_lv_count: 10
 worker_localstorage_lv_size: 200G
+setup_lso: true
 ```
+
+### Wipe only, no LSO
+
+Wipe and partition disks at boot time without installing the Local Storage Operator. Useful when preparing disks for other storage backends (e.g., ODF) or for clean disk state:
+
+```yaml
+controlplane_localstorage_disk_devices:
+  - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
+  - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:3:0
+```
+
+Omitting `setup_lso` (or setting it to `false`) skips LSO installation. The disks are wiped at node boot via Ignition but no `LocalVolume` resources are created.

@@ -154,20 +154,20 @@
   when: setup_openshift_gitops
 
 - name: Setup Local Storage Operator (LSO)
-  when: controlplane_localstorage_configuration or worker_localstorage_configuration
+  when: setup_lso | bool
   block:
   - name: Install Local Storage Operator (LSO)
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localstorage.yml
 
   - name: Label control-plane nodes for localstorage
-    when: controlplane_localstorage_configuration
+    when: controlplane_localstorage_lvm_devices | length > 0 or controlplane_localstorage_disk_devices | length > 0
     shell: |
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true
     loop: "{{ groups['controlplane'] }}"
 
   - name: Label worker nodes for localstorage
-    when: worker_localstorage_configuration
+    when: worker_localstorage_lvm_devices | length > 0 or worker_localstorage_disk_devices | length > 0
     shell: |
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true
     loop: "{{ groups['worker'] }}"
@@ -223,7 +223,7 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch ingresscontrollers/default --type merge -n openshift-ingress-operator -p '{"spec": {"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/master": "" }}, "tolerations": [{"effect": "NoSchedule", "key": "node-role.kubernetes.io/master"}]} }}'
 
 - name: Apply OpenShift-Monitoring configuration options
-  when: migrate_monitoring or (apply_cluster_monitoring_config and (controlplane_localstorage_configuration or worker_localstorage_configuration))
+  when: (migrate_monitoring | bool) or ((apply_cluster_monitoring_config | bool) and (setup_lso | bool))
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml
 
