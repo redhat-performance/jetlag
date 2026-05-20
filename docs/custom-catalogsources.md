@@ -15,6 +15,7 @@ _**Table of Contents**_
     - [Precedence](#precedence)
   - [Full example: ODF from a custom catalog](#full-example-odf-from-a-custom-catalog)
   - [Multiple custom catalogs](#multiple-custom-catalogs)
+  - [Pre-GA content](#pre-ga-catalog-source)
 <!-- /TOC -->
 
 ## Use cases
@@ -23,6 +24,7 @@ _**Table of Contents**_
 - Use a third-party operator catalog alongside the default Red Hat catalog
 - Test specific operator versions that are not yet available in the default catalog
 - Install different operators from different custom catalogs
+- Use Pre-GA content
 
 ## Custom CatalogSources
 
@@ -144,3 +146,27 @@ odf_catalogsource: odf-staging
 gitops_catalogsource: gitops-nightly
 # LSO and AAP remain on the default redhat-operators catalog
 ```
+## Pre-GA catalog source
+Pre-GA content relies on the custom catalog with a few caveats and requirements
+
+### Requirements
+
+> !!! Important !!!
+>
+> Make sure your `pull-secret` has access to the pre-GA namespace.
+
+|variable|value|
+|-|-|
+|`use_prega_content`|`true`|
+|`prega_idms_link`|Should contain a valid IDMS for the respective catalog source|
+
+Custom catalog source should be named `redhat-operators` like following example:
+
+```yaml
+custom_catalogsources:
+- name: redhat-operators
+  image: quay.io/prega/prega-operator-index:v4.22
+  displayName: OpenShift Pre-GA Operators
+  publisher: Red Hat
+```
+Using `use_prega_content` will disable default catalog source
