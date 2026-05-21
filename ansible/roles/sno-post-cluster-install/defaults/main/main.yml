@@ -58,6 +58,9 @@ isolated_cpus: 2-47,50-95
 #   publisher: My Org
 custom_catalogsources: []
 
+# IDMS Configurations for Pre-GA sources
+idms_prega_configuration: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/catalogsources/prega-idms.yaml"
+
 # Additional labels to apply to all nodes post-install (list of key=value or key= strings)
 post_install_node_labels:
   - jetlag=true

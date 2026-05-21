@@ -19,6 +19,9 @@ operator_index_tag: v4.19
 # for now we will continue to use the catalogsource although clustercatalog is a newer API
 generated_operator_index_name_tag: "cs-{{ operator_index_name }}-{{ operator_index_tag | replace('.', '-') }}"
 
+# IDMS Configuration for bastion registry
+idms_bastion_configuration: "{{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/idms-oc-mirror.yaml"
+
 catalogs_to_sync:
 - catalog: registry.redhat.io/redhat/redhat-operator-index:v4.19
   packages:

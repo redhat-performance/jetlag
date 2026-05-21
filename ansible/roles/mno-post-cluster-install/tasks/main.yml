@@ -94,15 +94,36 @@
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc adm policy add-cluster-role-to-user -z kubeburner cluster-admin
   when: setup_kube_burner_sa | default(true) | bool
 
+- name: Pre-GA block
+  when:
+    - use_prega_content | default(false) | bool
+    - prega_idms_link is defined
+    - prega_idms_link is not empty
+  block:
+    - name: Delete previous IDMS configuration
+      ansible.builtin.file:
+        path: "{{ idms_prega_configuration }}"
+        state: absent
+
+    - name: Download IDMS configuration
+      ansible.builtin.uri:
+        url: "{{ prega_idms_link }}"
+        dest: "{{ idms_prega_configuration }}"
+        mode: '0644'
+      retries: 3
+      delay: 5
+
 - name: Disable default OperatorHub sources on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-  when: use_bastion_registry | default(false)
+  when: (use_bastion_registry | default(false)) or (use_prega_content | default(false))
 
 - name: Apply oc mirror ImageDigestMirrorSet on bastion registry clusters
+  vars:
+    idms_configuration: "{{ use_prega_content | default(false) | ternary(idms_prega_configuration, idms_bastion_configuration) }}"
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/idms-oc-mirror.yaml
-  when: use_bastion_registry | default(false)
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ idms_configuration }}
+  when: (use_bastion_registry | default(false)) or (use_prega_content | default(false) and idms_prega_configuration is defined)
 
 - name: Apply ImageTagMirrorSet on bastion registry clusters
   shell: |
@@ -119,6 +140,7 @@
     EOF
   loop: "{{ image_tag_mirrors | default([]) }}"
   when: use_bastion_registry | default(false)
+
 - name: Apply oc mirror catalogSource on bastion registry clusters
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_operator_index_name_tag }}.yaml
