@@ -1,0 +1,67 @@
+---
+# Apply or remove bandwidth limits on VMs (running or powered off)
+#
+# Example Usage:
+#
+# Apply 1000 Mbit/s bandwidth limit to all VMs
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-bandwidth.yml -e vm_bandwidth=1000
+#
+# Remove bandwidth limits from all VMs
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-bandwidth.yml -e vm_bandwidth=0
+#
+# vm_bandwidth | Throughput             | bw_avg | bw_peak | bw_burst
+# -------------|------------------------|--------|---------|--------
+#            1 | 1 Mbit/s  (~125 KB/s)  |    115 |     125 |     117
+#           10 | 10 Mbit/s (~1.2 MB/s)  |   1150 |    1250 |    1175
+#           20 | 20 Mbit/s (~2.5 MB/s)  |   2300 |    2500 |    2350
+#          100 | 100 Mbit/s (~12.5 MB/s)|  11500 |   12500 |   11750
+#         1000 | 1 Gbit/s  (~125 MB/s)  | 115000 |  125000 |  117500
+#            0 | No limit (remove)      |      - |       - |       -
+#
+
+- name: Apply/remove bandwidth limits on VMs
+  hosts: hv_vm
+  gather_facts: false
+  vars:
+    vm_bandwidth: 0
+  tasks:
+  - name: Get VM state
+    ansible.builtin.command: virsh domstate {{ inventory_hostname }}
+    delegate_to: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+    register: domstate_result
+    changed_when: false
+
+  - name: Set domiftune flags based on VM state
+    ansible.builtin.set_fact:
+      domiftune_flags: "{{ '--live --config' if domstate_result.stdout | trim == 'running' else '--config' }}"
+
+  - name: Get VM interface name
+    ansible.builtin.command: virsh domiflist {{ inventory_hostname }}
+    delegate_to: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+    register: domiflist_result
+    changed_when: false
+
+  - name: Parse primary interface name
+    ansible.builtin.set_fact:
+      vm_interface: "{{ domiflist_result.stdout_lines[2].split()[0] }}"
+
+  - name: Remove bandwidth limit
+    ansible.builtin.command: >-
+      virsh domiftune {{ inventory_hostname }} {{ vm_interface }}
+      --inbound 0 --outbound 0 {{ domiftune_flags }}
+    delegate_to: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+    when: vm_bandwidth | int == 0
+
+  - name: Apply bandwidth limit
+    ansible.builtin.command: >-
+      virsh domiftune {{ inventory_hostname }} {{ vm_interface }}
+      --inbound {{ vm_bandwidth_avg }},{{ vm_bandwidth_peak }},{{ vm_bandwidth_burst }}
+      --outbound {{ vm_bandwidth_avg }},{{ vm_bandwidth_peak }},{{ vm_bandwidth_burst }}
+      {{ domiftune_flags }}
+    delegate_to: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+    vars:
+      vm_bandwidth_kbps: "{{ (vm_bandwidth | int) * 125 }}"
+      vm_bandwidth_peak: "{{ vm_bandwidth_kbps }}"
+      vm_bandwidth_avg: "{{ ((vm_bandwidth_kbps | int) * 0.92) | int }}"
+      vm_bandwidth_burst: "{{ ((vm_bandwidth_kbps | int) * 0.94) | int }}"
+    when: vm_bandwidth | int > 0
