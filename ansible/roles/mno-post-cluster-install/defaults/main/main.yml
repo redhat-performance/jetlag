@@ -64,11 +64,6 @@ setup_minio: false
 minio_image_tag: RELEASE.2025-09-07T16-13-09Z
 minio_pv_storageclass: localstorage2-sc
 
-# Performance-addon-operator vars_files
-install_performance_addon_operator: false
-ocp_channel: "{{ openshift_version }}"
-pao_catalogsource: redhat-operators
-
 # Custom CatalogSources to apply post-install
 # Each entry creates a CatalogSource resource in openshift-marketplace
 # custom_catalogsources:

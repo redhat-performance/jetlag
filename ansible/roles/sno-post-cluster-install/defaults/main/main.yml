@@ -44,9 +44,7 @@ prometheus_storage_size: 50Gi
 # DU Profile
 du_profile: false
 
-# Performance-addon-operator and du profile vars
-install_performance_addon_operator: false
-pao_catalogsource: redhat-operators
+# DU profile vars
 hugepages_count: 16
 node: 0
 isolated_cpus: 2-47,50-95

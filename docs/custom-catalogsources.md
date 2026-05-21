@@ -81,7 +81,6 @@ Each post-install operator can be pointed to a specific CatalogSource by setting
 | `lso_catalogsource` | `redhat-operators` | Local Storage Operator | MNO, SNO |
 | `gitops_catalogsource` | `redhat-operators` | OpenShift GitOps | MNO, SNO |
 | `aap_catalogsource` | `redhat-operators` | Ansible Automation Platform | MNO |
-| `pao_catalogsource` | `redhat-operators` | Performance Addon Operator | MNO, SNO |
 
 All variables default to `redhat-operators`. When left at the default, the existing behavior is preserved (bastion registry catalog if `use_bastion_registry: true`, otherwise `redhat-operators`). Setting a variable to any other value overrides both the bastion registry catalog and the default.
 
