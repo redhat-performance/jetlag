@@ -224,3 +224,4 @@ xxxxx-xxxxx-xxxxx-xxxxx
 | [OpenShift Data Foundation (ODF)](docs/odf.md) | Installing ODF for Ceph-backed block, file, and object storage |
 | [Tips and Vars](docs/tips-and-vars.md) | Advanced configuration, network overrides, and extra variables |
 | [Troubleshooting](docs/troubleshooting.md) | Common deployment issues and solutions |
+| [VM Bandwidth](docs/vm-bandwidth.md) | Creation-time and dynamic bandwidth limiting for VMs |
