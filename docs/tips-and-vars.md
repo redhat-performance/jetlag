@@ -16,7 +16,7 @@ _**Table of Contents**_
     - [SNO DU Profile](#sno-du-profile)
       - [Performance Profile](#performance-profile)
       - [Tuned Performance Patch](#tuned-performance-patch)
-      - [Installing Performance Addon Operator on OCP 4.9 or OCP 4.10](#installing-performance-addon-operator-on-ocp-49-or-ocp-410)
+      - [Performance Addon Operator deprecation note](#performance-addon-operator-note)
   - [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
 <!-- /TOC -->
 
@@ -414,14 +414,7 @@ After performance-profile is applied, the standard TunedPerformancePatch used fo
 This profile will disable chronyd service and enable stalld, change the FIFO priority of ice-ptp processes to 10.
 Further changes applied can be found in the template 'tunedPerformancePatch.yml.j2' under sno-post-cluster-install templates.
 
-#### Installing Performance Addon Operator on OCP 4.9 or OCP 4.10
-
-Performance Addon Operator must be installed for the usage of performance-profile in versions older than OCP 4.11.
-Append these vars to the "Extra vars" section of your `all.yml` or `ibmcloud.yml` to install Performance Addon Operator to allow for low latency node performance tunings on your OCP 4.9 or 4.10 SNO.
-
-```yaml
-install_performance_addon_operator: true
-```
+#### Performance Addon Operator Note
 
 > [!NOTE]
 > The Performance Addon Operator is not available in OCP 4.11 or higher. The PAO code was moved into the Node Tuning Operator in OCP 4.11
