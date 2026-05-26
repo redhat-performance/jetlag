@@ -187,3 +187,7 @@ bond_vlan_id: 10
 # Extra vars
 ################################################################################
 # Append override vars below
+
+# Pre-GA content section
+use_prega_content: false
+# prega_idms_link: ""
