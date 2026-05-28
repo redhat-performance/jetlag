@@ -1,0 +1,25 @@
+---
+# Sample registry bandwidth limiting vars file
+#
+# Copy this file to ansible/vars/registry-bandwidth.yml and adjust values.
+# Used by ansible/bastion-registry-bandwidth.yml
+
+# Install tc packages on the bastion if not already present
+install_tc: true
+
+# Control vars - set to false to remove limits:
+#   ansible-playbook ... -e 'apply_registry_egress_limit=false apply_registry_ingress_limit=false'
+apply_registry_egress_limit: true
+apply_registry_ingress_limit: true
+
+# Bandwidth in kbit (kilobits per second)
+# Examples: 1000000 = 1 Gbps, 100000 = 100 Mbps, 10000 = 10 Mbps
+registry_egress_bandwidth: 100000
+registry_ingress_bandwidth: 100000
+
+# Registry port to shape (must match registry_port used in bastion-registry role)
+registry_bw_port: 5000
+
+# Network interface to apply shaping on
+# This should be the interface facing the controlplane/cluster network
+registry_bw_interface: "{{ bastion_controlplane_interface }}"

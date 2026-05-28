@@ -1,0 +1,82 @@
+---
+# Apply/remove bandwidth limits on the bastion mirror registry
+#
+# Uses Linux tc (traffic control) with HTB to shape only registry port traffic,
+# leaving all other bastion services (SSH, DNS, assisted-installer) unaffected.
+#
+# Example Usage:
+#
+# Apply bandwidth limits:
+# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-registry-bandwidth.yml
+#
+# Remove bandwidth limits:
+# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-registry-bandwidth.yml -e 'apply_registry_egress_limit=false apply_registry_ingress_limit=false'
+#
+# Override bandwidth at runtime:
+# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-registry-bandwidth.yml -e 'registry_egress_bandwidth=50000 registry_ingress_bandwidth=50000'
+#
+
+- name: Apply/remove bandwidth limits on bastion mirror registry
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/registry-bandwidth.yml
+  roles:
+  - name: install-tc
+    when: install_tc | default(true)
+  post_tasks:
+
+  # Always clean up existing shaping first for idempotency
+  - name: Remove existing egress shaping on {{ registry_bw_interface }}
+    ansible.builtin.shell: |
+      tc qdisc del dev {{ registry_bw_interface }} root 2>/dev/null || true
+    changed_when: false
+
+  - name: Remove existing ingress shaping
+    ansible.builtin.shell: |
+      tc qdisc del dev ifb0 root 2>/dev/null || true
+      tc qdisc del dev {{ registry_bw_interface }} ingress 2>/dev/null || true
+      ip link set dev ifb0 down 2>/dev/null || true
+      modprobe -r ifb 2>/dev/null || true
+    changed_when: false
+
+  # Egress: bastion -> cluster nodes pulling images (source port = registry port)
+  - name: Apply egress bandwidth limit ({{ registry_egress_bandwidth }}kbit) on port {{ registry_bw_port }}
+    ansible.builtin.shell: |
+      tc qdisc add dev {{ registry_bw_interface }} root handle 1: htb default 10
+      tc class add dev {{ registry_bw_interface }} parent 1: classid 1:10 htb rate 10gbit
+      tc class add dev {{ registry_bw_interface }} parent 1: classid 1:20 htb rate {{ registry_egress_bandwidth }}kbit
+      tc filter add dev {{ registry_bw_interface }} parent 1: protocol ip u32 match ip sport {{ registry_bw_port }} 0xffff flowid 1:20
+      tc filter add dev {{ registry_bw_interface }} parent 1: protocol ipv6 u32 match ip6 sport {{ registry_bw_port }} 0xffff flowid 1:20
+    when: apply_registry_egress_limit | bool
+
+  # Ingress: nodes/mirrors pushing images to registry (destination port = registry port)
+  - name: Apply ingress bandwidth limit ({{ registry_ingress_bandwidth }}kbit) on port {{ registry_bw_port }}
+    ansible.builtin.shell: |
+      modprobe ifb
+      ip link set dev ifb0 up
+      tc qdisc add dev {{ registry_bw_interface }} ingress
+      tc filter add dev {{ registry_bw_interface }} parent ffff: protocol ip u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
+      tc filter add dev {{ registry_bw_interface }} parent ffff: protocol ipv6 u32 match u32 0 0 flowid 1:1 action mirred egress redirect dev ifb0
+      tc qdisc add dev ifb0 root handle 1: htb default 10
+      tc class add dev ifb0 parent 1: classid 1:10 htb rate 10gbit
+      tc class add dev ifb0 parent 1: classid 1:20 htb rate {{ registry_ingress_bandwidth }}kbit
+      tc filter add dev ifb0 parent 1: protocol ip u32 match ip dport {{ registry_bw_port }} 0xffff flowid 1:20
+      tc filter add dev ifb0 parent 1: protocol ipv6 u32 match ip6 dport {{ registry_bw_port }} 0xffff flowid 1:20
+    when: apply_registry_ingress_limit | bool
+
+  - name: Display current tc status
+    ansible.builtin.shell: |
+      echo "=== Egress ({{ registry_bw_interface }}) ==="
+      tc -s qdisc show dev {{ registry_bw_interface }} 2>/dev/null || echo "No egress qdisc"
+      tc -s class show dev {{ registry_bw_interface }} 2>/dev/null || echo "No egress classes"
+      echo ""
+      echo "=== Ingress (ifb0) ==="
+      tc -s qdisc show dev ifb0 2>/dev/null || echo "No ingress qdisc"
+      tc -s class show dev ifb0 2>/dev/null || echo "No ingress classes"
+    register: tc_status
+    changed_when: false
+
+  - name: Show tc shaping status
+    ansible.builtin.debug:
+      msg: "{{ tc_status.stdout_lines }}"
