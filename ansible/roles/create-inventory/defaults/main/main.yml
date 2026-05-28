@@ -30,7 +30,7 @@ hv_vm_cpu_count: 8
 hv_vm_memory_size: 18
 hv_vm_disk_size: 120
 
-# Bandwith limits for VMs (in KB/s)
+# Bandwidth limits for VMs (in KB/s) When enabled, the defaults below match 100Mbps network speed.
 hv_vm_bandwidth_limit: false
 hv_vm_bandwidth_average: 11500
 hv_vm_bandwidth_peak: 12500
