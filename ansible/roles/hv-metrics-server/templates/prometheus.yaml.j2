@@ -9,6 +9,12 @@ scrape_configs:
       - targets: ['{{ hv_metrics_server_address }}:9090']
 {% endif %}
 
+{% if hv_metrics_server_enable_bastion_exporter %}
+  - job_name: 'bastion-system'
+    static_configs:
+      - targets: ['{{ hv_metrics_server_address }}:9100']
+{% endif %}
+
 {% for client in groups['hv'] %}
 {% set shortname = hostvars[client].inventory_hostname.split('.')[0] %}
   - job_name: '{{ shortname }}'

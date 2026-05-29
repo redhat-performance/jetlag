@@ -220,6 +220,7 @@ xxxxx-xxxxx-xxxxx-xxxxx
 | [CI](docs/ci.md) | Continuous integration details |
 | [Custom CatalogSources](docs/custom-catalogsources.md) | Custom operator catalogs and per-operator CatalogSource overrides |
 | [Disconnected API/Console Access](docs/disconnected-ipv6-cluster-access.md) | Accessing disconnected IPv6 clusters |
+| [HV Metrics](docs/hv-metrics.md) | Prometheus and Grafana monitoring for hypervisors and bastion |
 | [Hypervisors](docs/hypervisors.md) | Managing hypervisor nodes and VMs |
 | [Local Storage](docs/local-storage.md) | Configuring the Local Storage Operator (LSO) for control-plane and worker nodes |
 | [OpenShift Data Foundation (ODF)](docs/odf.md) | Installing ODF for Ceph-backed block, file, and object storage |

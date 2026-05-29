@@ -1,0 +1,10 @@
+[Unit]
+Description=Collect mirror registry traffic metrics every 5 seconds
+
+[Timer]
+OnBootSec=10s
+OnUnitActiveSec=5s
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

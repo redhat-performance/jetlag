@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   name: {{ hv_metrics_server_pod_name }}
 spec:
+  hostNetwork: true
   containers:
     - name: {{ hv_metrics_server_prometheus_container_name }}
       image: {{ hv_metrics_server_prometheus_container_image }}
@@ -40,6 +41,24 @@ spec:
         - name: grafana-datasource
           mountPath: /etc/grafana/provisioning/datasources/datasource-prometheus.yaml
 {% endif %}
+{% if hv_metrics_server_enable_bastion_exporter %}
+    - name: {{ hv_metrics_server_bastion_exporter_container_name }}
+      image: {{ hv_metrics_server_bastion_exporter_container_image }}
+      args:
+        - "--path.rootfs=/host"
+        - "--path.procfs=/host/proc"
+        - "--path.sysfs=/host/sys"
+        - "--collector.textfile.directory=/textfile-collector"
+      ports:
+        - containerPort: 9100
+      volumeMounts:
+        - name: host-rootfs
+          mountPath: /host
+          readOnly: true
+        - name: textfile-collector
+          mountPath: /textfile-collector
+          readOnly: true
+{% endif %}
   volumes:
     - name: prometheus-data
       hostPath:
@@ -62,4 +81,14 @@ spec:
       hostPath:
         path: {{ hv_metrics_server_work_dir }}/datasource-prometheus.yaml
         type: File
+{% endif %}
+{% if hv_metrics_server_enable_bastion_exporter %}
+    - name: host-rootfs
+      hostPath:
+        path: /
+        type: Directory
+    - name: textfile-collector
+      hostPath:
+        path: {{ hv_metrics_server_bastion_exporter_textfile_dir }}
+        type: Directory
 {% endif %}
