@@ -207,3 +207,14 @@
       fail:
         msg: "For dual stack, controlplane_network[1] must be IPv6, got {{ controlplane_network[1] }}"
       when: not (controlplane_network[1] | ansible.utils.ipv6)
+
+- name: Validate bastion_lab_interface exists on the bastion host
+  fail:
+    msg: >-
+      bastion_lab_interface '{{ bastion_lab_interface }}' was not found on the bastion host.
+      Available interfaces: {{ ansible_interfaces | sort | join(', ') }}.
+      Check bastion_lab_interface in your all.yml or the lab/machine_type NIC mapping in lab.yml.
+  when:
+  - ansible_interfaces is defined
+  - bastion_lab_interface is defined
+  - bastion_lab_interface not in ansible_interfaces
