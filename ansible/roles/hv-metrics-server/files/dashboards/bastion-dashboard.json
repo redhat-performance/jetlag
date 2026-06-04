@@ -1,0 +1,869 @@
+{
+  "title": "Bastion Dashboard",
+  "uid": "bastion-metrics",
+  "templating": {
+    "list": [
+      {
+        "name": "interval",
+        "type": "interval",
+        "label": "Interval",
+        "query": "1m,5m,10m,30m,1h",
+        "current": {
+          "text": "1m",
+          "value": "1m"
+        }
+      },
+      {
+        "name": "interface",
+        "type": "query",
+        "label": "Network Interface",
+        "datasource": null,
+        "query": {
+          "query": "label_values(node_network_receive_bytes_total{job=\"bastion-system\", device!~\"lo|veth.*|br-.*|cni.*|ovs.*|virbr.*|flannel.*|cali.*|tunl.*|docker.*|podman.*\"}, device)",
+          "refId": "StandardVariableQuery"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "refresh": 1
+      },
+      {
+        "name": "disk",
+        "type": "query",
+        "label": "Disk Device",
+        "datasource": null,
+        "query": {
+          "query": "label_values(node_disk_reads_completed_total{job=\"bastion-system\"}, device)",
+          "refId": "StandardVariableQuery"
+        },
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "text": "sda",
+          "value": "sda"
+        },
+        "refresh": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Compute (CPU)",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "collapsed": false
+    },
+    {
+      "title": "CPU Utilization (%)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "avg(1 - rate(node_cpu_seconds_total{job='bastion-system', mode='idle'}[$interval])) * 100",
+          "legendFormat": "bastion"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "CPU Cores Used",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum(1 - rate(node_cpu_seconds_total{job='bastion-system', mode='idle'}[$interval]))",
+          "legendFormat": "bastion"
+        },
+        {
+          "expr": "count(node_cpu_seconds_total{job='bastion-system', mode='idle'})",
+          "legendFormat": "total cores"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Load Average",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "node_load1{job='bastion-system'}",
+          "legendFormat": "1m"
+        },
+        {
+          "expr": "node_load5{job='bastion-system'}",
+          "legendFormat": "5m"
+        },
+        {
+          "expr": "node_load15{job='bastion-system'}",
+          "legendFormat": "15m"
+        },
+        {
+          "expr": "count(node_cpu_seconds_total{job='bastion-system', mode='idle'})",
+          "legendFormat": "CPU cores"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Memory",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "collapsed": false
+    },
+    {
+      "title": "Memory Utilization (%)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "targets": [
+        {
+          "expr": "(1 - node_memory_MemAvailable_bytes{job='bastion-system'} / node_memory_MemTotal_bytes{job='bastion-system'}) * 100",
+          "legendFormat": "bastion"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Memory Used",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "targets": [
+        {
+          "expr": "node_memory_MemTotal_bytes{job='bastion-system'} - node_memory_MemAvailable_bytes{job='bastion-system'}",
+          "legendFormat": "used"
+        },
+        {
+          "expr": "node_memory_MemTotal_bytes{job='bastion-system'}",
+          "legendFormat": "total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Disk Space",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "collapsed": false
+    },
+    {
+      "title": "Root (/) Space Used",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "targets": [
+        {
+          "expr": "node_filesystem_size_bytes{job='bastion-system', mountpoint='/'} - node_filesystem_avail_bytes{job='bastion-system', mountpoint='/'}",
+          "legendFormat": "used"
+        },
+        {
+          "expr": "node_filesystem_size_bytes{job='bastion-system', mountpoint='/'}",
+          "legendFormat": "total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Root (/) Usage (%)",
+      "type": "gauge",
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 8,
+        "y": 19
+      },
+      "targets": [
+        {
+          "expr": "(1 - node_filesystem_avail_bytes{job='bastion-system', mountpoint='/'} / node_filesystem_size_bytes{job='bastion-system', mountpoint='/'}) * 100",
+          "legendFormat": "bastion"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "All Mountpoints Space Used",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "targets": [
+        {
+          "expr": "node_filesystem_size_bytes{job='bastion-system', fstype!~'tmpfs|overlay'} - node_filesystem_avail_bytes{job='bastion-system', fstype!~'tmpfs|overlay'}",
+          "legendFormat": "{{mountpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Disk I/O",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "collapsed": false
+    },
+    {
+      "title": "IOPS",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 28
+      },
+      "targets": [
+        {
+          "expr": "rate(node_disk_reads_completed_total{job='bastion-system', device=~\"$disk\"}[$interval])",
+          "legendFormat": "reads/s"
+        },
+        {
+          "expr": "rate(node_disk_writes_completed_total{job='bastion-system', device=~\"$disk\"}[$interval])",
+          "legendFormat": "writes/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "iops"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Throughput",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 28
+      },
+      "targets": [
+        {
+          "expr": "rate(node_disk_read_bytes_total{job='bastion-system', device=~\"$disk\"}[$interval])",
+          "legendFormat": "read"
+        },
+        {
+          "expr": "rate(node_disk_written_bytes_total{job='bastion-system', device=~\"$disk\"}[$interval])",
+          "legendFormat": "write"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "I/O Utilization (%)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 28
+      },
+      "targets": [
+        {
+          "expr": "rate(node_disk_io_time_seconds_total{job='bastion-system', device=~\"$disk\"}[$interval]) * 100",
+          "legendFormat": "utilization"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Network Interfaces",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "collapsed": false
+    },
+    {
+      "title": "Network: All Physical Interfaces Bandwidth",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 55
+      },
+      "targets": [
+        {
+          "expr": "rate(node_network_receive_bytes_total{job='bastion-system', device=~\"$interface\"}[$interval]) * 8",
+          "legendFormat": "{{device}} Rx"
+        },
+        {
+          "expr": "rate(node_network_transmit_bytes_total{job='bastion-system', device=~\"$interface\"}[$interval]) * 8",
+          "legendFormat": "{{device}} Tx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      },
+      "description": "Bandwidth measured at the network interface level. This is the true wire bandwidth."
+    },
+    {
+      "title": "Network: Total Received",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 63
+      },
+      "targets": [
+        {
+          "expr": "rate(node_network_receive_bytes_total{job='bastion-system', device=~\"$interface\"}[$interval])",
+          "legendFormat": "{{device}} Rx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Network: Total Transmitted",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 63
+      },
+      "targets": [
+        {
+          "expr": "rate(node_network_transmit_bytes_total{job='bastion-system', device=~\"$interface\"}[$interval])",
+          "legendFormat": "{{device}} Tx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Mirror Registry Traffic (port 5000)",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 71
+      },
+      "collapsed": false
+    },
+    {
+      "title": "Registry: Container CPU Usage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 72
+      },
+      "targets": [
+        {
+          "expr": "rate(registry_container_cpu_usage_seconds_total{job='bastion-system'}[$interval])",
+          "legendFormat": "cores"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Registry: Container Memory Usage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 72
+      },
+      "targets": [
+        {
+          "expr": "registry_container_memory_usage_bytes{job='bastion-system'}",
+          "legendFormat": "used"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Registry: Active Connections",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 72
+      },
+      "targets": [
+        {
+          "expr": "registry_network_connections{job='bastion-system'}",
+          "legendFormat": "connections"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Registry: Bandwidth",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 80
+      },
+      "targets": [
+        {
+          "expr": "rate(registry_network_receive_bytes_total{job='bastion-system'}[$interval]) * 8",
+          "legendFormat": "Rx (pull requests in)"
+        },
+        {
+          "expr": "rate(registry_network_transmit_bytes_total{job='bastion-system'}[$interval]) * 8",
+          "legendFormat": "Tx (image data out)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      },
+      "description": "Bandwidth measured via iptables accounting at the IP layer. Values may appear 5-10% higher than NIC-level metrics due to TCP/IP header overhead counted by iptables but not by interface counters."
+    },
+    {
+      "title": "Registry: Throughput (bytes/s)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 80
+      },
+      "targets": [
+        {
+          "expr": "rate(registry_network_receive_bytes_total{job='bastion-system'}[$interval])",
+          "legendFormat": "Rx"
+        },
+        {
+          "expr": "rate(registry_network_transmit_bytes_total{job='bastion-system'}[$interval])",
+          "legendFormat": "Tx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Registry: Cumulative Bytes Transferred",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 88
+      },
+      "targets": [
+        {
+          "expr": "registry_network_receive_bytes_total{job='bastion-system'}",
+          "legendFormat": "Rx total"
+        },
+        {
+          "expr": "registry_network_transmit_bytes_total{job='bastion-system'}",
+          "legendFormat": "Tx total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Registry: Packets/s",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 88
+      },
+      "targets": [
+        {
+          "expr": "rate(registry_network_receive_packets_total{job='bastion-system'}[$interval])",
+          "legendFormat": "Rx pps"
+        },
+        {
+          "expr": "rate(registry_network_transmit_packets_total{job='bastion-system'}[$interval])",
+          "legendFormat": "Tx pps"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        }
+      }
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timezone": "utc"
+}

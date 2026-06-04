@@ -1,0 +1,6 @@
+[Unit]
+Description=Collect mirror registry traffic metrics for Prometheus
+
+[Service]
+Type=oneshot
+ExecStart={{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh

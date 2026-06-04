@@ -16,14 +16,6 @@
         owner: root
         group: root
 
-    - name: Render hv-metrics network configuration
-      ansible.builtin.template:
-        src: hv-metrics-net.network.j2
-        dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}-net.network"
-        mode: "0644"
-        owner: root
-        group: root
-
     - name: Render hv-metrics pod kube configuration
       ansible.builtin.template:
         src: hv-metrics.kube.j2
@@ -84,6 +76,55 @@
         mode: "0644"
         owner: root
         group: root
+
+- name: Bastion exporter block
+  when: hv_metrics_server_enable_bastion_exporter | bool
+  block:
+    - name: Create textfile collector directory
+      ansible.builtin.file:
+        path: "{{ hv_metrics_server_bastion_exporter_textfile_dir }}"
+        state: directory
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: Registry traffic monitoring
+      when: setup_bastion_registry | default(false) | bool
+      block:
+        - name: Render registry traffic collector script
+          ansible.builtin.template:
+            src: registry-traffic-collector.sh.j2
+            dest: "{{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh"
+            mode: "0755"
+            owner: root
+            group: root
+
+        - name: Render registry traffic collector systemd service
+          ansible.builtin.template:
+            src: registry-traffic-collector.service.j2
+            dest: /etc/systemd/system/registry-traffic-collector.service
+            mode: "0644"
+            owner: root
+            group: root
+
+        - name: Render registry traffic collector systemd timer
+          ansible.builtin.template:
+            src: registry-traffic-collector.timer.j2
+            dest: /etc/systemd/system/registry-traffic-collector.timer
+            mode: "0644"
+            owner: root
+            group: root
+
+        - name: Run collector once to initialize iptables rules and metrics file
+          ansible.builtin.command:
+            cmd: "{{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh"
+
+        - name: Start and enable registry traffic collector timer
+          ansible.builtin.systemd:
+            name: registry-traffic-collector.timer
+            daemon_reload: true
+            state: started
+            enabled: true
 
 - name: Enablement block
   block:
