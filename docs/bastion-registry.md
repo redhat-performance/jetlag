@@ -6,6 +6,7 @@ _**Table of Contents**_
 <!-- TOC -->
 - [Bastion Mirror Registry](#bastion-mirror-registry)
   - [Enabling the registry](#enabling-the-registry)
+  - [Syncing an operator index](#syncing-an-operator-index)
   - [Add/delete contents to the bastion registry](#adddelete-contents-to-the-bastion-registry)
   - [Bandwidth limiting](#bandwidth-limiting)
 <!-- /TOC -->
@@ -23,6 +24,60 @@ use_bastion_registry: true
 ```
 
 The registry is deployed during `setup-bastion.yml` as a Podman pod named `registry` with a container named `bastion-registry`, listening on port 5000. It stores data under `/opt/registry/` on the bastion host.
+
+## Syncing an operator index
+
+The `sync-operator-index` playbook mirrors operator catalog images into the bastion registry using `oc mirror`. It generates the IDMS (ImageDigestMirrorSet), CatalogSource, and ClusterCatalog resources that clusters need to consume operators from the mirror.
+
+### Setup
+
+Copy and edit the sample vars file:
+
+```console
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/sync-operator-index.sample.yml ansible/vars/sync-operator-index.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/sync-operator-index.yml
+```
+
+Key variables:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `operator_index_name` | `redhat-operator-index` | Destination index name in the registry |
+| `operator_index_tag` | `v4.19` | OCP version tag for the catalog |
+| `catalogs_to_sync` | *(see sample)* | List of catalog images and operator packages to mirror |
+| `additional_images` | `[]` | Extra images to mirror directly (no renaming) |
+| `extra_images` | `[]` | Extra images to mirror with renaming support |
+
+### Running the sync
+
+```console
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/sync-operator-index.yml
+```
+
+To override the tag at runtime (e.g. to sync a different OCP version):
+
+```console
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/sync-operator-index.yml -e operator_index_tag=v4.20
+```
+
+### Multiple OCP versions
+
+The `oc mirror` command clears the `cluster-resources/` directory on each run, which would destroy the IDMS and CatalogSource files from a previous sync. To support environments where multiple OCP versions share the same bastion registry (e.g. a 4.21 hub cluster alongside 4.20 SNO clusters), the playbook automatically preserves these artifacts per `operator_index_tag` after each sync:
+
+| Artifact | Preserved path |
+| --- | --- |
+| IDMS | `<sync_path>/operators/<operator_index_name>/idms-oc-mirror-<tag>.yaml` |
+| CatalogSource | `<sync_path>/operators/<operator_index_name>/cs-<operator_index_name>-<tag>.yaml` |
+| ClusterCatalog | `<sync_path>/operators/<operator_index_name>/cc-<operator_index_name>-<tag>.yaml` |
+
+This means you can sync 4.21 operators, then sync 4.20 operators, and redeploying the 4.21 hub cluster will still apply the correct 4.21 IDMS and CatalogSource — as long as `operator_index_tag` is set to `v4.21` in your vars at deployment time.
+
+> [!NOTE]
+> Images mirrored into the registry are additive — syncing a new version does not remove images from a previous sync. Only the `cluster-resources/` manifests are regenerated.
+
+### Post-install application
+
+During cluster deployment (`mno-deploy.yml` or `sno-deploy.yml`), the post-cluster-install role automatically applies the preserved IDMS and CatalogSource to the cluster when `use_bastion_registry: true` is set in `ansible/vars/all.yml`. Ensure `operator_index_tag` matches the OCP version of the cluster being deployed.
 
 ## Add/delete contents to the bastion registry
 

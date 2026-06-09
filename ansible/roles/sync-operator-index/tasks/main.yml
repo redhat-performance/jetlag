@@ -19,6 +19,27 @@
   shell: |
     oc mirror --authfile {{ registry_path }}/pull-secret-bastion.txt -c {{ sync_path }}/operators/{{ operator_index_name }}/imagesetconf.yml --workspace file://{{ sync_path }}/operators/{{ operator_index_name }} docker://{{ registry_host }}:{{ registry_port }} --v2
 
+- name: Preserve IDMS for this operator index tag
+  ansible.builtin.copy:
+    src: "{{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/idms-oc-mirror.yaml"
+    dest: "{{ idms_bastion_configuration }}"
+    remote_src: true
+
+- name: Preserve CatalogSource for this operator index tag
+  ansible.builtin.copy:
+    src: "{{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_catalogsource_name_tag }}.yaml"
+    dest: "{{ catalogsource_bastion_configuration }}"
+    remote_src: true
+
+  # Older oc mirror versions may not generate the cc-* ClusterCatalog file (OLM v1),
+  # and nothing currently applies it to the cluster, so a missing file is not fatal.
+- name: Preserve ClusterCatalog for this operator index tag
+  ansible.builtin.copy:
+    src: "{{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_clustercatalog_name_tag }}.yaml"
+    dest: "{{ clustercatalog_bastion_configuration }}"
+    remote_src: true
+  ignore_errors: true
+
 - name: Mirror extra images with renaming support
   shell: |
     oc image mirror -a {{ registry_path }}/pull-secret-bastion.txt {{ item.src }} {{ registry_host }}:{{ registry_port }}/{{ item.dest }} --keep-manifest-list --continue-on-error=true

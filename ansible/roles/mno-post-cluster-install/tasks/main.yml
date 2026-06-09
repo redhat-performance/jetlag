@@ -145,7 +145,7 @@
 
 - name: Apply oc mirror catalogSource on bastion registry clusters
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ sync_path }}/operators/{{ operator_index_name }}/working-dir/cluster-resources/{{ generated_operator_index_name_tag }}.yaml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ catalogsource_bastion_configuration }}
   when: use_bastion_registry | default(false)
 
 - name: Apply custom CatalogSources
