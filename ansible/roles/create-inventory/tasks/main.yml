@@ -108,6 +108,23 @@
     success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (minimum 2 for SNO)"
   when: cluster_type == "sno"
 
+- name: Validate allocation has enough nodes for SNO hub deployment with virtual spoke cluster
+  when:
+    - cluster_type == "sno"
+    - hv_inventory | bool
+    - hv_count is defined
+    - hv_count != None
+    - hv_count | int > 0
+  ansible.builtin.assert:
+    that:
+      - ocpinventory.json.nodes | length >= (hv_count | int) + 2
+    fail_msg: >-
+      SNO hub deployment with {{ hv_count }} hypervisor(s) requires at least {{ (hv_count | int) + 2 }} nodes
+      (1 bastion + 1 SNO node + {{ hv_count }} hypervisors),
+      but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
+      Either reduce hv_count or request a larger allocation.
+    success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (need {{ (hv_count | int) + 2 }} for {{ hv_count }} hypervisors)"
+
 - name: Get bastion foreman data (For lab ip address)
   uri:
     url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ bastion_machine }}"
@@ -336,10 +353,9 @@
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"
   block:
-
   - name: SNO - Set ocpinventory sno nodes
     set_fact:
-      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:] }}"
+      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:2] if hv_inventory | bool else ocpinventory.json.nodes[1:] }}"
 
   - name: SNO - Set max number of nodes
     set_fact:
@@ -352,6 +368,10 @@
     when: worker_node_count is defined and worker_node_count != None
 
   - name: SNO - Set ocpinventory worker nodes (for scale-out scenarios)
+    when:
+      - not (hv_inventory | bool)
+      - worker_node_count is defined
+      - worker_node_count != None
     set_fact:
       ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[2:max_nodes|int] }}"
 
@@ -375,7 +395,7 @@
     loop: "{{ ocpinventory_worker_nodes }}"
     when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
     register: sno_worker_foreman_data
-    
+
   - name: SNO - Auto-configure bond interface names from hardware mapping (when bonding is enabled)
     set_fact:
       bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
@@ -385,8 +405,6 @@
       - lab in hw_nic_name
       - machine_type in hw_nic_name[lab]
       - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
-
-
 
   - name: SNO - Add bond MAC addresses to SNO nodes (when bonding is enabled)
     when: enable_bond | default(false) and not (public_vlan | default(false))
@@ -408,12 +426,6 @@
     set_fact:
       mac_query: "json.interfaces[?type=='interface'].mac"
 
-  # Start at 2 because 1st is bastion, 2nd is SNO, rest are hypervisors
-  # Commented out until implementation is a requirement
-  # - name: SNO - Set ocpinventory hv nodes
-  #   set_fact:
-  #     ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[2:] }}"
-
 - name: Loop over all OCP nodes to find Supermicro hardware
   include_tasks: find_supermicro.yml
   loop: "{{ ocpinventory.json.nodes }}"
@@ -422,6 +434,15 @@
   set_fact:
     has_supermicro: false
   when: has_supermicro is not defined
+
+- name: Virtual spoke cluster for SNO hub
+  when:
+    - cluster_type == "sno"
+    - hv_inventory | bool
+  block:
+    - name: SNO - Set ocpinventory hv nodes
+      ansible.builtin.set_fact:
+        ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[2:] }}"
 
 - name: Virtual Multi node cluster type tasks
   when: cluster_type == "vmno"
