@@ -53,6 +53,7 @@ tx_packets=$(( ${tx4_packets:-0} + ${tx6_packets:-0} ))
 
 cpu_seconds="0"
 mem_bytes="0"
+mem_working_set_bytes="0"
 mem_limit="0"
 
 REGISTRY_PID=$(podman inspect --format '{% raw %}{{.State.Pid}}{% endraw %}' "$REGISTRY_CONTAINER" 2>/dev/null)
@@ -65,6 +66,12 @@ if [[ -n "$REGISTRY_PID" && "$REGISTRY_PID" != "0" ]]; then
     cpu_usec=$(awk '/^usage_usec/ {print $2}' "${CGROUP_DIR}/cpu.stat" 2>/dev/null)
     cpu_seconds=$(echo "${cpu_usec:-0}" | awk '{printf "%.6f", $1/1000000}')
     mem_bytes=$(cat "${CGROUP_DIR}/memory.current" 2>/dev/null || echo "0")
+
+    inactive_file=$(awk '/^inactive_file / {print $2; exit}' "${CGROUP_DIR}/memory.stat" 2>/dev/null)
+    inactive_file=${inactive_file:-0}
+    if [[ "$mem_bytes" -gt "$inactive_file" ]]; then
+      mem_working_set_bytes=$(( mem_bytes - inactive_file ))
+    fi
 
     raw_limit=$(cat "${CGROUP_DIR}/memory.max" 2>/dev/null)
     if [[ "$raw_limit" != "max" ]]; then
@@ -98,9 +105,12 @@ registry_network_transmit_packets_total{port="${REGISTRY_PORT}",service="mirror_
 # HELP registry_container_cpu_usage_seconds_total Cumulative CPU time consumed by the registry container.
 # TYPE registry_container_cpu_usage_seconds_total counter
 registry_container_cpu_usage_seconds_total{container="${REGISTRY_CONTAINER}"} ${cpu_seconds}
-# HELP registry_container_memory_usage_bytes Current memory usage of the registry container.
+# HELP registry_container_memory_usage_bytes Current memory usage of the registry container (includes page cache).
 # TYPE registry_container_memory_usage_bytes gauge
 registry_container_memory_usage_bytes{container="${REGISTRY_CONTAINER}"} ${mem_bytes}
+# HELP registry_container_memory_working_set_bytes Working set memory of the registry container (excludes reclaimable page cache).
+# TYPE registry_container_memory_working_set_bytes gauge
+registry_container_memory_working_set_bytes{container="${REGISTRY_CONTAINER}"} ${mem_working_set_bytes}
 # HELP registry_container_memory_limit_bytes Memory limit of the registry container (0 if unlimited).
 # TYPE registry_container_memory_limit_bytes gauge
 registry_container_memory_limit_bytes{container="${REGISTRY_CONTAINER}"} ${mem_limit}

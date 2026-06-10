@@ -658,8 +658,12 @@
       },
       "targets": [
         {
+          "expr": "registry_container_memory_working_set_bytes{job='bastion-system'}",
+          "legendFormat": "working set"
+        },
+        {
           "expr": "registry_container_memory_usage_bytes{job='bastion-system'}",
-          "legendFormat": "used"
+          "legendFormat": "total (incl. page cache)"
         }
       ],
       "fieldConfig": {
