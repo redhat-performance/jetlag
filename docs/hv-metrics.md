@@ -124,7 +124,7 @@ Monitors the bastion machine with panels for:
 - **Disk Space**: Root filesystem used, root usage gauge (%), all mountpoints
 - **Disk I/O**: IOPS, throughput, I/O utilization (%) — selectable via **Disk Device** dropdown
 - **Network**: All physical interface bandwidth, received/transmitted breakdown — selectable via **Network Interface** dropdown
-- **Mirror Registry**: Container CPU usage (cores), container memory usage, active connections, bandwidth, throughput, cumulative bytes transferred, and packets/s (only populated when `setup_bastion_registry` is enabled)
+- **Mirror Registry**: Container CPU usage (cores), container memory (working set and total), active connections, bandwidth, throughput, cumulative bytes transferred, and packets/s (only populated when `setup_bastion_registry` is enabled)
 
 > **Note:** Registry bandwidth (measured via iptables at the IP layer) may appear 5-10% higher than the NIC-level bandwidth shown in the Network section. This is expected — iptables counts TCP/IP headers that are not included in the interface byte counters. The NIC graph reflects true wire bandwidth.
 
@@ -146,9 +146,19 @@ The following metrics are exposed:
 | `registry_network_receive_packets_total` | counter | Packets received by the registry |
 | `registry_network_transmit_packets_total` | counter | Packets transmitted by the registry |
 | `registry_container_cpu_usage_seconds_total` | counter | Cumulative CPU time consumed by the registry container |
-| `registry_container_memory_usage_bytes` | gauge | Current memory usage of the registry container |
+| `registry_container_memory_usage_bytes` | gauge | Total memory charged to the registry container cgroup (includes reclaimable page cache) |
+| `registry_container_memory_working_set_bytes` | gauge | Working set memory of the registry container (`memory.current - inactive_file`) |
 | `registry_container_memory_limit_bytes` | gauge | Memory limit of the registry container (0 if unlimited) |
 | `registry_network_connections` | gauge | Current number of established connections to the registry |
+
+### Registry Memory Metrics
+
+The dashboard shows two memory series for the registry container:
+
+- **working set** — `memory.current - inactive_file` from the container's cgroup. This is the same calculation that `podman stats` and `docker stats` use ([containers/common#2454](https://github.com/containers/common/issues/2454)). It excludes inactive file-backed page cache that the kernel can reclaim under memory pressure.
+- **total (incl. page cache)** — the raw `memory.current` value from the cgroup. This includes all memory charged to the container, including reclaimable page cache from serving container images. This value can appear significantly higher than actual memory consumption (e.g. 75 GiB vs 1 GiB) on systems with large registries.
+
+Both values will differ from `top` RES for the registry process. `top` shows per-process resident pages (anonymous + file-mapped memory), while the cgroup metrics include kernel memory charged to the container (slab, socket buffers, etc.) that doesn't appear in any single process's RSS.
 
 ## Resetting Registry Traffic Counters
 
