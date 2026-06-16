@@ -132,3 +132,13 @@
     volume:
     - /etc/pki/ca-trust/extracted/pem:/etc/pki/ca-trust/extracted/pem:Z
     state: started
+
+- name: Wait for assisted image service to be ready
+  uri:
+    url: "http://{{ assisted_installer_host }}:{{ assisted_image_service_port }}/health"
+    method: GET
+    status_code: [200]
+  register: image_service_health
+  until: image_service_health is success
+  retries: 30
+  delay: 10
