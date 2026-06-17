@@ -115,7 +115,7 @@ odf_catalogsource: odf-testing-catalog
 odf_channel: stable-4.21
 
 # LSO uses the default redhat-operators (no override set)
-controlplane_localstorage_configuration: true
+setup_lso: true
 controlplane_localstorage_disk_devices:
 - /dev/disk/by-path/pci-0000:4a:00.0-scsi-0:0:2:0
 
