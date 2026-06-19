@@ -1,7 +1,7 @@
 ---
 # bastion-assisted-installer default vars
 
-assisted_installer_tag: v2.53.2
+assisted_installer_tag: stable.17.06.2026-02.05
 assisted_installer_ui_tag: v2.52.2
 
 assisted_image_service_image: quay.io/edge-infrastructure/assisted-image-service:{{ assisted_installer_tag }}
