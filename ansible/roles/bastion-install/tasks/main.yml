@@ -249,7 +249,7 @@
     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - url: "{{ release_urls['ga'] }}/latest/oc-mirror.rhel9.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
-  when: ansible_facts['distribution_major_version'] is version('9', '==')
+  when: ansible_facts['distribution_major_version'] is version('9', '>=')
 
 - name: Untar coredns, opm, kube-burner, kube-burner-ocp and grpcurl client
   unarchive:
@@ -279,7 +279,7 @@
     dest: /usr/local/bin/opm
     state: link
     force: yes
-  when: ansible_facts['distribution_major_version'] is version('9', '==')
+  when: ansible_facts['distribution_major_version'] is version('9', '>=')
 
 - name: Untar yq tool
   unarchive:
