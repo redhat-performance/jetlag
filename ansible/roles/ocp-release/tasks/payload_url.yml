@@ -11,10 +11,10 @@
     dest: "/root/.docker/config.json"
 
 # Set bastion rhel version for ocp 4.15 and newer
-- name: RHEL version rhel9 check
+- name: RHEL version rhel9+ check
   set_fact:
     bastion_rhel_version: "rhel9"
-  when: ansible_facts['distribution_major_version'] is version('9', '==')
+  when: ansible_facts['distribution_major_version'] is version('9', '>=')
 
 - name: RHEL version rhel8 check
   set_fact:
