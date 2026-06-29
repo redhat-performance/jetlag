@@ -1,0 +1,80 @@
+{
+  "_comment": "Test fixture for test_vm_planner.py (paired with test_cloud00.local).",
+  "vm_types": {
+    "worker": {
+      "per_hv": 1,
+      "cpus": 8,
+      "memory": 16,
+      "disk_size": 100,
+      "bw_avg": 11500,
+      "bw_peak": 12500,
+      "bw_burst": 11750,
+      "disk_location": "/var/lib/libvirt/images"
+    },
+    "master": {
+      "per_hv": 3,
+      "cpus": 16,
+      "memory": 32,
+      "disk_size": 120,
+      "bw_avg": 25000,
+      "bw_peak": 30000,
+      "bw_burst": 28000,
+      "disk_location": "/var/lib/libvirt/images"
+    },
+    "sno": {
+      "cpus": 32,
+      "memory": 64,
+      "disk_size": 200,
+      "bw_avg": 25000,
+      "bw_peak": 30000,
+      "bw_burst": 28000,
+      "disk_location": "/var/lib/libvirt/images"
+    },
+    "alex": {
+      "per_hv": 1,
+      "cpus": 11,
+      "memory": 111,
+      "disk_size": 1111,
+      "bw_avg": 25000,
+      "bw_peak": 30000,
+      "bw_burst": 28000,
+      "disk_location": "/var/lib/libvirt/images"
+    }
+  },
+  "cluster_types": {
+    "vmno": {
+      "count": 1,
+      "vms": {
+        "master": 3,
+        "worker": 5
+      }
+    },
+    "compact": {
+      "count": 1,
+      "vms": {
+        "master": 3
+      }
+    },
+    "standard": {
+      "count": 12,
+      "vms": {
+        "master": 3,
+        "worker": 3
+      }
+    },
+    "sno": {
+      "count": 109,
+      "vms": {
+        "sno": 1
+      }
+    },
+    "crazy": {
+      "count": 12,
+      "vms": {
+        "master": 3,
+        "worker": 2,
+        "alex": 2
+      }
+    }
+  }
+}

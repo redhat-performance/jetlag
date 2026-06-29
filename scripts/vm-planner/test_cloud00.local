@@ -1,0 +1,29 @@
+[all:vars]
+controlplane_network=['198.18.0.0/16']
+controlplane_network_prefix=[16]
+
+[hv]
+hv00.example.com bmc_address=mgmt-hv00.example.com vendor=Dell ip=198.18.0.6 nic=eno1 disk2_enable=True disk2_device=nvme0n1
+hv01.example.com bmc_address=mgmt-hv01.example.com vendor=Dell ip=198.18.0.7 nic=eno1 disk2_enable=True disk2_device=nvme0n1
+hv02.example.com bmc_address=mgmt-hv02.example.com vendor=Dell ip=198.18.0.8 nic=eno1 disk2_enable=True disk2_device=nvme0n1
+hv03.example.com bmc_address=mgmt-hv03.example.com vendor=Dell ip=198.18.0.9 nic=eno1 disk2_enable=True disk2_device=nvme0n1
+hv04.example.com bmc_address=mgmt-hv04.example.com vendor=Dell ip=198.18.0.10 nic=eno1 disk2_enable=True disk2_device=nvme0n1
+hv05.example.com bmc_address=mgmt-hv05.example.com vendor=Dell ip=198.18.0.11 nic=eno1 disk2_enable=True disk2_device=nvme0n1
+
+[hv:vars]
+ansible_user=root
+ansible_ssh_pass=testpass
+bmc_user=test
+bmc_password=testpass
+network_prefix=16
+
+[hv_vm]
+
+[hv_vm:vars]
+ansible_user=root
+ansible_ssh_pass=testpass
+base_domain=example.com
+machine_network=198.18.0.0/16
+network_prefix=16
+gateway=198.18.0.1
+bw_limit=False
