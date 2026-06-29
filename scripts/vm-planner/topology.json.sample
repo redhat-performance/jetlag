@@ -1,0 +1,60 @@
+{
+  "_comment": "Copy to topology.json and customize. Load with: --vm-types topology.json",
+  "vm_types": {
+    "master": {
+      "per_hv": 1,
+      "cpus": 16,
+      "memory": 64,
+      "disk_size": 100,
+      "bw_avg": 25000,
+      "bw_peak": 30000,
+      "bw_burst": 28000,
+      "disk_location": "/var/lib/libvirt/images"
+    },
+    "worker": {
+      "per_hv": 3,
+      "cpus": 8,
+      "memory": 18,
+      "disk_size": 100,
+      "bw_avg": 11500,
+      "bw_peak": 12500,
+      "bw_burst": 11750,
+      "disk_location": "/var/lib/libvirt/images",
+      "misc": {
+        "vendor": "Libvirt",
+        "install_disk": "/dev/sda"
+      }
+    },
+    "sno": {
+      "per_hv": 1,
+      "cpus": 16,
+      "memory": 64,
+      "disk_size": 100,
+      "bw_avg": 25000,
+      "bw_peak": 30000,
+      "bw_burst": 28000,
+      "disk_location": "/var/lib/libvirt/images"
+    }
+  },
+  "cluster_types": {
+    "standard": {
+      "count": 1,
+      "vms": {
+        "master": 3,
+        "worker": 2
+      }
+    },
+    "compact": {
+      "count": 1,
+      "vms": {
+        "master": 3
+      }
+    },
+    "sno": {
+      "count": 1,
+      "vms": {
+        "master": 1
+      }
+    }
+  }
+}
