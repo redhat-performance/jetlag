@@ -20,6 +20,37 @@
   until: iso_download is success
   delay: 20
 
+- name: Set discovery ISO password
+  block:
+    - name: Backup original discovery ISO
+      copy:
+        src: "{{ http_store_path }}/data/{{ iso_name }}.iso"
+        dest: "{{ http_store_path }}/data/{{ iso_name }}-backup.iso"
+        remote_src: true
+        mode: 0644
+
+    - name: Checkout assisted-service repo
+      git:
+        repo: https://github.com/openshift/assisted-service.git
+        dest: /root/assisted-service
+        version: master
+
+
+    - name: Create new discovery ISO with password
+      shell: /root/assisted-service/docs/change-iso-password.sh {{ http_store_path }}/data/{{ iso_name }}.iso
+      args:
+        stdin: "{{ discovery_iso_password }}"
+      no_log: true
+
+    - name: Copy discovery_with_password ISO to discovery ISO
+      copy:
+        src: "{{ http_store_path }}/data/{{ iso_name }}_with_password.iso"
+        dest: "{{ http_store_path }}/data/{{ iso_name }}.iso"
+        remote_src: true
+        mode: 0644
+
+  when: discovery_iso_password is defined
+
 - name: Symlink discovery ISO into "iso" subdirectory
   ansible.builtin.file:
     src: ../{{ iso_name }}.iso
