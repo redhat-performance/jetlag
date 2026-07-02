@@ -6,6 +6,7 @@
 - name: "Dell - Wait for ComputerSystem ready after clear-jobs for {{ item }}"
   ansible.builtin.uri:
     url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Systems"
+    force_basic_auth: yes
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
     method: GET
