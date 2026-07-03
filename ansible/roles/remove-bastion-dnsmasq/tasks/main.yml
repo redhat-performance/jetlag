@@ -1,0 +1,34 @@
+---
+# remove-bastion-dnsmasq tasks
+
+- name: Stop and disable dnsmasq
+  systemd:
+    state: stopped
+    enabled: false
+    name: dnsmasq
+
+- name: Remove Jetlag dnsmasq configuration
+  file:
+    path: /etc/dnsmasq.d/jetlag.conf
+    state: absent
+
+- name: Remove NetworkManager DNS configuration
+  file:
+    path: /etc/NetworkManager/conf.d/99-jetlag-dns.conf
+    state: absent
+
+- name: Restore interface=lo line in dnsmasq.conf
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    regexp: "^#interface=lo"
+    line: "interface=lo"
+
+- name: Remove Jetlag resolv.conf (NetworkManager will regenerate)
+  file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: Restart NetworkManager
+  systemd:
+    state: restarted
+    name: NetworkManager

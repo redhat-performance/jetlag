@@ -1,0 +1,15 @@
+---
+# Removes dnsmasq configuration from the bastion host
+#
+# Example Usage:
+#
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/remove-bastion-dnsmasq.yml
+#
+
+- name: Remove dnsmasq configuration from bastion
+  hosts: bastion
+  gather_facts: false
+  vars_files:
+  - vars/all.yml
+  roles:
+  - remove-bastion-dnsmasq
