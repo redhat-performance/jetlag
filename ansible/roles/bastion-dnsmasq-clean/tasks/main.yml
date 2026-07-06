@@ -1,5 +1,5 @@
 ---
-# bastion-dnsmasq-cleanup tasks
+# bastion-dnsmasq-clean tasks
 
 - name: Stop and disable dnsmasq
   systemd:
