@@ -3,7 +3,7 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/remove-bastion-dnsmasq.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-dnsmasq-cleanup.yml
 #
 
 - name: Remove dnsmasq configuration from bastion
@@ -12,4 +12,4 @@
   vars_files:
   - vars/all.yml
   roles:
-  - remove-bastion-dnsmasq
+  - bastion-dnsmasq-cleanup
