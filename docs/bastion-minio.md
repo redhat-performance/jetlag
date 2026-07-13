@@ -20,7 +20,7 @@ The following vars control the MinIO deployment and are defined in `ansible/role
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
 | `setup_bastion_minio` | `false` | Enable MinIO deployment on the bastion (set in `all.yml`) |
-| `minio_store_path` | `/opt/minio` | Base directory for MinIO storage on the bastion |
+| `minio_store_path` | `/opt/jetlag/minio` | Base directory for MinIO storage on the bastion |
 | `minio_data_disk` | `""` | Full device path (e.g. `/dev/sdb`, `/dev/nvme0n1`, `/dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:1:0`) to partition, format as XFS, and mount at `minio_store_path/data`. Empty string uses the bastion root filesystem |
 | `minio_image` | `quay.io/minio/minio` | MinIO container image |
 | `minio_image_tag` | `RELEASE.2025-09-07T16-13-09Z` | MinIO container image tag |
