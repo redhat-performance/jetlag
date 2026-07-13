@@ -14,7 +14,7 @@ compact_cluster_node_count: 3
 # DNS for compact clusters are offset by 4000 from the end of the ipv6 subnet
 compact_cluster_offset: 4000
 
-registry_path: /opt/registry
+registry_path: /opt/jetlag/registry
 
 # Used with bmc-secret
 bmc_username_base64: "{{ 'redhat' | b64encode }}"

@@ -6,9 +6,9 @@
     path: "{{ item }}"
     state: directory
   with_items:
-  - /opt/gogs
-  - /opt/gogs/gogs
-  - /opt/gogs/gogs/conf
+  - "{{ gogs_path }}"
+  - "{{ gogs_path }}/gogs"
+  - "{{ gogs_path }}/gogs/conf"
   - /etc/cni/net.d
 
 - name: Set fact for ipv6
@@ -41,7 +41,7 @@
 - name: Configure gogs app.ini
   template:
     src: app.ini.j2
-    dest: /opt/gogs/gogs/conf/app.ini
+    dest: "{{ gogs_path }}/gogs/conf/app.ini"
 
 - name: Create gogs pod
   containers.podman.podman_pod:
@@ -70,7 +70,7 @@
   containers.podman.podman_container:
     pod: gogs
     volume:
-    - /opt/gogs:/data:Z
+    - "{{ gogs_path }}:/data:Z"
     name: gogs-service
     image: "{{ gogs_image }}"
     state: started

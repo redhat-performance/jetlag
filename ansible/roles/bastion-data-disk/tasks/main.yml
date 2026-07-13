@@ -1,0 +1,67 @@
+---
+# bastion-data-disk tasks
+
+- name: Create bastion data directory
+  ansible.builtin.file:
+    path: "{{ bastion_data_disk_mount_path }}"
+    state: directory
+
+- name: Check if bastion data path is already a mountpoint
+  ansible.builtin.command:
+    cmd: "mountpoint -q {{ bastion_data_disk_mount_path }}"
+  register: _bastion_data_disk_already_mounted
+  changed_when: false
+  failed_when: false
+  when: bastion_data_disk != ""
+
+- name: Set bastion data disk partition path
+  ansible.builtin.set_fact:
+    _bastion_data_disk_partition: "{{ bastion_data_disk }}1"
+  when:
+  - bastion_data_disk != ""
+  - _bastion_data_disk_already_mounted.rc != 0
+
+- name: Set bastion data disk partition path for nvme
+  ansible.builtin.set_fact:
+    _bastion_data_disk_partition: "{{ bastion_data_disk }}p1"
+  when:
+  - bastion_data_disk != ""
+  - _bastion_data_disk_already_mounted.rc != 0
+  - '"nvme" in bastion_data_disk'
+  - '"by-path" not in bastion_data_disk'
+
+- name: Set bastion data disk partition path for by-path
+  ansible.builtin.set_fact:
+    _bastion_data_disk_partition: "{{ bastion_data_disk }}-part1"
+  when:
+  - bastion_data_disk != ""
+  - _bastion_data_disk_already_mounted.rc != 0
+  - '"by-path" in bastion_data_disk'
+
+- name: Create bastion data disk primary partition
+  community.general.parted:
+    device: "{{ bastion_data_disk }}"
+    number: 1
+    state: present
+    label: gpt
+  when:
+  - bastion_data_disk != ""
+  - _bastion_data_disk_already_mounted.rc != 0
+
+- name: Format bastion data disk as XFS
+  community.general.filesystem:
+    fstype: xfs
+    dev: "{{ _bastion_data_disk_partition }}"
+  when:
+  - bastion_data_disk != ""
+  - _bastion_data_disk_already_mounted.rc != 0
+
+- name: Mount bastion data disk
+  ansible.posix.mount:
+    fstype: xfs
+    src: "{{ _bastion_data_disk_partition }}"
+    path: "{{ bastion_data_disk_mount_path }}"
+    state: mounted
+  when:
+  - bastion_data_disk != ""
+  - _bastion_data_disk_already_mounted.rc != 0
