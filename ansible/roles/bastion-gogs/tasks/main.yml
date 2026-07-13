@@ -2,46 +2,46 @@
 # bastion-gogs tasks
 
 - name: Create directories for bastion gogs
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-  with_items:
-  - /opt/gogs
-  - /opt/gogs/gogs
-  - /opt/gogs/gogs/conf
+  loop:
+  - "{{ gogs_path }}"
+  - "{{ gogs_path }}/gogs"
+  - "{{ gogs_path }}/gogs/conf"
   - /etc/cni/net.d
 
 - name: Set fact for ipv6
-  set_fact:
+  ansible.builtin.set_fact:
     ipv6: "{{controlplane_network | ansible.utils.ipv6}}"
 
 - name: Check if podman6.json exists
-  stat:
+  ansible.builtin.stat:
     path: /etc/containers/networks/podman6.json
   when: ipv6
   register: stat_podman6_json
 
 - name: Create podman6 network
-  shell: |
+  ansible.builtin.shell: |
     podman network create --ipv6 podman6
   when:
   - ipv6
   - not stat_podman6_json.stat.exists
 
 - name: Set podman network IPv6
-  set_fact:
+  ansible.builtin.set_fact:
     podman_network: podman6
   when: ipv6
 
 - name: Set podman network IPv4
-  set_fact:
+  ansible.builtin.set_fact:
     podman_network: podman
   when: not ipv6
 
 - name: Configure gogs app.ini
-  template:
+  ansible.builtin.template:
     src: app.ini.j2
-    dest: /opt/gogs/gogs/conf/app.ini
+    dest: "{{ gogs_path }}/gogs/conf/app.ini"
 
 - name: Create gogs pod
   containers.podman.podman_pod:
@@ -70,13 +70,13 @@
   containers.podman.podman_container:
     pod: gogs
     volume:
-    - /opt/gogs:/data:Z
+    - "{{ gogs_path }}:/data:Z"
     name: gogs-service
     image: "{{ gogs_image }}"
     state: started
 
 # Ignore errors because this task can only run once against a "new" gogs instance
 - name: Add admin user to gogs
-  shell: |
+  ansible.builtin.shell: |
     podman exec gogs-service su git -c "/app/gogs/gogs admin create-user --name {{ gogs_username }} --password {{ gogs_password }} --email {{ gogs_username }}@redhat.com --admin"
   ignore_errors: true

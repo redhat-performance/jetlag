@@ -1,0 +1,74 @@
+---
+# bastion-data-disk tasks
+
+- name: Create bastion data directory
+  ansible.builtin.file:
+    path: "{{ bastion_data_disk_mount_path }}"
+    state: directory
+
+- name: Check if bastion data path is already a mountpoint
+  ansible.builtin.command:
+    cmd: "mountpoint -q {{ bastion_data_disk_mount_path }}"
+  register: bastion_data_disk_already_mounted
+  changed_when: false
+  failed_when: bastion_data_disk_already_mounted.rc not in [0, 32]
+  when: bastion_data_disk != ""
+
+- name: Setup bastion data disk
+  when:
+  - bastion_data_disk != ""
+  - bastion_data_disk_already_mounted.rc != 0
+  block:
+  - name: Check if mount path is empty before partitioning
+    ansible.builtin.find:
+      paths: "{{ bastion_data_disk_mount_path }}"
+      file_type: any
+      hidden: true
+    register: bastion_data_disk_mount_path_contents
+
+  - name: Fail if mount path is not empty
+    ansible.builtin.fail:
+      msg: |
+        Cannot mount {{ bastion_data_disk }} at {{ bastion_data_disk_mount_path }} - directory is not empty.
+        Found {{ bastion_data_disk_mount_path_contents.matched }} files/directories.
+        To proceed, either:
+        1. Migrate existing data: mv {{ bastion_data_disk_mount_path }} {{ bastion_data_disk_mount_path }}.backup
+        2. Remove existing data: rm -rf {{ bastion_data_disk_mount_path }}/*
+        Then re-run this playbook.
+    when: bastion_data_disk_mount_path_contents.matched > 0
+
+  - name: Set bastion data disk partition path
+    ansible.builtin.set_fact:
+      bastion_data_disk_partition: "{{ bastion_data_disk }}1"
+
+  - name: Set bastion data disk partition path for nvme
+    ansible.builtin.set_fact:
+      bastion_data_disk_partition: "{{ bastion_data_disk }}p1"
+    when:
+    - '"nvme" in bastion_data_disk'
+    - '"by-path" not in bastion_data_disk'
+
+  - name: Set bastion data disk partition path for by-path
+    ansible.builtin.set_fact:
+      bastion_data_disk_partition: "{{ bastion_data_disk }}-part1"
+    when:
+    - '"by-path" in bastion_data_disk'
+
+  - name: Create bastion data disk primary partition
+    community.general.parted:
+      device: "{{ bastion_data_disk }}"
+      number: 1
+      state: present
+      label: gpt
+
+  - name: Format bastion data disk as XFS
+    community.general.filesystem:
+      fstype: xfs
+      dev: "{{ bastion_data_disk_partition }}"
+
+  - name: Mount bastion data disk
+    ansible.posix.mount:
+      fstype: xfs
+      src: "{{ bastion_data_disk_partition }}"
+      path: "{{ bastion_data_disk_mount_path }}"
+      state: mounted

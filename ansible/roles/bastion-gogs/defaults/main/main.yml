@@ -9,4 +9,5 @@ gogs_ipv6_port: 10880
 gogs_username: testadmin
 gogs_password: testadmin
 
+gogs_path: /opt/jetlag/gogs
 gogs_image: quay.io/redhat-performance/gogs:0.13

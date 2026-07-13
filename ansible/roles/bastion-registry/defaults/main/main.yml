@@ -5,7 +5,7 @@
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
-registry_path: /opt/registry
+registry_path: /opt/jetlag/registry
 
 registry_user: registry
 registry_password: registry

@@ -1,4 +1,4 @@
 ---
 # bastion-minio-clean default vars
 
-minio_store_path: /opt/minio
+minio_store_path: /opt/jetlag/minio

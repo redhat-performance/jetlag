@@ -7,8 +7,8 @@ proxy_port: 3128
 proxy_container_image: quay.io/konflux-ci/caching/squid:latest
 
 # Cache configuration (persistent across reboots)
-proxy_cache_dir: /opt/squid/cache
-proxy_conf_dir: /opt/squid/conf
+proxy_cache_dir: /opt/jetlag/squid/cache
+proxy_conf_dir: /opt/jetlag/squid/conf
 proxy_cache_size_mb: 10000
 proxy_max_object_size_mb: 4096
 

@@ -5,7 +5,7 @@
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
-sync_path: /opt/registry/sync
+sync_path: "{{ registry_path }}/sync"
 
 # OCP release channel to mirror, e.g. candidate-4.22
 # Only used when use_oc_mirror_v2 is true

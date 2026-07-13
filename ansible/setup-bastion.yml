@@ -16,6 +16,7 @@
   - ocp-release
   - bastion-install
   - bastion-network
+  - bastion-data-disk
   - role: bastion-dnsmasq
     when: not setup_coredns
   - role: bastion-coredns

@@ -1,0 +1,10 @@
+---
+# bastion-data-disk default vars
+
+# Set to a full device path (e.g. /dev/sdb, /dev/nvme0n1,
+# /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:1:0) to partition, format as XFS,
+# and mount it at bastion_data_disk_mount_path. Empty string disables disk setup.
+bastion_data_disk: ""
+
+# Mount point for the bastion data disk
+bastion_data_disk_mount_path: /opt/jetlag

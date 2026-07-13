@@ -1,7 +1,7 @@
 ---
 # bastion-minio default vars
 
-minio_store_path: /opt/minio
+minio_store_path: /opt/jetlag/minio
 minio_image: quay.io/minio/minio
 minio_image_tag: RELEASE.2025-09-07T16-13-09Z
 minio_access_key: minio

@@ -5,4 +5,5 @@
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
-sync_path: /opt/registry/sync
+registry_path: /opt/jetlag/registry
+sync_path: "{{ registry_path }}/sync"

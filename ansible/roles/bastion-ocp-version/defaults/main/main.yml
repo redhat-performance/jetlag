@@ -9,4 +9,4 @@ registry_port: 5000
 http_store_host: "{{ groups['bastion'][0] }}"
 http_store_port: 8081
 
-ocp_version_path: /opt/ocp-version
+ocp_version_path: /opt/jetlag/ocp-version

@@ -12,6 +12,8 @@ assisted_installer_ui_image: quay.io/edge-infrastructure/assisted-installer-ui:{
 assisted_service_image: quay.io/edge-infrastructure/assisted-service:{{ assisted_installer_tag }}
 assisted_postgres_image: quay.io/edge-infrastructure/postgresql-12-centos7
 
+assisted_service_path: /opt/jetlag/assisted-service
+
 # This will be your bastion machine (if you run setup-bastion playbook)
 assisted_installer_host: "{{ groups['bastion'][0] }}"
 assisted_installer_port: 8090
