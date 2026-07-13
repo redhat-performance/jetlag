@@ -7,17 +7,13 @@
 #
 
 - name: Delete VMs on hypervisors
-  hosts: hv_vm
+  hosts: hv
   gather_facts: false
   vars_files:
   - vars/hv.yml
   roles:
   - hv-vm-delete
-
-- name: Cleanup hypervisors after clearing off VMs
-  hosts: hv
-  gather_facts: false
-  tasks:
+  post_tasks:
   - name: Restart sushy-emulator
     systemd:
       state: restarted

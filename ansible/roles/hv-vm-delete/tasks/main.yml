@@ -1,5 +1,6 @@
 ---
 # hv-vm-delete tasks
+# Targets 'hv' hosts and batches all VM operations per hypervisor
 
 - name: Remove directories for hv-vm manifests on bastion
   file:
@@ -9,31 +10,36 @@
   run_once: true
   when: hv_vm_remove_all_manifests
 
-- name: Destroy VM
+- name: Build list of VMs on this hypervisor
+  set_fact:
+    _my_vms: >-
+      {% set comma = joiner(",") -%}
+      [{% for vm in groups['hv_vm'] | default([]) -%}
+      {% if hostvars[vm]['ansible_host'] == inventory_hostname -%}
+      {{ comma() }}"{{ vm }}"
+      {%- endif -%}
+      {%- endfor %}]
+
+- name: Batch destroy and undefine VMs
   shell: |
-    virsh destroy {{ inventory_hostname }}
+    {% for vm in _my_vms %}
+    ( virsh destroy {{ vm }} 2>/dev/null; virsh undefine --nvram {{ vm }} 2>/dev/null ) &
+    {% if loop.index is divisibleby 10 %}
+    wait
+    {% endif %}
+    {% endfor %}
+    wait
+  when: _my_vms | length > 0
   ignore_errors: true
 
-- name: Undefine VM
+- name: Batch delete VM disks and definition files
   shell: |
-    virsh undefine --nvram {{ inventory_hostname }}
-  ignore_errors: true
-
-- name: Delete VM disk
-  file:
-    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
-    state: absent
-  ignore_errors: true
-
-- name: Delete 2nd VM disk
-  file:
-    path: "{{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2"
-    state: absent
-  when: "'disk2_location' in hostvars[inventory_hostname]"
-  ignore_errors: true
-
-- name: Remove VM definition file
-  file:
-    path: "{{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml"
-    state: absent
+    {% for vm in _my_vms %}
+    rm -f "{{ hostvars[vm]['disk_location'] }}/{{ vm }}.qcow2"
+    {% if 'disk2_location' in hostvars[vm] %}
+    rm -f "{{ hostvars[vm]['disk2_location'] }}/{{ vm }}-sdb.qcow2"
+    {% endif %}
+    rm -f "{{ hv_kvm_def_path }}/{{ vm }}.xml"
+    {% endfor %}
+  when: _my_vms | length > 0
   ignore_errors: true
