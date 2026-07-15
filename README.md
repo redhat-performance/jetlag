@@ -227,3 +227,4 @@ xxxxx-xxxxx-xxxxx-xxxxx
 | [Tips and Vars](docs/tips-and-vars.md) | Advanced configuration, network overrides, and extra variables |
 | [Troubleshooting](docs/troubleshooting.md) | Common deployment issues and solutions |
 | [VM Bandwidth](docs/vm-bandwidth.md) | Creation-time and dynamic bandwidth limiting for VMs |
+| [ACM Considerations](docs/acm.md) | General comments and considerations when converting the Jetlag provisioned OCP to ACM Hub/Spoke |

@@ -16,6 +16,20 @@ _**Table of Contents**_
 
 MNO cluster type will allocate remaining hardware that was not put in the inventory for the cluster as Hypervisor machines if `hv_inventory: true` is set in the `all.yml` vars file while running the `create-inventory.yml` playbook. This is typically used for testing ACM/MCE installed on a hub cluster such that the VMs will serve as host machines for spoke clusters.
 
+### Quick Start for Hypervisors
+
+Hypervisors enable deployment of virtual clusters (VMNO) and hybrid MNO clusters with both bare metal and virtual worker nodes. The typical workflow is:
+
+1. Enable hypervisors in `ansible/vars/all.yml` by setting `hv_inventory: true`
+2. Generate inventory with `ansible-playbook ansible/create-inventory.yml`
+3. Configure hypervisors with `ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-setup.yml`
+4. Create VMs with `ansible-playbook -i ansible/inventory/cloud42.local ansible/hv-vm-create.yml`
+5. Deploy clusters to VMs or use them as spoke cluster hosts with ACM/MCE
+
+For advanced features like network impairments, vNUMA configuration, or VM manifest generation for ACM/MCE, see the relevant sections below.
+
+### Configuration Variables
+
 Make sure to set and append the following vars in the "extra vars" section of the `vars/all.yml`
 
 | Variable | Meaning |
