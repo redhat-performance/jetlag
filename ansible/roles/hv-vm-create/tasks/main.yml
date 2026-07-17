@@ -1,111 +1,119 @@
 ---
 # hv-vm-create tasks
+# Targets 'hv' hosts and batches all VM operations per hypervisor
 
-- name: Check if vm disk file exists
-  stat:
-    path: "{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2"
-    get_checksum: false
-  register: vm_disk_stat
-
-- name: Create vm disk
-  shell: |
-    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2 {{ hostvars[inventory_hostname]['disk_size'] }}G
-  when: not vm_disk_stat.stat.exists
-
-- name: Create 2nd vm disk
-  shell: |
-    qemu-img create -f qcow2 {{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2 {{ hostvars[inventory_hostname]['disk2_size'] }}G
-  when: "'disk2_location' in hostvars[inventory_hostname]"
-
-- name: Set VM CPU count from host variables
+- name: Build list of VMs on this hypervisor
   set_fact:
-    hv_vm_cpu_count: "{{ hostvars[inventory_hostname]['cpus'] }}"
+    _my_vms: >-
+      {% set comma = joiner(",") -%}
+      [{% for vm in groups['hv_vm'] | default([]) -%}
+      {% if hostvars[vm]['ansible_host'] == inventory_hostname -%}
+      {{ comma() }}"{{ vm }}"
+      {%- endif -%}
+      {%- endfor %}]
+
+- name: Batch create VM disks
+  shell: |
+    pids=""
+    {% for vm in _my_vms %}
+    ( test -f "{{ hostvars[vm]['disk_location'] }}/{{ vm }}.qcow2" || \
+      qemu-img create -f qcow2 "{{ hostvars[vm]['disk_location'] }}/{{ vm }}.qcow2" {{ hostvars[vm]['disk_size'] }}G ) &
+    pids="$pids $!"
+    {% if 'disk2_location' in hostvars[vm] %}
+    ( test -f "{{ hostvars[vm]['disk2_location'] }}/{{ vm }}-sdb.qcow2" || \
+      qemu-img create -f qcow2 "{{ hostvars[vm]['disk2_location'] }}/{{ vm }}-sdb.qcow2" {{ hostvars[vm]['disk2_size'] }}G ) &
+    pids="$pids $!"
+    {% endif %}
+    {% if loop.index is divisibleby 10 %}
+    for pid in $pids; do wait $pid || exit 1; done
+    pids=""
+    {% endif %}
+    {% endfor %}
+    for pid in $pids; do wait $pid || exit 1; done
+  when: _my_vms | length > 0
 
 - name: Configure VM hugepages
-  when: vm_hugepages
+  when:
+  - vm_hugepages
+  - _my_vms | length > 0
   block:
-    - name: Set hugepage count for VM
+    - name: Calculate total hugepages needed for all VMs on this hypervisor
       set_fact:
-        vm_hugepages_needed: "{{ (hostvars[inventory_hostname]['memory'] | int) // (1 | int) }}"
+        _total_hugepages_needed: >-
+          {{ _my_vms | map('extract', hostvars, 'memory') | map('int') | sum }}
 
-    # Hard-coding 1Gi hugepages for now. In the unlikely event we may need small hugepages, we can refactor code at that time.
     - name: Check host hugepages availability
       shell: |
         cat /sys/kernel/mm/hugepages/hugepages-1048576kB/free_hugepages
-      register: host_hugepages_free
-      delegate_to: "{{ hostvars[inventory_hostname]['ansible_host'] }}"
+      register: _host_hugepages_free
 
     - name: Validate sufficient hugepages available
       fail:
-        msg: "Not enough 1048576kB hugepages available on host {{ hostvars[inventory_hostname]['ansible_host'] }}. Need: {{ vm_hugepages_needed }}, Available: {{ host_hugepages_free.stdout }}"
-      when: (host_hugepages_free.stdout | int) < (vm_hugepages_needed | int)
+        msg: >-
+          Not enough 1048576kB hugepages available on host {{ inventory_hostname }}.
+          Need: {{ _total_hugepages_needed }}, Available: {{ _host_hugepages_free.stdout }}
+      when: (_host_hugepages_free.stdout | int) < (_total_hugepages_needed | int)
 
-    - name: Display hugepages configuration for VM
+    - name: Display hugepages configuration
       debug:
-        msg: "VM {{ inventory_hostname }} will use {{ vm_hugepages_needed }} 1Gi hugepages ({{ (vm_hugepages_needed | int) }}G total)"
+        msg: >-
+          {{ _my_vms | length }} VMs will use {{ _total_hugepages_needed }} 1Gi hugepages total
+          ({{ _host_hugepages_free.stdout }} available on {{ inventory_hostname }})
 
-- name: Set vNUMA configuration tasks
-  when: vnuma_enabled
-  block:
-    - name: Gather host NUMA topology information
-      shell: |
-        lscpu | grep "NUMA node(s):" | awk '{print $3}'
-      register: host_numa_nodes
+- name: Gather host NUMA topology information
+  shell: |
+    lscpu | grep "NUMA node(s):" | awk '{print $3}'
+  register: _host_numa_nodes
+  when:
+  - vnuma_enabled
+  - _my_vms | length > 0
 
-    - name: Calculate vNUMA node count
-      set_fact:
-        vm_numa_nodes: "{{ host_numa_nodes.stdout | int if host_numa_nodes.stdout | int <= (hv_vm_cpu_count | int // 2) else (hv_vm_cpu_count | int // 2) }}"
-
-    - name: Calculate vNUMA memory per node
-      set_fact:
-        vm_numa_memory_per_node: "{{ (hostvars[inventory_hostname]['memory'] | int // vm_numa_nodes | int) }}"
-
-    - name: Calculate VM CPU sockets
-      set_fact:
-        vm_sockets: "{{ 1 if hv_vm_cpu_count | int < 8 else 2 if hv_vm_cpu_count | int <= 16 else 4 }}"
-
-    - name: Calculate VM CPU cores and threads
-      set_fact:
-        vm_cores: "{{ (hv_vm_cpu_count | int // vm_sockets | int // 2) }}"
-        vm_threads: 2
-
-    - name: Calculate VM CPU topology
-      set_fact:
-        vm_sockets: "{{ 1 if hv_vm_cpu_count | int < 8 else 2 if hv_vm_cpu_count | int <= 16 else 4 }}"
-        vm_cores: "{{ (hv_vm_cpu_count | int // vm_sockets | int // 2) }}"
-        vm_threads: 2
-
-    - name: Generate vNUMA CPU ranges
-      set_fact:
-        vm_numa_cpu_ranges: "{{ vm_numa_cpu_ranges | default([]) + [item ~ '-' ~ (item + (hv_vm_cpu_count | int // vm_numa_nodes | int) - 1)] }}"
-      loop: "{{ range(0, hv_vm_cpu_count | int, hv_vm_cpu_count | int // vm_numa_nodes | int) | list }}"
-
-- name: Template out kvm definition file
+- name: Template out kvm definition files
   template:
     src: kvm-def.xml.j2
-    dest: "{{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml"
+    dest: "{{ hv_kvm_def_path }}/{{ _current_vm }}.xml"
+  loop: "{{ _my_vms }}"
+  loop_control:
+    loop_var: _current_vm
 
-- name: Create vm from xml
+- name: Batch define VMs from XML
   shell: |
-    virsh define {{ hv_kvm_def_path }}/{{ inventory_hostname }}.xml
+    pids=""
+    {% for vm in _my_vms %}
+    virsh define "{{ hv_kvm_def_path }}/{{ vm }}.xml" &
+    pids="$pids $!"
+    {% if loop.index is divisibleby 10 %}
+    for pid in $pids; do wait $pid || exit 1; done
+    pids=""
+    {% endif %}
+    {% endfor %}
+    for pid in $pids; do wait $pid || exit 1; done
+  when: _my_vms | length > 0
 
-- name: Set bmc url ipv4
-  set_fact:
-    bmc_url: "http://{{ hostvars[inventory_hostname]['hv_ip'] }}:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
-  when: hostvars[inventory_hostname]['ip'] | ansible.utils.ipv4
-
-- name: Set bmc url ipv6
-  set_fact:
-    bmc_url: "http://[{{ hostvars[inventory_hostname]['hv_ip'] }}]:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[inventory_hostname]['domain_uuid'] }}"
-  when: hostvars[inventory_hostname]['ip'] | ansible.utils.ipv6
-
-- name: Verify virtual bmc is accessible
-  uri:
-    url: "{{ bmc_url }}"
-    method: Get
-    validate_certs: no
-    return_content: yes
-  register: webpage
-  until: webpage.status == 200
-  retries: 3
-  delay: 2
+- name: Batch verify virtual BMC is accessible
+  shell: |
+    pids=""
+    {% for vm in _my_vms %}
+    (
+    {% if hostvars[vm]['hv_ip'] | ansible.utils.ipv4 %}
+      url="http://{{ hostvars[vm]['hv_ip'] }}:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[vm]['domain_uuid'] }}"
+    {% else %}
+      url="http://[{{ hostvars[vm]['hv_ip'] }}]:{{ hv_bmc_port }}/redfish/v1/Systems/{{ hostvars[vm]['domain_uuid'] }}"
+    {% endif %}
+      for attempt in 1 2 3; do
+        if curl -s -o /dev/null -w "%{http_code}" "$url" | grep -q "200"; then
+          exit 0
+        fi
+        sleep 2
+      done
+      echo "FAILED: {{ vm }} at $url" >&2
+      exit 1
+    ) &
+    pids="$pids $!"
+    {% if loop.index is divisibleby 10 %}
+    for pid in $pids; do wait $pid || exit 1; done
+    pids=""
+    {% endif %}
+    {% endfor %}
+    for pid in $pids; do wait $pid || exit 1; done
+  when: _my_vms | length > 0

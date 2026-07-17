@@ -7,12 +7,19 @@
 #
 
 - name: Create VMs on hypervisors
-  hosts: hv_vm
+  hosts: hv
   gather_facts: false
   vars_files:
   - vars/hv.yml
   roles:
   - hv-vm-create
+
+- name: Create SNO manifests per VM
+  hosts: hv_vm
+  gather_facts: false
+  vars_files:
+  - vars/hv.yml
+  roles:
   - role: hv-vm-manifests-sno
     when:
     - hv_vm_generate_manifests

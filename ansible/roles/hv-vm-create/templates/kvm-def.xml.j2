@@ -1,8 +1,9 @@
+{% set _cpu_count = hostvars[_current_vm]['cpus'] | int -%}
 <domain type='kvm'>
-  <name>{{ inventory_hostname }}</name>
-  <uuid>{{ hostvars[inventory_hostname]['domain_uuid'] }}</uuid>
-  <memory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</memory>
-  <currentMemory unit='GiB'>{{ hostvars[inventory_hostname]['memory'] }}</currentMemory>
+  <name>{{ _current_vm }}</name>
+  <uuid>{{ hostvars[_current_vm]['domain_uuid'] }}</uuid>
+  <memory unit='GiB'>{{ hostvars[_current_vm]['memory'] }}</memory>
+  <currentMemory unit='GiB'>{{ hostvars[_current_vm]['memory'] }}</currentMemory>
 {% if vm_hugepages %}
   <memoryBacking>
     <hugepages>
@@ -10,7 +11,7 @@
     </hugepages>
   </memoryBacking>
 {% endif %}
-  <vcpu placement='static'>{{ hv_vm_cpu_count | int }}</vcpu>
+  <vcpu placement='static'>{{ _cpu_count }}</vcpu>
   <os>
     <type arch='x86_64' machine='pc-q35-rhel7.6.0'>hvm</type>
     <boot dev='hd'/>
@@ -23,19 +24,26 @@
 {% endif %}
   </features>
 {% if vnuma_enabled %}
+{% set _host_numa = _host_numa_nodes.stdout | int %}
+{% set _vm_numa_nodes = _host_numa if _host_numa <= (_cpu_count // 2) else (_cpu_count // 2) %}
+{% set _vm_numa_memory = hostvars[_current_vm]['memory'] | int // _vm_numa_nodes %}
+{% set _vm_sockets = 1 if _cpu_count < 8 else 2 if _cpu_count <= 16 else 4 %}
+{% set _vm_cores = _cpu_count // _vm_sockets // 2 %}
+{% set _vm_threads = 2 %}
+{% set _cpus_per_node = _cpu_count // _vm_numa_nodes %}
   <cpu mode='host-model' check='partial'>
     <model fallback='allow'/>
-    <topology sockets='{{ vm_sockets | int }}' cores='{{ vm_cores | int }}' threads='{{ vm_threads | int }}'/>
+    <topology sockets='{{ _vm_sockets }}' cores='{{ _vm_cores }}' threads='{{ _vm_threads }}'/>
     <numa>
-{%    for node in range(vm_numa_nodes | int) %}
-      <cell id='{{ node }}' cpus='{{ vm_numa_cpu_ranges[node] }}' memory='{{ vm_numa_memory_per_node }}' unit='GiB'/>
+{%    for node in range(_vm_numa_nodes) %}
+      <cell id='{{ node }}' cpus='{{ node * _cpus_per_node }}-{{ (node + 1) * _cpus_per_node - 1 }}' memory='{{ _vm_numa_memory }}' unit='GiB'/>
 {%    endfor %}
     </numa>
   </cpu>
   <numatune>
 {%  if vnuma_memory_placement == 'static' %}
-    <memory mode='{{ vnuma_memory_mode }}' placement='static' nodeset='{{ range(vm_numa_nodes|int)|join(",") }}'/>
-{%    for node in range(vm_numa_nodes|int) %}
+    <memory mode='{{ vnuma_memory_mode }}' placement='static' nodeset='{{ range(_vm_numa_nodes)|join(",") }}'/>
+{%    for node in range(_vm_numa_nodes) %}
     <memnode cellid='{{ node }}' mode='{{ vnuma_memory_mode }}' nodeset='{{ node }}'/>
 {%    endfor %}
 {%  else %}
@@ -63,14 +71,14 @@
     <emulator>/usr/libexec/qemu-kvm</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' discard='unmap'/>
-      <source file='{{ hostvars[inventory_hostname]['disk_location'] }}/{{ inventory_hostname }}.qcow2'/>
+      <source file='{{ hostvars[_current_vm]['disk_location'] }}/{{ _current_vm }}.qcow2'/>
       <target dev='sda' bus='scsi'/>
       <address type='drive' controller='0' bus='0' target='0' unit='0'/>
     </disk>
-{% if 'disk2_location' in hostvars[inventory_hostname] %}
+{% if 'disk2_location' in hostvars[_current_vm] %}
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' discard='unmap'/>
-      <source file='{{ hostvars[inventory_hostname]['disk2_location'] }}/{{ inventory_hostname }}-sdb.qcow2'/>
+      <source file='{{ hostvars[_current_vm]['disk2_location'] }}/{{ _current_vm }}-sdb.qcow2'/>
       <target dev='sdb' bus='scsi'/>
       <address type='drive' controller='0' bus='0' target='0' unit='1'/>
     </disk>
@@ -124,13 +132,13 @@
       <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x3'/>
     </controller>
     <interface type='bridge'>
-      <mac address='{{ hostvars[inventory_hostname]['mac_address'] }}'/>
+      <mac address='{{ hostvars[_current_vm]['mac_address'] }}'/>
       <source bridge='br0'/>
       <model type='virtio'/>
-{% if bw_limit | default(false) %}
+{% if hostvars[_current_vm]['bw_limit'] | default(false) %}
       <bandwidth>
-        <inbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
-        <outbound average='{{ hostvars[inventory_hostname]['bw_avg'] }}' peak='{{ hostvars[inventory_hostname]['bw_peak'] }}' burst='{{ hostvars[inventory_hostname]['bw_burst'] }}'/>
+        <inbound average='{{ hostvars[_current_vm]['bw_avg'] }}' peak='{{ hostvars[_current_vm]['bw_peak'] }}' burst='{{ hostvars[_current_vm]['bw_burst'] }}'/>
+        <outbound average='{{ hostvars[_current_vm]['bw_avg'] }}' peak='{{ hostvars[_current_vm]['bw_peak'] }}' burst='{{ hostvars[_current_vm]['bw_burst'] }}'/>
       </bandwidth>
 {% endif %}
       <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
@@ -139,7 +147,7 @@
 {% for i in range(1, 6) %}
     <interface type='bridge'>
 {% set mac_prefix = "%s:%02x" | format('52:54:00',i) %}
-      <mac address='{{ mac_prefix | community.general.random_mac(seed=inventory_hostname) }}'/>
+      <mac address='{{ mac_prefix | community.general.random_mac(seed=_current_vm) }}'/>
       <source bridge='br0'/>
       <model type='igb'/>
       <address type='pci' domain='0x0000' bus='{{ "0x%02x" | format(i + 4) }}' slot='0x00' function='0x0'/>
@@ -162,7 +170,7 @@
     </input>
     <input type='mouse' bus='ps2'/>
     <input type='keyboard' bus='ps2'/>
-    <graphics type='vnc' port='{{ hostvars[inventory_hostname]['vnc_port'] }}' autoport='no' listen='0.0.0.0'>
+    <graphics type='vnc' port='{{ hostvars[_current_vm]['vnc_port'] }}' autoport='no' listen='0.0.0.0'>
       <listen type='address' address='0.0.0.0'/>
     </graphics>
     <video>
