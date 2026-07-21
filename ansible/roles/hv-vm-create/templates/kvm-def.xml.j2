@@ -28,11 +28,11 @@
 {% set _vm_numa_nodes = [_host_numa if _host_numa <= (_cpu_count // 2) else (_cpu_count // 2), 1] | max %}
 {% set _vm_numa_memory = hostvars[_current_vm]['memory'] | int // _vm_numa_nodes %}
 {% set _vm_numa_memory_remainder = hostvars[_current_vm]['memory'] | int % _vm_numa_nodes %}
-{% set _vm_sockets = 1 if _cpu_count < 8 else 2 if _cpu_count <= 16 else 4 %}
-{% set _vm_cores = _cpu_count // _vm_sockets // 2 %}
-{% set _vm_threads = 2 %}
+{% set _target_sockets = 1 if _cpu_count < 8 else 2 if _cpu_count <= 16 else 4 %}
+{% set _vm_threads = 2 if _cpu_count % 2 == 0 else 1 %}
+{% set _vm_sockets = _target_sockets if _cpu_count % (_target_sockets * _vm_threads) == 0 else 1 %}
+{% set _vm_cores = _cpu_count // (_vm_sockets * _vm_threads) %}
 {% set _cpus_per_node = _cpu_count // _vm_numa_nodes %}
-{% set _cpus_remainder = _cpu_count % _vm_numa_nodes %}
   <cpu mode='host-model' check='partial'>
     <model fallback='allow'/>
     <topology sockets='{{ _vm_sockets }}' cores='{{ _vm_cores }}' threads='{{ _vm_threads }}'/>
