@@ -1,6 +1,6 @@
-# Scale Out a Multi-Node Openshift Deployment
+# Scale Out a Multi Node OpenShift Deployment
 
-A JetLag deployed Multi-Node Openshift deployment can be scale out via JetLag. Workers can be added using JetLag Inventory and Playbooks. This guide assumes you have an existing OCP cluster deployed via JetLag. The worker section in the JetLag inventory file should contain records that represent the worker nodes currently joined to the running cluster.
+A Jetlag deployed Multi Node OpenShift deployment can be scaled out via Jetlag. Workers can be added using Jetlag inventory and playbooks. This guide assumes you have an existing OpenShift cluster deployed via Jetlag. The worker section in the Jetlag inventory file should contain records that represent the worker nodes currently joined to the running cluster.
 
 _**Steps to Scale Out:**_
 - [Add New Node Entries to Worker Inventory](#add-new-node-entries-to-worker-inventory)

@@ -20,7 +20,7 @@ ODF requires the Local Storage Operator (LSO) to provide raw block devices as Pe
 
 Minimum requirements:
 
-- **Cluster type**: MNO only (ODF is not supported on SNO deployments in Jetlag)
+- **Cluster type**: MNO only (ODF is not available for SNO deployments in Jetlag)
 - **Nodes**: At least 3 nodes (control-plane or worker) with available block devices
 - **Block devices**: Each node must have at least one unused disk configured via `controlplane_localstorage_disk_devices` or `worker_localstorage_disk_devices`
 - **LSO**: `setup_lso: true` with disk devices listed

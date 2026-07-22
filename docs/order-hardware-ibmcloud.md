@@ -19,7 +19,7 @@ For multi node deployment, you will need:
 
 * One server to be provisioned as your bastion machine
 * Three additional servers to serve as control-plane nodes
-* At least two more servers to serve as worker nodes in your openshift cluster
+* At least two more servers to serve as worker nodes in your OpenShift cluster
 
 The following guides can also assist you with procurement of devices:
 

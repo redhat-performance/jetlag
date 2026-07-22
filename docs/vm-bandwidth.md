@@ -2,7 +2,8 @@
 
 Jetlag provides two mechanisms for controlling VM network bandwidth: static limits applied at VM creation time via the libvirt domain XML, and dynamic limits applied to existing VMs via `virsh domiftune`.
 
-> **Note:** Bandwidth limits are applied per VM network interface. This is primarily intended for SNO deployments where each VM represents a single-node OpenShift cluster, allowing you to simulate low-bandwidth edge environments. Applying per-VM bandwidth limits to VMs that form a multi-node cluster (VMNO) will constrain each node individually, which may not accurately represent a shared network bottleneck.
+> [!NOTE]
+> Bandwidth limits are applied per VM network interface. This is primarily intended for SNO deployments where each VM represents a Single Node OpenShift cluster, allowing you to simulate low-bandwidth edge environments. Applying per-VM bandwidth limits to VMs that form a Multi Node OpenShift cluster (VMNO) will constrain each node individually, which may not accurately represent a shared network bottleneck.
 
 _**Table of Contents**_
 

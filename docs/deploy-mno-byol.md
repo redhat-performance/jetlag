@@ -1,4 +1,4 @@
-# Deploy a Multi Node OpenShift cluster via Jetlag without create-inventory playbook, BYOL (Bring Your Own Lab), quickstart
+# Deploy a Multi Node OpenShift Cluster via Jetlag - BYOL (Bring Your Own Lab)
 
 In a BYOL you will have to write your own Jetlag inventory file as the `create-inventory.yml` playbook can **not** be used. You must gather information regarding the machines such as network interface names, bmc addresses, MAC addresses, and dns servers in order to assemble an inventory file and all.yml vars file. If you have a non-homogenous set of machines, it is recommended to group machines of same/similar models to be the cluster's control-plane and worker nodes. If you have 2 or more types/configurations of machines, you should use only one type/configuration for control-plane nodes and the remaining types/configurations all as worker nodes.
 
@@ -28,161 +28,9 @@ _**Table of Contents**_
 - [Appendix - Troubleshooting, etc.](#appendix---troubleshooting-etc)
 <!-- /TOC -->
 
-<!-- Bastion setup is duplicated in multiple files and should be kept in sync!
-     - deploy-mno-byol.md
-     - deploy-mno-ibmcloud.md
-     - deploy-mno-performancelab.md
-     - deploy-mno-scalelab.md
-     - deploy-sno-ibmcloud.md
-     - deploy-sno-scalelab.md
-     - deploy-sno-performancelab.md
- -->
 ## Bastion setup
 
-1. Select the bastion machine from the allocation. You should run Jetlag on the
-bastion machine, to ensure full connectivity and fastest access. By convention
-this is usually the first node of your allocation: for example, the first machine
-listed in your cloud platform's standard inventory display.
-
-2. You can copy your ssh public key to the designated bastion machine to make it easier to
-repeatedly log in from your laptop:
-
-```console
-[user@<local> ~]$ ssh-copy-id root@<bastion>
-/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-/usr/bin/ssh-copy-id: INFO: 2 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-Warning: Permanently added '<bastion>,x.x.x.x' (ECDSA) to the list of known hosts.
-root@<bastion>'s password:
-
-Number of key(s) added: 2
-
-# Now try logging into the machine, and confirm that only the expected key(s)
-# were added to ~/.ssh/known_hosts
-[user@<local> ~]$ ssh root@<bastion>
-[root@<bastion> ~]#
-```
-
-Now log in to the bastion (with `ssh root@<bastion>` if you copied your public key above,
-or using the bastion root account password if not), because the remaining commands
-should be executed from the bastion.
-
-3. Install some additional tools to help after reboot
-
-```console
-[root@<bastion> ~]# dnf install tmux git python3-pip sshpass -y
-Updating Subscription Management repositories.
-...
-Complete!
-```
-
-4. Setup ssh keys for the bastion root account and copy to itself to permit
-local ansible interactions:
-
-```console
-[root@<bastion> ~]# ssh-keygen
-Generating public/private rsa key pair.
-Enter file in which to save the key (/root/.ssh/id_rsa):
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in /root/.ssh/id_rsa.
-Your public key has been saved in /root/.ssh/id_rsa.pub.
-The key fingerprint is:
-SHA256:uA61+n0w3Dht4/oIy1IKXrSgt9tfC/8zjICd7LJ550s root@<bastion>
-The key's randomart image is:
-+---[RSA 3072]----+
-...
-+----[SHA256]-----+
-[root@<bastion> ~]# ssh-copy-id root@localhost
-/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
-The authenticity of host 'localhost (127.0.0.1)' can't be established.
-ECDSA key fingerprint is SHA256:fvvO3NLxT9FPcoOKQ9ldVdd4aQnwuGVPwa+V1+/c4T8.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
-/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-root@localhost's password:
-
-Number of key(s) added: 1
-
-Now try logging into the machine and check to make sure that only the key(s) you wanted were added:
-```console
-[root@<bastion> ~]# ssh root@localhost
-[root@<bastion> ~]#
-```
-
-5. Clone the `jetlag` GitHub repo
-
-```console
-[root@<bastion> ~]# git clone https://github.com/redhat-performance/jetlag.git
-Cloning into 'jetlag'...
-remote: Enumerating objects: 4510, done.
-remote: Counting objects: 100% (4510/4510), done.
-remote: Compressing objects: 100% (1531/1531), done.
-remote: Total 4510 (delta 2450), reused 4384 (delta 2380), pack-reused 0
-Receiving objects: 100% (4510/4510), 831.98 KiB | 21.33 MiB/s, done.
-Resolving deltas: 100% (2450/2450), done.
-```
-
-The `git clone` command will normally set the local head to the Jetlag repo's
-`main` branch. To set your local head to a different branch or tag (for example,
-a development branch), you can add `-b <name>` to the command.
-
-Change your working directory to the repo's `jetlag` directory, which we'll assume
-for subsequent steps:
-
-```console
-[root@<bastion> ~]# cd jetlag
-[root@<bastion> jetlag]#
-```
-
-6. Download your `pull-secret.txt` from [console.redhat.com/openshift/downloads](https://console.redhat.com/openshift/downloads) into the root directory of your Jetlag repo on the bastion. You'll find the Pull Secret near the end of
-the long downloads page, in the section labeled "Tokens". You can either click the "Download" button, and then copy the
-downloaded file to `~/jetlag/pull-secret.txt` on the bastion; *or* click on the "Copy" button, and then paste the clipboard into the terminal
-after typing `cat >pull-secret.txt` on the bastion to create the expected filename:
-
-```console
-[root@<bastion> jetlag]# cat >pull-secret.txt
-{
-  "auths": {
-    "quay.io": {
-      "auth": "XXXXXXX",
-      "email": "XXXXXXX"
-    },
-    "registry.connect.redhat.com": {
-      "auth": "XXXXXXX",
-      "email": "XXXXXXX"
-    },
-    "registry.redhat.io": {
-      "auth": "XXXXXXX",
-      "email": "XXXXXXX"
-    }
-  }
-}
-```
-
-If you are deploying nightly builds then you will need to add a ci token and an entry for
-`registry.ci.openshift.org`. If you plan on deploying an ACM downstream build be sure to
-include an entry for `quay.io:443`.
-
-7. Execute the bootstrap script in the current shell, with `source bootstrap.sh`.
-This will activate a local virtual Python environment configured with the Jetlag and
-Ansible dependencies.
-
-```console
-[root@<bastion> jetlag]# source bootstrap.sh
-Collecting pip
-...
-(.ansible) [root@<bastion> jetlag]#
-```
-
-You can re-enter that virtual environment when you log in to the bastion again
-with:
-
-```console
-[root@<bastion> ~]# cd jetlag
-[root@<bastion> jetlag]# source .ansible/bin/activate
-```
-
-<!-- End of duplicated setup text -->
+Follow the [Bastion Setup](bastion-setup.md) guide to prepare your bastion machine before proceeding.
 
 ## Configure Ansible vars in `all.yml`
 
@@ -203,22 +51,14 @@ Change `cluster_type` to `cluster_type: mno`
 
 Set `worker_node_count` to count of workers available in the testbed, in this guide it is set to `2`. Set it to `0`, if you want a 3 node compact cluster.
 
-Set `ocp_build` to `ga` for Generally Available versions, `dev` (early candidate builds)
-of OpenShift, or `ci` to pick a specific nightly build.
+Set `ocp_build` and `ocp_version` to select your OpenShift version. For example, to deploy the latest GA 4.22 release:
 
-`ocp_version` is used in conjunction with `ocp_build`. Examples of `ocp_version` with
-`ocp_build: ga` include explicit versions such as `4.17.17` or `4.16.35`, additionally
-`latest-4.17` or `latest-4.16` point to the latest z-stream of 4.17 and 4.16 ga builds.
-Examples of `ocp_version` with `ocp_build: dev` are `candidate-4.17`, `candidate-4.16`
-or `latest` which points to the early candidate build of the latest in development
-release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ for a list
-of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
-for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
-exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
-`4.19.0-0.nightly-2025-02-25-035256`, For 'ci' builds check latest nightly from  https://amd64.ocp.releases.ci.openshift.org/.
+```yaml
+ocp_build: "ga"
+ocp_version: "latest-4.22"
+```
 
-
-Note: user has to add registry.ci.openshift.org token in pull-secret.txt for `ci` builds.
+See [Updating OCP version](tips-and-vars.md#updating-ocp-version) for details on available builds and version formats.
 
 ### Bastion node vars
 
@@ -269,7 +109,7 @@ The `ansible/vars/all.yml` now resembles ...
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex byol)
+# Which lab to be deployed into (Ex scalelab, performancelab)
 lab: byol
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud:
@@ -284,16 +124,17 @@ worker_node_count: 2
 ocp_build: "ga"
 
 # ocp_version is used in conjunction with ocp_build
-# For "ga" builds, examples are "latest-4.17", "latest-4.16", "4.17.17" or "4.16.35"
-# For "dev" builds, examples are "candidate-4.17", "candidate-4.16" or "latest"
+# For "ga" builds, examples are "latest-4.22", "latest-4.21", "4.22.1" or "4.21.7"
+# For "dev" builds, examples are "candidate-4.22", "candidate-4.21" or "latest"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
-ocp_version: "latest-4.21"
+ocp_version: "latest-4.22"
 
 # Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
 # Autoconfigures cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
 # controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
 # SNO configures only the first cluster on the api dns resolvable address
 # MNO/SNO still requires the correct value for bastion_controlplane_interface
+# It is required to comment out controlplane_network and controlplane_network_prefix in the Network Configuration
 public_vlan: false
 
 # SNOs only require a single IP address and can be deployed using the lab DHCP interface instead of a private or
@@ -303,6 +144,9 @@ sno_use_lab_dhcp: false
 
 # Enables FIPs security standard
 enable_fips: false
+
+#Enables the TechPreviewNoUpgrade feature set
+enable_techpreview: false
 
 # Enables Operators CNV and LSO install at deployment timeframe (GA releases only)
 enable_cnv_install: false
@@ -320,6 +164,8 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 
 smcipmitool_url:
 
+# Network interfaces - these will be auto-configured based on lab and machine type
+# if not explicitly set. To override auto-configuration, uncomment and set values:
 bastion_lab_interface: eno8303
 bastion_controlplane_interface: ens1f0
 
@@ -332,16 +178,127 @@ setup_bastion_registry: false
 # Use in conjunction with ipv6 based clusters
 use_bastion_registry: false
 
+# Set to enable a forward proxy (Squid) for IPv6 clusters to access external registries
+# This is an alternative to setup_bastion_registry - use one or the other
+# When enabled, cluster nodes use the proxy to reach quay.io, registry.redhat.io, etc.
+setup_bastion_proxy: false
+
+# Reset iDRAC service using badfish container (pulls and uses badfish container
+# to clear job queue and reset iDRAC service)
+# reset_idrac: false
+
+# Setup Hypervisor metrics collection for VMNO deployments
+# Sets up Prometheus server on a bastion node and node_exporter on hypervisors
+# Grafana is exposed at http://<bastion_fqdn>:3000 by default
+# Prometheus is exposed on port 9090 instead
+# For more configuration options, see ansible/roles/hv-metrics-server/defaults/main.yaml
+# Do not override the role, just put override below
+setup_hv_metrics: false
+
 ################################################################################
 # OCP node vars
 ################################################################################
 # Network configuration for all mno/sno cluster nodes
+# This will be auto-configured based on lab and machine type if not explicitly set
+# To override auto-configuration, uncomment and set value:
 controlplane_lab_interface: eno8303
+
+# Bond configuration for private network (optional for scale/performance labs)
+# Enable bonding for bastion, controlplane, and worker nodes using 802.3ad mode
+# When enabled, uses the first two network interfaces by default (indices 1 & 2)
+# Only works with private VLANs (public_vlan: false) and homogeneous hardware
+enable_bond: false
+
+# VLAN subinterface on bond configuration (requires enable_bond: true)
+# Enable VLAN subinterface on top of bond0 interface
+# When enabled, creates bond0.<vlan_id> interface with specified VLAN tag
+enable_bond_vlan: false
+# VLAN ID for the subinterface (1-4094)
+bond_vlan_id: 10
+# Name for the VLAN subinterface (defaults to bond0.<vlan_id>)
+# bond_vlan_interface_name: bond0.10
+
+
+################################################################################
+# Network Configuration
+################################################################################
+# Network variables default to single-stack IPv4 values via role defaults in
+# ansible/roles/create-inventory/defaults/main/networks.yml
+# Only uncomment and set these if you need to override the defaults
+# (e.g., for IPv6 single stack or dual stack configurations).
+#
+# When public_vlan is enabled, these are auto-configured - do NOT set them.
+
+# Single Stack IPv4 (default - no need to uncomment for standard deployments):
+# controlplane_network:
+# - 198.18.0.0/16
+#
+# controlplane_network_prefix:
+# - 16
+#
+# cluster_network_cidr:
+# - 10.128.0.0/14
+#
+# cluster_network_host_prefix:
+# - 23
+#
+# service_network_cidr:
+# - 172.30.0.0/16
+
+# Single Stack IPv6:
+# controlplane_network:
+# - fd00:198:18:10::/64
+#
+# controlplane_network_prefix:
+# - 64
+#
+# cluster_network_cidr:
+# - fd01::/48
+#
+# cluster_network_host_prefix:
+# - 64
+#
+# service_network_cidr:
+# - fd02::/112
+#
+# Note: In IPv6-only configurations, IPv6 addresses are stored in the 'ip' field
+# in the generated inventory (not 'ipv6'). The 'ipv6' field is only used for
+# dual-stack configurations. CoreDNS templates automatically detect whether the
+# 'ip' field contains an IPv4 or IPv6 address and generate appropriate DNS records.
+
+# Dual Stack (IPv4 + IPv6):
+# All network variables must be lists with two elements [IPv4, IPv6].
+# First element must be IPv4, second must be IPv6.
+#
+# controlplane_network:
+# - 198.18.0.0/16
+# - fd00:198:18:10::/64
+#
+# controlplane_network_prefix:
+# - 16
+# - 64
+#
+# cluster_network_cidr:
+# - 10.128.0.0/14
+# - fd01::/48
+#
+# cluster_network_host_prefix:
+# - 23
+# - 64
+#
+# service_network_cidr:
+# - 172.30.0.0/16
+# - fd02::/112
 
 ################################################################################
 # Extra vars
 ################################################################################
 # Append override vars below
+
+# Pre-GA content section
+use_prega_content: false
+# prega_idms_link: ""
+
 labs:
   byol:
     dns:

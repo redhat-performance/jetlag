@@ -17,7 +17,7 @@ _**Table of Contents**_
 - [Tested Labs/Hardware](#tested-labshardware)
 - [Prerequisites](#prerequisites)
 - [Cluster Deployment Usage](#cluster-deployment-usage)
-- [Quickstart guides](#quickstart-guides)
+- [Guides](#guides)
 - [Additional Documentation](#additional-documentation)
 <!-- /TOC -->
 
@@ -197,17 +197,16 @@ xxx-h02-000-r650   Ready    control-plane,master,worker   30h   v1.28.6+0fb4726
 xxxxx-xxxxx-xxxxx-xxxxx
 ```
 
-## Quickstart guides
+## Guides
 
-* [Deploy a Multi Node OpenShift cluster via jetlag from a Scale Lab Bastion Machine](docs/deploy-mno-scalelab.md)
-* [Deploy a Multi Node OpenShift cluster via jetlag from a Performance Lab Bastion Machine](docs/deploy-mno-performancelab.md)
-* [Deploy a Multi Node OpenShift cluster on IBMcloud via jetlag](docs/deploy-mno-ibmcloud.md)
-* [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Scale Lab Bastion Machine](docs/deploy-sno-scalelab.md)
-* [Deploy Single Node OpenShift (SNO) clusters via jetlag from a Performance Lab Bastion Machine](docs/deploy-sno-performancelab.md)
-* [Deploy Single Node OpenShift (SNO) clusters via jetlag on IBMcloud ](docs/deploy-sno-ibmcloud.md)
-* [Deploy a Hybrid MNO cluster (bare metal + virtual workers)](docs/deploy-mno-hybrid.md)
-* [Deploy a VMNO](docs/deploy-vmno.md)
-* [Deploy a "Bring Your Own Lab" MNO cluster](docs/deploy-mno-byol.md)
+* [Bastion Setup](docs/bastion-setup.md) - Initial bastion machine preparation (required for all deployments)
+* [Deploy MNO (Scale Lab / Performance Lab)](docs/deploy-mno.md)
+* [Deploy MNO on IBMcloud](docs/deploy-mno-ibmcloud.md)
+* [Deploy SNO (Scale Lab / Performance Lab)](docs/deploy-sno.md)
+* [Deploy SNO on IBMcloud](docs/deploy-sno-ibmcloud.md)
+* [Deploy Hybrid MNO (bare metal + virtual workers)](docs/deploy-mno-hybrid.md)
+* [Deploy VMNO (Virtual Multi Node OpenShift)](docs/deploy-vmno.md)
+* [Deploy MNO - Bring Your Own Lab (BYOL)](docs/deploy-mno-byol.md)
 * [Scale out MNO](docs/scale-out-mno.md)
 * [Scale out SNO](docs/scale-out-sno.md)
 

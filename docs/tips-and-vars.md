@@ -5,8 +5,8 @@ _**Table of Contents**_
 - [Jetlag Tips and additional Vars](#jetlag-tips-and-additional-vars)
   - [Network interface to vars table](#network-interface-to-vars-table)
   - [Install disk by-path vars](#install-disk-by-path-vars)
-  - [Updating the OCP version](#updating-the-ocp-version)
-  - [Override lab ocpinventory json file](#override-lab-ocpinventory-json-file)
+  - [Updating OCP version](#updating-ocp-version)
+  - [Prow integration](#prow-integration)
   - [Using other network interfaces](#using-other-network-interfaces)
     - [Alternative method](#alternative-method)
     - [Bonding in the scale/perf labs](#bonding-in-the-scaleperf-labs)
@@ -161,24 +161,33 @@ nvme0n1                             259:0    0  1.5T  0 disk
 
 You can also identify your machine's specific type by logging into the lab's foreman instance, viewing all your hosts and enabling the "model" field to show which type by host is in your cloud allocation.
 
-## Updating the OCP version
+## Updating OCP version
 
 Set `ocp_build` to `ga` for Generally Available versions, `dev` (early candidate builds)
-of OpenShift, or `ci` to pick a specific nightly build. Empty value results in playbook
-failing with an error message. `ocp_version` is used in conjunction with `ocp_build`.
-Examples of `ocp_version` with `ocp_build: ga` include explicit versions such as
-`4.17.17` or `4.16.35`, additionally `latest-4.17` or `latest-4.16` point to the latest
-z-stream of 4.17 and 4.16 ga builds. Examples of `ocp_version` with `ocp_build: dev`
-are `candidate-4.17`, `candidate-4.16` or `latest` which points to the early candidate
-build of the latest in development release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
+of OpenShift, or `ci` to pick a specific nightly build. An empty value fails validation
+unless `payload_url` is set (e.g. via [Prow integration](#prow-integration), which
+supplies its own release payload and skips `ocp_build`/`ocp_version` checks).
+
+`ocp_version` is used in conjunction with `ocp_build`. Examples of `ocp_version` with
+`ocp_build: ga` include explicit versions such as `4.22.1` or `4.21.7`, additionally
+`latest-4.22` or `latest-4.21` point to the latest z-stream of 4.22 and 4.21 ga builds.
+Examples of `ocp_version` with `ocp_build: dev` are `candidate-4.22`, `candidate-4.21`
+or `latest` which points to the early candidate build of the latest in development
+release. Check out https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
 for a list of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
-for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
-exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is `4.19.0-0.nightly-2025-02-25-035256`, For 'ci' builds check latest nightly from  https://amd64.ocp.releases.ci.openshift.org/.
+for a list of `dev` releases.
+
+Nightly `ci` builds require determining exact builds you can use. An example of
+`ocp_version` with `ocp_build: ci` is `4.19.0-0.nightly-2025-02-25-035256`. For `ci`
+builds check the latest nightly from https://amd64.ocp.releases.ci.openshift.org/.
+
+> [!NOTE]
+> You must add a `registry.ci.openshift.org` token in `pull-secret.txt` for `ci` builds.
 
 
 ```yaml
 ocp_build: "ga"
-ocp_version: "4.17.17"
+ocp_version: "4.22.1"
 ```
 
 Ensure that your pull secrets are still valid.
@@ -205,17 +214,13 @@ Saved credentials for registry.ci.openshift.org into ci_ps.json
 
 You must stop and remove all assisted-installer containers on the bastion with [clean the pods and containers off the bastion](troubleshooting.md#cleaning-all-podscontainers-off-the-bastion-machines) and then rerun the setup-bastion step in order to setup your bastion's assisted-installer to the version you specified before deploying a fresh cluster with that version.
 
-## Override lab ocpinventory json file
+## Prow integration
 
-By default Jetlag selects machines for the roles bastion, control-plane, and worker in that order from the ocpinventory.json file. You can create a new json file with the desired order to match desired roles if the auto selection is incorrect. After creating a new json file, host this where your machine running the playbooks can reach and set the following var such that the modified ocpinventory json file is used, or specify a local path for the file:
+Jetlag can use releases specified by a Prow job configuration. Thanks to this integration, Jetlag can deploy a cluster using the information specified by the `releases` key in the [Prow's job configuration](https://docs.ci.openshift.org/docs/architecture/ci-operator/#testing-with-an-existing-openshift-release).
 
-```yaml
-ocp_inventory_override: http://<http-server>/<inventory-file>.json
+The variable `payload_url` can be set to a specific payload URL. Jetlag will download the OpenShift installer and extract the required tools from this payload, so that neither `ocp_version` nor `ocp_build` variables are required.
 
-# or
-
-ocp_inventory_override: <LOCAL_FILE_PATH>
-```
+Note that Jetlag requires pull-secrets to pull images from the OpenShift build registries used in Prow. They can be extracted by logging into the build cluster and then logging into its image registry with `oc registry login --to=file_to_store_pull_secret`
 
 ## Using other network interfaces
 
@@ -247,7 +252,7 @@ controlplane_network_interface_idx: 2
 In case you are bringing your own lab, set `controlplane_network_interface` to the desired name, eg. `controlplane_network_interface: ens2f0`.
 
 ### Bonding in the scale/perf labs
-To support some particular use cases jetlag implements the option for LACP bonding through the var `enable_bond`.
+Jetlag can configure LACP bonding on the controlplane network via the `enable_bond` variable.
 When enabled, uses the first two network interfaces by default (indices 1 & 2).
 Only works with private networks (`public_vlan: false`) and homogeneous hardware.
 At the moment QUADS does not expose any APIs for this kind of networking setup in the labs, so unless you have discussed your particular use case with the DevOps team and the network setup of your cloud allocation is ready to accommodate this config, please disconsider this option.
@@ -361,7 +366,7 @@ As a result, the following machine configuration files will be added to the clus
 * 99-master-workload-partitioning.yml
 * enable-crun-master.yaml
 
-When deploying DU profile on OCP 4.13 or higher, composable openshift feature will automatically be deployed and as a result, all unnecessary optional Cluster Operators will not be deployed.
+When deploying DU profile on OCP 4.13 or higher, composable OpenShift feature will automatically be deployed and as a result, all unnecessary optional Cluster Operators will not be deployed.
 
 In addition to this, Network Diagnostics will be disabled, monitoring footprint will be reduced, performance-profile and tunedPerformancePatch will be applied post SNO install (based on input vars defined - See **SNO DU Profile** section under [Post Deployment Tasks](#post-deployment-tasks)).
 

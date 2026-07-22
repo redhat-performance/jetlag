@@ -1,12 +1,14 @@
-# Scale Out a Single-Node Openshift Deployment
+# Scale Out a Single Node OpenShift Deployment
 
-A JetLag deployed Single-Node Openshift deployment can be scaled out via JetLag. Workers can be added using JetLag Inventory and Playbooks. This guide assumes you have an existing Single-Node OCP cluster deployed via JetLag. The worker section in the JetLag inventory file should contain records that represent the worker nodes that will be joined to the running cluster.
+A Jetlag deployed Single Node OpenShift deployment can be scaled out via Jetlag. Workers can be added using Jetlag inventory and playbooks. This guide assumes you have an existing Single Node OpenShift cluster deployed via Jetlag. The worker section in the Jetlag inventory file should contain records that represent the worker nodes that will be joined to the running cluster.
 
-## Addtional step in case of Multi SNO Environments
+## Additional step for Multi SNO Environments
 
-⚠️ A potential risk exists wherein a user who deploys a second Single Node OpenShift (SNO) instance could accidentally overwrite it if they later attempt to expand the first SNO with a worker node.
+> [!WARNING]
+> A potential risk exists wherein a user who deploys a second Single Node OpenShift (SNO) instance could accidentally overwrite it if they later attempt to expand the first SNO with a worker node.
 
-⚠️ In Multi SNO Environment, You can create a new json file with the bastion host and desired hosts in a order where Bastion node follows other desired hosts for each SNO Cluster. See [tips and vars](tips-and-vars.md#override-lab-ocpinventory-json-file) for more information how to override lab ocpinventory json file.
+> [!IMPORTANT]
+> In a multi-SNO environment, you must use a separate ocpinventory override for each SNO cluster you want to scale out. Create a JSON file that lists the bastion host first, followed by the specific SNO host and desired worker nodes for that cluster. This ensures `create-inventory.yml` targets the correct SNO. See [Choosing a different bastion machine](bastion-setup.md#choosing-a-different-bastion-machine) for details on using `ocp_inventory_override`.
 
 Once the inventory files are properly prepared,follow SNO deploy and SNO scale out steps for each SNO Cluster.
 

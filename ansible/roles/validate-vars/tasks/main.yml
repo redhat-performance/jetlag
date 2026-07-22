@@ -21,7 +21,7 @@
 
 - name: Validate ocp_version
   fail:
-    msg: "The version is undefined or empty. Use a value such as 'latest-4.15' or 'latest-4.16' or '4.16.1'."
+    msg: "The version is undefined or empty. Use a value such as 'latest-4.22' or 'latest-4.21' or '4.22.1'."
   when: payload_url|default("") == '' and (ocp_version is undefined or ocp_version|length == 0)
 
 - name: Validate public_vlan
