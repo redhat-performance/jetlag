@@ -1,15 +1,108 @@
+# Deploy Single Node OpenShift Clusters via Jetlag
+
+Assuming you received a Scale Lab or Performance Lab allocation named `cloud99`, this guide will walk you through getting Single Node OpenShift (SNO) clusters up in your allocation. You should run Jetlag directly on the bastion machine. Jetlag picks the first machine in an allocation as the bastion. See [Choosing a different bastion machine](bastion-setup.md#choosing-a-different-bastion-machine) if you need to change this.
+
+_**Table of Contents**_
+
+<!-- TOC -->
+- [Bastion setup](#bastion-setup)
+- [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
+  - [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)
+  - [Bastion node vars](#bastion-node-vars)
+  - [Network configuration (IPv6 / dual-stack)](#network-configuration-ipv6--dual-stack)
+  - [Extra vars](#extra-vars)
+- [Review vars `all.yml`](#review-vars-allyml)
+- [Run playbooks](#run-playbooks)
+- [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
+<!-- /TOC -->
+
+## Bastion setup
+
+Follow the [Bastion Setup](bastion-setup.md) guide to prepare your bastion machine before proceeding.
+
+## Configure Ansible vars in `all.yml`
+
+Copy the vars file so we can edit it.
+
+```console
+(.ansible) [root@<bastion> jetlag]# cp ansible/vars/all.sample.yml ansible/vars/all.yml
+(.ansible) [root@<bastion> jetlag]# vi ansible/vars/all.yml
+```
+
+### Lab & cluster infrastructure vars
+
+Change `lab` to match your environment:
+- Scale Lab: `lab: scalelab`
+- Performance Lab: `lab: performancelab`
+
+Change `lab_cloud` to `lab_cloud: cloud99`
+
+Change `cluster_type` to `cluster_type: sno`
+
+Set `ocp_build` and `ocp_version` to select your OpenShift version. For example, to deploy the latest GA 4.22 release:
+
+```yaml
+ocp_build: "ga"
+ocp_version: "latest-4.22"
+```
+
+See [Updating OCP version](tips-and-vars.md#updating-ocp-version) for details on available builds and version formats.
+
+### Bastion node vars
+
+Set `smcipmitool_url` to the location of the Supermicro SMCIPMITool binary. Since you must accept a EULA in order to download, it is suggested to download the file and place it onto a local http server, that is accessible to your laptop or deployment machine. You can then always reference that URL. Alternatively, you can download it to the `ansible/` directory of your Jetlag repo clone and rename the file to `smcipmitool.tar.gz`. You can find the file [here](https://www.supermicro.com/en/support/resources/downloadcenter/smsdownload).
+
+**Network Interface Configuration:**
+
+Jetlag automatically detects and configures network interfaces for common hardware in Scale Lab and Performance Lab using the `hw_nic_name` [mapping](../ansible/vars/lab.yml). You only need to manually set these if you want to override the defaults. For more details see [tips-and-vars.md](tips-and-vars.md).
+
+Here you can see a network diagram for the SNO clusters:
+
+![SNO Cluster](img/sno_cluster.png)
+
+> [!NOTE]
+> To use a different network than "Network 1" for your controlplane network, add the
+> appropriate overrides to the Extra vars section of `all.yml`.
+> See [tips and vars](tips-and-vars.md#using-other-network-interfaces) for more information.
+
+### Network configuration (IPv6 / dual-stack)
+
+The "Network Configuration" section of `all.yml` contains commented-out blocks for single-stack IPv4 (the default), single-stack IPv6, and dual-stack (IPv4 + IPv6). For a standard IPv4 deployment no changes are needed. For IPv6 or dual-stack, uncomment the appropriate block and adjust the values to match your environment.
+
+For disconnected deployments, also set the following under "Bastion node vars":
+
+```yaml
+setup_bastion_registry: true
+use_bastion_registry: true
+```
+
+If you run into any routing issues because of duplicate address detection, determine if someone else is using the same IPv6 subnet in the same lab environment and adjust accordingly.
+
+If you previously deployed an IPv4 cluster and are switching to IPv6, stop and remove all running podman containers on the bastion and rerun the `setup-bastion.yml` playbook.
+
+### Extra vars
+
+The Extra vars section of `all.yml` is where you place any variable overrides for your deployment. All overrides should go in this section to keep configuration organized.
+
+No extra vars are needed for a standard IPv4 SNO cluster.
+
+## Review vars `all.yml`
+
+The `ansible/vars/all.yml` now resembles ..
+
+```yaml
 ---
 # Sample vars file
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
 # Which lab to be deployed into (Ex scalelab, performancelab)
-lab:
+lab: scalelab
 # Which cloud in the lab environment (Ex cloud42)
-lab_cloud:
+lab_cloud: cloud99
 
 # Either mno or sno
-cluster_type:
+cluster_type: sno
 
 # Applies to mno clusters
 worker_node_count:
@@ -191,3 +284,93 @@ bond_vlan_id: 10
 # Pre-GA content section
 use_prega_content: false
 # prega_idms_link: ""
+```
+
+## Run playbooks
+
+Run the create inventory playbook
+
+```console
+(.ansible) [root@<bastion> jetlag]# ansible-playbook ansible/create-inventory.yml
+...
+```
+
+The `create-inventory.yml` playbook will create an inventory file `ansible/inventory/cloud99.local` from the lab allocation data and the vars file.
+
+The inventory file resembles ...
+
+```
+[all:vars]
+allocation_node_count=6
+supermicro_nodes=True
+
+[bastion]
+xxx-h05-000-1029u.example.com ansible_ssh_user=root bmc_address=mgmt-xxx-h05-000-1029u.example.com lab_ip=10.1.x.x
+
+[bastion:vars]
+bmc_user=quads
+bmc_password=xxxx
+
+[controlplane]
+# Unused
+
+[controlplane:vars]
+# Unused
+
+[worker]
+# Unused
+
+[worker:vars]
+# Unused
+
+[sno]
+# Single Node OpenShift Clusters
+xxx-h06-000-1029u bmc_address=mgmt-xxx-h06-000-1029u.example.com boot_iso=xxx-h06-000-1029u.iso ip=10.1.38.222 vendor=Supermicro lab_mac=ac:1f:6b:56:57:0e mac_address=00:25:90:5f:5f:5b
+
+[sno:vars]
+bmc_user=quads
+bmc_password=xxxx
+dns1=10.1.36.1
+dns2=10.1.36.2
+
+[hv]
+# Unused
+
+[hv:vars]
+# Unused
+
+[hv_vm]
+# Unused
+
+[hv_vm:vars]
+# Unused
+```
+
+Next run the `setup-bastion.yml` playbook ...
+
+```console
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/setup-bastion.yml
+...
+```
+
+Finally run the `sno-deploy.yml` playbook ...
+
+```console
+(.ansible) [root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/sno-deploy.yml
+...
+```
+
+## Monitor install and interact with cluster
+
+It is suggested to monitor your first deployment to see if anything hangs on boot or if the virtual media is incorrect according to the bmc. You can monitor your deployment by opening the bastion's GUI to assisted-installer (port 8080, ex `xxx-h05-000-1029u.example.com:8080`), opening the consoles via the bmc of each system, and once the machines are booted, you can directly ssh to them and tail log files.
+
+If everything goes well you should have a cluster in about 60-70 minutes. You can interact with the cluster from the bastion via the kubeconfig or kubeadmin password.
+
+```console
+(.ansible) [root@<bastion> jetlag]# export KUBECONFIG=/root/sno/<SNO's hostname>/kubeconfig
+(.ansible) [root@<bastion> jetlag]# oc get no
+NAME                  STATUS   ROLES           AGE   VERSION
+xxx-h06-000-1029u     Ready    master,worker   48m   v1.25.7+eab9cc9
+(.ansible) [root@<bastion> jetlag]# cat /root/sno/<SNO's hostname>/kubeadmin-password
+xxxxx-xxxxx-xxxxx-xxxxx
+```

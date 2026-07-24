@@ -126,7 +126,8 @@ Monitors the bastion machine with panels for:
 - **Network**: All physical interface bandwidth, received/transmitted breakdown — selectable via **Network Interface** dropdown
 - **Mirror Registry**: Container CPU usage (cores), container memory (working set and total), active connections, bandwidth, throughput, cumulative bytes transferred, and packets/s (only populated when `setup_bastion_registry` is enabled)
 
-> **Note:** Registry bandwidth (measured via iptables at the IP layer) may appear 5-10% higher than the NIC-level bandwidth shown in the Network section. This is expected — iptables counts TCP/IP headers that are not included in the interface byte counters. The NIC graph reflects true wire bandwidth.
+> [!NOTE]
+> Registry bandwidth (measured via iptables at the IP layer) may appear 5-10% higher than the NIC-level bandwidth shown in the Network section. This is expected — iptables counts TCP/IP headers that are not included in the interface byte counters. The NIC graph reflects true wire bandwidth.
 
 ## Registry Traffic Monitoring
 

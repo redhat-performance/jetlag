@@ -1,6 +1,6 @@
 # Custom CatalogSources and Per-Operator Overrides
 
-Jetlag supports applying custom [CatalogSource](https://docs.openshift.com/container-platform/latest/operators/understanding/olm-understanding-operatorhub.html) resources to the cluster post-install and overriding the catalog source used by each operator's Subscription. This allows operators to be installed from custom or third-party operator indexes instead of the default `redhat-operators` catalog.
+Jetlag can apply custom [CatalogSource](https://docs.openshift.com/container-platform/latest/operators/understanding/olm-understanding-operatorhub.html) resources to the cluster post-install and override the catalog source used by each operator's Subscription. This allows operators to be installed from custom or third-party operator indexes instead of the default `redhat-operators` catalog.
 
 _**Table of Contents**_
 

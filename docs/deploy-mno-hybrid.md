@@ -1,6 +1,6 @@
-# Deploy Multi-Node OpenShift Hybrid in ScaleLab
+# Deploy Multi Node OpenShift Hybrid in ScaleLab
 
-This guide describes how to deploy a hybrid Multi-Node OpenShift (MNO) cluster in ScaleLab: some nodes are bare metal and some are virtual machines (VMs).
+This guide describes how to deploy a hybrid Multi Node OpenShift (MNO) cluster in ScaleLab: some nodes are bare metal and some are virtual machines (VMs).
 
 ## 1. Configure Ansible variables in `all.yml`
 
@@ -32,8 +32,8 @@ First you install a small cluster and confirm it works. Then you add the VM work
 3. Open the inventory file at `ansible/inventory/cloudXX.local`. Check:
    - **`[worker]`**: It should list the bare metal workers and the correct number of VMs to create.
    - **`[hv_vm]`**: It should list the expected number of VMs with the right CPU, memory, and disk. Confirm how many VMs are assigned to each hypervisor (HV). This ratio is set by machine type in `hw_vm_counts` in `lab.yml`.
-4. Run the `hv-vm-create.yml` playbook. For more about this playbook, see [Virtual MultiNode OpenShift](deploy-vmno.md).
-5. Run the `ocp-scale-out.yml` playbook. For more about this playbook, see [Scale out a Multi-Node OpenShift deployment](scale-out-mno.md).
+4. Run the `hv-vm-create.yml` playbook. For more about this playbook, see [Virtual Multi Node OpenShift](deploy-vmno.md).
+5. Run the `ocp-scale-out.yml` playbook. For more about this playbook, see [Scale Out a Multi Node OpenShift Deployment](scale-out-mno.md).
 
 ## Command reference
 

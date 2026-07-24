@@ -155,7 +155,7 @@ additional_images:
 
 **Automating Image Mirroring with Renaming**
 
-Instead of manually running `oc image mirror` commands, you can automate mirroring generic container images into your bastion registry during the `sync-operator-index` playbook execution. This method uses a separate background task to process and mirror the images, ensuring it fully supports renaming the target destination path.
+Instead of manually running `oc image mirror` commands, you can automate mirroring generic container images into your bastion registry during the `sync-operator-index` playbook execution. This method uses a separate background task to process and mirror the images, and it fully handles renaming the target destination path.
 
 Simply add the `extra_images` list to your `ansible/vars/sync-operator-index.yml` file:
 

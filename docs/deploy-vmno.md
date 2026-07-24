@@ -1,36 +1,41 @@
-# Virtual MultiNode OpenShift
+# Virtual Multi Node OpenShift
 
-A VMNO cluster is a MNO cluster that uses virtual machines instead of bare metal machines in jetlag.
+A VMNO cluster is a MNO cluster that uses virtual machines instead of bare metal machines in Jetlag.
 
 > [!NOTE]
 > VMNO is a made up term solely for Jetlag.
 
-VMNO allows jetlag to deploy multi-node clusters with a smaller machine count than required for a typical MNO bare metal cluster. For example with a 3 node allocation, you can create a MNO cluster using VMNO. The first machine will be the bastion machine and the two additional machines will be the hypervisors. You could even do this with just two machines (1 Bastion, 1 Hypervisor) however you will likely require some specific tuning of VMs and or capacity planning of your hardware to ensure you properly resource your cluster's VMs.
+VMNO allows Jetlag to deploy multi-node clusters with a smaller machine count than required for a typical MNO bare metal cluster. For example with a 3 node allocation, you can create a MNO cluster using VMNO. The first machine will be the bastion machine and the two additional machines will be the hypervisors. You could even do this with just two machines (1 Bastion, 1 Hypervisor) however you will likely require some specific tuning of VMs and or capacity planning of your hardware to ensure you properly resource your cluster's VMs.
 
 _**Table of Contents**_
 
 <!-- TOC -->
-- [Virtual MultiNode OpenShift](#virtual-multinode-openShift)
-- [Deploy a VMNO](#deploy-a-vmno)
-  - [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
-	- [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)
-	- [Bastion node vars](#bastion-node-vars)
-	- [OCP node vars](#ocp-node-vars)
-	- [Extra vars](#extra-vars)
-  - [Configure Ansible vars in `hv.yml`](#configure-ansible-vars-in-hvyml)
-  - [Review vars `all.yml` and `hv.yml`](#review-vars-allyml-and-hvyml)
-  - [Run playbooks](#run-playbooks)
-    - [Run `create-inventory.yml` playbook](#run-create-inventoryyml-playbook)
-    - [Run `setup-bastion.yml` playbook](#run-setup-bastionyml-playbook)
-    - [Run `hv-setup.yml` playbook](#run-hv-setupyml-playbook)
-    - [Run `hv-vm-create.yml` playbook](#run-hv-vm-createyml-playbook)
-    - [Run `mno-deploy.yml` playbook](#run-mno-deployyml-playbook)
-  - [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
+- [Bastion setup](#bastion-setup)
+- [Deployment overview](#deployment-overview)
+- [Configure Ansible vars in `all.yml`](#configure-ansible-vars-in-allyml)
+  - [Lab \& cluster infrastructure vars](#lab--cluster-infrastructure-vars)
+  - [Bastion node vars](#bastion-node-vars)
+  - [Extra vars](#extra-vars)
+- [Configure Ansible vars in `hv.yml`](#configure-ansible-vars-in-hvyml)
+- [Review vars `all.yml` and `hv.yml`](#review-vars-allyml-and-hvyml)
+- [Run playbooks](#run-playbooks)
+  - [Run `create-inventory.yml` playbook](#run-create-inventoryyml-playbook)
+  - [Run `setup-bastion.yml` playbook](#run-setup-bastionyml-playbook)
+  - [Run `hv-setup.yml` playbook](#run-hv-setupyml-playbook)
+  - [Run `hv-vm-create.yml` playbook](#run-hv-vm-createyml-playbook)
+  - [Run `mno-deploy.yml` playbook](#run-mno-deployyml-playbook)
+- [Monitor install and interact with cluster](#monitor-install-and-interact-with-cluster)
 <!-- /TOC -->
 
 # Deploy a VMNO
 
-This quickstart assumes you already have selected a bastion, setup ssh, downloaded your pull-secret.txt and cloned the jetlag repo. An example cloud consisting of Dell r740xds called `cloud99` in the performancelab is used for the example.
+Assuming you received a Scale Lab or Performance Lab allocation named `cloud99`, this guide will walk you through deploying a VMNO cluster in your allocation. The examples below use Dell r740xd in the Performance Lab, but the same steps apply to Scale Lab hardware.
+
+## Bastion setup
+
+Follow the [Bastion Setup](bastion-setup.md) guide to prepare your bastion machine before proceeding.
+
+## Deployment overview
 
 The main steps to deploy a VMNO are as follows
 
@@ -55,7 +60,9 @@ Repeated runs require deleting VMs (`hv-vm-delete.yml` or `hv-vm-replace.yml` pl
 
 ### Lab & cluster infrastructure vars
 
-Change `lab` to `lab: performancelab`
+Change `lab` to match your environment:
+- Scale Lab: `lab: scalelab`
+- Performance Lab: `lab: performancelab`
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
@@ -63,40 +70,18 @@ Change `cluster_type` to `cluster_type: vmno`
 
 Set `worker_node_count` to limit the number of worker nodes. Set it to `0` if you want a 3 node compact cluster. For this example `worker_node_count` is set to `5` such that the entire cluster will be 8 nodes (3 controlplane + 5 workers).
 
-Set `ocp_build` to `ga` for Generally Available versions, `dev` (early candidate builds)
-of OpenShift, or `ci` to pick a specific nightly build.
+Set `ocp_build` and `ocp_version` to select your OpenShift version. For example, to deploy the latest GA 4.22 release:
 
-`ocp_version` is used in conjunction with `ocp_build`. Examples of `ocp_version` with
-`ocp_build: ga` include explicit versions such as `4.17.17` or `4.16.35`, additionally
-`latest-4.17` or `latest-4.16` point to the latest z-stream of 4.17 and 4.16 ga builds.
-Examples of `ocp_version` with `ocp_build: dev` are `candidate-4.17`, `candidate-4.16`
-or `latest` which points to the early candidate build of the latest in development
-release. Checkout https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ for a list
-of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
-for a list of `dev` releases. Nightly `ci` builds are tricky and require determining
-exact builds you can use, an example of `ocp_version` with `ocp_build: ci` is
-`4.19.0-0.nightly-2025-02-25-035256`, For 'ci' builds check latest nightly from  https://amd64.ocp.releases.ci.openshift.org/.
+```yaml
+ocp_build: "ga"
+ocp_version: "latest-4.22"
+```
 
-
-Note: user has to add registry.ci.openshift.org token in pull-secret.txt for `ci` builds.
+See [Updating OCP version](tips-and-vars.md#updating-ocp-version) for details on available builds and version formats.
 
 ### Bastion node vars
 
-The bastion system type determines the values of `bastion_lab_interface` and `bastion_controlplane_interface`.
-
-Using the performance lab networking table, determine the names of the nic per network.
-
-* `bastion_lab_interface` will always be set to the nic name under "Public"
-* `bastion_controlplane_interface` should be set to the nic name under "EM1" for this guide
-
-For Dell r740xd set those vars to the following
-
-```yaml
-bastion_lab_interface: eno3
-bastion_controlplane_interface: eno1
-```
-
-Double check your nic names with your bastion machine.
+Jetlag automatically detects and configures network interfaces for common hardware in Scale Lab and Performance Lab using the `hw_nic_name` [mapping](../ansible/vars/lab.yml). You only need to manually set these if you want to override the defaults. For more details see [tips-and-vars.md](tips-and-vars.md).
 
 It's recommended to setup the monitoring for the hypervisor to keep track of an actual resource consumption, especially for the cases of high overcommit ratio:
 ```yaml
@@ -104,13 +89,11 @@ setup_hv_metrics: true
 ```
 This will setup Prometheus instance on the bastion node that will pull data from hypervisors.
 
-### OCP node vars
-
-No vars need to be adjusted in this section.
-
 ### Extra vars
 
-Append several hypervisor overrides here:
+The Extra vars section of `all.yml` is where you place any variable overrides for your deployment. All overrides should go in this section to keep configuration organized.
+
+For VMNO, add the following hypervisor overrides:
 
 ```yaml
 hv_ssh_pass: xxxxx
@@ -120,7 +103,7 @@ hv_vm_ip_offset: 20
 
 Replace `xxxxx` with the password for sshing to the bare metal machines in the allocation.
 
-For hardware in the performancelab, there are no default VM count per disks set. For the example Dell r740xd, the following counts were used:
+Default VM counts per disk are defined in `ansible/vars/lab.yml` under `hw_vm_counts` for both Scale Lab and Performance Lab hardware. You can override these defaults in the Extra vars section of `all.yml`. For example, to adjust VM counts for Dell r740xd in the Performance Lab:
 
 ```yaml
 hw_vm_counts:
@@ -130,7 +113,7 @@ hw_vm_counts:
       nvme0n1: 7
 ```
 
-When mixing different machines, the hv_vm_counts may be adjusted for those machine models to create the same number of VMs per hypervisor. For example, when mixing Dell r640 and r650 in ScaleLab, the following counts were used:
+When mixing different machine models, `hw_vm_counts` can be adjusted per model to control how many VMs are placed on each hypervisor. For example, when mixing Dell r640 and r650 in Scale Lab:
 
 ```yaml
 hw_vm_counts:
@@ -152,7 +135,7 @@ In some VM scenarios, hugepages may be required. To configure VMs with hugepages
 (.ansible) [root@<bastion> jetlag]# vi ansible/vars/hv.yml
 ```
 
-Change `lab` to `lab: performancelab`
+Change `lab` to match your environment (same value as in `all.yml`).
 
 Change `hv_vm_generate_manifests` to `hv_vm_generate_manifests: false`
 
@@ -176,7 +159,7 @@ The `ansible/vars/all.yml` now resembles ...
 ################################################################################
 # Lab & cluster infrastructure vars
 ################################################################################
-# Which lab to be deployed into (Ex scalelab)
+# Which lab to be deployed into (Ex scalelab, performancelab)
 lab: performancelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
@@ -188,19 +171,20 @@ cluster_type: vmno
 worker_node_count: 5
 
 # Set ocp_build to "ga", `dev`, or `ci` to pick a specific nightly build
-ocp_build: ga
+ocp_build: "ga"
 
 # ocp_version is used in conjunction with ocp_build
-# For "ga" builds, examples are "latest-4.17", "latest-4.16", "4.17.17" or "4.16.35"
-# For "dev" builds, examples are "candidate-4.17", "candidate-4.16" or "latest"
+# For "ga" builds, examples are "latest-4.22", "latest-4.21", "4.22.1" or "4.21.7"
+# For "dev" builds, examples are "candidate-4.22", "candidate-4.21" or "latest"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
-ocp_version: "latest-4.21"
+ocp_version: "latest-4.22"
 
 # Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
 # Autoconfigures cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,
 # controlplane_network_prefix, and controlplane_network_gateway to the values required for your cloud's public VLAN.
 # SNO configures only the first cluster on the api dns resolvable address
 # MNO/SNO still requires the correct value for bastion_controlplane_interface
+# It is required to comment out controlplane_network and controlplane_network_prefix in the Network Configuration
 public_vlan: false
 
 # SNOs only require a single IP address and can be deployed using the lab DHCP interface instead of a private or
@@ -211,12 +195,15 @@ sno_use_lab_dhcp: false
 # Enables FIPs security standard
 enable_fips: false
 
+#Enables the TechPreviewNoUpgrade feature set
+enable_techpreview: false
+
 # Enables Operators CNV and LSO install at deployment timeframe (GA releases only)
 enable_cnv_install: false
 
 ssh_private_key_file: ~/.ssh/id_rsa
 ssh_public_key_file: ~/.ssh/id_rsa.pub
-# Place your pull-secret.txt in the base directory of the cloned jetlag repo, Example:
+# Place your pull-secret.txt in the base directory of the cloned Jetlag repo, Example:
 # [root@<bastion> jetlag]# ls pull-secret.txt
 pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"
 
@@ -227,8 +214,10 @@ bastion_cluster_config_dir: /root/{{ cluster_type }}
 
 smcipmitool_url:
 
-bastion_lab_interface: eno3
-bastion_controlplane_interface: eno1
+# Network interfaces - these will be auto-configured based on lab and machine type
+# if not explicitly set. To override auto-configuration, uncomment and set values:
+# bastion_lab_interface: eno1np0
+# bastion_controlplane_interface: ens1f0
 
 # Sets up Gogs a self-hosted git service on the bastion
 setup_bastion_gogs: false
@@ -239,19 +228,126 @@ setup_bastion_registry: false
 # Use in conjunction with ipv6 based clusters
 use_bastion_registry: false
 
+# Set to enable a forward proxy (Squid) for IPv6 clusters to access external registries
+# This is an alternative to setup_bastion_registry - use one or the other
+# When enabled, cluster nodes use the proxy to reach quay.io, registry.redhat.io, etc.
+setup_bastion_proxy: false
+
+# Reset iDRAC service using badfish container (pulls and uses badfish container
+# to clear job queue and reset iDRAC service)
+# reset_idrac: false
+
 # Setup Hypervisor metrics collection for VMNO deployments
+# Sets up Prometheus server on a bastion node and node_exporter on hypervisors
+# Grafana is exposed at http://<bastion_fqdn>:3000 by default
+# Prometheus is exposed on port 9090 instead
+# For more configuration options, see ansible/roles/hv-metrics-server/defaults/main.yaml
+# Do not override the role, just put override below
 setup_hv_metrics: true
 
 ################################################################################
 # OCP node vars
 ################################################################################
 # Network configuration for all mno/sno cluster nodes
-controlplane_lab_interface: eno1np0
+# This will be auto-configured based on lab and machine type if not explicitly set
+# To override auto-configuration, uncomment and set value:
+# controlplane_lab_interface: eno1np0
+
+# Bond configuration for private network (optional for scale/performance labs)
+# Enable bonding for bastion, controlplane, and worker nodes using 802.3ad mode
+# When enabled, uses the first two network interfaces by default (indices 1 & 2)
+# Only works with private VLANs (public_vlan: false) and homogeneous hardware
+enable_bond: false
+
+# VLAN subinterface on bond configuration (requires enable_bond: true)
+# Enable VLAN subinterface on top of bond0 interface
+# When enabled, creates bond0.<vlan_id> interface with specified VLAN tag
+enable_bond_vlan: false
+# VLAN ID for the subinterface (1-4094)
+bond_vlan_id: 10
+# Name for the VLAN subinterface (defaults to bond0.<vlan_id>)
+# bond_vlan_interface_name: bond0.10
+
+################################################################################
+# Network Configuration
+################################################################################
+# Network variables default to single-stack IPv4 values via role defaults in
+# ansible/roles/create-inventory/defaults/main/networks.yml
+# Only uncomment and set these if you need to override the defaults
+# (e.g., for IPv6 single stack or dual stack configurations).
+#
+# When public_vlan is enabled, these are auto-configured - do NOT set them.
+
+# Single Stack IPv4 (default - no need to uncomment for standard deployments):
+# controlplane_network:
+# - 198.18.0.0/16
+#
+# controlplane_network_prefix:
+# - 16
+#
+# cluster_network_cidr:
+# - 10.128.0.0/14
+#
+# cluster_network_host_prefix:
+# - 23
+#
+# service_network_cidr:
+# - 172.30.0.0/16
+
+# Single Stack IPv6:
+# controlplane_network:
+# - fd00:198:18:10::/64
+#
+# controlplane_network_prefix:
+# - 64
+#
+# cluster_network_cidr:
+# - fd01::/48
+#
+# cluster_network_host_prefix:
+# - 64
+#
+# service_network_cidr:
+# - fd02::/112
+#
+# Note: In IPv6-only configurations, IPv6 addresses are stored in the 'ip' field
+# in the generated inventory (not 'ipv6'). The 'ipv6' field is only used for
+# dual-stack configurations. CoreDNS templates automatically detect whether the
+# 'ip' field contains an IPv4 or IPv6 address and generate appropriate DNS records.
+
+# Dual Stack (IPv4 + IPv6):
+# All network variables must be lists with two elements [IPv4, IPv6].
+# First element must be IPv4, second must be IPv6.
+#
+# controlplane_network:
+# - 198.18.0.0/16
+# - fd00:198:18:10::/64
+#
+# controlplane_network_prefix:
+# - 16
+# - 64
+#
+# cluster_network_cidr:
+# - 10.128.0.0/14
+# - fd01::/48
+#
+# cluster_network_host_prefix:
+# - 23
+# - 64
+#
+# service_network_cidr:
+# - 172.30.0.0/16
+# - fd02::/112
 
 ################################################################################
 # Extra vars
 ################################################################################
 # Append override vars below
+
+# Pre-GA content section
+use_prega_content: false
+# prega_idms_link: ""
+
 hv_ssh_pass: xxxxx
 hv_ip_offset: 0
 hv_vm_ip_offset: 20
@@ -268,7 +364,7 @@ The `ansible/vars/hv.yml` now resembles ...
 ---
 # Hypervisor sample vars file
 
-# Which lab to be deployed into (Ex scalelab)
+# Which lab to be deployed into (Ex scalelab, performancelab)
 lab: performancelab
 
 ssh_public_key_file: ~/.ssh/id_rsa.pub
@@ -433,7 +529,7 @@ gateway=198.18.0.1
 bw_limit=False
 ```
 
-We can see jetlag has generated an inventory to create 10 VMs per hypervisor. This was due to the override for how many VMs we place on an r740xd. The first 3 VMs disk files are placed on the default disk which is the same disk as the RHEL OS is installed on:
+We can see Jetlag has generated an inventory to create 10 VMs per hypervisor. This was due to the override for how many VMs we place on an r740xd. The first 3 VMs disk files are placed on the default disk which is the same disk as the RHEL OS is installed on:
 
 Example:
 
@@ -451,7 +547,7 @@ Filesystem      Size  Used Avail Use% Mounted on
 /dev/nvme0n1p1  3.0T  974G  2.0T  33% /mnt/disk2
 ```
 
-Now is a good time to customize your inventory to match the needs and capacity of your environment. By default jetlag assigns every VM with the same count of CPUs, Memory and Disk. This is overridable by appending
+Now is a good time to customize your inventory to match the needs and capacity of your environment. By default Jetlag assigns every VM with the same count of CPUs, Memory and Disk. This is overridable by appending
 
 ```yaml
 hv_vm_cpu_count: 8
