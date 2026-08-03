@@ -15,6 +15,41 @@
     - "{{ bastion_cluster_config_dir }}/odf"
     - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
+- name: Auto-detect ai_cluster_id when not provided
+  when: ai_cluster_id is not defined
+  block:
+  - name: Look up Assisted Installer clusters
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters"
+      method: GET
+      status_code: [200]
+      return_content: true
+    register: ai_clusters_lookup
+
+  - name: Filter to installed clusters matching cluster_name
+    set_fact:
+      ai_clusters_matched: "{{ ai_clusters_lookup.json | selectattr('name', 'equalto', cluster_name) | selectattr('status', 'equalto', 'installed') | list }}"
+
+  - name: Fail if no installed cluster matches cluster_name
+    fail:
+      msg: >-
+        ai_cluster_id was not provided and no installed Assisted Installer cluster named
+        '{{ cluster_name }}' was found. Pass -e ai_cluster_id=<id> explicitly, or verify
+        the cluster install completed successfully.
+    when: ai_clusters_matched | length == 0
+
+  - name: Fail if multiple installed clusters match cluster_name
+    fail:
+      msg: >-
+        Multiple installed Assisted Installer clusters named '{{ cluster_name }}' were found
+        ({{ ai_clusters_matched | map(attribute='id') | join(', ') }}). Pass -e ai_cluster_id=<id>
+        explicitly to disambiguate.
+    when: ai_clusters_matched | length > 1
+
+  - name: Set ai_cluster_id from lookup
+    set_fact:
+      ai_cluster_id: "{{ ai_clusters_matched[0].id }}"
+
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/downloads/credentials?file_name={{ item.name }}"
