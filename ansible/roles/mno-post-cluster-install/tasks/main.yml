@@ -182,14 +182,15 @@
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc label no --overwrite {{ item }} localstorage=true
     loop: "{{ groups['worker'] }}"
 
-  # The localvolume resource will not be instantly available, thus retry for around 2 minutes
+  # The LocalVolume CRD is only available once the LSO operator finishes installing,
+  # which can take longer than the resource itself becoming available, thus retry for around 10 minutes
   - name: Create localvolume-lvm resource
     when: (controlplane_localstorage_lvm_devices | length > 0) or (worker_localstorage_lvm_devices | length > 0)
     shell:
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume-lvm.yml
     register: lv_result
     until: not lv_result.failed
-    retries: 60
+    retries: 300
     delay: 2
 
   - name: Create localvolume-disk resource
@@ -198,7 +199,7 @@
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/localstorage/localvolume-disk.yml
     register: lv_result
     until: not lv_result.failed
-    retries: 60
+    retries: 300
     delay: 2
 
 - name: Setup OpenShift Data Foundation (ODF)
