@@ -22,10 +22,12 @@ capabilities:
 {% else %}
 networking:
   networkType: OVNKubernetes
-{%   if mno_capabilities_baseline_set is defined %}
+{%   if mno_capabilities_baseline_set is defined or mno_capabilities_additional_enabled | default([], true) | length > 0 %}
 capabilities:
+{%     if mno_capabilities_baseline_set is defined %}
   baselineCapabilitySet: {{ mno_capabilities_baseline_set }}
-{%     if mno_capabilities_additional_enabled | default([]) | length > 0 %}
+{%     endif %}
+{%     if mno_capabilities_additional_enabled | default([], true) | length > 0 %}
   additionalEnabledCapabilities:
 {%       for capability in mno_capabilities_additional_enabled %}
   - {{ capability }}

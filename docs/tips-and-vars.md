@@ -405,7 +405,7 @@ mno_capabilities_additional_enabled:
 - Console
 - CSISnapshot
 - Ingress
-- Insights # remove/omit this line to leave Insights disabled
+# - Insights # uncomment to re-enable Insights
 - marketplace
 - MachineAPI
 - NodeTuning
