@@ -32,7 +32,7 @@
 - name: Wait until cluster is stable
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc adm wait-for-stable-cluster --minimum-stable-period={{ minimum_stable_period }} --timeout={{ wait_until_cluster_stable_timeout }}
-  when: wait_until_cluster_stable
+  when: wait_until_cluster_stable | bool
 
 - name: Remove assisted-installer namespace
   shell: |
