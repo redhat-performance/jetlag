@@ -19,7 +19,10 @@
   - ocp-release
   - bastion-install
   - ibmcloud-bastion-network
-  - bastion-dnsmasq
+  - role: bastion-dnsmasq
+    when: not setup_coredns
+  - role: bastion-coredns
+    when: setup_coredns
   - bastion-http
   - bastion-ocp-version
   - bastion-assisted-installer
