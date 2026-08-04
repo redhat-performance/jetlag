@@ -391,6 +391,32 @@ CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE MAXMHZ    MINMHZ
 41  1    1      1    1:1:1:1       yes    3900.0000 800.0000
 ```
 
+## Cluster Capabilities for MNO/VMNO
+
+By default, MNO and VMNO installs enable the full baseline set of OpenShift cluster capabilities (Insights, marketplace, etc.). Use `mno_capabilities_baseline_set` and `mno_capabilities_additional_enabled` to trim which capabilities get enabled at install time, mirroring the `capabilities` install-config override already used for the SNO DU profile.
+
+Example settings, e.g. to exclude the `Insights` capability entirely (useful for disconnected/air-gapped labs where it can never report and would otherwise show as permanently degraded):
+
+```yaml
+mno_capabilities_baseline_set: None
+mno_capabilities_additional_enabled:
+- baremetal
+- CloudCredential
+- Console
+- CSISnapshot
+- Ingress
+# - Insights # uncomment to re-enable Insights
+- marketplace
+- MachineAPI
+- NodeTuning
+- OperatorLifecycleManager
+- Storage
+```
+
+`baselineCapabilitySet` accepts the same values as install-config.yaml (`None`, `v4.11`..`v4.20`, `vCurrent`). Both vars are unset by default, so leaving them out of `all.yml` keeps the existing default behavior (no `capabilities` override sent to the Assisted Installer).
+
+Note this only applies at cluster install time — a capability already enabled on a running cluster cannot be disabled afterward; see [Red Hat's cluster capabilities documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/installation_overview/cluster-capabilities) for the list of known capabilities per OCP version.
+
 ## Post Deployment Tasks
 
 ### SNO DU Profile
