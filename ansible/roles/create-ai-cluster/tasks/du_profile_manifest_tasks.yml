@@ -55,7 +55,7 @@
   include_role:
     name: create-ai-cluster
     tasks_from: 01_manifest_update.yml
-  when: openshift_version is version('4.13', ">=")  
+  when: openshift_version is version('4.13', ">=")
   with_items:
   - file_name: enable-crun-master.yaml
     template_name: enable-crun-master.yaml

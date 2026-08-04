@@ -16,16 +16,16 @@
     return_content: true
     body_format: json
     body: {
-        "disks_selected_config": [
-          {
-            "id": "{{ hostvars[node.requested_hostname].install_disk }}",
-            "role": "install"
-          },
-          {
-            "id": "{{ node.installation_disk_path }}",
-            "role": "none"
-          }
-        ]
+      "disks_selected_config": [
+        {
+          "id": "{{ hostvars[node.requested_hostname].install_disk }}",
+          "role": "install"
+        },
+        {
+          "id": "{{ node.installation_disk_path }}",
+          "role": "none"
+        }
+      ]
     }
   when:
   - node.installation_disk_path != hostvars[node.requested_hostname].install_disk
@@ -60,16 +60,16 @@
     return_content: true
     body_format: json
     body: {
-        "disks_selected_config": [
-          {
-            "id": "{{ new_disk_id }}",
-            "role": "install"
-          },
-          {
-            "id": "{{ node.installation_disk_path }}",
-            "role": "none"
-          }
-        ]
+      "disks_selected_config": [
+        {
+          "id": "{{ new_disk_id }}",
+          "role": "install"
+        },
+        {
+          "id": "{{ node.installation_disk_path }}",
+          "role": "none"
+        }
+      ]
     }
   when:
   - '"by-path" in hostvars[node.requested_hostname].install_disk'

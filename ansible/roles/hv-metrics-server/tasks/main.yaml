@@ -8,129 +8,129 @@
 
 - name: HV Metrics pod block
   block:
-    - name: Render hv-metrics pod definition
-      ansible.builtin.template:
-        src: hv-metrics.yaml.j2
-        dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}.yaml"
-        mode: "0644"
-        owner: root
-        group: root
+  - name: Render hv-metrics pod definition
+    ansible.builtin.template:
+      src: hv-metrics.yaml.j2
+      dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}.yaml"
+      mode: "0644"
+      owner: root
+      group: root
 
-    - name: Render hv-metrics pod kube configuration
-      ansible.builtin.template:
-        src: hv-metrics.kube.j2
-        dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}.kube"
-        mode: "0644"
-        owner: root
-        group: root
+  - name: Render hv-metrics pod kube configuration
+    ansible.builtin.template:
+      src: hv-metrics.kube.j2
+      dest: "{{ hv_metrics_server_quadlet_dir }}/{{ hv_metrics_server_pod_name }}.kube"
+      mode: "0644"
+      owner: root
+      group: root
 
 - name: Prometheus block
   block:
-    - name: Create prometheus data directory
-      ansible.builtin.file:
-        path: "{{ hv_metrics_server_podman_data_dir }}"
-        state: directory
-        mode: "0777"
-        owner: root
-        group: root
+  - name: Create prometheus data directory
+    ansible.builtin.file:
+      path: "{{ hv_metrics_server_podman_data_dir }}"
+      state: directory
+      mode: "0777"
+      owner: root
+      group: root
 
-    - name: Render prometheus configuration
-      ansible.builtin.template:
-        src: prometheus.yaml.j2
-        dest: "{{ hv_metrics_server_podman_config_source }}"
-        mode: "0644"
-        owner: root
-        group: root
+  - name: Render prometheus configuration
+    ansible.builtin.template:
+      src: prometheus.yaml.j2
+      dest: "{{ hv_metrics_server_podman_config_source }}"
+      mode: "0644"
+      owner: root
+      group: root
 
 - name: Grafana block
   when: hv_metrics_server_deploy_grafana | bool
   block:
-    - name: Render grafana dashboard provider configuration
-      ansible.builtin.template:
-        src: dashboard-providers.yaml.j2
-        dest: "{{ hv_metrics_server_work_dir }}/dashboard-providers.yaml"
-        mode: "0644"
-        owner: root
-        group: root
+  - name: Render grafana dashboard provider configuration
+    ansible.builtin.template:
+      src: dashboard-providers.yaml.j2
+      dest: "{{ hv_metrics_server_work_dir }}/dashboard-providers.yaml"
+      mode: "0644"
+      owner: root
+      group: root
 
-    - name: Create dashboard directory
-      ansible.builtin.file:
-        path: "{{ hv_metrics_server_grafana_dashboard_dir }}"
-        state: directory
-        mode: "0755"
-        owner: root
-        group: root
+  - name: Create dashboard directory
+    ansible.builtin.file:
+      path: "{{ hv_metrics_server_grafana_dashboard_dir }}"
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
 
-    - name: Copy grafana dashboards
-      ansible.builtin.copy:
-        src: "dashboards/"
-        dest: "{{ hv_metrics_server_grafana_dashboard_dir }}"
-        mode: "0644"
-        owner: root
-        group: root
+  - name: Copy grafana dashboards
+    ansible.builtin.copy:
+      src: "dashboards/"
+      dest: "{{ hv_metrics_server_grafana_dashboard_dir }}"
+      mode: "0644"
+      owner: root
+      group: root
 
-    - name: Render grafana datasource configuration
-      ansible.builtin.template:
-        src: datasource-prometheus.yaml.j2
-        dest: "{{ hv_metrics_server_work_dir }}/datasource-prometheus.yaml"
-        mode: "0644"
-        owner: root
-        group: root
+  - name: Render grafana datasource configuration
+    ansible.builtin.template:
+      src: datasource-prometheus.yaml.j2
+      dest: "{{ hv_metrics_server_work_dir }}/datasource-prometheus.yaml"
+      mode: "0644"
+      owner: root
+      group: root
 
 - name: Bastion exporter block
   when: hv_metrics_server_enable_bastion_exporter | bool
   block:
-    - name: Create textfile collector directory
-      ansible.builtin.file:
-        path: "{{ hv_metrics_server_bastion_exporter_textfile_dir }}"
-        state: directory
+  - name: Create textfile collector directory
+    ansible.builtin.file:
+      path: "{{ hv_metrics_server_bastion_exporter_textfile_dir }}"
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
+
+  - name: Registry traffic monitoring
+    when: setup_bastion_registry | default(false) | bool
+    block:
+    - name: Render registry traffic collector script
+      ansible.builtin.template:
+        src: registry-traffic-collector.sh.j2
+        dest: "{{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh"
         mode: "0755"
         owner: root
         group: root
 
-    - name: Registry traffic monitoring
-      when: setup_bastion_registry | default(false) | bool
-      block:
-        - name: Render registry traffic collector script
-          ansible.builtin.template:
-            src: registry-traffic-collector.sh.j2
-            dest: "{{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh"
-            mode: "0755"
-            owner: root
-            group: root
+    - name: Render registry traffic collector systemd service
+      ansible.builtin.template:
+        src: registry-traffic-collector.service.j2
+        dest: /etc/systemd/system/registry-traffic-collector.service
+        mode: "0644"
+        owner: root
+        group: root
 
-        - name: Render registry traffic collector systemd service
-          ansible.builtin.template:
-            src: registry-traffic-collector.service.j2
-            dest: /etc/systemd/system/registry-traffic-collector.service
-            mode: "0644"
-            owner: root
-            group: root
+    - name: Render registry traffic collector systemd timer
+      ansible.builtin.template:
+        src: registry-traffic-collector.timer.j2
+        dest: /etc/systemd/system/registry-traffic-collector.timer
+        mode: "0644"
+        owner: root
+        group: root
 
-        - name: Render registry traffic collector systemd timer
-          ansible.builtin.template:
-            src: registry-traffic-collector.timer.j2
-            dest: /etc/systemd/system/registry-traffic-collector.timer
-            mode: "0644"
-            owner: root
-            group: root
+    - name: Run collector once to initialize iptables rules and metrics file
+      ansible.builtin.command:
+        cmd: "{{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh"
 
-        - name: Run collector once to initialize iptables rules and metrics file
-          ansible.builtin.command:
-            cmd: "{{ hv_metrics_server_work_dir }}/registry-traffic-collector.sh"
-
-        - name: Start and enable registry traffic collector timer
-          ansible.builtin.systemd:
-            name: registry-traffic-collector.timer
-            daemon_reload: true
-            state: started
-            enabled: true
+    - name: Start and enable registry traffic collector timer
+      ansible.builtin.systemd:
+        name: registry-traffic-collector.timer
+        daemon_reload: true
+        state: started
+        enabled: true
 
 - name: Enablement block
   block:
-    - name: Start and enable hv-metrics pod
-      ansible.builtin.systemd:
-        name: "{{ hv_metrics_server_pod_name }}.service"
-        daemon_reload: true
-        state: restarted
-        enabled: true
+  - name: Start and enable hv-metrics pod
+    ansible.builtin.systemd:
+      name: "{{ hv_metrics_server_pod_name }}.service"
+      daemon_reload: true
+      state: restarted
+      enabled: true

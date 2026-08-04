@@ -10,52 +10,52 @@
 
 - name: approve CSRs and check if nodes have joined the cluster
   block:
-    - name: Increment the retry count
-      set_fact:
-        retry: "{{ 0 if retry is undefined else retry | int + 1 }}"
+  - name: Increment the retry count
+    set_fact:
+      retry: "{{ 0 if retry is undefined else retry | int + 1 }}"
 
-    - name: Pause during loop
-      pause:
-        seconds: "30"
-      when: retry|int > 0
+  - name: Pause during loop
+    pause:
+      seconds: "30"
+    when: retry|int > 0
 
-    - name: Get CSRs
-      shell: |
-        KUBECONFIG={{ cluster_kubeconfig }} oc get csr -o json
-      register: oc_get_csr
-    
-    - name: Approve pending CSRs
-      shell: |
-        KUBECONFIG={{ cluster_kubeconfig }} oc adm certificate approve {{ item.metadata.name }}
-      loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
-      loop_control:
-        label: "{{ item.metadata.name }}"
-    
-    - name: Get worker node count
-      shell: |
-        KUBECONFIG={{ cluster_kubeconfig }} oc get nodes | {{ worker_counter }}
-      register: oc_get_nodes_workers
+  - name: Get CSRs
+    shell: |
+      KUBECONFIG={{ cluster_kubeconfig }} oc get csr -o json
+    register: oc_get_csr
 
-    - name: Current Worker Node Count
-      debug:
-        var: oc_get_nodes_workers.stdout
+  - name: Approve pending CSRs
+    shell: |
+      KUBECONFIG={{ cluster_kubeconfig }} oc adm certificate approve {{ item.metadata.name }}
+    loop: "{{ oc_get_csr.stdout | from_json | json_query(qry) }}"
+    loop_control:
+      label: "{{ item.metadata.name }}"
 
-    - name: Waiting for Worker Node Count
-      debug:
-        msg: "{{ current_worker_count+scale_out_count }}"
+  - name: Get worker node count
+    shell: |
+      KUBECONFIG={{ cluster_kubeconfig }} oc get nodes | {{ worker_counter }}
+    register: oc_get_nodes_workers
 
-    - name: Raise fail to trigger retry if all nodes didn't meet requirments
-      fail:
-        msg: All nodes have not met check requirements
-      when: oc_get_nodes_workers.stdout|int < current_worker_count+scale_out_count
+  - name: Current Worker Node Count
+    debug:
+      var: oc_get_nodes_workers.stdout
+
+  - name: Waiting for Worker Node Count
+    debug:
+      msg: "{{ current_worker_count+scale_out_count }}"
+
+  - name: Raise fail to trigger retry if all nodes didn't meet requirments
+    fail:
+      msg: All nodes have not met check requirements
+    when: oc_get_nodes_workers.stdout|int < current_worker_count+scale_out_count
   rescue:
-    - name: Fail on maximum retry count
-      fail:
-        msg: Maximum retries reached
-      when: retry | int == 540
+  - name: Fail on maximum retry count
+    fail:
+      msg: Maximum retries reached
+    when: retry | int == 540
 
-    - name: Retry the check
-      include_tasks: check_nodes_joined.yml
-      vars:
-        qry: "{{ r_qry }}"
-        worker_counter: "{{ r_worker_counter }}"
+  - name: Retry the check
+    include_tasks: check_nodes_joined.yml
+    vars:
+      qry: "{{ r_qry }}"
+      worker_counter: "{{ r_worker_counter }}"

@@ -3,7 +3,7 @@
 
 # ACM Build to sync
 rhacm_build: 2.14.0-DOWNSTREAM-2025-07-07-22-56-58
-#for konflux build only
+# for konflux build only
 mce_build: 2.9.0-DOWNSTREAM-2025-07-07-22-58-18
 acm_channel: release-2.14
 mce_channel: stable-2.9

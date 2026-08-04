@@ -96,7 +96,7 @@ hw_install_disk:
 # This dictionary contains the expected nic names for networks in the scale/performance lab. This determines the name of the
 # nic for hypervisors.
 hw_nic_name:
-  #$lab:
+  # $lab:
   #  $hw_name:
   #  - (nic 0 - public nic)
   #  - (nic 1 - Network 1)

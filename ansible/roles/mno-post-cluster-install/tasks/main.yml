@@ -6,14 +6,14 @@
     path: "{{ item }}"
     state: directory
   loop:
-    - "{{ bastion_cluster_config_dir }}"
-    - "{{ bastion_cluster_config_dir }}/aap"
-    - "{{ bastion_cluster_config_dir }}/catalogsources"
-    - "{{ bastion_cluster_config_dir }}/gitops"
-    - "{{ bastion_cluster_config_dir }}/localstorage"
-    - "{{ bastion_cluster_config_dir }}/minio"
-    - "{{ bastion_cluster_config_dir }}/odf"
-    - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
+  - "{{ bastion_cluster_config_dir }}"
+  - "{{ bastion_cluster_config_dir }}/aap"
+  - "{{ bastion_cluster_config_dir }}/catalogsources"
+  - "{{ bastion_cluster_config_dir }}/gitops"
+  - "{{ bastion_cluster_config_dir }}/localstorage"
+  - "{{ bastion_cluster_config_dir }}/minio"
+  - "{{ bastion_cluster_config_dir }}/odf"
+  - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
 - name: Auto-detect ai_cluster_id when not provided
   when: ai_cluster_id is not defined
@@ -55,12 +55,12 @@
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/downloads/credentials?file_name={{ item.name }}"
     dest: "{{ bastion_cluster_config_dir }}/{{ item.dest }}"
   loop:
-    - name: kubeadmin-password
-      dest: kubeadmin-password
-    - name: kubeconfig
-      dest: kubeconfig
-    - name: kubeconfig
-      dest: kubeconfig.backup
+  - name: kubeadmin-password
+    dest: kubeadmin-password
+  - name: kubeconfig
+    dest: kubeconfig
+  - name: kubeconfig
+    dest: kubeconfig.backup
 
 - name: Wait until cluster is stable
   shell: |
@@ -82,26 +82,26 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   loop:
-    - src: ansible-automation-platform-operator.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/aap/ansible-automation-platform-operator.yml"
-    - src: openshift-gitops-operator.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
-    - src: localstorage.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
-    - src: localvolume-lvm.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume-lvm.yml"
-    - src: localvolume-disk.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume-disk.yml"
-    - src: minio.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
-    - src: odf.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/odf/odf.yml"
-    - src: odf-storagecluster.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/odf/odf-storagecluster.yml"
-    - src: cluster-monitoring-config.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
-    - src: catalogsource.yml.j2
-      dest: "{{ bastion_cluster_config_dir }}/catalogsources/catalogsource.yml"
+  - src: ansible-automation-platform-operator.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/aap/ansible-automation-platform-operator.yml"
+  - src: openshift-gitops-operator.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/gitops/openshift-gitops-operator.yml"
+  - src: localstorage.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localstorage.yml"
+  - src: localvolume-lvm.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume-lvm.yml"
+  - src: localvolume-disk.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume-disk.yml"
+  - src: minio.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/minio/minio.yml"
+  - src: odf.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/odf/odf.yml"
+  - src: odf-storagecluster.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/odf/odf-storagecluster.yml"
+  - src: cluster-monitoring-config.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/openshift-monitoring/cluster-monitoring-config.yml"
+  - src: catalogsource.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/catalogsources/catalogsource.yml"
 
 - name: Clone performance-dashboards
   git:
@@ -131,24 +131,24 @@
 
 - name: Pre-GA block
   when:
-    - use_prega_content | default(false) | bool
-    - prega_idms_link is defined
-    - prega_idms_link | length > 0
+  - use_prega_content | default(false) | bool
+  - prega_idms_link is defined
+  - prega_idms_link | length > 0
   block:
-    - name: Delete previous IDMS configuration
-      ansible.builtin.file:
-        path: "{{ idms_prega_configuration }}"
-        state: absent
+  - name: Delete previous IDMS configuration
+    ansible.builtin.file:
+      path: "{{ idms_prega_configuration }}"
+      state: absent
 
-    - name: Download IDMS configuration
-      ansible.builtin.uri:
-        url: "{{ prega_idms_link }}"
-        dest: "{{ idms_prega_configuration }}"
-        mode: '0644'
-      register: idms_download_result
-      until: idms_download_result is not failed
-      retries: 3
-      delay: 5
+  - name: Download IDMS configuration
+    ansible.builtin.uri:
+      url: "{{ prega_idms_link }}"
+      dest: "{{ idms_prega_configuration }}"
+      mode: '0644'
+    register: idms_download_result
+    until: idms_download_result is not failed
+    retries: 3
+    delay: 5
 
 - name: Disable default OperatorHub sources on bastion registry clusters
   shell: |
