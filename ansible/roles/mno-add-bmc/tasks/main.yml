@@ -6,5 +6,5 @@
 
 - include_tasks: add-bmc-to-bmh.yml
   with_inventory_hostnames:
-    - controlplane
-    - worker
+  - controlplane
+  - worker

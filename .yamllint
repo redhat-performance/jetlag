@@ -1,0 +1,19 @@
+---
+extends: default
+
+rules:
+  indentation:
+    indent-sequences: false
+  line-length: disable
+  truthy: disable
+  document-start: disable
+  comments-indentation: disable
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: -1
+  comments:
+    min-spaces-from-content: 1
+
+ignore:
+- .ansible/
+- scripts/

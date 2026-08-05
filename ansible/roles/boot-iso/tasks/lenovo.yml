@@ -32,8 +32,8 @@
     virtual_media:
       image_url: "http://{{ http_store_host }}:{{ http_store_port }}/iso/{{ _virtual_media_iso }}"
       media_types:
-        - CD
-        - DVD
+      - CD
+      - DVD
     resource_id: "1"
 
 - name: Lenovo - Power on

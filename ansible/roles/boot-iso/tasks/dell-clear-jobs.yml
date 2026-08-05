@@ -21,6 +21,6 @@
     badfish_user: "{{ hostvars[item]['bmc_user'] }}"
     badfish_password: "{{ hostvars[item]['bmc_password'] }}"
     badfish_args:
-      - "--clear-jobs"
-      - "--force"
+    - "--clear-jobs"
+    - "--force"
     ignore_errors: true

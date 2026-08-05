@@ -17,14 +17,14 @@
 - name: Validate required badfish parameters
   ansible.builtin.assert:
     that:
-      - badfish_host is defined
-      - badfish_host | length > 0
-      - badfish_user is defined
-      - badfish_user | length > 0
-      - badfish_password is defined
-      - badfish_password | length > 0
-      - badfish_args is defined
-      - badfish_args | length > 0
+    - badfish_host is defined
+    - badfish_host | length > 0
+    - badfish_user is defined
+    - badfish_user | length > 0
+    - badfish_password is defined
+    - badfish_password | length > 0
+    - badfish_args is defined
+    - badfish_args | length > 0
     fail_msg: "Missing or empty required badfish parameters. Required: badfish_host, badfish_user, badfish_password, badfish_args"
     quiet: true
 
@@ -72,8 +72,8 @@
   ansible.builtin.fail:
     msg: "badfish reported an error: {{ badfish_result.stderr }}"
   when:
-    - not ignore_errors | default(false) | bool
-    - badfish_result.stderr is defined and 'ERROR' in badfish_result.stderr
+  - not ignore_errors | default(false) | bool
+  - badfish_result.stderr is defined and 'ERROR' in badfish_result.stderr
 
 - name: Set fact with badfish result for external access
   ansible.builtin.set_fact:

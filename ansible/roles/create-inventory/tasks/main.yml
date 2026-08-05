@@ -14,12 +14,12 @@
 - name: Set ocp inventory download url from lab wiki - scalelab and performancelab
   set_fact:
     ocp_inventory_url: "http://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
-  when:  ocp_inventory_override | string | length < 1 and (lab == 'scalelab' or lab == 'performancelab')
+  when: ocp_inventory_override | string | length < 1 and (lab == 'scalelab' or lab == 'performancelab')
 
 - name: Set ocp inventory download url to override
   set_fact:
     ocp_inventory_url: "{{ ocp_inventory_override }}"
-  when:  ocp_inventory_override | string | length > 1
+  when: ocp_inventory_override | string | length > 1
 
 - name: Download ocpinventory.json
   uri:
@@ -46,7 +46,7 @@
 - name: Validate allocation has enough nodes for MNO deployment
   assert:
     that:
-      - ocpinventory.json.nodes | length >= 4
+    - ocpinventory.json.nodes | length >= 4
     fail_msg: >-
       MNO deployment requires at least 4 nodes (1 bastion + 3 controlplane),
       but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
@@ -57,7 +57,7 @@
 - name: Validate allocation has enough nodes for VMNO deployment
   assert:
     that:
-      - ocpinventory.json.nodes | length >= 2
+    - ocpinventory.json.nodes | length >= 2
     fail_msg: >-
       VMNO deployment requires at least 2 nodes (1 bastion + 1 hypervisor),
       but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
@@ -68,7 +68,7 @@
 - name: Validate allocation has enough nodes for requested hypervisor count
   assert:
     that:
-      - ocpinventory.json.nodes | length >= (hv_count | int) + 1
+    - ocpinventory.json.nodes | length >= (hv_count | int) + 1
     fail_msg: >-
       VMNO deployment with {{ hv_count }} hypervisor(s) requires at least {{ (hv_count | int) + 1 }} nodes
       (1 bastion + {{ hv_count }} hypervisors),
@@ -76,15 +76,15 @@
       Either reduce hv_count or request a larger allocation.
     success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (need {{ (hv_count | int) + 1 }} for {{ hv_count }} hypervisors)"
   when:
-    - cluster_type == "vmno"
-    - hv_count is defined
-    - hv_count != None
-    - hv_count | int > 0
+  - cluster_type == "vmno"
+  - hv_count is defined
+  - hv_count != None
+  - hv_count | int > 0
 
 - name: Validate allocation has enough nodes for requested worker count
   assert:
     that:
-      - ocpinventory.json.nodes | length >= (worker_node_count | int) + 4
+    - ocpinventory.json.nodes | length >= (worker_node_count | int) + 4
     fail_msg: >-
       MNO deployment with {{ worker_node_count }} worker(s) requires at least {{ (worker_node_count | int) + 4 }} nodes
       (1 bastion + 3 controlplane + {{ worker_node_count }} workers),
@@ -92,15 +92,15 @@
       Either reduce worker_node_count or request a larger allocation.
     success_msg: "Allocation has {{ ocpinventory.json.nodes | length }} nodes (need {{ (worker_node_count | int) + 4 }} for {{ worker_node_count }} workers)"
   when:
-    - cluster_type == "mno"
-    - worker_node_count is defined
-    - worker_node_count != None
-    - worker_node_count | int > 0
+  - cluster_type == "mno"
+  - worker_node_count is defined
+  - worker_node_count != None
+  - worker_node_count | int > 0
 
 - name: Validate allocation has enough nodes for SNO deployment
   assert:
     that:
-      - ocpinventory.json.nodes | length >= 2
+    - ocpinventory.json.nodes | length >= 2
     fail_msg: >-
       SNO deployment requires at least 2 nodes (1 bastion + 1 SNO node),
       but the allocation '{{ lab_cloud }}' only has {{ ocpinventory.json.nodes | length }} node(s).
@@ -132,9 +132,9 @@
     set_fact:
       bastion_controlplane_interface: "{{ hw_nic_name[lab][machine_type][-1] }}"
     when:
-      - bastion_controlplane_interface is not defined
-      - lab in hw_nic_name
-      - machine_type in hw_nic_name[lab]
+    - bastion_controlplane_interface is not defined
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
 
   - name: Public VLAN - Get assignment from quads
     uri:
@@ -148,9 +148,9 @@
   - name: Public VLAN - Set addressing information (IPv4 only)
     set_fact:
       controlplane_network:
-        - "{{ quads_assignment.json.vlan.ip_range }}"
+      - "{{ quads_assignment.json.vlan.ip_range }}"
       controlplane_network_prefix:
-        - "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
+      - "{{ quads_assignment.json.vlan.ip_range | ipaddr('prefix') }}"
       controlplane_network_gateway: "{{ quads_assignment.json.vlan.gateway }}"
 
   - name: Public VLAN - Set cluster_name if was set as default
@@ -166,36 +166,36 @@
   set_fact:
     bastion_lab_interface: "{{ hw_nic_name[lab][machine_type][0] }}"
   when:
-    - bastion_lab_interface is not defined
-    - lab in hw_nic_name
-    - machine_type in hw_nic_name[lab]
+  - bastion_lab_interface is not defined
+  - lab in hw_nic_name
+  - machine_type in hw_nic_name[lab]
 
 - name: Auto-configure bastion controlplane interface (only when not explicitly set)
   set_fact:
     bastion_controlplane_interface: "{{ hw_nic_name[lab][machine_type][controlplane_network_interface_idx|int+1] }}"
   when:
-    - bastion_controlplane_interface is not defined
-    - lab in hw_nic_name
-    - machine_type in hw_nic_name[lab]
-    - not public_vlan
+  - bastion_controlplane_interface is not defined
+  - lab in hw_nic_name
+  - machine_type in hw_nic_name[lab]
+  - not public_vlan
 
 - name: Auto-configure controlplane lab interface (only when not explicitly set)
   set_fact:
     controlplane_lab_interface: "{{ hw_nic_name[lab][machine_type][0] }}"
   when:
-    - controlplane_lab_interface is not defined
-    - lab in hw_nic_name
-    - machine_type in hw_nic_name[lab]
+  - controlplane_lab_interface is not defined
+  - lab in hw_nic_name
+  - machine_type in hw_nic_name[lab]
 
 - name: Auto-configure bastion bond interfaces (only when bonding is enabled)
   set_fact:
     bastion_bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
     bastion_bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
   when:
-    - enable_bond | default(false)
-    - lab in hw_nic_name
-    - machine_type in hw_nic_name[lab]
-    - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
+  - enable_bond | default(false)
+  - lab in hw_nic_name
+  - machine_type in hw_nic_name[lab]
+  - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
 - name: Bond configuration for scale/performance labs
   when: (lab in rh_labs) and enable_bond | default(false) and not (public_vlan | default(false))
@@ -206,9 +206,9 @@
       bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
       bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
     when:
-      - lab in hw_nic_name
-      - machine_type in hw_nic_name[lab]
-      - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
+    - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
 - name: Multi node cluster type tasks
   when: cluster_type == "mno"
@@ -336,79 +336,79 @@
 - name: Single Node OpenShift cluster type tasks
   when: cluster_type == "sno"
   block:
-    - name: SNO - Set ocpinventory hv nodes
-      when: hv_inventory | bool
-      ansible.builtin.set_fact:
-        ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[2:] }}"
+  - name: SNO - Set ocpinventory hv nodes
+    when: hv_inventory | bool
+    ansible.builtin.set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory.json.nodes[2:] }}"
 
-    - name: SNO - Set ocpinventory sno nodes
-      ansible.builtin.set_fact:
-        ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:2] if hv_inventory | bool else ocpinventory.json.nodes[1:] }}"
+  - name: SNO - Set ocpinventory sno nodes
+    ansible.builtin.set_fact:
+      ocpinventory_sno_nodes: "{{ ocpinventory.json.nodes[1:2] if hv_inventory | bool else ocpinventory.json.nodes[1:] }}"
 
-    - name: SNO - Set max number of nodes
-      ansible.builtin.set_fact:
-        max_nodes: "{{ ocpinventory.json.nodes|length }}"
-      when: worker_node_count is not defined or worker_node_count == None
+  - name: SNO - Set max number of nodes
+    ansible.builtin.set_fact:
+      max_nodes: "{{ ocpinventory.json.nodes|length }}"
+    when: worker_node_count is not defined or worker_node_count == None
 
-    - name: SNO - Set max number of nodes (worker_node_count set)
-      ansible.builtin.set_fact:
-        max_nodes: "{{ worker_node_count|int + 2 }}"
-      when: worker_node_count is defined and worker_node_count != None
+  - name: SNO - Set max number of nodes (worker_node_count set)
+    ansible.builtin.set_fact:
+      max_nodes: "{{ worker_node_count|int + 2 }}"
+    when: worker_node_count is defined and worker_node_count != None
 
-    - name: SNO - Set ocpinventory worker nodes (for scale-out scenarios)
-      when:
-        - not (hv_inventory | bool)
-        - worker_node_count is defined
-        - worker_node_count != None
-      ansible.builtin.set_fact:
-        ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[2:max_nodes|int] }}"
+  - name: SNO - Set ocpinventory worker nodes (for scale-out scenarios)
+    when:
+    - not (hv_inventory | bool)
+    - worker_node_count is defined
+    - worker_node_count != None
+    ansible.builtin.set_fact:
+      ocpinventory_worker_nodes: "{{ ocpinventory.json.nodes[2:max_nodes|int] }}"
 
-    - name: SNO - Get lab data for each sno
-      ansible.builtin.uri:
-        url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
-        force_basic_auth: true
-        user: "{{ lab_cloud }}"
-        password: "{{ bmc_password }}"
-        validate_certs: false
-      register: sno_foreman_data
-      loop: "{{ ocpinventory_sno_nodes }}"
+  - name: SNO - Get lab data for each sno
+    ansible.builtin.uri:
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
+      force_basic_auth: true
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    register: sno_foreman_data
+    loop: "{{ ocpinventory_sno_nodes }}"
 
-    - name: SNO - Get lab mac address for worker nodes
-      ansible.builtin.uri:
-        url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
-        force_basic_auth: true
-        user: "{{ lab_cloud }}"
-        password: "{{ bmc_password }}"
-        validate_certs: false
-      loop: "{{ ocpinventory_worker_nodes }}"
-      when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
-      register: sno_worker_foreman_data
+  - name: SNO - Get lab mac address for worker nodes
+    ansible.builtin.uri:
+      url: "https://{{ labs[lab]['foreman'] }}/api/hosts/{{ item.pm_addr | replace('mgmt-','') }}"
+      force_basic_auth: true
+      user: "{{ lab_cloud }}"
+      password: "{{ bmc_password }}"
+      validate_certs: false
+    loop: "{{ ocpinventory_worker_nodes }}"
+    when: cluster_type == "sno" and ocpinventory_worker_nodes|length > 0
+    register: sno_worker_foreman_data
 
-    - name: SNO - Auto-configure bond interface names from hardware mapping (when bonding is enabled)
-      ansible.builtin.set_fact:
-        bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
-        bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
-      when:
-        - enable_bond | default(false) and not (public_vlan | default(false))
-        - lab in hw_nic_name
-        - machine_type in hw_nic_name[lab]
-        - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
+  - name: SNO - Auto-configure bond interface names from hardware mapping (when bonding is enabled)
+    ansible.builtin.set_fact:
+      bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
+      bond0_interface2: "{{ hw_nic_name[lab][machine_type][bond0_port2|int] }}"
+    when:
+    - enable_bond | default(false) and not (public_vlan | default(false))
+    - lab in hw_nic_name
+    - machine_type in hw_nic_name[lab]
+    - hw_nic_name[lab][machine_type] | length > (bond0_port2|int)
 
-    - name: SNO - Add bond MAC addresses to hv nodes (when bonding is enabled)
-      when: enable_bond | default(false) and not (public_vlan | default(false))
-      ansible.builtin.set_fact:
-        ocpinventory_sno_nodes: >-
-          {{
-            ocpinventory_sno_nodes[:idx] +
-            [ocpinventory_sno_nodes[idx] | combine({
-              'bond0_macs': (item.mac[bond0_port1|int - 1 ] + ',' + item.mac[bond0_port2|int - 1])
-            })] +
-            ocpinventory_sno_nodes[idx + 1:]
-          }}
-      loop: "{{ ocpinventory_sno_nodes }}"
-      loop_control:
-        loop_var: item
-        index_var: idx
+  - name: SNO - Add bond MAC addresses to hv nodes (when bonding is enabled)
+    when: enable_bond | default(false) and not (public_vlan | default(false))
+    ansible.builtin.set_fact:
+      ocpinventory_sno_nodes: >-
+        {{
+          ocpinventory_sno_nodes[:idx] +
+          [ocpinventory_sno_nodes[idx] | combine({
+            'bond0_macs': (item.mac[bond0_port1|int - 1 ] + ',' + item.mac[bond0_port2|int - 1])
+          })] +
+          ocpinventory_sno_nodes[idx + 1:]
+        }}
+    loop: "{{ ocpinventory_sno_nodes }}"
+    loop_control:
+      loop_var: item
+      index_var: idx
 
 - name: set json query fact
   set_fact:
@@ -518,24 +518,24 @@
   - name: Validate bastion_lab_interface is defined
     assert:
       that:
-        - bastion_lab_interface is defined
-        - bastion_lab_interface != ""
+      - bastion_lab_interface is defined
+      - bastion_lab_interface != ""
       fail_msg: "bastion_lab_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
       success_msg: "bastion_lab_interface is configured: {{ bastion_lab_interface }}"
 
   - name: Validate bastion_controlplane_interface is defined
     assert:
       that:
-        - bastion_controlplane_interface is defined
-        - bastion_controlplane_interface != ""
+      - bastion_controlplane_interface is defined
+      - bastion_controlplane_interface != ""
       fail_msg: "bastion_controlplane_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
       success_msg: "bastion_controlplane_interface is configured: {{ bastion_controlplane_interface }}"
 
   - name: Validate controlplane_lab_interface is defined
     assert:
       that:
-        - controlplane_lab_interface is defined
-        - controlplane_lab_interface != ""
+      - controlplane_lab_interface is defined
+      - controlplane_lab_interface != ""
       fail_msg: "controlplane_lab_interface is not properly configured. Check your all.yml configuration or verify lab/machine_type support in lab.yml"
       success_msg: "controlplane_lab_interface is configured: {{ controlplane_lab_interface }}"
 

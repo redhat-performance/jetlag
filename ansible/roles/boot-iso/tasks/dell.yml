@@ -63,24 +63,24 @@
       return_content: yes
 
   rescue:
-    # Use racadm to address the failed redfish unmount of old virtual media
-    - name: "Force mount of a existing image for {{ item }}"
-      ansible.builtin.raw: >-
-        racadm remoteimage -c -u "" -p "" -l http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}
-      delegate_to: "{{ hostvars[item]['bmc_address'] }}"
-      vars:
-        ansible_user: "{{ hostvars[item]['bmc_user'] }}"
-        ansible_password: "{{ hostvars[item]['bmc_password'] }}"
-        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+  # Use racadm to address the failed redfish unmount of old virtual media
+  - name: "Force mount of a existing image for {{ item }}"
+    ansible.builtin.raw: >-
+      racadm remoteimage -c -u "" -p "" -l http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}
+    delegate_to: "{{ hostvars[item]['bmc_address'] }}"
+    vars:
+      ansible_user: "{{ hostvars[item]['bmc_user'] }}"
+      ansible_password: "{{ hostvars[item]['bmc_password'] }}"
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
-    - name: "Force unmount of the existing image for {{ item }}"
-      ansible.builtin.raw: >-
-        racadm remoteimage -d
-      delegate_to: "{{ hostvars[item]['bmc_address'] }}"
-      vars:
-        ansible_user: "{{ hostvars[item]['bmc_user'] }}"
-        ansible_password: "{{ hostvars[item]['bmc_password'] }}"
-        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+  - name: "Force unmount of the existing image for {{ item }}"
+    ansible.builtin.raw: >-
+      racadm remoteimage -d
+    delegate_to: "{{ hostvars[item]['bmc_address'] }}"
+    vars:
+      ansible_user: "{{ hostvars[item]['bmc_user'] }}"
+      ansible_password: "{{ hostvars[item]['bmc_password'] }}"
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 - name: "DELL - Insert Virtual Media for {{ item }}"
   community.general.redfish_command:
@@ -92,8 +92,8 @@
     virtual_media:
       image_url: "http://{{ http_store_host }}:{{ http_store_port }}/{{ _virtual_media_iso }}"
       media_types:
-        - CD
-        - DVD
+      - CD
+      - DVD
     resource_id: iDRAC.Embedded.1
     timeout: 60
   register: result

@@ -83,4 +83,3 @@ spec:
           WantedBy=shutdown.target reboot.target halt.target
         enabled: true
         name: accelerated-container-shutdown.service
-

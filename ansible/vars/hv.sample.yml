@@ -71,9 +71,9 @@ hugepage_count: 64
 
 # Additional kernel parameters for performance tuning
 additional_kernel_params:
-  - "intel_iommu=on"
-  - "iommu=pt"
-  - "isolcpus=2-15,18-31"
+- "intel_iommu=on"
+- "iommu=pt"
+- "isolcpus=2-15,18-31"
 
 # Enable hugepages for VMs
 vm_hugepages: false

@@ -7,9 +7,9 @@
     state: directory
     mode: '0777'
   loop:
-    - "{{ proxy_cache_dir }}"
-    - "{{ proxy_conf_dir }}"
-    - /var/log/squid
+  - "{{ proxy_cache_dir }}"
+  - "{{ proxy_conf_dir }}"
+  - /var/log/squid
 
 - name: Template squid configuration
   template:
@@ -38,9 +38,9 @@
     image: "{{ proxy_container_image }}"
     user: root
     volume:
-      - "{{ proxy_conf_dir }}/squid.conf:/etc/squid/squid.conf:z"
-      - "{{ proxy_cache_dir }}:/var/spool/squid:z"
-      - /var/log/squid:/var/log/squid:z
+    - "{{ proxy_conf_dir }}/squid.conf:/etc/squid/squid.conf:z"
+    - "{{ proxy_cache_dir }}:/var/spool/squid:z"
+    - /var/log/squid:/var/log/squid:z
     state: started
 
 - name: Open firewall port for proxy

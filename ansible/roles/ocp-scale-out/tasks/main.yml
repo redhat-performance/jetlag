@@ -35,4 +35,3 @@
   ansible.builtin.file:
     state: absent
     path: /root/ocp-scale-out
-

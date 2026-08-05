@@ -70,7 +70,7 @@
 
 - name: Create ImageSetConfiguration
   template:
-    src: imagesetconf.yml.j2 
+    src: imagesetconf.yml.j2
     dest: "{{ sync_path }}/mcgh/imagesetconf.yml"
 
 - name: Mirror MCGH images onto the bastion registry

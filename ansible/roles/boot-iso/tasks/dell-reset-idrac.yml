@@ -10,5 +10,5 @@
     badfish_user: "{{ hostvars[item]['bmc_user'] }}"
     badfish_password: "{{ hostvars[item]['bmc_password'] }}"
     badfish_args:
-      - "--racreset"
+    - "--racreset"
     ignore_errors: true

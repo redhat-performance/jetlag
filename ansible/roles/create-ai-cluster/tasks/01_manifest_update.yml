@@ -8,9 +8,9 @@
     body_format: json
     status_code: [201]
     body: {
-        "folder": "manifests",
-        "file_name": "{{ item.file_name }}",
-        "content": "{{ lookup('template', item.template_name) | b64encode }}"
+      "folder": "manifests",
+      "file_name": "{{ item.file_name }}",
+      "content": "{{ lookup('template', item.template_name) | b64encode }}"
     }
   when:
-   - item.enabled | default(true) | bool
+  - item.enabled | default(true) | bool

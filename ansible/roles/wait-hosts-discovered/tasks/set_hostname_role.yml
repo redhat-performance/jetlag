@@ -51,6 +51,6 @@
     status_code: [201]
     return_content: true
     body: {
-        "host_name": "{{ hostname }}",
-        "host_role": "{{ host_role }}"
+      "host_name": "{{ hostname }}",
+      "host_role": "{{ host_role }}"
     }

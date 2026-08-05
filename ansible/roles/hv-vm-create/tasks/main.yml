@@ -37,28 +37,28 @@
   - vm_hugepages
   - _my_vms | length > 0
   block:
-    - name: Calculate total hugepages needed for all VMs on this hypervisor
-      set_fact:
-        _total_hugepages_needed: >-
-          {{ _my_vms | map('extract', hostvars, 'memory') | map('int') | sum }}
+  - name: Calculate total hugepages needed for all VMs on this hypervisor
+    set_fact:
+      _total_hugepages_needed: >-
+        {{ _my_vms | map('extract', hostvars, 'memory') | map('int') | sum }}
 
-    - name: Check host hugepages availability
-      shell: |
-        cat /sys/kernel/mm/hugepages/hugepages-1048576kB/free_hugepages
-      register: _host_hugepages_free
+  - name: Check host hugepages availability
+    shell: |
+      cat /sys/kernel/mm/hugepages/hugepages-1048576kB/free_hugepages
+    register: _host_hugepages_free
 
-    - name: Validate sufficient hugepages available
-      fail:
-        msg: >-
-          Not enough 1048576kB hugepages available on host {{ inventory_hostname }}.
-          Need: {{ _total_hugepages_needed }}, Available: {{ _host_hugepages_free.stdout }}
-      when: (_host_hugepages_free.stdout | int) < (_total_hugepages_needed | int)
+  - name: Validate sufficient hugepages available
+    fail:
+      msg: >-
+        Not enough 1048576kB hugepages available on host {{ inventory_hostname }}.
+        Need: {{ _total_hugepages_needed }}, Available: {{ _host_hugepages_free.stdout }}
+    when: (_host_hugepages_free.stdout | int) < (_total_hugepages_needed | int)
 
-    - name: Display hugepages configuration
-      debug:
-        msg: >-
-          {{ _my_vms | length }} VMs will use {{ _total_hugepages_needed }} 1Gi hugepages total
-          ({{ _host_hugepages_free.stdout }} available on {{ inventory_hostname }})
+  - name: Display hugepages configuration
+    debug:
+      msg: >-
+        {{ _my_vms | length }} VMs will use {{ _total_hugepages_needed }} 1Gi hugepages total
+        ({{ _host_hugepages_free.stdout }} available on {{ inventory_hostname }})
 
 - name: Gather host NUMA topology information
   shell: |
