@@ -5,6 +5,7 @@ base_dns_name: example.com
 
 # Setup and use coredns instead of dnsmasq
 setup_coredns: false
+match_dns_to_inventory: false
 
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
