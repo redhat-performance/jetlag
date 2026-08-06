@@ -1,6 +1,12 @@
 ---
 # bastion-dnsmasq tasks
 
+- name: Stop and disable coredns
+  systemd:
+    state: stopped
+    enabled: false
+    name: coredns
+
 - name: Configure Dnsmasq / NetworkManager
   template:
     src: "{{ item.src }}"

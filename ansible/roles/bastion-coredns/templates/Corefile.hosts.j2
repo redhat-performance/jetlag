@@ -1,21 +1,34 @@
 # Bastion/API/VM/Compact/Standard resolution
 hosts {
+{% if lab in cloud_labs %}
     # Bastion
-{% for network in controlplane_network %}
+    {{ hostvars[inventory_hostname]['private_address'] }} {{ groups['bastion'][0] }}
+{% else %}
+    # Bastion
+{%   for network in controlplane_network %}
     {{ network | ansible.utils.nthhost(1) }} {{ groups['bastion'][0] }}
-{% endfor %}
+{%   endfor %}
+{% endif %}
 
 {% if cluster_type in ["mno", "vmno"] %}
     # MNO Cluster API
-{%   for network in controlplane_network %}
+{%   if lab in cloud_labs %}
+    {{ controlplane_network_api }} api.{{ cluster_name }}.{{ base_dns_name }}
+{%   else %}
+{%     for network in controlplane_network %}
     {{ network | ansible.utils.nthhost(3) }} api.{{ cluster_name }}.{{ base_dns_name }}
-{%   endfor %}
+{%     endfor %}
+{%   endif %}
 {% else %}
 {%   for sno in groups['sno'] %}
     # SNO Cluster API
+{%     if lab in cloud_labs %}
+    {{ hostvars[sno].private_address }} api.{{ sno }}.{{ base_dns_name }}
+{%     else %}
     {{ hostvars[sno].ip }} api.{{ sno }}.{{ base_dns_name }}
-{%     if hostvars[sno].ipv6 is defined %}
+{%       if hostvars[sno].ipv6 is defined %}
     {{ hostvars[sno].ipv6 }} api.{{ sno }}.{{ base_dns_name }}
+{%       endif %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
@@ -51,26 +64,49 @@ hosts {
 }
 
 # *.apps All Clusters
-{%   if cluster_type in ["mno", "vmno"] %}
+{% if cluster_type in ["mno", "vmno"] %}
 # *.apps for hub cluster
-{%   for network in controlplane_network %}
-{%     if network | ansible.utils.ipv4 %}
+{%   if lab in cloud_labs %}
+{%     if controlplane_network_ingress | ansible.utils.ipv4 %}
 template IN A {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
     fallthrough
 }
 {%     else %}
 template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
-    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
     fallthrough
 }
 {%     endif %}
-{%   endfor %}
 {%   else %}
-{%     for sno in groups['sno'] %}
+{%     for network in controlplane_network %}
+{%       if network | ansible.utils.ipv4 %}
+template IN A {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    fallthrough
+}
+{%       else %}
+template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    fallthrough
+}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% else %}
+{%   for sno in groups['sno'] %}
 # *.apps for {{ sno }} SNO
+{%     if lab in cloud_labs %}
+template IN A {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].private_address }}"
+    fallthrough
+}
+{%     else %}
 {%       if hostvars[sno].ip | ansible.utils.ipv4 %}
 template IN A {{ sno }}.{{ base_dns_name }} {
 {%       else %}
@@ -87,29 +123,30 @@ template IN AAAA {{ sno }}.{{ base_dns_name }} {
     fallthrough
 }
 {%       endif %}
-{%     endfor %}
-{%   endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
 
 # *.apps for VMs
-{%   for vm in groups['hv_vm'] %}
-{%     if hostvars[vm].ip | ansible.utils.ipv4 %}
+{% for vm in groups['hv_vm'] %}
+{%   if hostvars[vm].ip | ansible.utils.ipv4 %}
 template IN A {{ vm }}.{{ base_dns_name }} {
-{%     else %}
+{%   else %}
 template IN AAAA {{ vm }}.{{ base_dns_name }} {
-{%     endif %}
+{%   endif %}
     match .*.apps.{{ vm }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
     fallthrough
 }
-{%     if hostvars[vm].ipv6 is defined %}
+{%   if hostvars[vm].ipv6 is defined %}
 template IN AAAA {{ vm }}.{{ base_dns_name }} {
     match .*.apps.{{ vm }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ipv6 }}"
     fallthrough
 }
-{%     endif %}
-{%   endfor %}
-{%   if groups['hv_vm'] | length > 0 %}
+{%   endif %}
+{% endfor %}
+{% if groups['hv_vm'] | length > 0 %}
 
 # *.apps for jumbocluster00
 template IN AAAA jumbocluster00.{{ base_dns_name }} {
@@ -119,20 +156,20 @@ template IN AAAA jumbocluster00.{{ base_dns_name }} {
 }
 
 # *.apps for standard clusters
-{%     for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
+{%   for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
 template IN AAAA standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}"
     fallthrough
 }
-{%     endfor %}
+{%   endfor %}
 
 # *.apps for compact clusters
-{%     for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
+{%   for cluster in range(1, compact_cluster_dns_count + 1, 1)  %}
 template IN AAAA compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
     fallthrough
 }
-{%     endfor %}
-{%   endif %}
+{%   endfor %}
+{% endif %}

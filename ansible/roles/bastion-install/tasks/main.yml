@@ -265,6 +265,22 @@
   - "{{ bastion_cluster_config_dir }}/kube-burner-ocp-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
 
+- name: Create coredns.service file
+  copy:
+    dest: /usr/lib/systemd/system/coredns.service
+    content: |
+      [Unit]
+      Description=CoreDNS DNS server
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/local/bin/coredns -conf=/etc/coredns/Corefile
+      Restart=on-failure
+      RestartSec=5s
+
+      [Install]
+      WantedBy=multi-user.target
+
 - name: Symlink RHEL8 opm
   ansible.builtin.file:
     src: /usr/local/bin/opm-rhel8
