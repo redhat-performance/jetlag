@@ -30,22 +30,6 @@
   - src: resolv.conf.j2
     dest: /etc/resolv.conf
 
-- name: Create coredns.service file
-  copy:
-    dest: /usr/lib/systemd/system/coredns.service
-    content: |
-      [Unit]
-      Description=CoreDNS DNS server
-      After=network.target
-
-      [Service]
-      ExecStart=/usr/local/bin/coredns -conf=/etc/coredns/Corefile
-      Restart=on-failure
-      RestartSec=5s
-
-      [Install]
-      WantedBy=multi-user.target
-
 - name: Restart NetworkManager
   systemd:
     state: restarted
