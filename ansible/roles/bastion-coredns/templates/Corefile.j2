@@ -3,9 +3,15 @@
     errors
     # log
 
-{% for dns in labs[lab]['dns'] %}
+{% if lab in rh_labs or lab == "byol" %}
+{%   for dns in labs[lab]['dns'] %}
     forward . {{ dns }}
-{% endfor %}
+{%   endfor %}
+{% else %}
+{%   for dns in dns_servers %}
+    forward . {{ dns }}
+{%   endfor %}
+{% endif %}
 
     cache 30
     reload
