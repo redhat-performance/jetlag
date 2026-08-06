@@ -4,19 +4,3 @@
 # This will be your bastion machine (if you run setup-bastion playbook)
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
-
-sync_path: /opt/registry/sync
-
-# OCP release channel to mirror, e.g. stable-4.16, fast-4.17, eus-4.16
-# Only used when use_oc_mirror is true
-ocp_release_channel: "{{ openshift_channel }}"
-
-# Use oc mirror (v2) to sync OCP release images. Set to true to use oc mirror,
-# which requires openshift_channel to be set and does not support ci/nightly builds.
-# Defaults to false to use the legacy oc adm release mirror approach.
-use_oc_mirror: false
-
-# oc mirror mirrors OCP release images to openshift/release and openshift/release-images
-# (instead of the legacy ocp4/openshift4). The generated IDMS is preserved here so it
-# can be applied to the cluster after install.
-ocp_release_idms_bastion_configuration: "{{ sync_path }}/ocp/idms-oc-mirror-{{ openshift_version }}.yaml"

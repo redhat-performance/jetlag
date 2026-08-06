@@ -6,15 +6,6 @@ ocp_build: "ga"
 # For "ga" builds, examples are "latest-4.17", "latest-4.16", "4.17.17" or "4.16.35"
 # For "dev" builds, examples are "candidate-4.17", "candidate-4.16" or "latest"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
-# When use_oc_mirror is true, use an exact version, e.g. "4.22.0"
 ocp_version: "latest-4.21"
-
-# OCP release channel used in the ImageSetConfiguration for oc mirror (ga/dev builds only)
-# Examples: stable-4.16, fast-4.17, eus-4.16
-openshift_channel: "candidate-4.22"
-
-# Set to true to use oc mirror (v2) instead of oc adm release mirror.
-# oc mirror does not support ci/nightly builds; use false (default) for those.
-# use_oc_mirror: false
 
 pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"
