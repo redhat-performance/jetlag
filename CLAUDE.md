@@ -117,7 +117,7 @@ Jetlag uses a modular Ansible role architecture:
 #### Virtual and Hybrid Cluster Details
 - **VMNO clusters** allow multi-node deployment with fewer physical machines (minimum: 1 bastion + 1-2 hypervisors)
 - **Hybrid clusters** combine bare metal workers (`worker_node_count`) with virtual workers (`hybrid_worker_count`)
-- **Hypervisor nodes**: Unused machines become VM hosts for additional clusters or hybrid workers
+- **Hypervisor nodes**: Unused machines become VM hosts for additional clusters or hybrid workers. See [docs/hypervisors.md](docs/hypervisors.md) for detailed setup and management procedures
 - Virtual workers are created as VMs on hypervisor nodes and added to the worker inventory section
 - VM placement distributed across available hypervisors based on hardware-specific VM count configurations
 
