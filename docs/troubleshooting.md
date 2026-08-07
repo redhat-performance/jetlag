@@ -351,7 +351,7 @@ If you are planning a redeploy with new versions and new container images it may
 On the bastion machine:
 
 ```console
-(.ansible) [root@<bastion> jetlag]# cd /opt/registry
+(.ansible) [root@<bastion> jetlag]# cd /opt/jetlag/registry
 (.ansible) [root@<bastion> registry]#
 (.ansible) [root@<bastion> registry]# ls -lah
 total 12K

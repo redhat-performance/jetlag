@@ -134,7 +134,7 @@ Monitors the bastion machine with panels for:
 When `setup_bastion_registry` is `true`, the hv-metrics-server role automatically deploys registry traffic monitoring:
 
 1. **iptables accounting rules** are created for TCP traffic on the registry port (default: 5000), covering both IPv4 and IPv6
-2. **A collector script** (`/root/hv-metrics/registry-traffic-collector.sh`) reads iptables byte/packet counters, container CPU/memory from cgroup files, and active connection count via `ss`
+2. **A collector script** (`/opt/jetlag/hv-metrics/registry-traffic-collector.sh`) reads iptables byte/packet counters, container CPU/memory from cgroup files, and active connection count via `ss`
 3. **A systemd timer** (`registry-traffic-collector.timer`) runs the collector every 5 seconds
 4. **Node-exporter** serves the metrics via its textfile collector, making them available to Prometheus
 

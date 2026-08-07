@@ -5,7 +5,8 @@
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
-sync_path: /opt/registry/sync
+registry_path: /opt/jetlag/registry
+sync_path: "{{ registry_path }}/sync"
 
 # Number of concurrent requests to a registry while mirroring content (oc defaults to 6)
 # When this is set too high (>2?), You will see "429 Too Many Requests" from quay

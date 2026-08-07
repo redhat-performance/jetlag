@@ -1,5 +1,5 @@
 # General configuration
-hv_metrics_server_work_dir: "/root/hv-metrics"
+hv_metrics_server_work_dir: "/opt/jetlag/hv-metrics"
 hv_metrics_server_deploy_grafana: true
 
 # Pod configuration

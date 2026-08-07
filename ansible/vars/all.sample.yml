@@ -89,6 +89,13 @@ setup_bastion_proxy: false
 # Do not override the role, just put override below
 setup_hv_metrics: false
 
+# Set to a full device path (e.g. /dev/sdb, /dev/nvme0n1,
+# /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:1:0) to partition, format as XFS,
+# and mount a dedicated disk at /opt/jetlag for all bastion service data (http,
+# registry, minio, gogs, assisted-installer, hv-metrics).
+# Empty string (default) disables disk setup; data remains on root filesystem.
+# bastion_data_disk: ""
+
 ################################################################################
 # OCP node vars
 ################################################################################
