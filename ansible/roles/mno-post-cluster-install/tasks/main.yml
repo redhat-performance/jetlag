@@ -38,17 +38,22 @@
         the cluster install completed successfully.
     when: ai_clusters_matched | length == 0
 
-  - name: Fail if multiple installed clusters match cluster_name
-    fail:
+  - name: Sort matched clusters by creation time, newest last
+    set_fact:
+      ai_clusters_matched: "{{ ai_clusters_matched | sort(attribute='created_at') }}"
+
+  - name: Warn when multiple installed clusters match cluster_name
+    debug:
       msg: >-
         Multiple installed Assisted Installer clusters named '{{ cluster_name }}' were found
-        ({{ ai_clusters_matched | map(attribute='id') | join(', ') }}). Pass -e ai_cluster_id=<id>
-        explicitly to disambiguate.
+        ({{ ai_clusters_matched | map(attribute='id') | join(', ') }}). Picking the newest one
+        (created at {{ ai_clusters_matched[-1].created_at }}): {{ ai_clusters_matched[-1].id }}.
+        Pass -e ai_cluster_id=<id> explicitly to pick a different one.
     when: ai_clusters_matched | length > 1
 
   - name: Set ai_cluster_id from lookup
     set_fact:
-      ai_cluster_id: "{{ ai_clusters_matched[0].id }}"
+      ai_cluster_id: "{{ ai_clusters_matched[-1].id }}"
 
 - name: Get credentials (kubeconfig and kubeadmin password) from installed cluster
   get_url:
