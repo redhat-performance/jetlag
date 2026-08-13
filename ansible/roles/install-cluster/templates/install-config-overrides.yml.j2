@@ -46,11 +46,14 @@ featureSet: TechPreviewNoUpgrade
 {% if use_bastion_registry | default(false) %}
 imageDigestSources:
 - mirrors:
-  - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
+  - {{ registry_host }}:{{ registry_port }}/{{ use_oc_mirror_v2 | default(true) | bool | ternary('openshift/release-images', 'ocp4/openshift4') }}
   source: quay.io/openshift-release-dev/ocp-release
 - mirrors:
-  - {{ registry_host }}:{{ registry_port }}/ocp4/openshift4
+  - {{ registry_host }}:{{ registry_port }}/{{ use_oc_mirror_v2 | default(true) | bool | ternary('openshift/release', 'ocp4/openshift4') }}
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+- mirrors:
+  - {{ registry_host }}:{{ registry_port }}/{{ use_oc_mirror_v2 | default(true) | bool | ternary('openshift/release', 'ocp5/openshift5') }}
+  source: quay.io/openshift-release-dev/ocp-v5.0-art-dev
 - mirrors:
   - {{ registry_host }}:{{ registry_port }}/edge-infrastructure
   source: quay.io/edge-infrastructure

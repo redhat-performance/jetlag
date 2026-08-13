@@ -4,13 +4,19 @@ unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
    location = "quay.io/openshift-release-dev/ocp-release"
    mirror-by-digest-only = true
    [[registry.mirror]]
-   location = "{{ registry_host }}:{{ registry_port }}/ocp4/openshift4"
+   location = "{{ registry_host }}:{{ registry_port }}/{{ use_oc_mirror_v2 | default(true) | bool | ternary('openshift/release-images', 'ocp4/openshift4') }}"
 [[registry]]
    prefix = ""
    location = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
    mirror-by-digest-only = true
    [[registry.mirror]]
-   location = "{{ registry_host }}:{{ registry_port }}/ocp4/openshift4"
+   location = "{{ registry_host }}:{{ registry_port }}/{{ use_oc_mirror_v2 | default(true) | bool | ternary('openshift/release', 'ocp4/openshift4') }}"
+[[registry]]
+   prefix = ""
+   location = "quay.io/openshift-release-dev/ocp-v5.0-art-dev"
+   mirror-by-digest-only = true
+   [[registry.mirror]]
+   location = "{{ registry_host }}:{{ registry_port }}/{{ use_oc_mirror_v2 | default(true) | bool | ternary('openshift/release', 'ocp5/openshift5') }}"
 [[registry]]
    prefix = ""
    location = "quay.io/edge-infrastructure"

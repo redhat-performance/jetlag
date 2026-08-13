@@ -1,7 +1,37 @@
 ---
 # sync-ocp-release tasks
 
-- name: Mirror the repository
+# oc mirror does not support nightly/ci builds; fall back to oc adm release mirror for those.
+
+- name: Mirror OCP release via oc mirror (ga/dev builds)
+  when: use_oc_mirror_v2 | bool
+  block:
+  - name: Create directory for syncing ocp release
+    file:
+      path: "{{ sync_path }}/ocp"
+      state: directory
+
+  - name: Create ImageSetConfiguration
+    template:
+      src: imagesetconf.yml.j2
+      dest: "{{ sync_path }}/ocp/imagesetconf.yml"
+
+  - name: Mirror OCP release images
+    shell: |
+      oc mirror --authfile {{ registry_path }}/pull-secret-bastion.txt -c {{ sync_path }}/ocp/imagesetconf.yml --workspace file://{{ sync_path }}/ocp docker://{{ registry_host }}:{{ registry_port }} --v2
+    register: result
+    until: not result.failed
+    retries: 3
+    delay: 1
+
+  - name: Preserve IDMS for OCP release
+    ansible.builtin.copy:
+      src: "{{ sync_path }}/ocp/working-dir/cluster-resources/idms-oc-mirror.yaml"
+      dest: "{{ ocp_release_idms_bastion_configuration }}"
+      remote_src: true
+
+- name: Mirror OCP release via oc adm release mirror (ci/nightly builds)
+  when: not use_oc_mirror_v2 | bool
   shell: |
     oc adm release mirror \
       -a {{ registry_path }}/pull-secret-bastion.txt \
