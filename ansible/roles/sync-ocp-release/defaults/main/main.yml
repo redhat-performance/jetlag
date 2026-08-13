@@ -7,9 +7,9 @@ registry_port: 5000
 
 sync_path: /opt/registry/sync
 
-# OCP release channel to mirror, e.g. stable-4.16, fast-4.17, eus-4.16
+# OCP release channel to mirror, e.g. candidate-4.22
 # Only used when use_oc_mirror_v2 is true
-ocp_release_channel: "{{ (ocp_build == 'dev') | ternary('candidate', 'stable') }}-{{ openshift_version }}"
+ocp_release_channel: "candidate-{{ openshift_version }}"
 
 # Use oc mirror (v2) to sync OCP release images.
 # For ci/nightly builds, set to false to use the legacy oc adm release mirror approach.
