@@ -9,8 +9,8 @@ ocp_build: "ga"
 # When use_oc_mirror_v2 is true, use an exact version, e.g. "4.22.0"
 ocp_version: "latest-4.21"
 
-# Set to true to use oc mirror (v2) instead of oc adm release mirror.
-# oc mirror does not support ci/nightly builds; use false (default) for those.
-# use_oc_mirror_v2: false
+# Use oc mirror (v2) instead of oc adm release mirror (default: true).
+# Set to false for ci/nightly builds, which oc mirror does not support.
+# use_oc_mirror_v2: true
 
 pull_secret: "{{ lookup('file', '../pull-secret.txt') }}"
