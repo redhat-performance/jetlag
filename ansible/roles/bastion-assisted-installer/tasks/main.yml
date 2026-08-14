@@ -54,12 +54,12 @@
     path: "{{ item }}"
     state: directory
   with_items:
-  - /opt/assisted-service
-  - /opt/assisted-service/data
+  - "{{ assisted_service_path }}"
+  - "{{ assisted_service_path }}/data"
 
 - name: Create directory for assisted-installer database
   file:
-    path: /opt/assisted-service/data/postgresql
+    path: "{{ assisted_service_path }}/data/postgresql"
     state: directory
     owner: "26"
     recurse: true
@@ -70,9 +70,9 @@
     dest: "{{ item.dest }}"
   with_items:
   - src: onprem-environment.j2
-    dest: /opt/assisted-service/onprem-environment
+    dest: "{{ assisted_service_path }}/onprem-environment"
   - src: nginx-ui.conf
-    dest: /opt/assisted-service/nginx-ui.conf
+    dest: "{{ assisted_service_path }}/nginx-ui.conf"
 
 - name: Remove existing assisted-service pod to pick up configuration changes
   containers.podman.podman_pod:
@@ -89,9 +89,9 @@
   containers.podman.podman_container:
     pod: assisted-service
     network: host
-    env_file: /opt/assisted-service/onprem-environment
+    env_file: "{{ assisted_service_path }}/onprem-environment"
     volume:
-    - /opt/assisted-service/data/postgresql:/var/lib/pgsql:Z
+    - "{{ assisted_service_path }}/data/postgresql:/var/lib/pgsql:Z"
     name: db
     image: "{{ assisted_postgres_image }}"
     state: started
@@ -100,9 +100,9 @@
   containers.podman.podman_container:
     pod: assisted-service
     network: host
-    env_file: /opt/assisted-service/onprem-environment
+    env_file: "{{ assisted_service_path }}/onprem-environment"
     volume:
-    - /opt/assisted-service/nginx-ui.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf:Z
+    - "{{ assisted_service_path }}/nginx-ui.conf:/opt/bitnami/nginx/conf/server_blocks/nginx.conf:Z"
     name: gui
     image: "{{ assisted_installer_ui_image }}"
     state: started
@@ -111,7 +111,7 @@
   containers.podman.podman_container:
     pod: assisted-service
     network: host
-    env_file: /opt/assisted-service/onprem-environment
+    env_file: "{{ assisted_service_path }}/onprem-environment"
     name: service
     image: "{{ assisted_service_image }}"
     env:
@@ -124,7 +124,7 @@
   containers.podman.podman_container:
     pod: assisted-service
     network: host
-    env_file: /opt/assisted-service/onprem-environment
+    env_file: "{{ assisted_service_path }}/onprem-environment"
     name: image-service
     image: "{{ assisted_image_service_image }}"
     env:

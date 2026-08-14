@@ -6,7 +6,7 @@ hv_vm_manifests_directory: /root/hv-vm
 # 64 is a prefix for ipv6, 24 would work for ipv4
 sno_cluster_network_host_prefix: 64
 
-registry_path: /opt/registry
+registry_path: /opt/jetlag/registry
 
 # Used with bmc-secret
 bmc_username_base64: "{{ 'redhat' | b64encode }}"

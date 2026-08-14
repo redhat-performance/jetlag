@@ -5,9 +5,9 @@
 registry_host: "{{ groups['bastion'][0] }}"
 registry_port: 5000
 
-registry_path: /opt/registry
+registry_path: /opt/jetlag/registry
 
-sync_path: /opt/registry/sync
+sync_path: "{{ registry_path }}/sync"
 
 # Creates one index with operators from multiple container images
 
