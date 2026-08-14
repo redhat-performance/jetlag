@@ -137,11 +137,6 @@ In some VM scenarios, hugepages may be required. To configure VMs with hugepages
 
 Change `lab` to match your environment (same value as in `all.yml`).
 
-Change `hv_vm_generate_manifests` to `hv_vm_generate_manifests: false`
-
-VM manifests are only used in conjunction with ACM/MCE testing.
-
-
 For the metrics collection to work, set following variable:
 ```yaml
 setup_hv_metrics: true

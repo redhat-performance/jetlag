@@ -3,6 +3,6 @@
 
 hv_vm_manifests_directory: /root/hv-vm
 
-hv_vm_remove_all_manifests: true
+hv_vm_remove_all_manifests: false
 
 hv_kvm_def_path: /opt/hv
