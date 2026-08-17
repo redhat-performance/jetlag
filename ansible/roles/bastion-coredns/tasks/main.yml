@@ -13,18 +13,21 @@
     state: directory
 
 - name: Configure Coredns / NetworkManager
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
+    mode: "0644"
+    owner: root
+    group: root
   loop:
-  - src: Corefile.hosts.j2
-    dest: /etc/coredns/Corefile.hosts
-  - src: Corefile.j2
-    dest: /etc/coredns/Corefile
-  - src: 99-jetlag-dns.conf
-    dest: /etc/NetworkManager/conf.d/99-jetlag-dns.conf
-  - src: resolv.conf.j2
-    dest: /etc/resolv.conf
+    - src: "{{ 'Corefile.hosts.match.j2' if match_dns_to_inventory else 'Corefile.hosts.j2' }}"
+      dest: /etc/coredns/Corefile.hosts
+    - src: Corefile.j2
+      dest: /etc/coredns/Corefile
+    - src: 99-jetlag-dns.conf
+      dest: /etc/NetworkManager/conf.d/99-jetlag-dns.conf
+    - src: resolv.conf.j2
+      dest: /etc/resolv.conf
 
 - name: Restart NetworkManager
   systemd:
