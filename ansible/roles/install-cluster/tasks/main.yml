@@ -44,6 +44,7 @@
 - name: Set initial loop variables
   set_fact:
     boot_order_fixed_hosts: []
+    highest_install_status: ""
 
 - name: Check if cluster installed tasks loop
   include_tasks: check-cluster-install.yml
