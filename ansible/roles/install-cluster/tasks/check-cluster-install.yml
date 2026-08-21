@@ -30,6 +30,44 @@
     failed_when: cluster.json.status == 'error' or cluster.json.status == 'cancelled'
     no_log: true
 
+  - name: Update highest install status seen
+    vars:
+      install_status_order:
+      - insufficient
+      - pending-for-input
+      - ready
+      - preparing-for-installation
+      - installing
+      - finalizing
+      - installed
+    set_fact:
+      highest_install_status: "{{ cluster.json.status }}"
+    when:
+    - cluster.json.status in install_status_order
+    - highest_install_status == '' or
+      (highest_install_status in install_status_order and
+       install_status_order.index(cluster.json.status) | int > install_status_order.index(highest_install_status) | int)
+
+  - name: Get cluster events on install status regression
+    uri:
+      url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/events?cluster_id={{ ai_cluster_id }}&order=descending&limit=10"
+      method: GET
+      status_code: [200]
+      return_content: true
+    register: regression_events
+    when:
+    - highest_install_status in ['preparing-for-installation', 'installing', 'finalizing']
+    - cluster.json.status in ['insufficient', 'pending-for-input', 'ready']
+
+  - name: Fail on cluster install status regression
+    fail:
+      msg: >-
+        Cluster install regressed from '{{ highest_install_status }}' to '{{ cluster.json.status }}'.
+        Recent AI events: {{ regression_events.json | map(attribute='message') | list | join(' | ') }}
+    when:
+    - highest_install_status in ['preparing-for-installation', 'installing', 'finalizing']
+    - cluster.json.status in ['insufficient', 'pending-for-input', 'ready']
+
   - name: Get cluster hosts
     uri:
       url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}/hosts"
@@ -147,6 +185,15 @@
     fail:
       msg: Cluster install failed or cancelled
     when: cluster.json.status == 'error' or cluster.json.status == 'cancelled'
+
+  - name: Fail when cluster install status regressed
+    fail:
+      msg: >-
+        Cluster install regressed from '{{ highest_install_status }}' to '{{ cluster.json.status }}'.
+        Recent AI events: {{ regression_events.json | default([]) | map(attribute='message') | list | join(' | ') }}
+    when:
+    - highest_install_status in ['preparing-for-installation', 'installing', 'finalizing']
+    - cluster.json.status in ['insufficient', 'pending-for-input', 'ready']
 
   - name: Retry the check cluster install tasks
     include_tasks: check-cluster-install.yml
