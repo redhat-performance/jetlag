@@ -32,4 +32,18 @@
   - wait-hosts-discovered
   - configure-local-storage
   - install-cluster
-  - mno-post-cluster-install
+
+  tasks:
+  - name: Check if sync-operator-index file exists
+    ansible.builtin.stat:
+      path: "vars/sync-operator-index.yml"
+    register: var_file_status
+
+  - name: Load var file needed by mno-post-cluster-install (override defaults)
+    ansible.builtin.include_vars:
+      file: "vars/sync-operator-index.yml"
+    when: var_file_status.stat.exists
+
+  - name: Execute mno-post-cluster-install role
+    ansible.builtin.import_role:
+      name: mno-post-cluster-install

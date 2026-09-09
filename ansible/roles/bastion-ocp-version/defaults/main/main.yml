@@ -1,5 +1,10 @@
 ---
 # bastion-ocp-version default vars
+release_urls:
+  ga: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp"
+  dev: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview"
+  ci: "https://openshift-release-artifacts.apps.ci.l2s4.p1.openshiftapps.com"
+payload_url: ""
 
 # This will be your bastion machine (if you run setup-bastion playbook)
 registry_host: "{{ groups['bastion'][0] }}"

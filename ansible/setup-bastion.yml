@@ -11,35 +11,92 @@
   vars_files:
   - vars/lab.yml
   - vars/all.yml
-  roles:
-  - validate-vars
-  - ocp-release
-  - bastion-install
-  - bastion-network
-  - role: bastion-dnsmasq
+
+  tasks:
+  - name: Execute validate-vars role
+    ansible.builtin.include_role:
+      name: validate-vars
+
+  - name: Execute ocp-release role
+    ansible.builtin.include_role:
+      name: ocp-release
+
+  - name: Execute bastion-install role
+    ansible.builtin.include_role:
+      name: bastion-install
+
+  - name: Execute bastion-network role
+    ansible.builtin.include_role:
+      name: bastion-network
+
+  - name: Execute bastion-dnsmasq role
+    ansible.builtin.include_role:
+      name: bastion-dnsmasq
     when: not setup_coredns
-  - role: bastion-coredns
+
+  - name: Execute bastion-coredns role
+    ansible.builtin.include_role:
+      name: bastion-coredns
     when: setup_coredns
-  - bastion-http
-  - bastion-ocp-version
-  - role: bastion-registry
+
+  - name: Execute bastion-http role
+    ansible.builtin.include_role:
+      name: bastion-http
+
+  - name: Execute bastion-ocp-version role
+    ansible.builtin.include_role:
+      name: bastion-ocp-version
+
+  - name: Execute bastion-registry role
+    ansible.builtin.include_role:
+      name: bastion-registry
     when: setup_bastion_registry
-  - role: sync-operator-index
+
+  - name: Handle Sync Operator Index configurations and execution
     when:
     - setup_bastion_registry
     - sync_operator_index | default(false)
-  - role: sync-ocp-release
+    block:
+    - name: Load specific sync-operator-index variables
+      ansible.builtin.include_vars:
+        file: vars/sync-operator-index.yml
+
+    - name: Execute sync-operator-index role
+      ansible.builtin.include_role:
+        name: sync-operator-index
+
+  - name: Execute sync-ocp-release role
+    ansible.builtin.include_role:
+      name: sync-ocp-release
     when:
     - setup_bastion_registry
     - sync_ocp_release | default(false)
-  - role: bastion-proxy
+
+  - name: Execute bastion-proxy role
+    ansible.builtin.include_role:
+      name: bastion-proxy
     when: setup_bastion_proxy | default(false)
-  - bastion-assisted-installer
-  - role: bastion-gogs
+
+  - name: Execute bastion-assisted-installer role
+    ansible.builtin.include_role:
+      name: bastion-assisted-installer
+
+  - name: Execute bastion-gogs role
+    ansible.builtin.include_role:
+      name: bastion-gogs
     when: setup_bastion_gogs
-  - role: bastion-disconnected-haproxy
+
+  - name: Execute bastion-disconnected-haproxy role
+    ansible.builtin.include_role:
+      name: bastion-disconnected-haproxy
     when: use_bastion_registry or setup_bastion_proxy | default(false)
-  - role: hv-metrics-server
+
+  - name: Execute hv-metrics-server role
+    ansible.builtin.include_role:
+      name: hv-metrics-server
     when: setup_hv_metrics | default(false) | bool
-  - role: bastion-minio
+
+  - name: Execute bastion-minio role
+    ansible.builtin.include_role:
+      name: bastion-minio
     when: setup_bastion_minio | default(false)
