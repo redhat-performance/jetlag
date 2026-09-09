@@ -5,6 +5,44 @@
   ansible.builtin.set_fact:
     _virtual_media_iso: "{{ virtual_media_iso | default(hostvars[item]['boot_iso']) }}"
 
+- name: "Dell - Probe for iDRAC 10+ endpoint"
+  ansible.builtin.uri:
+    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1"
+    force_basic_auth: yes
+    user: "{{ hostvars[item]['bmc_user'] }}"
+    password: "{{ hostvars[item]['bmc_password'] }}"
+    method: GET
+    validate_certs: no
+    status_code: [200, 404]
+    return_content: yes
+  register: idrac1_check
+
+- name: "Dell - Determine iDRAC generation for {{ item }}"
+  ansible.builtin.set_fact:
+    idrac10: "{{ idrac1_check.status != 200 or idrac1_check.json.VirtualMedia is not defined }}"
+
+- name: "Dell - Set Redfish attributes for the detected iDRAC generation"
+  ansible.builtin.set_fact:
+    virtual_media_path: "{{ '/redfish/v1/Systems/System.Embedded.1' if idrac10 | bool else '/redfish/v1/Managers/iDRAC.Embedded.1' }}"
+    virtual_media: "{{ '1' if idrac10 | bool else 'CD' }}"
+    virtual_media_category: "{{ 'Systems' if idrac10 | bool else 'Manager' }}"
+    virtual_media_resource_id: "{{ 'System.Embedded.1' if idrac10 | bool else 'iDRAC.Embedded.1' }}"
+    scp_share_target: "{{ ['ALL'] if idrac10 | bool else 'ALL' }}"
+    scp_import_path: >-
+      {{ idrac1_check.json.Actions.Oem | default({}, true) | dict2items
+         | selectattr('key', 'search', 'ImportSystemConfiguration$')
+         | map(attribute='value.target') | first
+         | default('/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration', true) }}
+
+- name: "Dell - Report detected iDRAC for {{ item }}"
+  ansible.builtin.debug:
+    msg: >-
+      {{ item }}: iDRAC firmware {{ idrac1_check.json.FirmwareVersion | default('unknown') }}
+      ({{ 'iDRAC10+' if idrac10 | bool else 'iDRAC9 or older' }}), VirtualMedia at
+      {{ virtual_media_path }}, SCP import at {{ scp_import_path }} with
+      ShareParameters.Target={{ scp_share_target | to_json }}
+    verbosity: 1
+
 - name: "Dell - Power down machine prior to booting iso for {{ item }}"
   ansible.builtin.command:
     cmd: >-
@@ -25,7 +63,7 @@
 
 - name: "Dell - Check for Virtual Media for {{ item }}"
   ansible.builtin.uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD"
+    url: "https://{{ hostvars[item]['bmc_address'] }}{{ virtual_media_path }}/VirtualMedia/{{virtual_media}}"
     force_basic_auth: yes
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
@@ -39,16 +77,13 @@
     status_code: 200
     return_content: yes
   register: check_virtual_media
-  retries: 10
-  delay: 10
-  until: check_virtual_media.status == 200
 
 - name: Block to rescue incase of stuck virtual media
   when: check_virtual_media.json.Image
   block:
   - name: "Dell - Eject any CD Virtual Media for {{ item }}"
     ansible.builtin.uri:
-      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/VirtualMedia/CD/Actions/VirtualMedia.EjectMedia"
+      url: "https://{{ hostvars[item]['bmc_address'] }}{{ virtual_media_path }}/VirtualMedia/{{virtual_media}}/Actions/VirtualMedia.EjectMedia"
       force_basic_auth: yes
       user: "{{ hostvars[item]['bmc_user'] }}"
       password: "{{ hostvars[item]['bmc_password'] }}"
@@ -84,7 +119,7 @@
 
 - name: "DELL - Insert Virtual Media for {{ item }}"
   community.general.redfish_command:
-    category: Manager
+    category: "{{ virtual_media_category }}"
     command: VirtualMediaInsert
     baseuri: "{{ hostvars[item]['bmc_address'] }}"
     username: "{{ hostvars[item]['bmc_user'] }}"
@@ -94,7 +129,7 @@
       media_types:
       - CD
       - DVD
-    resource_id: iDRAC.Embedded.1
+    resource_id: "{{ virtual_media_resource_id }}"
     timeout: 60
   register: result
   until: not result.failed
@@ -103,7 +138,7 @@
 
 - name: Dell - Set OneTimeBoot VirtualCD
   ansible.builtin.uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/EID_674_Manager.ImportSystemConfiguration"
+    url: "https://{{ hostvars[item]['bmc_address'] }}{{ scp_import_path }}"
     force_basic_auth: yes
     user: "{{ hostvars[item]['bmc_user'] }}"
     password: "{{ hostvars[item]['bmc_password'] }}"
@@ -112,10 +147,9 @@
       content-type: application/json
       Accept: application/json
     body:
-      {
-        "ShareParameters": { "Target": "ALL" },
-        "ImportBuffer": '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>',
-      }
+      ShareParameters:
+        Target: "{{ scp_share_target }}"
+      ImportBuffer: '<SystemConfiguration><Component FQDD="iDRAC.Embedded.1"><Attribute Name="ServerBoot.1#BootOnce">Enabled</Attribute><Attribute Name="ServerBoot.1#FirstBootDevice">VCD-DVD</Attribute></Component></SystemConfiguration>'
     body_format: json
     validate_certs: no
     status_code: 202
