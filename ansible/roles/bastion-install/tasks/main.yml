@@ -96,7 +96,7 @@
 
   - name: Create ssh key pair
     shell: |
-      ssh-keygen -q -t rsa -f /root/.ssh/id_rsa -C "" -N ""
+      ssh-keygen -q -t rsa -f /root/.ssh/id_rsa -N ""
     when: not ssh_key_result.stat.exists
 
   - name: Setup chronyd
