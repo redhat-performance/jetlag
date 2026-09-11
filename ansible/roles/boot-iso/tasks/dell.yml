@@ -77,6 +77,9 @@
     status_code: 200
     return_content: yes
   register: check_virtual_media
+  retries: 10
+  delay: 10
+  until: check_virtual_media.status == 200
 
 - name: Block to rescue incase of stuck virtual media
   when: check_virtual_media.json.Image
