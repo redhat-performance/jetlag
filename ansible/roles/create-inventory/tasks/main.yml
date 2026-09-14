@@ -34,6 +34,26 @@
       json: "{{ lookup('file', ocp_inventory_url) }}"
   when: "'skipped' in ocpinventory"
 
+- name: Initialize filtered lab allocation inventory
+  set_fact:
+    ocpinventory_filtered_nodes: []
+
+- name: Filter explicitly skipped hosts from lab allocation
+  set_fact:
+    ocpinventory_filtered_nodes: "{{ ocpinventory_filtered_nodes + [item] }}"
+  loop: "{{ ocpinventory.json.nodes }}"
+  loop_control:
+    label: "{{ item.pm_addr | default(item.name | default('unknown')) }}"
+  when:
+  - item.name | default('') not in ocp_inventory_skip_hosts
+  - item.pm_addr | default('') not in ocp_inventory_skip_hosts
+  - (item.name | default('') | regex_replace('[.].*$', '')) not in ocp_inventory_skip_hosts
+  - (item.pm_addr | default('') | regex_replace('^mgmt-', '') | regex_replace('[.].*$', '')) not in ocp_inventory_skip_hosts
+
+- name: Apply filtered lab allocation inventory
+  set_fact:
+    ocpinventory: "{{ {'json': {'nodes': ocpinventory_filtered_nodes}} }}"
+
 - name: Set inventory variables
   set_fact:
     bastion_machine: "{{ ocpinventory.json.nodes[0].pm_addr | replace('mgmt-','') }}"
