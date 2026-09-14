@@ -1,0 +1,170 @@
+# CoreDNS file that matches the inventory
+# Bastion/API/VM/Compact/Standard resolution
+{# Pull vm-planner metadata from hv_vm host vars (they live in [hv_vm:vars], not bastion scope).
+   Fall back to backwards-compatible defaults when vm-planner metadata is absent. #}
+{% if groups['hv_vm'] | length > 0 %}
+{%   set vm_cluster_type_list = hostvars[groups['hv_vm'][0]].vm_cluster_type_list | default(["jumbo", "standard", "compact", "sno"]) %}
+{%   set vm_cluster_count = hostvars[groups['hv_vm'][0]].vm_cluster_count | default(0) %}
+{% else %}
+{%   set vm_cluster_type_list = ["jumbo", "standard", "compact", "sno"] %}
+{%   set vm_cluster_count = 0 %}
+{% endif %}
+hosts {
+    # Bastion
+{% for network in controlplane_network %}
+    {{ network | ansible.utils.nthhost(1) }} {{ groups['bastion'][0] }}
+{% endfor %}
+
+{% if cluster_type in ["mno", "vmno"] %}
+    # MNO Cluster API
+{%   for network in controlplane_network %}
+    {{ network | ansible.utils.nthhost(3) }} api.{{ cluster_name }}.{{ base_dns_name }}
+{%   endfor %}
+{% else %}
+{%   for sno in groups['sno'] %}
+    # SNO Cluster API
+    {{ hostvars[sno].ip }} api.{{ sno }}.{{ base_dns_name }}
+{%     if hostvars[sno].ipv6 is defined %}
+    {{ hostvars[sno].ipv6 }} api.{{ sno }}.{{ base_dns_name }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+
+    # VM
+{% for vm in groups['hv_vm'] %}
+    {{ hostvars[vm].ip }} {{ vm }}
+{%   if "sno" in vm_cluster_type_list %}
+    {{ hostvars[vm].ip }} api.{{ vm }}.{{ base_dns_name }}
+{%   endif %}
+{%   if hostvars[vm].ipv6 is defined %}
+    {{ hostvars[vm].ipv6 }} {{ vm }}
+{%     if "sno" in vm_cluster_type_list %}
+    {{ hostvars[vm].ipv6 }} api.{{ vm }}.{{ base_dns_name }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% if groups['hv_vm'] | length > 0 %}
+{%   if "jumbo" in vm_cluster_type_list %}
+
+    # jumbocluster00
+    {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }} jumbocluster00
+    {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-2) }} api.jumbocluster00.{{ base_dns_name }}
+{%   endif %}
+{%   if "standard" in vm_cluster_type_list %}
+
+{%     set _standard_count = vm_cluster_count | int if vm_cluster_count | int > 0 else standard_cluster_dns_count | int %}
+    # Standard cluster DNS ({{ _standard_count }} Entries)
+{%     for cluster in range(1, _standard_count + 1, 1) %}
+    {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }} standard-{{ '%05d' | format(cluster) }}
+    {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(cluster * -2) }} api.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
+{%     endfor %}
+{%   endif %}
+{%   if "compact" in vm_cluster_type_list %}
+
+{%     set _compact_count = vm_cluster_count | int if vm_cluster_count | int > 0 else compact_cluster_dns_count | int %}
+    # Compact cluster DNS ({{ _compact_count }} Entries)
+{%     for cluster in range(1, _compact_count + 1, 1) %}
+    {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }} compact-{{ '%05d' | format(cluster) }}
+    {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost((cluster + standard_cluster_dns_count) * -2) }} api.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+    fallthrough
+}
+
+# *.apps All Clusters
+{%   if cluster_type in ["mno", "vmno"] %}
+# *.apps for hub cluster
+{%   for network in controlplane_network %}
+{%     if network | ansible.utils.ipv4 %}
+template IN A {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    fallthrough
+}
+{%     else %}
+template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ network | ansible.utils.nthhost(4) }}"
+    fallthrough
+}
+{%     endif %}
+{%   endfor %}
+{%   else %}
+{%     for sno in groups['sno'] %}
+# *.apps for {{ sno }} SNO
+{%       if hostvars[sno].ip | ansible.utils.ipv4 %}
+template IN A {{ sno }}.{{ base_dns_name }} {
+{%       else %}
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+{%       endif %}
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ip }}"
+    fallthrough
+}
+{%       if hostvars[sno].ipv6 is defined %}
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ipv6 }}"
+    fallthrough
+}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+
+{% if "sno" in vm_cluster_type_list %}
+# *.apps for VMs
+{%   for vm in groups['hv_vm'] %}
+{%     if hostvars[vm].ip | ansible.utils.ipv4 %}
+template IN A {{ vm }}.{{ base_dns_name }} {
+{%     else %}
+template IN AAAA {{ vm }}.{{ base_dns_name }} {
+{%     endif %}
+    match .*.apps.{{ vm }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ip }}"
+    fallthrough
+}
+{%     if hostvars[vm].ipv6 is defined %}
+template IN AAAA {{ vm }}.{{ base_dns_name }} {
+    match .*.apps.{{ vm }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ipv6 }}"
+    fallthrough
+}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{%   if groups['hv_vm'] | length > 0 %}
+{%     if "jumbo" in vm_cluster_type_list %}
+
+# *.apps for jumbocluster00
+template IN AAAA jumbocluster00.{{ base_dns_name }} {
+    match .*.apps.jumbocluster00.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-3) }}"
+    fallthrough
+}
+{%     endif %}
+{%     if "standard" in vm_cluster_type_list %}
+
+{%       set _standard_apps_count = vm_cluster_count | int if vm_cluster_count | int > 0 else standard_cluster_dns_count | int %}
+# *.apps for standard clusters
+{%       for cluster in range(1, _standard_apps_count + 1, 1) %}
+template IN AAAA standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
+    match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}"
+    fallthrough
+}
+{%       endfor %}
+{%     endif %}
+{%     if "compact" in vm_cluster_type_list %}
+
+{%       set _compact_apps_count = vm_cluster_count | int if vm_cluster_count | int > 0 else compact_cluster_dns_count | int %}
+# *.apps for compact clusters
+{%       for cluster in range(1, _compact_apps_count + 1, 1) %}
+template IN AAAA compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
+    match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
+    answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
+    fallthrough
+}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
