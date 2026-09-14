@@ -1,17 +1,17 @@
 ---
-# bastion-minio tasks
+# bastion-minio tasks — deploys RustFS (S3-compatible object store)
 
-- name: Create directory for bastion minio storage
+- name: Create directory for bastion object store storage
   ansible.builtin.file:
     path: "{{ minio_store_path }}"
     state: directory
 
-- name: Set minio data disk partition path
+- name: Set object store data disk partition path
   ansible.builtin.set_fact:
     _minio_disk_partition: "{{ minio_data_disk }}1"
   when: minio_data_disk != ""
 
-- name: Set minio data disk partition path for nvme
+- name: Set object store data disk partition path for nvme
   ansible.builtin.set_fact:
     _minio_disk_partition: "{{ minio_data_disk }}p1"
   when:
@@ -19,14 +19,14 @@
   - '"nvme" in minio_data_disk'
   - '"by-path" not in minio_data_disk'
 
-- name: Set minio data disk partition path for by-path
+- name: Set object store data disk partition path for by-path
   ansible.builtin.set_fact:
     _minio_disk_partition: "{{ minio_data_disk }}-part1"
   when:
   - minio_data_disk != ""
   - '"by-path" in minio_data_disk'
 
-- name: Create minio data disk primary partition
+- name: Create object store data disk primary partition
   community.general.parted:
     device: "{{ minio_data_disk }}"
     number: 1
@@ -34,13 +34,13 @@
     label: gpt
   when: minio_data_disk != ""
 
-- name: Format minio data disk as XFS
+- name: Format object store data disk as XFS
   community.general.filesystem:
     fstype: xfs
     dev: "{{ _minio_disk_partition }}"
   when: minio_data_disk != ""
 
-- name: Mount minio data disk
+- name: Mount object store data disk
   ansible.posix.mount:
     fstype: xfs
     src: "{{ _minio_disk_partition }}"
@@ -48,10 +48,19 @@
     state: mounted
   when: minio_data_disk != ""
 
-- name: Create minio data directory
+- name: Create object store data directory
   ansible.builtin.file:
     path: "{{ minio_store_path }}/data"
     state: directory
+
+# RustFS runs as non-root user (UID 10001). Ensure the data directory is
+# writable by the container process.
+- name: Set ownership of data directory for RustFS container user
+  ansible.builtin.file:
+    path: "{{ minio_store_path }}/data"
+    owner: "10001"
+    group: "10001"
+    recurse: true
 
 - name: Create minio pod
   containers.podman.podman_pod:
@@ -66,7 +75,7 @@
     network: host
     state: restarted
 
-- name: Create minio container in minio pod
+- name: Create RustFS container in minio pod
   containers.podman.podman_container:
     pod: minio
     network: host
@@ -75,10 +84,52 @@
     entrypoint: /bin/sh
     command:
     - -c
-    - "mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && for i in $(seq -f \"%05g\" 1 4000); do mkdir -p \"/storage/vm$i-ibu\"; done && minio server /storage --console-address :{{ minio_console_port }}"
+    - "mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && for i in $(seq -f \"%05g\" 1 4000); do mkdir -p \"/storage/vm$i-ibu\"; done && rustfs server /storage --console-address :{{ minio_console_port }}"
     env:
-      MINIO_ACCESS_KEY: "{{ minio_access_key }}"
-      MINIO_SECRET_KEY: "{{ minio_secret_key }}"
+      RUSTFS_ACCESS_KEY: "{{ minio_access_key }}"
+      RUSTFS_SECRET_KEY: "{{ minio_secret_key }}"
     volume:
     - "{{ minio_store_path }}/data:/storage:Z"
     state: started
+
+# --------------------------------------------------------------------------
+# Temporary validation tasks — remove after confirming RustFS migration works
+# --------------------------------------------------------------------------
+
+- name: Wait for RustFS S3 API to be ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ minio_port }}/minio/health/live"
+    method: GET
+    status_code: 200
+  register: _rustfs_health
+  until: _rustfs_health.status == 200
+  retries: 30
+  delay: 2
+
+- name: "[TEMPORARY] Configure mc alias for RustFS"
+  ansible.builtin.shell: >
+    mc alias set myminio http://localhost:{{ minio_port }}
+    {{ minio_access_key }} {{ minio_secret_key }} --insecure
+  register: mc_alias_result
+  retries: 10
+  delay: 5
+  until: mc_alias_result.rc == 0
+  changed_when: false
+
+- name: "[TEMPORARY] Create test buckets via mc"
+  ansible.builtin.shell: |
+    mc mb --insecure --ignore-existing myminio/test-thanos
+    mc mb --insecure --ignore-existing myminio/test-velero
+    mc mb --insecure --ignore-existing myminio/test-ibu-00001
+    mc mb --insecure --ignore-existing myminio/test-ibu-00002
+  register: _mc_create
+  changed_when: false
+
+- name: "[TEMPORARY] List buckets to verify"
+  ansible.builtin.shell: mc ls --insecure myminio/
+  register: _mc_list
+  changed_when: false
+
+- name: "[TEMPORARY] Show mc bucket test results"
+  ansible.builtin.debug:
+    var: _mc_list.stdout_lines

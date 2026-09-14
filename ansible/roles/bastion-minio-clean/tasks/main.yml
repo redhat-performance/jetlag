@@ -1,22 +1,24 @@
 ---
-# bastion-minio-clean tasks
+# bastion-minio-clean tasks — cleans RustFS (S3-compatible object store) data
 
-- name: Stop minio pod
+- name: Stop object store pod
   containers.podman.podman_pod:
     name: minio
     state: stopped
 
-- name: Remove minio data directory
+- name: Remove object store data directory
   ansible.builtin.file:
     path: "{{ minio_store_path }}/data"
     state: absent
 
-- name: Recreate minio data directory
+- name: Recreate object store data directory
   ansible.builtin.file:
     path: "{{ minio_store_path }}/data"
     state: directory
+    owner: "10001"
+    group: "10001"
 
-- name: Start minio pod
+- name: Start object store pod
   containers.podman.podman_pod:
     name: minio
     network: host

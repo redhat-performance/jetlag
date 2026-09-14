@@ -1,12 +1,12 @@
 ---
-# Setup MinIO on the bastion machine
+# Setup RustFS (S3-compatible object store) on the bastion machine
 #
 # Example Usage:
 #
 # ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-minio.yml
 #
 
-- name: Setup MinIO on bastion
+- name: Setup RustFS object storage on bastion
   hosts: bastion
   vars_files:
   - vars/lab.yml

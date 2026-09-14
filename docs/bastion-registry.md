@@ -146,7 +146,7 @@ Simply add the `additional_images` list to your `ansible/vars/sync-operator-inde
 ```yaml
 # Sync extra container images directly (without renaming) into the destination registry.
 additional_images:
-- quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+- quay.io/rustfs/rustfs:1.0.0-rc.6
 - quay.io/namespace/image_name:example_tag
 ```
 
@@ -164,8 +164,8 @@ Simply add the `extra_images` list to your `ansible/vars/sync-operator-index.yml
 extra_images:
 - src: registry.redhat.io/openshift4/ztp-site-generate-rhel8:v4.21.0-2
   dest: openshift-kni/ztp-site-generator:v4.21.0-2
-- src: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
-  dest: minio/minio:RELEASE.2025-09-07T16-13-09Z
+- src: quay.io/rustfs/rustfs:1.0.0-rc.6
+  dest: rustfs/rustfs:1.0.0-rc.6
 ```
 
 **Automating ImageTagMirrorSet (ITMS) Creation**
