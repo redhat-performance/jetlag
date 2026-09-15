@@ -11,17 +11,6 @@
 # * Second machine is SNO cluster
 #
 
-- name: Validate quads_api_token is set for lab environments
-  assert:
-    that:
-    - quads_api_token is defined
-    - quads_api_token != None
-    - quads_api_token | string | length > 0
-    fail_msg: >-
-      quads_api_token must be set in all.yml for {{ lab }} environments.
-      Generate a qat_ token from your QUADS profile page or via POST /api/v3/tokens/<email>/
-  when: ocp_inventory_override | string | length < 1 and (lab == 'scalelab' or lab == 'performancelab')
-
 - name: Set ocp inventory download url from lab wiki - scalelab and performancelab
   set_fact:
     ocp_inventory_url: "https://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
