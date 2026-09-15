@@ -45,6 +45,20 @@
   - public_vlan | default(false)
   - enable_bond | default(false)
 
+- name: Validate public_vlan and setup_bastion_haproxy
+  fail:
+    msg: "public_vlan and setup_bastion_haproxy cannot both be true. Public VLAN clusters are directly routable and do not need HAProxy for access."
+  when:
+  - public_vlan | default(false)
+  - setup_bastion_haproxy | default(false)
+
+- name: Validate cluster_type and setup_bastion_haproxy
+  fail:
+    msg: "setup_bastion_haproxy cannot be used with cluster_type: sno. SNO clusters do not use VIPs and are accessed directly via each node's IP address. HAProxy is only for MNO/VMNO clusters."
+  when:
+  - setup_bastion_haproxy | default(false)
+  - cluster_type == "sno"
+
 - name: Validate enable_bond and sno_use_lab_dhcp
   fail:
     msg: "enable_bond and sno_use_lab_dhcp can not both be true, only enable one or the other"

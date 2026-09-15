@@ -103,7 +103,7 @@ ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-minio-clean.
 ### Ansible Role Structure
 Jetlag uses a modular Ansible role architecture:
 
-- **Bastion roles**: `bastion-*` roles configure the bastion host with services like Assisted Installer, DNS, registry
+- **Bastion roles**: `bastion-*` roles configure the bastion host with services like Assisted Installer, DNS, registry, HAProxy (for cluster access)
 - **Installation roles**: `install-cluster`, `sno-post-cluster-install` handle cluster deployment
 - **Hypervisor roles**: `hv-*` roles manage VM infrastructure on hypervisor nodes
 - **Utility roles**: `boot-iso`, `sync-*` roles provide supporting functionality
@@ -165,6 +165,7 @@ Jetlag uses a modular Ansible role architecture:
 - SNO deployments create one cluster per available machine after bastion
 - Public VLAN support available for routable environments (`public_vlan: true`)
 - Disconnected/air-gapped deployments supported with registry mirroring
+- HAProxy on bastion provides cluster access (API/GUI) for connected IPv4 private networks and disconnected IPv6 clusters (see `docs/bastion-haproxy.md`)
 
 ### Virtual and Hybrid Cluster Considerations
 - **Hardware Requirements**: VMNO requires additional CPU/memory capacity for VM overhead
@@ -197,6 +198,13 @@ When encountering issues with Jetlag deployments, consult these comprehensive do
   - Deploying MinIO via `setup-bastion.yml` or standalone `bastion-minio.yml`
   - Accessing the S3 API (port 9000) and web console (port 9001)
   - Cleaning MinIO data between cluster deployments with `bastion-minio-clean.yml`
+
+- **[docs/bastion-haproxy.md](docs/bastion-haproxy.md)**: HAProxy cluster access configuration covering:
+  - Accessing connected IPv4 clusters on private networks without VPN
+  - Automatic HAProxy setup for disconnected IPv6 clusters
+  - Laptop configuration for proxied cluster access (API, console, routes)
+  - Port forwarding for cluster API (6443), HTTPS (443), and HTTP (80)
+  - Dual-stack IPv4/IPv6 support
 
 - **[docs/tips-and-vars.md](docs/tips-and-vars.md)**: Advanced configuration guidance including:
   - Network interface configuration and overrides
