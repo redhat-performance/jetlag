@@ -13,6 +13,9 @@
     password: "{{ hostvars[item]['bmc_password'] }}"
     method: GET
     validate_certs: no
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
     status_code: [200, 404]
     return_content: yes
   register: idrac1_check
