@@ -128,6 +128,15 @@
       msg: "Invalid cluster_type selected - {{ cluster_type }} Select from {{ rh_lab_cluster_types }}"
     when: cluster_type not in rh_lab_cluster_types
 
+  - name: Validate quads_api_token is set
+    fail:
+      msg: >-
+        quads_api_token must be set in all.yml for {{ lab }} environments.
+        Generate a qat_ token from your QUADS profile page or via POST /api/v3/tokens/<email>/
+    when:
+    - ocp_inventory_override | default('') | string | length < 1
+    - quads_api_token is not defined or quads_api_token == None or quads_api_token | string | length == 0
+
 - name: Validate ibmcloud vars
   when: lab in cloud_labs
   block:
