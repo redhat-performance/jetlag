@@ -304,8 +304,8 @@ Several services are run on the bastion in order to automate the tasks that Jetl
 | Dnsmasq / Coredns                                       | 53                        |
 | Grafana instance for hypervisor monitoring              | 3000                      |
 | Prometheus server for hypervisor monitoring             | 9090                      |
-| MinIO S3 API (When `setup_bastion_minio=true`)          | 9000                      |
-| MinIO web console (When `setup_bastion_minio=true`)     | 9001                      |
+| RustFS S3 API (When `setup_bastion_object_store=true`)         | 9000                      |
+| RustFS web console (When `setup_bastion_object_store=true`)    | 9001                      |
 
 Example accessing the bastion registry and listing repositories:
 ```console
