@@ -1,5 +1,5 @@
 ---
-# bastion-disconnected-haproxy tasks
+# bastion-haproxy tasks
 
 - name: Create directory for haproxy
   file:
