@@ -37,6 +37,8 @@ Change `lab` to match your environment:
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
+Set `quads_api_token` to your QUADS API token. Generate a `qat_` token from your [QUADS profile page](https://github.com/quadsproject/quads/blob/development/docs/google-oauth-setup.md#authenticated-user-calls) or via `POST /api/v3/tokens/<email>/`. This token is required to download the `ocpinventory.json` file from QUADS.
+
 Change `cluster_type` to `cluster_type: mno`
 
 Set `worker_node_count` to limit the number of worker nodes from your lab allocation. Set it to `0` if you want a 3 node compact cluster.
@@ -132,6 +134,10 @@ The `ansible/vars/all.yml` now resembles ..
 lab: scalelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
+
+# QUADS API token for authenticated inventory download (required)
+# Generate a qat_ token from your QUADS profile page or via POST /api/v3/tokens/<email>/
+quads_api_token: qat_xxxxx
 
 # Either mno or sno
 cluster_type: mno
