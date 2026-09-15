@@ -77,6 +77,16 @@ use_bastion_registry: false
 # When enabled, cluster nodes use the proxy to reach quay.io, registry.redhat.io, etc.
 setup_bastion_proxy: false
 
+# Enable HAProxy on bastion to proxy cluster access (API, console, routes) from your laptop
+# Only for MNO/VMNO clusters (SNO clusters do not use VIPs and are accessed directly)
+# Use cases:
+#   - Connected IPv4 MNO/VMNO clusters on private networks (enables GUI access without VPN)
+#   - Disconnected IPv6 MNO/VMNO clusters (automatically enabled via use_bastion_registry)
+#   - IPv6 MNO/VMNO clusters with Squid proxy (automatically enabled via setup_bastion_proxy)
+# Cannot be used with public_vlan (public clusters are directly routable) or cluster_type: sno
+# Requires updating your laptop's /etc/hosts file (see docs/bastion-haproxy.md)
+setup_bastion_haproxy: false
+
 # Reset iDRAC service using badfish container (pulls and uses badfish container
 # to clear job queue and reset iDRAC service)
 # reset_idrac: false

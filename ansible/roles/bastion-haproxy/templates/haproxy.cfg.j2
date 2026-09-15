@@ -1,3 +1,11 @@
+{# Detect if first controlplane network is IPv6 #}
+{% set is_ipv6 = controlplane_network[0] | ansible.utils.ipaddr('ipv6') | bool %}
+
+{# Macro to format backend server address with conditional brackets (IPv6 requires brackets, IPv4 does not) #}
+{% macro format_backend_addr(addr) -%}
+{%   if is_ipv6 %}[{{ addr }}]{%   else %}{{ addr }}{%   endif %}
+{%- endmacro %}
+
 global
     log         127.0.0.1 local2
     maxconn     4000
@@ -39,7 +47,7 @@ frontend api-ipv6-6443
 backend api-ipv6-be
     balance source
     mode tcp
-    server api [{{ controlplane_network[0] | ansible.utils.nthhost(3) }}]:6443 check inter 1s
+    server api {{ format_backend_addr(controlplane_network[0] | ansible.utils.nthhost(3)) }}:6443 check inter 1s
 
 frontend machineconfig-ipv6-22623
     bind :::22623 v4v6
@@ -50,7 +58,7 @@ backend mc-ipv6-22623
     balance source
     mode tcp
 {% for node in  groups['controlplane'] %}
-    server {{ node }} [{{ hostvars[node].ip }}]:22623 check inter 1s
+    server {{ node }} {{ format_backend_addr(hostvars[node].ip) }}:22623 check inter 1s
 {% endfor %}
 
 frontend ingress-router-ipv6-80
@@ -61,7 +69,7 @@ frontend ingress-router-ipv6-80
 backend ingress-ipv6-80
     mode tcp
     balance source
-    server ingress [{{ controlplane_network[0] | ansible.utils.nthhost(4) }}]:80 check inter 1s
+    server ingress {{ format_backend_addr(controlplane_network[0] | ansible.utils.nthhost(4)) }}:80 check inter 1s
 
 frontend ingress-router-ipv6-443
     bind :::443 v4v6
@@ -71,7 +79,7 @@ frontend ingress-router-ipv6-443
 backend 443-ipv6-be
     mode tcp
     balance source
-    server ingress [{{ controlplane_network[0] | ansible.utils.nthhost(4) }}]:443 check inter 1s
+    server ingress {{ format_backend_addr(controlplane_network[0] | ansible.utils.nthhost(4)) }}:443 check inter 1s
 
 {% if setup_bastion_gogs %}
 frontend gogs-ipv4-{{ gogs_ipv4_port }}
@@ -82,5 +90,5 @@ frontend gogs-ipv4-{{ gogs_ipv4_port }}
 backend gogs-ipv6-{{ gogs_ipv6_port }}
     mode tcp
     balance source
-    server ingress [{{ gogs_host }}]:{{ gogs_ipv6_port }} check inter 1s
+    server ingress {{ format_backend_addr(gogs_host) }}:{{ gogs_ipv6_port }} check inter 1s
 {% endif %}

@@ -38,8 +38,11 @@
   - bastion-assisted-installer
   - role: bastion-gogs
     when: setup_bastion_gogs
-  - role: bastion-disconnected-haproxy
-    when: use_bastion_registry or setup_bastion_proxy | default(false)
+  - role: bastion-haproxy
+    when: >
+      setup_bastion_haproxy | default(false) or
+      use_bastion_registry | default(false) or
+      setup_bastion_proxy | default(false)
   - role: hv-metrics-server
     when: setup_hv_metrics | default(false) | bool
   - role: bastion-minio
