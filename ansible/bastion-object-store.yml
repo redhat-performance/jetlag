@@ -3,7 +3,7 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-minio.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-object-store.yml
 #
 
 - name: Setup RustFS object storage on bastion
@@ -12,4 +12,4 @@
   - vars/lab.yml
   - vars/all.yml
   roles:
-  - bastion-minio
+  - bastion-object-store

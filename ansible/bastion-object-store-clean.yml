@@ -3,7 +3,7 @@
 #
 # Example Usage:
 #
-# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-minio-clean.yml
+# ansible-playbook -i ansible/inventory/cloud42.local ansible/bastion-object-store-clean.yml
 #
 
 - name: Clean RustFS data on bastion
@@ -12,4 +12,4 @@
   vars_files:
   - vars/all.yml
   roles:
-  - bastion-minio-clean
+  - bastion-object-store-clean

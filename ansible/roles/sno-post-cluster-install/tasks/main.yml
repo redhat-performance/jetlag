@@ -12,7 +12,7 @@
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3"
-  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio"
+  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/object-store"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/tunedPerformancePatch"
@@ -59,8 +59,8 @@
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume-lvm.yml"
   - src: localvolume-disk.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume-disk.yml"
-  - src: minio.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio/minio.yml"
+  - src: object-store.yml.j2
+    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/object-store/object-store.yml"
   - src: metal3.yml
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml"
   - src: openshift-marketplace-ns.yaml
@@ -187,10 +187,10 @@
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml
 
-- name: Setup Minio
-  when: setup_minio | bool
+- name: Setup object store
+  when: setup_object_store | bool
   shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/minio/minio.yml
+    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/object-store/object-store.yml
 
 - name: Apply OpenShift-Monitoring configuration options
   when: (apply_cluster_monitoring_config | bool) and (setup_lso | bool)

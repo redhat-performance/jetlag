@@ -61,9 +61,9 @@ prometheus_storage_size: 50Gi
 
 # RustFS deployment is an S3-compatible object storage pod for use with ACM
 # (replaces the archived MinIO project)
-setup_minio: false
-minio_image_tag: 1.0.0-rc.6
-minio_pv_storageclass: localstorage2-sc
+setup_object_store: false
+object_store_image_tag: 1.0.0-rc.6
+object_store_pv_storageclass: localstorage2-sc
 
 # Custom CatalogSources to apply post-install
 # Each entry creates a CatalogSource resource in openshift-marketplace

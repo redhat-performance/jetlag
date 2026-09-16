@@ -192,7 +192,7 @@
       - --strip-components=1
   when: supermicro_nodes | default(true)
 
-- name: Get CoreDNS, OpenShift clients, opm, kube-burner, kube-burner-ocp, grpcurl, minio client, and yq
+- name: Get CoreDNS, OpenShift clients, opm, kube-burner, kube-burner-ocp, grpcurl, rc (S3 client), and yq
   get_url:
     validate_certs: false
     url: "{{ item.url }}"
@@ -211,9 +211,8 @@
     dest: "{{ bastion_cluster_config_dir }}/kube-burner-ocp-linux.tar.gz"
   - url: "{{ grpcurl_url }}"
     dest: "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
-  - url: "{{ minio_client_url }}"
-    dest: "/usr/local/bin/mc"
-    mode: "0700"
+  - url: "{{ object_store_client_url }}"
+    dest: "{{ bastion_cluster_config_dir }}/rustfs-cli-linux-amd64.tar.gz"
   - url: "{{ yq_url }}"
     dest: "{{ bastion_cluster_config_dir }}/yq_linux_amd64.tar.gz"
 
@@ -264,6 +263,7 @@
   - "{{ bastion_cluster_config_dir }}/kube-burner-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/kube-burner-ocp-linux.tar.gz"
   - "{{ bastion_cluster_config_dir }}/grpcurl-linux.tar.gz"
+  - "{{ bastion_cluster_config_dir }}/rustfs-cli-linux-amd64.tar.gz"
 
 - name: Create coredns.service file
   copy:
