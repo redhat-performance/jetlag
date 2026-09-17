@@ -37,8 +37,8 @@ origin_kube_rbac_proxy_image_tag: 4.17
 recert_image: quay.io/edge-infrastructure/recert
 recert_image_tag: latest
 
-# Minio provides an S3 storage service for ACM's OBS and s3 storage for OADP
-minio_image: quay.io/minio/minio
-minio_image_tag: RELEASE.2025-09-07T16-13-09Z
+# RustFS provides an S3 storage service for ACM's OBS and s3 storage for OADP
+object_store_image: quay.io/rustfs/rustfs
+object_store_image_tag: 1.0.0-rc.6
 
 acm_d_pull_secret: "{{ lookup('file', '../pull-secret.acm-d.txt') }}"

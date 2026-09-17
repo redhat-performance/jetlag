@@ -42,5 +42,5 @@
     when: use_bastion_registry or setup_bastion_proxy | default(false)
   - role: hv-metrics-server
     when: setup_hv_metrics | default(false) | bool
-  - role: bastion-minio
-    when: setup_bastion_minio | default(false)
+  - role: bastion-object-store
+    when: setup_bastion_object_store | default(false)

@@ -1,0 +1,4 @@
+---
+# bastion-object-store-clean default vars
+
+object_store_path: /opt/jetlag/rustfs

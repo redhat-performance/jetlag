@@ -30,7 +30,7 @@ etc_hosts_ingress_routes:
 - hcp-cli-download-multicluster-engine
 - images-multicluster-engine
 - kam-openshift-gitops
-- minio-minio
+- object-store-object-store
 - multicloud-console
 - multicluster-global-hub-grafana-multicluster-global-hub
 - oauth-openshift

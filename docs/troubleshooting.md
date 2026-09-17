@@ -21,7 +21,7 @@ _**Table of Contents**_
   - [Incorrect bastion controlplane interface](#incorrect-bastion-controlplane-interface)
   - [Changed controlplane network on bastion](#changed-controlplane-network-on-bastion)
   - [Root disk too small](#root-disk-too-small)
-  - [MinIO](#minio)
+  - [Object Storage](#object-storage)
 - [Generic Hardware](#generic-hardware)
   - [Minimum Firmware Versions](#minimum-firmware-versions)
 - [Dell](#dell)
@@ -304,8 +304,8 @@ Several services are run on the bastion in order to automate the tasks that Jetl
 | Dnsmasq / Coredns                                       | 53                        |
 | Grafana instance for hypervisor monitoring              | 3000                      |
 | Prometheus server for hypervisor monitoring             | 9090                      |
-| MinIO S3 API (When `setup_bastion_minio=true`)          | 9000                      |
-| MinIO web console (When `setup_bastion_minio=true`)     | 9001                      |
+| RustFS S3 API (When `setup_bastion_object_store=true`)         | 9000                      |
+| RustFS web console (When `setup_bastion_object_store=true`)    | 9001                      |
 
 Example accessing the bastion registry and listing repositories:
 ```console
@@ -473,26 +473,26 @@ with 1 or 2 OCP releases synced. If the bastion is one of those machines, reloca
 to a separate larger disk so the machine does not run out of space on the root disk.
 
 
-## MinIO
+## Object Storage
 
-For full MinIO setup and usage documentation see [docs/bastion-minio.md](bastion-minio.md).
+For full object storage setup and usage documentation see [docs/bastion-object-store.md](bastion-object-store.md).
 
-**Check MinIO pod and container status:**
+**Check object-store pod and container status:**
 
 ```console
 [root@<bastion> ~]# podman pod ps
 [root@<bastion> ~]# podman ps --pod
 ```
 
-**Check MinIO logs:**
+**Check object-store logs:**
 
 ```console
-[root@<bastion> ~]# podman logs minio
+[root@<bastion> ~]# podman logs object-store
 ```
 
-**MinIO web console or S3 API unreachable:**
+**Object storage web console or S3 API unreachable:**
 
-Verify the MinIO pod is running and listening on the expected ports:
+Verify the object-store pod is running and listening on the expected ports:
 
 ```console
 [root@<bastion> ~]# podman pod ps
@@ -502,21 +502,21 @@ Verify the MinIO pod is running and listening on the expected ports:
 If the pod is stopped, restart it:
 
 ```console
-[root@<bastion> ~]# podman pod start minio
+[root@<bastion> ~]# podman pod start object-store
 ```
 
-Or rerun the MinIO playbook to fully reconcile the pod and container state:
+Or rerun the object-store playbook to fully reconcile the pod and container state:
 
 ```console
-[root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-minio.yml
+[root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-object-store.yml
 ```
 
-**Clear MinIO data between cluster deployments:**
+**Clear object storage data between cluster deployments:**
 
-Use the dedicated clean playbook to wipe all stored data and restart MinIO with empty buckets:
+Use the dedicated clean playbook to wipe all stored data and restart object storage with empty buckets:
 
 ```console
-[root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-minio-clean.yml
+[root@<bastion> jetlag]# ansible-playbook -i ansible/inventory/cloud99.local ansible/bastion-object-store-clean.yml
 ```
 
 

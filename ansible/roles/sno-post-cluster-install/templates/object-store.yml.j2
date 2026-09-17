@@ -1,0 +1,105 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: object-store
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: object-store
+  name: object-store
+  namespace: object-store
+spec:
+  storageClassName: {{ object_store_pv_storageclass }}
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 250Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: object-store
+  namespace: object-store
+  labels:
+    app.kubernetes.io/name: object-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: object-store
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: object-store
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && for i in $(seq -f "%05g" 1 4000); do mkdir -p "/storage/vm$i-ibu"; done && rustfs server /storage
+        env:
+        - name: RUSTFS_ACCESS_KEY
+          value: rustfs
+        - name: RUSTFS_SECRET_KEY
+          value: rustfs123
+{% if not use_bastion_registry | default(false) %}
+        image: quay.io/rustfs/rustfs:{{ object_store_image_tag }}
+{% else %}
+        image: {{ registry_host }}:{{ registry_port }}/rustfs/rustfs:{{ object_store_image_tag }}
+{% endif %}
+        name: object-store
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+        - containerPort: 9000
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /storage
+          name: storage
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: object-store
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: object-store
+  namespace: object-store
+spec:
+  ports:
+  - port: 9000
+    protocol: TCP
+    targetPort: 9000
+  selector:
+    app.kubernetes.io/name: object-store
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: object-store
+  namespace: object-store
+spec:
+#  tls:
+#    termination: edge
+  to:
+    name: object-store
+  port:
+    targetPort: 9000

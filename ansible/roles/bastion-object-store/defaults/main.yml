@@ -1,0 +1,19 @@
+---
+# bastion-object-store default vars
+#
+# The underlying object store has been migrated from the archived MinIO project
+# to RustFS, a drop-in S3-compatible replacement (https://rustfs.com).
+
+setup_bastion_object_store: false
+
+object_store_path: /opt/jetlag/rustfs
+object_store_image: quay.io/rustfs/rustfs
+object_store_image_tag: 1.0.0-rc.6
+object_store_access_key: rustfs
+object_store_secret_key: rustfs123
+object_store_port: 9000
+object_store_console_port: 9001
+# Set to a full device path (e.g. /dev/sdb, /dev/nvme0n1,
+# /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:1:0) to partition, format as XFS,
+# and mount it at object_store_path/data. Empty string disables separate disk setup.
+object_store_data_disk: ""

@@ -1,0 +1,25 @@
+---
+# bastion-object-store-clean tasks — cleans RustFS (S3-compatible object store) data
+
+- name: Stop object store pod
+  containers.podman.podman_pod:
+    name: object-store
+    state: stopped
+
+- name: Remove object store data directory
+  ansible.builtin.file:
+    path: "{{ object_store_path }}/data"
+    state: absent
+
+- name: Recreate object store data directory
+  ansible.builtin.file:
+    path: "{{ object_store_path }}/data"
+    state: directory
+    owner: "10001"
+    group: "10001"
+
+- name: Start object store pod
+  containers.podman.podman_pod:
+    name: object-store
+    network: host
+    state: started
