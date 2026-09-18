@@ -41,6 +41,13 @@ All variables are defined in `ansible/roles/mno-post-cluster-install/defaults/ma
 | `wait_for_odf_storagecluster_ready` | `false` | Wait for the StorageCluster to reach Ready status before the playbook finishes |
 | `wait_for_odf_storagecluster_ready_timeout` | `20m` | Timeout for the readiness wait |
 
+**Default storage class**
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `set_default_storage_class` | `true` | Automatically set a default storage class based on storage configuration. When ODF is enabled, `ocs-storagecluster-cephfs` is marked as default (RWX-capable filesystem storage preferred for telco hub use cases). Override by explicitly setting `default_storage_class`. |
+| `default_storage_class` | `""` | Override the auto-detected default storage class by explicitly setting a storage class name (e.g., `ocs-storagecluster-cephfs`, `ocs-storagecluster-ceph-rbd`). Leave empty for automatic detection. |
+
 ## Configuration example
 
 This example deploys ODF on an MNO cluster using Dell r660 nodes in Scale Lab with two raw block disks per control-plane node, each approximately 1.4 TB.
