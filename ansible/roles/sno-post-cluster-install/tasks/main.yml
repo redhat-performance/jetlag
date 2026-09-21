@@ -12,7 +12,6 @@
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/gitops"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3"
-  - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/object-store"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/performance-profile"
   - "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/tunedPerformancePatch"
@@ -59,8 +58,6 @@
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume-lvm.yml"
   - src: localvolume-disk.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/localstorage/localvolume-disk.yml"
-  - src: object-store.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/object-store/object-store.yml"
   - src: metal3.yml
     dest: "{{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml"
   - src: openshift-marketplace-ns.yaml
@@ -181,16 +178,10 @@
     delay: 2
     when: controlplane_localstorage_disk_devices | length > 0
 
-
 - name: Setup Metal3
   when: sno_metal3 | bool
   shell: |
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/metal3/metal3.yml
-
-- name: Setup object store
-  when: setup_object_store | bool
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/object-store/object-store.yml
 
 - name: Apply OpenShift-Monitoring configuration options
   when: (apply_cluster_monitoring_config | bool) and (setup_lso | bool)

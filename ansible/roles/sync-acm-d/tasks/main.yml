@@ -122,7 +122,3 @@
 - name: Mirror recert image
   shell: |
     oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ recert_image }}:{{ recert_image_tag }} {{ registry_host }}:{{ registry_port }}/edge-infrastructure/recert:{{ recert_image_tag }} --keep-manifest-list --continue-on-error=true
-
-- name: Mirror object store image
-  shell: |
-    oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt {{ object_store_image }}:{{ object_store_image_tag }} {{ registry_host }}:{{ registry_port }}/rustfs/rustfs:{{ object_store_image_tag }} --keep-manifest-list --continue-on-error=true

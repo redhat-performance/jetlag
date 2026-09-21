@@ -11,7 +11,6 @@
   - "{{ bastion_cluster_config_dir }}/catalogsources"
   - "{{ bastion_cluster_config_dir }}/gitops"
   - "{{ bastion_cluster_config_dir }}/localstorage"
-  - "{{ bastion_cluster_config_dir }}/object-store"
   - "{{ bastion_cluster_config_dir }}/odf"
   - "{{ bastion_cluster_config_dir }}/openshift-monitoring"
 
@@ -99,8 +98,6 @@
     dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume-lvm.yml"
   - src: localvolume-disk.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/localstorage/localvolume-disk.yml"
-  - src: object-store.yml.j2
-    dest: "{{ bastion_cluster_config_dir }}/object-store/object-store.yml"
   - src: odf.yml.j2
     dest: "{{ bastion_cluster_config_dir }}/odf/odf.yml"
   - src: odf-storagecluster.yml.j2
@@ -266,11 +263,6 @@
     shell: |
       KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc wait storagecluster/ocs-storagecluster -n openshift-storage --for=jsonpath='{.status.phase}'=Ready --timeout={{ wait_for_odf_storagecluster_ready_timeout }}
     when: wait_for_odf_storagecluster_ready | bool
-
-- name: Setup object store
-  when: setup_object_store | bool
-  shell: |
-    KUBECONFIG={{ bastion_cluster_config_dir }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/object-store/object-store.yml
 
 - name: Migrate ingresscontrollers (OpenShift Router) to master nodes
   when: migrate_ingresscontrollers | bool
