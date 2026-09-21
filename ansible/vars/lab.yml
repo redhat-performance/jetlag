@@ -79,6 +79,7 @@ hw_install_disk:
     r630: /dev/disk/by-path/pci-0000:02:00.0-scsi-0:2:0:0
     r6625: /dev/disk/by-path/pci-0000:41:00.0-scsi-0:0:1:0
   performancelab:
+    r650: /dev/disk/by-path/pci-0000:65:00.0-scsi-0:3:104:0
     r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
     y37-r740xd: /dev/disk/by-path/pci-0000:86:00.0-scsi-0:2:0:0
     y37-h01-r740xd: /dev/disk/by-path/pci-0000:18:00.0-scsi-0:2:0:0
@@ -292,6 +293,9 @@ hw_vm_counts:
       default: 8
       sdc: 12
   performancelab:
+    r650:
+      default: 0
+      nvme0n1: 9
     r740xd:
       default: 4
       nvme0n1: 5
