@@ -1,0 +1,94 @@
+{# Detect if first controlplane network is IPv6 #}
+{% set is_ipv6 = controlplane_network[0] is ansible.utils.ipv6 %}
+
+{# Macro to format backend server address with conditional brackets (IPv6 requires brackets, IPv4 does not) #}
+{% macro format_backend_addr(addr) -%}
+{%   if is_ipv6 %}[{{ addr }}]{%   else %}{{ addr }}{%   endif %}
+{%- endmacro %}
+
+global
+    log         127.0.0.1 local2
+    maxconn     4000
+    daemon
+
+defaults
+    mode                    tcp
+    log                     global
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+listen stats-50000
+    bind 0.0.0.0:50000
+    mode            http
+    log             global
+    maxconn 10
+    timeout client  100s
+    timeout server  100s
+    timeout connect 100s
+    stats enable
+    stats hide-version
+    stats refresh 30s
+    stats show-node
+    stats auth admin:password
+    stats uri  /haproxy?stats
+
+frontend api-6443
+    bind :::6443 v4v6
+    mode tcp
+    default_backend api-be
+
+backend api-be
+    balance source
+    mode tcp
+    server api {{ format_backend_addr(controlplane_network[0] | ansible.utils.nthhost(3)) }}:6443 check inter 1s
+
+frontend machineconfig-22623
+    bind :::22623 v4v6
+    mode tcp
+    default_backend machineconfig-be
+
+backend machineconfig-be
+    balance source
+    mode tcp
+{% for node in  groups['controlplane'] %}
+    server {{ node }} {{ format_backend_addr(hostvars[node].ip) }}:22623 check inter 1s
+{% endfor %}
+
+frontend ingress-router-80
+    bind :::80 v4v6
+    mode tcp
+    default_backend ingress-80
+
+backend ingress-80
+    mode tcp
+    balance source
+    server ingress {{ format_backend_addr(controlplane_network[0] | ansible.utils.nthhost(4)) }}:80 check inter 1s
+
+frontend ingress-router-443
+    bind :::443 v4v6
+    mode tcp
+    default_backend ingress-443
+
+backend ingress-443
+    mode tcp
+    balance source
+    server ingress {{ format_backend_addr(controlplane_network[0] | ansible.utils.nthhost(4)) }}:443 check inter 1s
+
+{% if setup_bastion_gogs %}
+frontend gogs-{{ gogs_ipv4_port }}
+    bind :::{{ gogs_ipv4_port }} v4v6
+    mode tcp
+    default_backend gogs-{{ gogs_ipv6_port }}
+
+backend gogs-{{ gogs_ipv6_port }}
+    mode tcp
+    balance source
+    server ingress {{ format_backend_addr(gogs_host) }}:{{ gogs_ipv6_port }} check inter 1s
+{% endif %}
