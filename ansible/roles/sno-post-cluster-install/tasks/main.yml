@@ -197,6 +197,50 @@
   shell:
     KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc apply -f {{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/openshift-monitoring/cluster-monitoring-config.yml
 
+- name: Set default storage class
+  when: set_default_storage_class | bool
+  block:
+  - name: Determine default storage class
+    set_fact:
+      calculated_default_storage_class: |-
+        {%- if default_storage_class | length > 0 -%}
+          {{ default_storage_class }}
+        {%- elif setup_lso | bool -%}
+          {%- if controlplane_localstorage_lvm_devices | length > 0 -%}
+            localstorage-sc
+          {%- elif controlplane_localstorage_disk_devices | length > 0 -%}
+            localstorage-disk-sc
+          {%- else -%}
+
+          {%- endif -%}
+        {%- else -%}
+
+        {%- endif -%}
+
+  - name: Display determined default storage class
+    debug:
+      msg: "Setting {{ calculated_default_storage_class }} as default storage class"
+    when: calculated_default_storage_class | length > 0
+
+  - name: Wait for default storage class to exist
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc get storageclass {{ calculated_default_storage_class }}
+    register: sc_exists
+    until: not sc_exists.failed
+    retries: 60
+    delay: 5
+    when: calculated_default_storage_class | length > 0
+
+  - name: Remove default annotation from all storage classes
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc annotate storageclass --all storageclass.kubernetes.io/is-default-class- --overwrite
+    when: calculated_default_storage_class | length > 0
+
+  - name: Set default storage class annotation
+    shell: |
+      KUBECONFIG={{ bastion_cluster_config_dir }}/{{ groups['sno'][0] }}/kubeconfig oc annotate storageclass {{ calculated_default_storage_class }} storageclass.kubernetes.io/is-default-class=true --overwrite
+    when: calculated_default_storage_class | length > 0
+
 - name: Include DU Profile tasks
   include_tasks: du_profile_post_install_tasks.yml
   when: du_profile

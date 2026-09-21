@@ -167,6 +167,16 @@ Jetlag uses a modular Ansible role architecture:
 - Disconnected/air-gapped deployments supported with registry mirroring
 - HAProxy on bastion provides cluster access (API/GUI) for connected IPv4 private networks and disconnected IPv6 clusters (see `docs/bastion-haproxy.md`)
 
+### Storage Configuration
+- **Default Storage Class**: Jetlag automatically sets a default storage class based on configuration:
+  - When ODF is enabled (`setup_odf: true`), `ocs-storagecluster-cephfs` is marked as default (RWX-capable, preferred for telco hub use cases)
+  - When only LSO is enabled with LVM devices, `localstorage-sc` becomes the default
+  - When only LSO is enabled with disk devices, `localstorage-disk-sc` becomes the default
+  - Override automatic selection by explicitly setting `default_storage_class` variable in `all.yml`
+  - Disable automatic default with `set_default_storage_class: false`
+- **LSO (Local Storage Operator)**: Provides local persistent storage via LVM volumes or raw block devices (see [docs/local-storage.md](docs/local-storage.md))
+- **ODF (OpenShift Data Foundation)**: Provides Ceph-backed block, file, and object storage for MNO clusters (see [docs/odf.md](docs/odf.md))
+
 ### Virtual and Hybrid Cluster Considerations
 - **Hardware Requirements**: VMNO requires additional CPU/memory capacity for VM overhead
 - **VM Management**: Use `hv-vm-delete.yml` or `hv-vm-replace.yml` between VMNO deployments to avoid conflicts

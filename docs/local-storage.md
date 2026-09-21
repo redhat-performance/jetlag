@@ -56,6 +56,13 @@ Populating any device list below triggers Ignition-based disk wiping/partitionin
 | `localstorage_disk_volume_mode` | `Block` | `volumeMode` for the `localvolume-disk` resource (`Filesystem` or `Block`) |
 | `localstorage_disk_force_wipe` | `true` | Sets `forceWipeDevicesAndDestroyAllData` on the `localvolume-disk` resource, causing LSO to wipe any existing filesystem signatures on the devices |
 
+**Default storage class**
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `set_default_storage_class` | `true` | Automatically set a default storage class based on storage configuration. When LSO is configured with LVM devices, `localstorage-sc` is marked as default. When only disk devices are configured, `localstorage-disk-sc` is marked as default. If ODF is also configured, ODF takes precedence (see [odf.md](odf.md)). |
+| `default_storage_class` | `""` | Override the auto-detected default storage class by explicitly setting a storage class name (e.g., `localstorage-sc`, `localstorage-disk-sc`). Leave empty for automatic detection. |
+
 **etcd on NVMe** (related, but separate from LSO)
 
 | Variable | Default | Description |
