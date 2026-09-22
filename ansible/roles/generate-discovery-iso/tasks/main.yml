@@ -35,6 +35,10 @@
       dest: /root/assisted-service
       version: master
 
+  - name: Remove old discovery ISO with password
+    ansible.builtin.file:
+      path: "{{ http_store_path }}/data/{{ iso_name }}_with_password.iso"
+      state: absent
 
   - name: Create new discovery ISO with password
     shell: /root/assisted-service/docs/change-iso-password.sh {{ http_store_path }}/data/{{ iso_name }}.iso
