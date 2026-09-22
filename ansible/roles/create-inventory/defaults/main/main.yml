@@ -3,6 +3,10 @@
 
 ocp_inventory_override: ''
 
+# Hostnames to omit from the downloaded lab allocation inventory.
+# Values may be bare hostnames or mgmt- prefixed hostnames.
+ocp_inventory_skip_hosts: []
+
 # Master nodes "consume" the first 7 address out of the controlplane_network, workers start after this offset
 mno_worker_node_offset: 7
 
