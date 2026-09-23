@@ -3,9 +3,9 @@
 
 ocp_inventory_override: ''
 
-# QUADS API token for authenticated inventory download
+# QUADS API token for authenticated inventory download (required for QUADS 3+)
 # Generate a qat_ token from your QUADS profile page or via POST /api/v3/tokens/<email>/
-quads_api_token:
+quads_api_token: ''
 
 # Master nodes "consume" the first 7 address out of the controlplane_network, workers start after this offset
 mno_worker_node_offset: 7

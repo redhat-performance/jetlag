@@ -8,9 +8,10 @@ lab:
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud:
 
-# QUADS API token for authenticated inventory download (required)
+# QUADS API token for authenticated inventory download (required for QUADS 3+)
 # Generate a qat_ token from your QUADS profile page or via POST /api/v3/tokens/<email>/
-quads_api_token:
+# Leave empty for QUADS 2.x environments that don't require authentication
+quads_api_token: ""
 
 # Either mno or sno
 cluster_type:

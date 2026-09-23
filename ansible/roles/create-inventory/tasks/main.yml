@@ -11,6 +11,19 @@
 # * Second machine is SNO cluster
 #
 
+- name: Get QUADS version
+  uri:
+    url: "https://{{ labs[lab]['quads'] }}/api/v3/version"
+    return_content: true
+    validate_certs: false
+  register: quads_version_response
+  when: ocp_inventory_override | string | length < 1 and (lab == 'scalelab' or lab == 'performancelab')
+
+- name: Set QUADS major version
+  set_fact:
+    quads_major_version: "{{ quads_version_response.content | regex_search('version (\\d+)', '\\1') | first | int }}"
+  when: quads_version_response is not skipped
+
 - name: Set ocp inventory download url from lab wiki - scalelab and performancelab
   set_fact:
     ocp_inventory_url: "https://{{ labs[lab]['quads'] }}/instack/{{ lab_cloud }}_ocpinventory.json"
@@ -21,7 +34,7 @@
     ocp_inventory_url: "{{ ocp_inventory_override }}"
   when: ocp_inventory_override | string | length > 1
 
-- name: Download ocpinventory.json
+- name: Download ocpinventory.json (authenticated for QUADS 3+)
   uri:
     url: "{{ ocp_inventory_url }}"
     return_content: true
@@ -29,7 +42,19 @@
     headers:
       Authorization: "Bearer {{ quads_api_token }}"
   register: ocpinventory
-  when: ocp_inventory_url | regex_search('^http')
+  when:
+  - ocp_inventory_url | regex_search('^http')
+  - quads_major_version | default(0) | int >= 3
+
+- name: Download ocpinventory.json (unauthenticated for QUADS 2)
+  uri:
+    url: "{{ ocp_inventory_url }}"
+    return_content: true
+    validate_certs: false
+  register: ocpinventory
+  when:
+  - ocp_inventory_url | regex_search('^http')
+  - quads_major_version | default(0) | int < 3
 
 - name: Load {{ ocp_inventory_url }}
   set_fact:
