@@ -37,6 +37,8 @@ Change `lab` to match your environment:
 
 Change `lab_cloud` to `lab_cloud: cloud99`
 
+If your lab runs QUADS 3.0+, set `quads_api_token` to your QUADS API token. Generate a `qat_` token from your [QUADS profile page](https://github.com/quadsproject/quads/blob/development/docs/google-oauth-setup.md#authenticated-user-calls) or via `POST /api/v3/tokens/<email>/`. This token is required to download the `ocpinventory.json` file from QUADS 3+. Leave empty for QUADS 2.x environments.
+
 Change `cluster_type` to `cluster_type: sno`
 
 Set `ocp_build` and `ocp_version` to select your OpenShift version. For example, to deploy the latest GA 4.22 release:
@@ -100,6 +102,11 @@ The `ansible/vars/all.yml` now resembles ..
 lab: scalelab
 # Which cloud in the lab environment (Ex cloud42)
 lab_cloud: cloud99
+
+# QUADS API token for authenticated inventory download (required for QUADS 3+)
+# Generate a qat_ token from your QUADS profile page or via POST /api/v3/tokens/<email>/
+# Leave empty for QUADS 2.x environments that don't require authentication
+quads_api_token: qat_xxxxx
 
 # Either mno or sno
 cluster_type: sno
