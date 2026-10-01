@@ -1,6 +1,11 @@
 # sushy emulator configuration file build on top of Flask application
 # configuration infrastructure: http://flask.pocoo.org/docs/config/
 
+# Note: When running under gunicorn (default), the LISTEN_IP and LISTEN_PORT
+# settings below are overridden by gunicorn's --bind option in the systemd service.
+# Gunicorn binds to [::] which accepts both IPv4 and IPv6 connections on most systems.
+# These settings are kept for compatibility if running standalone.
+
 # Listen on all local IP interfaces
 {% if hostvars[inventory_hostname].ip | ansible.utils.ipv6 %}
 SUSHY_EMULATOR_LISTEN_IP = u'::'
@@ -22,6 +27,11 @@ SUSHY_EMULATOR_OS_CLOUD = None
 
 # The libvirt URI to use. This option enables libvirt driver.
 SUSHY_EMULATOR_LIBVIRT_URI = u'qemu:///system'
+
+# Feature set configuration (new in 2.x)
+# Options: 'minimum', 'vmedia', 'full'
+# 'full' enables all features including VirtualMedia and EthernetInterfaces
+SUSHY_EMULATOR_FEATURE_SET = u'full'
 
 # Instruct the libvirt driver to ignore any instructions to
 # set the boot device. Allowing the UEFI firmware to instead

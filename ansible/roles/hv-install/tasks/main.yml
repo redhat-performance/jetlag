@@ -19,8 +19,9 @@
 
 - name: Install python packages
   pip:
-    name: sushy-tools
-    version: 1.2.0
+    name:
+    - sushy-tools==2.1.0
+    - gunicorn
 
 - name: Configure hugepages support
   when: enable_hugepages
