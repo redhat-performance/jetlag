@@ -84,7 +84,7 @@
     entrypoint: /bin/sh
     command:
     - -c
-    - "mkdir -p /storage/thanos && mkdir -p /storage/dr4hub/velero && for i in $(seq -f \"%05g\" 1 4000); do mkdir -p \"/storage/vm$i-ibu\"; done && rustfs server /storage --console-address :{{ object_store_console_port }}"
+    - "mkdir -p /storage/thanos /storage/ibu /storage/dr4hub/velero && for i in $(seq -f \"%05g\" 1 4000); do mkdir -p \"/storage/vm$i-ibu\"; done && rustfs server /storage --console-address :{{ object_store_console_port }}"
     env:
       RUSTFS_ACCESS_KEY: "{{ object_store_access_key }}"
       RUSTFS_SECRET_KEY: "{{ object_store_secret_key }}"
