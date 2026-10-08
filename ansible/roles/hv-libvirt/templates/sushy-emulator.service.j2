@@ -4,9 +4,16 @@ After=syslog.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/sushy-emulator --config /etc/sushy-emulator/sushy-emulator.conf
-StandardOutput=syslog
-StandardError=syslog
+Environment="SUSHY_EMULATOR_CONFIG=/etc/sushy-emulator/sushy-emulator.conf"
+ExecStart=/usr/local/bin/gunicorn \
+    --workers {{ sushy_emulator_workers }} \
+    --bind {{ '[::]' if hostvars[inventory_hostname].ip | ansible.utils.ipv6 else '0.0.0.0' }}:{{ hypervisor_bmc_port }} \
+    --timeout {{ sushy_emulator_timeout }} \
+    --access-logfile - \
+    --error-logfile - \
+    sushy_tools.emulator.main:app
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
