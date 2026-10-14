@@ -22,6 +22,15 @@ ocp_inventory_override: <LOCAL_FILE_PATH>
 
 Set this variable in the "Extra vars" section of `ansible/vars/all.yml` before running `create-inventory.yml`.
 
+> [!WARNING]
+> If you change which machine is your bastion by modifying the `ocp_inventory_override` file after
+> already running `setup-bastion.yml` on a different machine, you must remove any Jetlag-configured
+> IP addresses from the previously configured bastion machine. Otherwise you may encounter duplicate
+> IP address errors during deployment. To clean up the previous bastion, you can either:
+> - Delete the NetworkManager connection for the controlplane interface:
+>   `nmcli connection delete <CONNECTION_NAME>` (this removes both the active IP and persistent configuration)
+> - Wipe/rebuild the previous bastion machine to ensure a completely clean state.
+
 2. You can copy your ssh public key to the designated bastion machine to make it easier to
 repeatedly log in from your laptop:
 
