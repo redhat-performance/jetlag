@@ -2,3 +2,10 @@
 # hv-libvirt default vars
 
 hypervisor_bmc_port: 9000
+
+# Sushy-emulator gunicorn configuration
+# Number of worker processes to handle concurrent virtual media requests
+sushy_emulator_workers: 8
+
+# Request timeout in seconds (increased for virtual media operations)
+sushy_emulator_timeout: 300
