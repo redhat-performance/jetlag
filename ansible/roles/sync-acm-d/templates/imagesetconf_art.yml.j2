@@ -1,0 +1,19 @@
+apiVersion: mirror.openshift.io/v2alpha1
+kind: ImageSetConfiguration
+mirror:
+  platform:
+    architectures:
+      - amd64
+  operators:
+  - catalog: quay.io/redhat-user-workloads/ocp-art-tenant/art-fbc:{{ rhacm_build }}
+    packages:
+    - name: advanced-cluster-management
+      defaultChannel: {{ acm_channel }}
+      channels:
+      - name: {{ acm_channel }}
+  - catalog: quay.io/redhat-user-workloads/ocp-art-tenant/art-fbc:{{ mce_build }}
+    packages:
+    - name: multicluster-engine
+      defaultChannel: {{ mce_channel}}
+      channels:
+      - name: {{ mce_channel }}
