@@ -51,6 +51,7 @@ Scale lab network table is available on the scale lab wiki.
 | Dell r7425       | eno3                  | eno1                           | eno3                       |
 | Dell r7525       | eno1                  | enp33np0                       | eno1                       |
 | Dell r750        | eno8303               | ens3f0                         | eno8303                    |
+| Dell r770        | eno17395np0           | eno17095np0                    | eno17395np0                |
 | Supermicro 6029p | eno1                  | enp95s0f0                      | eno1                       |
 
 Performance lab network table is available on the performance lab wiki.
@@ -113,6 +114,7 @@ edit the inventory file to set appropriate install paths for each machine.
 | Dell r7425                                           | /dev/disk/by-path/pci-0000:e2:00.0-scsi-0:2:0:0 |
 | Dell r7525                                           | /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0 |
 | Dell r760                                            | /dev/disk/by-path/pci-0000:3f:00.0-scsi-0:0:1:0 |
+| Dell r770                                            | /dev/disk/by-path/pci-0000:41:00.0-nvme-1       |
 | SuperMicro 6029p                                     | /dev/disk/by-path/pci-0000:00:11.5-ata-5        |
 | Dell xe8640                                          | /dev/disk/by-path/pci-0000:01:00.0-nvme-1       |
 | Dell xe9680                                          | /dev/disk/by-path/pci-0000:01:00.0-nvme-1       |
