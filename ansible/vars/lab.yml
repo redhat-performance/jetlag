@@ -42,6 +42,7 @@ hw_vendor:
   r740xd: Dell
   r750: Dell
   r760: Dell
+  r770: Dell
   r930: Dell
   fc640: Dell
   r6526: Dell
@@ -92,6 +93,7 @@ hw_install_disk:
     r7525: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
     r7725: /dev/disk/by-path/pci-0000:81:00.0-nvme-1
     r760: /dev/disk/by-path/pci-0000:3f:00.0-scsi-0:0:1:0
+    r770: /dev/disk/by-path/pci-0000:41:00.0-nvme-1
     6029p: /dev/disk/by-path/pci-0000:00:11.5-ata-5
     xe8640: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
     xe9680: /dev/disk/by-path/pci-0000:01:00.0-nvme-1
@@ -237,6 +239,13 @@ hw_nic_name:
     - ens3f1
     - ens6f0
     - ens6f1
+    r770:
+    - eno17395np0
+    - eno17095np0
+    - eno16695np0
+    - eno16705np1
+    - eno17415np2
+    - eno17425np3
     r7725:
     - eno17395np0
     - eno16595np0
@@ -313,6 +322,11 @@ hw_vm_counts:
     r760:
       default: 4
       nvme0n1: 30
+    # nvme0n1 is the boot disk (BOSS-N1) on r770, the spare disks start at
+    # nvme1n1
+    r770:
+      default: 6
+      nvme1n1: 24
 
 # # Based on VM Size (8vCPU, 28GiB Memory, 120G Disk)
 # hw_vm_counts:

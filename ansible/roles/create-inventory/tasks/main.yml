@@ -485,6 +485,16 @@
     loop_control:
       index_var: idx
 
+  # r770 boots off nvme0n1 (BOSS-N1), thus the first spare disk is nvme1n1
+  - name: Enable disk2_enable for r770 with nvme1n1
+    set_fact:
+      ocpinventory_hv_nodes: "{{ ocpinventory_hv_nodes[:idx] + [ocpinventory_hv_nodes[idx] | combine({'disk2_enable': true, 'disk2_device': 'nvme1n1'})] + ocpinventory_hv_nodes[idx + 1:] }}"
+    when:
+    - (item.pm_addr.split('.')[0]).split('-')[-1] in ['r770']
+    loop: "{{ ocpinventory_hv_nodes }}"
+    loop_control:
+      index_var: idx
+
   # Skip fc640 type since it has no extra disk
   # Skip 6018r type since it has only 2 80G disks
 
