@@ -3,11 +3,16 @@
 
 # ACM Build to sync
 rhacm_build: 2.14.0-DOWNSTREAM-2025-07-07-22-56-58
+#example for ART build
+#rhacm_build: multiclusterhub-operator-fbc-5.0.0-20261002044850.ocp5.0
 # for konflux build only
 mce_build: 2.9.0-DOWNSTREAM-2025-07-07-22-58-18
+#example for ART build
+#mce_build: backplane-operator-fbc-5.0.0-20261002064209.ocp5.0
 acm_channel: release-2.14
 mce_channel: stable-2.9
 is_konflux_build: false
+is_art_build: false
 
 # Multicluster Global Hub Sync
 mcgh_catalog: quay.io/redhat-user-workloads/acm-multicluster-glo-tenant/multicluster-global-hub-operator-catalog-v419-globalhub-1-6@sha256:8d92ac78c0712ed99044ad212bf6318c8fbb594d8e2209370894a45ac5946c25
