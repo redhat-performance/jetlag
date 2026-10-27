@@ -3,7 +3,7 @@
 
 hv_vm_manifests_directory: /root/hv-vm
 
-# 64 is a prefix for ipv6, 24 would work for ipv4
+# 64 is a prefix for ipv6, 23 for ipv4
 sno_cluster_network_host_prefix: 64
 
 registry_path: /opt/jetlag/registry
