@@ -20,78 +20,40 @@
     AUTHSTRING="{\"{{ registry_host }}:{{ registry_port }}\": {\"auth\": \"$b64auth\",\"email\": \"openshift@redhat.com\" }}"
     jq -c ".auths += $AUTHSTRING" < {{ sync_path }}/pull-secret.acm-d.txt > {{ sync_path }}/pull-secret-bastion.acm-d.txt
 
-- name: Download acm mapping file from stolostron/deploy repo
-  when: not is_konflux_build
-  block:
-  - name: Download the acm mapping file from github
-    get_url:
-      force: true
-      url: "https://raw.githubusercontent.com/stolostron/deploy/master/mirror/{{ rhacm_build }}.txt"
-      dest: "{{ sync_path }}/acm/mapping.txt"
+- name: Add or update a block of acm/mce in registries.conf for ART build on stage
+  blockinfile:
+    path: /etc/containers/registries.conf
+    block: |
+      [[registry]]
+      location="registry.redhat.io/multicluster-engine"
+      [[registry.mirror]]
+      location="registry.stage.redhat.io/multicluster-engine"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
 
-  - name: Replacements in acm downloaded mapping file
-    replace:
-      path: "{{ sync_path }}/acm/mapping.txt"
-      regexp: "{{ item.regexp }}"
-      replace: "{{ item.replace }}"
-      backup: true
-    when: item.enabled | default(true) | bool
-    loop:
-    - regexp: "__DESTINATION_ORG__"
-      replace: "{{ registry_host }}:{{ registry_port }}/acm-d"
+      [[registry]]
+      location="registry.redhat.io/rhacm2"
+      [[registry.mirror]]
+      location="registry.stage.redhat.io/rhacm2"
+      mirror-by-digest-only = false
+      pull-from-mirror = "all"
+    marker_begin: "<!-- Ansible sync ACM ART Begin -->"
+    marker_end: "<!-- Ansible sync ACM ART End -->"
 
-# If this errors, you won't be able to install ACM later, so retries are added incase of issues with the registry
-  - name: Mirror acm images onto the bastion registry
-    shell: |
-      oc image mirror -a {{ sync_path }}/pull-secret-bastion.acm-d.txt -f {{ sync_path }}/acm/mapping.txt --filter-by-os=.* --keep-manifest-list --continue-on-error=true --max-per-registry={{ max_per_registry }}
-    register: result
-    until: not result.failed
-    retries: 3
-    delay: 1
 
-- name: Mirror ACM/MCE from konflux build
-  when: is_konflux_build
-  block:
-  - name: Add or update a block of acm/mce in registries.conf
-    blockinfile:
-      path: /etc/containers/registries.conf
-      block: |
-        [[registry]]
-        location="registry.redhat.io/multicluster-engine"
-        [[registry.mirror]]
-        location="quay.io:443/acm-d"
-        mirror-by-digest-only = false
-        pull-from-mirror = "all"
 
-        [[registry]]
-        location="registry.redhat.io/rhacm2"
-        [[registry.mirror]]
-        location="quay.io:443/acm-d"
-        mirror-by-digest-only = false
-        pull-from-mirror = "all"
+- name: Create ImageSetConfiguration for ART build on stage
+  template:
+    src: imagesetconf_art.yml.j2
+    dest: "{{ sync_path }}/acm/imagesetconf.yml"
 
-        # Work around for ACM-24931
-        # [[registry]]
-        # location="registry.redhat.io/openshift4"
-        # [[registry.mirror]]
-        # location="quay.io:443/acm-d"
-        # mirror-by-digest-only = false
-        # pull-from-mirror = "all"
-      marker_begin: "<!-- Ansible Begin -->"
-      marker_end: "<!-- Ansible End -->"
-
-  - name: Create ImageSetConfiguration
-    template:
-      src: imagesetconf.yml.j2
-      dest: "{{ sync_path }}/acm/imagesetconf.yml"
-
-  - name: Mirror acm images from konflux build onto the bastion registry
-    shell: |
-      oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm-d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
-    register: result
-    until: not result.failed
-    retries: 3
-    delay: 1
+- name: Mirror acm images onto the bastion registry
+  shell: |
+    oc mirror --authfile {{ sync_path }}/pull-secret-bastion.acm-d.txt  -c {{ sync_path }}/acm/imagesetconf.yml --workspace file://{{ sync_path }}/acm/ docker://{{ registry_host }}:{{ registry_port }} --v2
+  register: result
+  until: not result.failed
+  retries: 3
+  delay: 1
 
 - name: Mirror ztp-site-generator image
   shell: |
