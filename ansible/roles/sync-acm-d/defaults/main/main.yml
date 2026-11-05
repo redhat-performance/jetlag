@@ -7,4 +7,3 @@ registry_port: 5000
 
 registry_path: /opt/jetlag/registry
 sync_path: "{{ registry_path }}/sync"
-
