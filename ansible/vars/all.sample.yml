@@ -118,6 +118,7 @@ bastion_data_disk: ""
 # when worker nodes use different network interfaces than the controlplane nodes:
 # worker_lab_interface: eno1np0
 # worker_network_interface: eth0
+# worker_network_interface_idx: 0
 
 # Bond configuration for private network (optional for scale/performance labs)
 # Enable bonding for bastion, controlplane, and worker nodes using 802.3ad mode
