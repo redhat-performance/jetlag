@@ -117,11 +117,11 @@ role=worker
 boot_iso=discovery.iso
 bmc_user={{ bmc_user }}
 bmc_password={{ bmc_password }}
-lab_interface={{ controlplane_lab_interface }}
+lab_interface={{ worker_lab_interface }}
 {% if enable_bond | default(false) %}
 bond0_interfaces={{ private_bond_interfaces }}
 {% else %}
-network_interface={{ controlplane_network_interface }}
+network_interface={{ worker_network_interface }}
 {% endif %}
 network_prefix={{ controlplane_network_prefix[0] }}
 gateway={{ controlplane_network_gateway }}
