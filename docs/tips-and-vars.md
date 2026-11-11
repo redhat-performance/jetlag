@@ -171,9 +171,9 @@ unless `payload_url` is set (e.g. via [Prow integration](#prow-integration), whi
 supplies its own release payload and skips `ocp_build`/`ocp_version` checks).
 
 `ocp_version` is used in conjunction with `ocp_build`. Examples of `ocp_version` with
-`ocp_build: ga` include explicit versions such as `4.22.1` or `4.21.7`, additionally
-`latest-4.22` or `latest-4.21` point to the latest z-stream of 4.22 and 4.21 ga builds.
-Examples of `ocp_version` with `ocp_build: dev` are `candidate-4.22`, `candidate-4.21`
+`ocp_build: ga` include explicit versions such as `5.0.1` or `4.22.1`, additionally
+`latest-5.0` or `latest-4.22` point to the latest z-stream of 5.0 and 4.22 ga builds.
+Examples of `ocp_version` with `ocp_build: dev` are `candidate-5.0`, `candidate-4.22`
 or `latest` which points to the early candidate build of the latest in development
 release. Check out https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
 for a list of available builds for `ga` releases and https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/
