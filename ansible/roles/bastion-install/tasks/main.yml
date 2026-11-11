@@ -227,7 +227,7 @@
   register: download_rhel8_result
   until: download_rhel8_result is not failed
   with_items:
-  - url: "{{ release_urls['ga'] }}/latest/opm-linux.tar.gz"
+  - url: "{{ opm_url }}/opm-linux.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - url: "{{ oc_mirror_url }}/oc-mirror-rhel8-linux-amd64.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
@@ -244,7 +244,7 @@
   register: download_rhel9_result
   until: download_rhel9_result is not failed
   with_items:
-  - url: "{{ release_urls['ga'] }}/latest/opm-linux-rhel9.tar.gz"
+  - url: "{{ opm_url }}/opm-linux-rhel9.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/opm-linux.tar.gz"
   - url: "{{ oc_mirror_url }}/oc-mirror-rhel9-linux-amd64.tar.gz"
     dest: "{{ bastion_cluster_config_dir }}/oc-mirror.tar.gz"
