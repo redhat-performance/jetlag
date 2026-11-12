@@ -189,6 +189,21 @@
   - lab in hw_nic_name
   - machine_type in hw_nic_name[lab]
 
+- name: Auto-configure worker lab interface (only when not explicitly set)
+  set_fact:
+    worker_lab_interface: "{{ controlplane_lab_interface }}"
+  when: worker_lab_interface is not defined
+
+- name: Auto-configure worker network interface (only when not explicitly set)
+  set_fact:
+    worker_network_interface: "{{ controlplane_network_interface }}"
+  when: worker_network_interface is not defined
+
+- name: Auto-configure worker network interface index (only when not explicitly set)
+  set_fact:
+    worker_network_interface_idx: "{{ controlplane_network_interface_idx }}"
+  when: worker_network_interface_idx is not defined
+
 - name: Auto-configure bastion bond interfaces (only when bonding is enabled)
   set_fact:
     bastion_bond0_interface1: "{{ hw_nic_name[lab][machine_type][bond0_port1|int] }}"
