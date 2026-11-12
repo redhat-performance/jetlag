@@ -43,11 +43,11 @@ Change `cluster_type` to `cluster_type: mno`
 
 Set `worker_node_count` to limit the number of worker nodes from your lab allocation. Set it to `0` if you want a 3 node compact cluster.
 
-Set `ocp_build` and `ocp_version` to select your OpenShift version. For example, to deploy the latest GA 4.22 release:
+Set `ocp_build` and `ocp_version` to select your OpenShift version. For example, to deploy the latest GA 5.0 release:
 
 ```yaml
 ocp_build: "ga"
-ocp_version: "latest-4.22"
+ocp_version: "latest-5.0"
 ```
 
 See [Updating OCP version](tips-and-vars.md#updating-ocp-version) for details on available builds and version formats.
@@ -150,10 +150,10 @@ worker_node_count: 2
 ocp_build: "ga"
 
 # ocp_version is used in conjunction with ocp_build
-# For "ga" builds, examples are "latest-4.22", "latest-4.21", "4.22.1" or "4.21.7"
-# For "dev" builds, examples are "candidate-4.22", "candidate-4.21" or "latest"
+# For "ga" builds, examples are "latest-5.0", "latest-4.22", "5.0.1" or "4.22.1"
+# For "dev" builds, examples are "candidate-5.0", "candidate-4.22" or "latest"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
-ocp_version: "latest-4.22"
+ocp_version: "latest-5.0"
 
 # Set to true ONLY if you have a public routable vlan in your scalelab or performancelab cloud.
 # Autoconfigures cluster_name, base_dns_name, controlplane_network_interface_idx, controlplane_network,

@@ -15,10 +15,10 @@ worker_node_count:
 ocp_build: "ga"
 
 # ocp_version is used in conjunction with ocp_build
-# For "ga" builds, examples are "latest-4.17", "latest-4.16", "4.17.17" or "4.16.35"
-# For "dev" builds, examples are "candidate-4.17", "candidate-4.16" or "latest"
+# For "ga" builds, examples are "latest-5.0", "latest-4.22", "5.0.1" or "4.22.1"
+# For "dev" builds, examples are "candidate-5.0", "candidate-4.22" or "latest"
 # For "ci" builds, an example is "4.19.0-0.nightly-2025-02-25-035256"
-ocp_version: "latest-4.21"
+ocp_version: "latest-5.0"
 
 # Enables Operators CNV and LSO install at deployment timeframe (GA releases only)
 enable_cnv_install: false
