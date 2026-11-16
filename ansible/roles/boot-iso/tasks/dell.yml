@@ -160,6 +160,10 @@
     validate_certs: no
     status_code: 202
     return_content: yes
+  register: result
+  until: not result.failed
+  retries: 10
+  delay: 30
 
 - name: "DELL - Power ON for {{ item }}"
   community.general.redfish_command:
