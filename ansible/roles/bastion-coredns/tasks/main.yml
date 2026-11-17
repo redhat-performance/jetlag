@@ -37,3 +37,7 @@
     state: restarted
     enabled: true
     name: coredns
+
+# TEMPORARY: DNS validation tasks to confirm NODATA fix (#909) - remove after validation
+- name: Include DNS validation tasks
+  ansible.builtin.include_tasks: validate-dns.yml
