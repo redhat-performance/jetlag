@@ -73,10 +73,22 @@ template IN A {{ cluster_name }}.{{ base_dns_name }} {
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
     fallthrough
 }
+{# NODATA: IPv4 ingress only, suppress NXDOMAIN for AAAA queries #}
+template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
 {%     else %}
 template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
     match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ controlplane_network_ingress }}"
+    fallthrough
+}
+{# NODATA: IPv6 ingress only, suppress NXDOMAIN for A queries #}
+template IN A {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    rcode NOERROR
     fallthrough
 }
 {%     endif %}
@@ -96,6 +108,22 @@ template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
 }
 {%       endif %}
 {%     endfor %}
+{%     if not controlplane_network | ansible.utils.ipv6 %}
+{# NODATA: no IPv6 networks, suppress NXDOMAIN for AAAA queries #}
+template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
+{%     endif %}
+{%     if not controlplane_network | ansible.utils.ipv4 %}
+{# NODATA: no IPv4 networks, suppress NXDOMAIN for A queries #}
+template IN A {{ cluster_name }}.{{ base_dns_name }} {
+    match .*.apps.{{ cluster_name }}.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
+{%     endif %}
 {%   endif %}
 {% else %}
 {%   for sno in groups['sno'] %}
@@ -104,6 +132,12 @@ template IN AAAA {{ cluster_name }}.{{ base_dns_name }} {
 template IN A {{ sno }}.{{ base_dns_name }} {
     match .*.apps.{{ sno }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].private_address }}"
+    fallthrough
+}
+{# NODATA: cloud labs use IPv4 private_address only, suppress NXDOMAIN for AAAA queries #}
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    rcode NOERROR
     fallthrough
 }
 {%     else %}
@@ -120,6 +154,21 @@ template IN AAAA {{ sno }}.{{ base_dns_name }} {
 template IN AAAA {{ sno }}.{{ base_dns_name }} {
     match .*.apps.{{ sno }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[sno].ipv6 }}"
+    fallthrough
+}
+{%       elif hostvars[sno].ip | ansible.utils.ipv4 %}
+{# NODATA: IPv4-only SNO, suppress NXDOMAIN for AAAA queries #}
+template IN AAAA {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
+{%       endif %}
+{%       if not (hostvars[sno].ip | ansible.utils.ipv4) %}
+{# NODATA: IPv6 primary SNO, suppress NXDOMAIN for A queries #}
+template IN A {{ sno }}.{{ base_dns_name }} {
+    match .*.apps.{{ sno }}.{{ base_dns_name }}
+    rcode NOERROR
     fallthrough
 }
 {%       endif %}
@@ -144,6 +193,21 @@ template IN AAAA {{ vm }}.{{ base_dns_name }} {
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[vm].ipv6 }}"
     fallthrough
 }
+{%   elif hostvars[vm].ip | ansible.utils.ipv4 %}
+{# NODATA: IPv4-only VM, suppress NXDOMAIN for AAAA queries #}
+template IN AAAA {{ vm }}.{{ base_dns_name }} {
+    match .*.apps.{{ vm }}.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
+{%   endif %}
+{%   if not (hostvars[vm].ip | ansible.utils.ipv4) %}
+{# NODATA: IPv6 primary VM, suppress NXDOMAIN for A queries #}
+template IN A {{ vm }}.{{ base_dns_name }} {
+    match .*.apps.{{ vm }}.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
 {%   endif %}
 {% endfor %}
 {% if groups['hv_vm'] | length > 0 %}
@@ -154,12 +218,24 @@ template IN AAAA jumbocluster00.{{ base_dns_name }} {
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost(-3) }}"
     fallthrough
 }
+{# NODATA: jumbocluster uses IPv6 only, suppress NXDOMAIN for A queries #}
+template IN A jumbocluster00.{{ base_dns_name }} {
+    match .*.apps.jumbocluster00.{{ base_dns_name }}
+    rcode NOERROR
+    fallthrough
+}
 
 # *.apps for standard clusters
 {%   for cluster in range(1, standard_cluster_dns_count + 1, 1)  %}
 template IN AAAA standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( (cluster * -2) - 1 ) }}"
+    fallthrough
+}
+{# NODATA: standard cluster uses IPv6 only, suppress NXDOMAIN for A queries #}
+template IN A standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
+    match .*.apps.standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
+    rcode NOERROR
     fallthrough
 }
 {%   endfor %}
@@ -169,6 +245,12 @@ template IN AAAA standard-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
 template IN AAAA compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
     match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
     answer "{%raw%}{{ .Name }} 60 in {{ .Type }}{%endraw%} {{ hostvars[groups['hv_vm'][0]]['machine_network'] | ansible.utils.nthhost( ((cluster + standard_cluster_dns_count) * -2) - 1 ) }}"
+    fallthrough
+}
+{# NODATA: compact cluster uses IPv6 only, suppress NXDOMAIN for A queries #}
+template IN A compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }} {
+    match .*.apps.compact-{{ '%05d' | format(cluster) }}.{{ base_dns_name }}
+    rcode NOERROR
     fallthrough
 }
 {%   endfor %}
