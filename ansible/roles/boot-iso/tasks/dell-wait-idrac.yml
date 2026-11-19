@@ -1,21 +1,59 @@
 ---
-# Dell tasks for waiting on iDRAC availability after racreset
-# Poll until Redfish API is responding.
+# Dell tasks for waiting on iDRAC availability after racreset.
+# If Redfish doesn't come up within 5 minutes, re-run racadm racreset once.
 
 - name: "Dell - Wait for iDRAC Redfish ready after racreset for {{ item }}"
-  ansible.builtin.uri:
-    url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1"
-    force_basic_auth: yes
-    user: "{{ hostvars[item]['bmc_user'] }}"
-    password: "{{ hostvars[item]['bmc_password'] }}"
-    method: GET
-    headers:
-      content-type: application/json
-      Accept: application/json
-    validate_certs: false
-    status_code: [200, 201, 301, 302]
-  register: redfish_result
-  until: redfish_result.status in [200, 201, 301, 302]
-  retries: 40
-  delay: 15
-  failed_when: false
+  block:
+  - name: "Dell - Poll Redfish API for {{ item }}"
+    ansible.builtin.uri:
+      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1"
+      force_basic_auth: yes
+      user: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      method: GET
+      headers:
+        content-type: application/json
+        Accept: application/json
+      validate_certs: false
+      status_code: [200, 201, 301, 302]
+    register: redfish_result
+    until: redfish_result.status in [200, 201, 301, 302]
+    retries: 20
+    delay: 15
+
+  rescue:
+  - name: "Dell - Retry racreset for {{ item }} after Redfish timeout (racadm over SSH)"
+    ansible.builtin.raw: >-
+      racadm racreset
+    delegate_to: "{{ hostvars[item]['bmc_address'] }}"
+    vars:
+      ansible_user: "{{ hostvars[item]['bmc_user'] }}"
+      ansible_password: "{{ hostvars[item]['bmc_password'] }}"
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+
+  - name: "Dell - Wait for iDRAC to go down after retry racreset for {{ item }}"
+    ansible.builtin.wait_for:
+      host: "{{ hostvars[item]['bmc_address'] }}"
+      port: 443
+      state: stopped
+      delay: 2
+      timeout: 120
+    failed_when: false
+
+  - name: "Dell - Poll Redfish API after retry racreset for {{ item }}"
+    ansible.builtin.uri:
+      url: "https://{{ hostvars[item]['bmc_address'] }}/redfish/v1"
+      force_basic_auth: yes
+      user: "{{ hostvars[item]['bmc_user'] }}"
+      password: "{{ hostvars[item]['bmc_password'] }}"
+      method: GET
+      headers:
+        content-type: application/json
+        Accept: application/json
+      validate_certs: false
+      status_code: [200, 201, 301, 302]
+    register: redfish_result
+    until: redfish_result.status in [200, 201, 301, 302]
+    retries: 20
+    delay: 15
+    failed_when: false

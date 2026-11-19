@@ -1,14 +1,10 @@
 ---
 # Dell tasks for resetting iDRAC (fire resets for all hosts, then wait separately)
 
-- name: "Dell - Reset iDRAC for {{ item }} (badfish)"
-  ansible.builtin.include_role:
-    name: badfish
-    tasks_from: call
-  vars:
-    badfish_host: "{{ hostvars[item]['bmc_address'] }}"
-    badfish_user: "{{ hostvars[item]['bmc_user'] }}"
-    badfish_password: "{{ hostvars[item]['bmc_password'] }}"
-    badfish_args:
-    - "--racreset"
-    ignore_errors: true
+- name: "Dell - Reset iDRAC for {{ item }} (racadm over SSH)"
+  ansible.builtin.shell: >-
+    sshpass -p "{{ hostvars[item]['bmc_password'] }}"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+    {{ hostvars[item]['bmc_user'] }}@{{ hostvars[item]['bmc_address'] }}
+    racadm racreset
+  ignore_errors: true
