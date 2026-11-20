@@ -24,6 +24,7 @@
     - python3-pip
     - podman
     - rsync
+    - sshpass
     - skopeo
     - tcpdump
     - tmux
