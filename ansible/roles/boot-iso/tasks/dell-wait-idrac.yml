@@ -28,7 +28,6 @@
       ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
       {{ hostvars[item]['bmc_user'] }}@{{ hostvars[item]['bmc_address'] }}
       racadm racreset
-    ignore_errors: true
 
   - name: "Dell - Wait for iDRAC to go down after retry racreset for {{ item }}"
     ansible.builtin.wait_for:

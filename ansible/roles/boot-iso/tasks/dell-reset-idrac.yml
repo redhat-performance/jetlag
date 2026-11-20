@@ -2,12 +2,10 @@
 # Dell tasks for resetting iDRAC (fire resets for all hosts, then wait separately)
 
 # We use sshpass to run racadm racreset from the bastion host rather than
-# Ansible's delegate_to because delegate_to keeps SSH ControlMaster sockets
-# alive to the BMC after the command completes. This can cause the iDRAC to
-# defer a full management-controller reset, leaving port 443 up and making the
-# subsequent "wait for unreachable" check time out on some hosts.
-# A one-shot sshpass/ssh command tears down cleanly, allowing the iDRAC to
-# perform a complete reset cycle.
+# Ansible's delegate_to because with delegate_to we noticed the reset command
+# wasn't reliably executed, leaving the subsequent "wait for unreachable" check
+# time out on some hosts. A one-shot sshpass/ssh command tears down cleanly,
+# allowing the iDRAC to perform a complete reset cycle.
 
 - name: "Dell - Reset iDRAC for {{ item }} (racadm over SSH)"
   ansible.builtin.shell: >-
@@ -15,4 +13,3 @@
     ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     {{ hostvars[item]['bmc_user'] }}@{{ hostvars[item]['bmc_address'] }}
     racadm racreset
-  ignore_errors: true

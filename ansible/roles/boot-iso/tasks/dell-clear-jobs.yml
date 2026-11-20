@@ -13,11 +13,9 @@
   ignore_errors: true
 
 - name: "Dell - Clear iDRAC job queue for {{ item }} (racadm over SSH)"
-  ansible.builtin.raw: >-
+  ansible.builtin.shell: >-
+    sshpass -p "{{ hostvars[item]['bmc_password'] }}"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+    {{ hostvars[item]['bmc_user'] }}@{{ hostvars[item]['bmc_address'] }}
     racadm jobqueue delete -i JID_CLEARALL_FORCE
-  delegate_to: "{{ hostvars[item]['bmc_address'] }}"
-  vars:
-    ansible_user: "{{ hostvars[item]['bmc_user'] }}"
-    ansible_password: "{{ hostvars[item]['bmc_password'] }}"
-    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
   ignore_errors: true
