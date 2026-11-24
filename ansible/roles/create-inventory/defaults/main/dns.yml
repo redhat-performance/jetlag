@@ -3,9 +3,6 @@
 cluster_name: mno
 base_dns_name: example.com
 
-# Coredns is default DNS (False uses dnsmasq, dnsmasq to be removed in future)
-setup_coredns: true
-
 # Appends each entry to /etc/hosts of bastion machine during cluster install to
 # allow sshuttle easy resolution when proxying into cluster
 etc_hosts_ingress_routes:

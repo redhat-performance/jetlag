@@ -1,12 +1,6 @@
 ---
 # bastion-coredns tasks
 
-- name: Stop and disable dnsmasq
-  systemd:
-    state: stopped
-    enabled: false
-    name: dnsmasq
-
 - name: Create coredns directory
   file:
     path: /etc/coredns

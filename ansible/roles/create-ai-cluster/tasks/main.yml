@@ -181,14 +181,6 @@
       ai_cluster_id: "{{ create_cluster_return.json.id }}"
   when: cluster_type in ["mno", "vmno"]
 
-- name: Restart dnsmasq after /etc/hosts update
-  systemd:
-    state: restarted
-    name: dnsmasq
-  when:
-  - controlplane_bastion_as_dns
-  - not setup_coredns
-
 - name: Patch cluster network settings
   uri:
     url: "http://{{ assisted_installer_host }}:{{ assisted_installer_port }}/api/assisted-install/v2/clusters/{{ ai_cluster_id }}"
