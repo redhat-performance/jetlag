@@ -696,14 +696,12 @@ When set to ignore the error, Jetlag can proceed, but you will need to manually 
 
 ## Fix boot order of machines
 
-If a machine needs to be rebuilt in the lab and refuses to correctly rebuild, it is likely a boot order issue. You can correct boot order issues using [badfish](https://github.com/redhat-performance/badfish), an external tool that can be installed separately (it is no longer part of jetlag's automated workflow).
+If a machine needs to be rebuilt in the lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
 
 > [!NOTE]
 > The process for the Performance Lab is similar, however the GitLab `config/idrac_interfaces.yml`
 > is specialized for the Scale Lab configurations, and needs to be modified for Performance Lab. The
 > necessary modifications are not covered here.
-
-After installing badfish from https://github.com/redhat-performance/badfish, you can fix boot order:
 
 ```console
 podman run -it --rm quay.io/quads/badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman
