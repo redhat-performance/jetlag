@@ -12,6 +12,11 @@
     path: /etc/coredns
     state: directory
 
+- name: Create coredns conf.d directory
+  file:
+    path: /etc/coredns/conf.d
+    state: directory
+
 - name: Copy the Corefile.hosts file from bastion to hypervisors
   synchronize:
     src: /etc/coredns/Corefile.hosts
