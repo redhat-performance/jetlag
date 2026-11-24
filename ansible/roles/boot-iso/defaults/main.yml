@@ -10,6 +10,5 @@ http_store_port: 8081
 # and should not be included in the scale out from the inventory.
 offset: 0
 
-# Reset iDRAC service using badfish container (pulls and uses badfish container
-# to clear job queue and reset iDRAC service)
+# Reset iDRAC service (clear job queue and reset iDRAC via racadm over SSH)
 reset_idrac: false

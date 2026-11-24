@@ -546,32 +546,16 @@ Substitute the user/password/hostname to perform the reset on a desired host. No
 In some cases the Dell iDRAC might need the job queue cleared. One observed side
 effect of a "jammed" job queue is a Dell machine not becoming discovered because
 it never booted virtual media despite it showing as mounted. The job queue can be
-listed via [badfish](https://github.com/redhat-performance/badfish):
+listed via `racadm` over SSH:
 
 ```console
-# podman run -it --rm quay.io/quads/badfish -H $mgmt-hostname -u $user -p $password --ls-jobs
-- INFO     - Found active jobs:
-- INFO     -     JobID: JID_579812811580
-- INFO     -     JobID: JID_556613531967
-- INFO     -     JobID: JID_580054266666
-- INFO     -     JobID: JID_579920438478
-- INFO     -     JobID: JID_581196577037
-- INFO     -     JobID: JID_579130066868
-- INFO     -     JobID: JID_581229467609
-- INFO     -     JobID: JID_581189701262
-- INFO     -     JobID: JID_579949895609
-- INFO     -     JobID: JID_579581755936
-- INFO     -     JobID: JID_578914794229
-...
+# sshpass -p $password ssh -o StrictHostKeyChecking=no $user@$mgmt-hostname racadm jobqueue view
 ```
 
-If there are many jobs in the queue, you can clear them via badfish as well:
+If there are many jobs in the queue, you can clear them via `racadm` as well:
 
 ```console
-# podman run -it --rm quay.io/quads/badfish -H $mgmt-hostname -u $user -p $password --clear-jobs
-- WARNING  - iDRAC version installed does not support DellJobService
-- WARNING  - Clearing job queue for job IDs: ['JID_579812811580', 'JID_556613531967', 'JID_580054266666', 'JID_579920438478', 'JID_581196577037', 'JID_579130066868', 'JID_581229467609', 'JID_581189701262', 'JID_579949895609', 'JID_579581755936', 'JID_578914794229', 'JID_581210549255', 'JID_580621612581', 'JID_579612459316', 'JID_581161414362', 'JID_579123290570', 'JID_578786615286', 'JID_578850089483', 'JID_581199316774', 'JID_581214564587', 'JID_580500812306', 'JID_579792818418', 'JID_578828622381', 'JID_579029522360', 'JID_578880423533', 'JID_578859270460', 'JID_579802543200', 'JID_581274028498', 'JID_581287810640', 'JID_581305262145', 'JID_581542907002'].
-- INFO     - Job queue for iDRAC $mgmt-hostname successfully cleared.
+# sshpass -p $password ssh -o StrictHostKeyChecking=no $user@$mgmt-hostname racadm jobqueue delete -i JID_CLEARALL_FORCE
 ```
 
 Clearing jobs will take some time.
@@ -712,12 +696,14 @@ When set to ignore the error, Jetlag can proceed, but you will need to manually 
 
 ## Fix boot order of machines
 
-If a machine needs to be rebuilt in the lab and refuses to correctly rebuild, it is likely a boot order issue. Using badfish, you can correct boot order issues by performing the following:
+If a machine needs to be rebuilt in the lab and refuses to correctly rebuild, it is likely a boot order issue. You can correct boot order issues using [badfish](https://github.com/redhat-performance/badfish), an external tool that can be installed separately (it is no longer part of jetlag's automated workflow).
 
 > [!NOTE]
 > The process for the Performance Lab is similar, however the GitLab `config/idrac_interfaces.yml`
 > is specialized for the Scale Lab configurations, and needs to be modified for Performance Lab. The
 > necessary modifications are not covered here.
+
+After installing badfish from https://github.com/redhat-performance/badfish, you can fix boot order:
 
 ```console
 podman run -it --rm quay.io/quads/badfish -H mgmt-hostname -u user -p password -i config/idrac_interfaces.yml --boot-to-type foreman

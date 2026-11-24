@@ -209,8 +209,7 @@ use_bastion_registry: false
 # When enabled, cluster nodes use the proxy to reach quay.io, registry.redhat.io, etc.
 setup_bastion_proxy: false
 
-# Reset iDRAC service using badfish container (pulls and uses badfish container
-# to clear job queue and reset iDRAC service)
+# Reset iDRAC service (clear job queue and reset iDRAC via racadm over SSH)
 # reset_idrac: false
 
 # Setup Hypervisor metrics collection for VMNO deployments

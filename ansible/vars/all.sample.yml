@@ -88,8 +88,7 @@ setup_bastion_proxy: false
 # Requires updating your laptop's /etc/hosts file (see docs/bastion-haproxy.md)
 setup_bastion_haproxy: false
 
-# Reset iDRAC service using badfish container (pulls and uses badfish container
-# to clear job queue and reset iDRAC service)
+# Reset iDRAC service (clear job queue and reset iDRAC via racadm over SSH)
 # reset_idrac: false
 
 # Setup Hypervisor metrics collection for VMNO deployments
