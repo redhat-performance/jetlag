@@ -6,6 +6,11 @@
     path: /etc/coredns
     state: directory
 
+- name: Create coredns conf.d directory
+  file:
+    path: /etc/coredns/conf.d
+    state: directory
+
 - name: Configure Coredns / NetworkManager
   template:
     src: "{{ item.src }}"

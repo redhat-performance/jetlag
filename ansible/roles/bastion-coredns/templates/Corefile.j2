@@ -17,4 +17,6 @@
     reload
 
     import Corefile.hosts
+    # Drop-in files must use .conf extension and must not contain a hosts block
+    import /etc/coredns/conf.d/*.conf
 }
