@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
-python3 -m venv .ansible
+# Install and update uv
+if [ ! $(which uv) ]; then curl -LsSf https://astral.sh/uv/install.sh | sh; fi
+uv self update
+
+# Create and populate virtual environment
+uv venv --clear --force .ansible --python 3.12
+uv pip install --python .ansible/bin/python \
+'ansible<12.0.0' \
+'argcomplete<3.7.0' \
+netaddr \
+jmespath \
+yq
+
+# Activate virtual environment
 source .ansible/bin/activate
-pip3 install -q --upgrade pip
-pip3 install -q 'ansible<12.0.0' 'argcomplete<3.7.0' netaddr
-pip3 install -q jmespath --force
-pip3 install -q yq
+
+# Configure Ansible Collections
 ansible-galaxy collection install ansible.utils --force
 ansible-galaxy collection install containers.podman --upgrade
