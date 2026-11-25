@@ -12,15 +12,10 @@
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
   ignore_errors: true
 
-- name: "Dell - Clear iDRAC job queue for {{ item }} (badfish)"
-  ansible.builtin.include_role:
-    name: badfish
-    tasks_from: call
-  vars:
-    badfish_host: "{{ hostvars[item]['bmc_address'] }}"
-    badfish_user: "{{ hostvars[item]['bmc_user'] }}"
-    badfish_password: "{{ hostvars[item]['bmc_password'] }}"
-    badfish_args:
-    - "--clear-jobs"
-    - "--force"
-    ignore_errors: true
+- name: "Dell - Clear iDRAC job queue for {{ item }} (racadm over SSH)"
+  ansible.builtin.shell: >-
+    sshpass -p "{{ hostvars[item]['bmc_password'] }}"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+    {{ hostvars[item]['bmc_user'] }}@{{ hostvars[item]['bmc_address'] }}
+    racadm jobqueue delete -i JID_CLEARALL_FORCE
+  ignore_errors: true
