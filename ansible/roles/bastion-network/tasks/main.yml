@@ -85,6 +85,40 @@
     enabled: true
     name: frr
 
+# Prevent NetworkManager from auto-creating DHCP profiles on unused NICs.
+# Without this, NM creates in-memory "Wired connection N" profiles that time
+# out waiting for DHCP (60 s), delaying NetworkManager-wait-online and every
+# service that depends on it (jetlag-masquerade, jetlag-pods).
+- name: Install NetworkManager drop-in to disable auto-default connections
+  ansible.builtin.copy:
+    dest: /etc/NetworkManager/conf.d/99-no-auto-default.conf
+    content: |
+      [main]
+      no-auto-default=*
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload NetworkManager configuration
+  ansible.builtin.command: nmcli general reload conf
+
+- name: Get device carrying the default route
+  ansible.builtin.shell: ip route show default | head -1 | sed -n 's/.*dev \([^ ]*\).*/\1/p'
+  register: default_route_device
+
+- name: Remove auto-created Wired connection profiles (excluding default route)
+  ansible.builtin.shell: |
+    nmcli -t -f UUID,NAME,DEVICE con show | \
+      grep -E '^[^:]+:Wired connection' | \
+      grep -v ':{{ default_route_device.stdout }}$' | \
+      cut -d: -f1 | while read -r uuid; do
+        nmcli con delete uuid "$uuid"
+      done
+  changed_when: wired_cleanup.stdout | length > 0
+  register: wired_cleanup
+  failed_when: false
+  when: default_route_device.stdout | length > 0
+
 # Bond configuration for scale/performance labs
 - name: Setup bastion bond configuration
   when:
