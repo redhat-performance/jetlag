@@ -43,7 +43,7 @@ _**Table of Contents**_
 
 If Jetlag is run after attempting an installation with Jetski, there are several configuration items that are known to conflict and prevent successful install:
 
-* Polluted dnsmasq configuration and dns services (depending on if jetlag ran dnsmasq or coredns)
+* Polluted dns services and coredns configuration
 * The Jetski configured virtual bridge network could cause additional networking headaches preventing successful install
 
 That may not be all of the conflicts, thus the preferred method to remediate this situation is to cleanly rebuild the RHEL OS running on the bastion machine for Jetlag.
@@ -301,7 +301,7 @@ Several services are run on the bastion in order to automate the tasks that Jetl
 | Container Registry (When `setup_bastion_registry=true`) | 5000                      |
 | HAProxy (When disconnected)                             | 6443, 443, 80             |
 | Gogs - Self-hosted Git (When `setup_bastion_gogs=true`) | 10881 (http), 10022 (git) |
-| Dnsmasq / Coredns                                       | 53                        |
+| CoreDNS                                                  | 53                        |
 | Grafana instance for hypervisor monitoring              | 3000                      |
 | Prometheus server for hypervisor monitoring             | 9090                      |
 | RustFS S3 API (When `setup_bastion_object_store=true`)         | 9000                      |

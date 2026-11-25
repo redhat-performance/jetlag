@@ -57,7 +57,6 @@ Pay close attention to these vars:
 | Variable | Comment |
 | - | - |
 | `lab` | Likely `scalelab` as that is the only lab where this has been tested.
-| `setup_hv_vm_dhcp` | Set to true if `dnsmasq` should be configured on each hypervisor to hand out static addresses to each VM.
 | `base_dns_name` | If you set this for your hub cluster, then set it identically here
 | `controlplane_network` | If you adjusted this for the hub cluster, make sure it matches for the hypervisors
 
@@ -137,7 +136,6 @@ The following vars apply to the manifests which are generated for deploying OCP 
 | Variable name | Meaning |
 | - | - |
 | `ssh_public_key_file` | Sets the permitted ssh key to ssh into the node |
-| `setup_hv_vm_dhcp` | Leaves the nmstateconfig portion out of the manifests |
 | `hv_vm_manifest_type` | Determines which kind of manifest(s) the playbook will generate, choose from `sno`, `compact`, `standard`, and `jumbo` |
 | `hv_vm_manifest_acm_cr` | Set to true if you want ACM CRs generated with the manifests |
 | `compact_cluster_count` | If `hv_vm_manifest_type: compact`, then this determines the number of compact cluster siteconfigs to generate. Each compact cluster consists of 3 vms, be careful not to exceed the entire count of vms. |

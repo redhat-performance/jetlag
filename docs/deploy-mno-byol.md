@@ -426,7 +426,7 @@ worker-1          Ready    worker                 39m   v1.27.6+f67aeb3
 In BYOL, the cluster installation process is divided into two phases: (1) Setup the bastion machine and (2) the OCP installation.
 
 ### (1) Setup bastion
-- Make sure that the base operating system (in the case of this guide it was RHEL 9.2) in the bastion machine has repositories added and an active subscription, since Jetlag requires some packages, such as: `dnsmasq`, `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
+- Make sure that the base operating system (in the case of this guide it was RHEL 9.2) in the bastion machine has repositories added and an active subscription, since Jetlag requires some packages, such as: `frr`, `golang-bin`, `httpd` and `httpd-tools`, `ipmitool`, `python3-pip`, `podman`, and `skopeo`.
 
 - Sometimes the setup bastion process may fail, because it is not able to have connectivity between the assisted-service API and the target cluster machines. Check for `firewalld` or `iptables` with rules in place that prevent traffic between these machines. A quick test that fixes the problem is to silence and/or disable `firewalld` and clean `iptables` rules.
 

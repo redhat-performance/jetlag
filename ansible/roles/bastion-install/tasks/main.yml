@@ -9,7 +9,6 @@
 - name: Install packages
   yum:
     name:
-    - dnsmasq
     - frr
     - git
     - golang-bin

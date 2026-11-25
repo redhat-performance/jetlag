@@ -20,10 +20,7 @@
     when: install_tc
   - hv-install
   - hv-network
-  - role: hv-dnsmasq
-    when: not setup_coredns
-  - role: hv-coredns
-    when: setup_coredns
+  - hv-coredns
   - hv-libvirt
   - role: hv-setup-disk2
     when: hostvars[inventory_hostname].disk2_enable | default(false) | bool

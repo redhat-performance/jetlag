@@ -136,15 +136,9 @@ spec:
       cluster-name: jumbocluster00
   pullSecretRef:
     name: assisted-deployment-pull-secret
-{% if setup_hv_vm_dhcp %}
-  # nmStateConfigLabelSelector:
-  #   matchLabels:
-  #     cluster: jumbocluster00
-{% else %}
   nmStateConfigLabelSelector:
     matchLabels:
       cluster: jumbocluster00
-{% endif %}
 {% for vm in groups['hv_vm'] %}
 ---
 apiVersion: v1
@@ -180,42 +174,6 @@ spec:
   bootMACAddress: {{ hostvars[vm]['mac_address'] }}
   automatedCleaningMode: disabled
   online: true
-{% if setup_hv_vm_dhcp %}
-# ---
-# apiVersion: agent-install.openshift.io/v1beta1
-# kind: NMStateConfig
-# metadata:
-#   name: {{ vm }}
-#   namespace: jumbocluster00
-#   labels:
-#     cluster: jumbocluster00
-# spec:
-#   config:
-#     interfaces:
-#     - name: {{ vm_nic_interface }}
-#       type: ethernet
-#       state: up
-#       {{ "ipv6" if hostvars[vm]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
-#         enabled: true
-#         address:
-#         - ip: {{ hostvars[vm]['ip'] }}
-#           prefix-length: {{ hostvars[vm]['network_prefix'] }}
-#         dhcp: false
-#     dns-resolver:
-#       config:
-#         server:
-#         - {{ hostvars[vm]['hv_ip'] }}
-#     routes:
-#       config:
-#       - destination: {{ "::/0" if hostvars[vm]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
-#         metric: 1
-#         next-hop-address: {{ hostvars[vm]['gateway'] }}
-#         next-hop-interface: {{ vm_nic_interface }}
-#         table-id: 254
-#   interfaces:
-#   - name: {{ vm_nic_interface }}
-#     macAddress: {{ hostvars[vm]['mac_address'] }}
-{% else %}
 ---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
@@ -250,5 +208,4 @@ spec:
   interfaces:
   - name: {{ vm_nic_interface }}
     macAddress: {{ hostvars[vm]['mac_address'] }}
-{% endif %}
 {% endfor %}

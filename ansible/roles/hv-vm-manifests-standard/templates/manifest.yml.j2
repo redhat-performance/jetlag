@@ -140,15 +140,9 @@ spec:
       cluster-name: standard-{{ '%05d' | format(item) }}
   pullSecretRef:
     name: assisted-deployment-pull-secret
-{% if setup_hv_vm_dhcp %}
-  # nmStateConfigLabelSelector:
-  #   matchLabels:
-  #     cluster: standard-{{ '%05d' | format(item) }}
-{% else %}
   nmStateConfigLabelSelector:
     matchLabels:
       cluster: standard-{{ '%05d' | format(item) }}
-{% endif %}
 # "{{ ((item - 1) * standard_cluster_node_count) }} until {{ (item * standard_cluster_node_count) - 1 }}"
 {% for vm in range(((item - 1) * standard_cluster_node_count), (item * standard_cluster_node_count), 1) %}
 ---
@@ -192,44 +186,6 @@ spec:
   bootMACAddress: {{ hostvars[groups['hv_vm'][vm]]['mac_address'] }}
   automatedCleaningMode: disabled
   online: true
-{% if setup_hv_vm_dhcp %}
-# ---
-# apiVersion: agent-install.openshift.io/v1beta1
-# kind: NMStateConfig
-# metadata:
-#   name: {{ groups['hv_vm'][vm] }}
-#   namespace: standard-{{ '%05d' | format(item) }}
-#   labels:
-#     cluster: standard-{{ '%05d' | format(item) }}
-# spec:
-#   config:
-#     interfaces:
-#     - name: {{ vm_nic_interface }}
-#       type: ethernet
-#       state: up
-#       {{ "ipv6" if hostvars[groups['hv_vm'][vm]]['ip'] | ansible.utils.ipv6 else "ipv4" }}:
-#         enabled: true
-#         autoconf: false
-#         dhcp: false
-#         address:
-#         - ip: {{ hostvars[groups['hv_vm'][vm]]['ip'] }}
-#           prefix-length: {{ hostvars[groups['hv_vm'][vm]]['network_prefix'] }}
-#         dhcp: false
-#     dns-resolver:
-#       config:
-#         server:
-#         - {{ hostvars[groups['hv_vm'][vm]]['hv_ip'] }}
-#     routes:
-#       config:
-#       - destination: {{ "::/0" if hostvars[groups['hv_vm'][vm]]['ip'] | ansible.utils.ipv6 else "0.0.0.0/0" }}
-#         metric: 1
-#         next-hop-address: {{ hostvars[groups['hv_vm'][vm]]['gateway'] }}
-#         next-hop-interface: {{ vm_nic_interface }}
-#         table-id: 254
-#   interfaces:
-#   - name: {{ vm_nic_interface }}
-#     macAddress: {{ hostvars[groups['hv_vm'][vm]]['mac_address'] }}
-{% else %}
 ---
 apiVersion: agent-install.openshift.io/v1beta1
 kind: NMStateConfig
@@ -266,5 +222,4 @@ spec:
   interfaces:
   - name: {{ vm_nic_interface }}
     macAddress: {{ hostvars[groups['hv_vm'][vm]]['mac_address'] }}
-{% endif %}
 {% endfor %}
